@@ -33,20 +33,46 @@ import kotlinx.coroutines.withTimeout
 import java.time.Clock
 import java.util.UUID
 
+/**
+ * Firebase-backed implementation for attachment metadata, uploaded blobs, and retryable
+ * publication/cleanup.
+ *
+ * @param db Firestore client used for queries and coordinated writes.
+ * @param storage Storage client that owns uploaded image bytes.
+ * @param clock Injectable time source for recorded timestamps and deadline checks.
+ */
 class FirebaseImageRepository(
     private val db: FirebaseFirestore,
     private val storage: FirebaseStorage,
     private val clock: Clock,
 ) : ImageRepository {
+    /**
+     * Returns the published attachment for an image slot, or null when empty.
+     *
+     * @param target Account or campsite image slot.
+     */
     override suspend fun get(target: ImageTarget) =
         db.document(FirestorePaths.image(target)).read(ImageAttachmentDocument)
 
+    /**
+     * Observes the image slot, emitting null when no attachment is published.
+     *
+     * @param target Account or campsite image slot.
+     */
     override fun observe(target: ImageTarget) =
         db.document(FirestorePaths.image(target)).observe(ImageAttachmentDocument)
 
+    /**
+     * Observes all readable image attachments for browsing or moderation.
+     */
     override fun observeAll() =
         db.collection("images").observe(ImageAttachmentDocument)
 
+    /**
+     * Resolves a current Storage download URL without persisting it in Firestore.
+     *
+     * @param blobId Immutable ID identifying one uploaded Storage object.
+     */
     override suspend fun downloadUrl(blobId: String): String =
         storage.reference
             .child(DocumentKeys.blob(blobId))
@@ -54,6 +80,14 @@ class FirebaseImageRepository(
             .await()
             .toString()
 
+    /**
+     * Records upload intent, uploads and closes the supplied stream, then switches the
+     * attachment transactionally. Obsolete cleanup may be deferred; ambiguous publication
+     * requires reconciliation.
+     *
+     * @param target Account or campsite image slot.
+     * @param upload Image content and metadata to upload.
+     */
     override suspend fun replace(
         target: ImageTarget,
         upload: ImageUpload,
@@ -142,6 +176,12 @@ class FirebaseImageRepository(
         return ImageUpdateResult(attachment, pending)
     }
 
+    /**
+     * Removes the attachment and queues obsolete-blob deletion; returns pending cleanup when
+     * needed.
+     *
+     * @param target Account or campsite image slot.
+     */
     override suspend fun delete(target: ImageTarget): ImageUpdateResult {
         val old =
             db.atomic { tx ->
@@ -162,6 +202,12 @@ class FirebaseImageRepository(
         return ImageUpdateResult(null, old?.blobId?.let { cleanupOrDefer(it) })
     }
 
+    /**
+     * Attempts obsolete-blob cleanup, returning its ID on failure while propagating
+     * cancellation.
+     *
+     * @param blobId Immutable ID identifying one uploaded Storage object.
+     */
     private suspend fun cleanupOrDefer(blobId: String): String? =
         try {
             retryCleanup(blobId)
@@ -172,6 +218,12 @@ class FirebaseImageRepository(
             blobId
         }
 
+    /**
+     * Deletes only an unattached obsolete/abandoned blob; rejects active uploads and
+     * published blobs. Retains an unacknowledged intent when needed to catch late bytes.
+     *
+     * @param blobId Immutable ID identifying one uploaded Storage object.
+     */
     override suspend fun retryCleanup(blobId: String) {
         DocumentKeys.id(blobId)
         val pendingRef = db.collection("_imageUploads").document(blobId)
@@ -214,6 +266,12 @@ class FirebaseImageRepository(
         }
     }
 
+    /**
+     * Claims an expired unattached upload transactionally, conflicting with publication.
+     * Returns false for an active upload, missing intent, or already attached blob.
+     *
+     * @param blobId Immutable ID identifying one uploaded Storage object.
+     */
     private suspend fun abandonExpiredUpload(blobId: String): Boolean =
         db.atomic { tx ->
             val pendingRef = db.collection("_imageUploads").document(blobId)
@@ -234,6 +292,10 @@ class FirebaseImageRepository(
             true
         }
 
+    /**
+     * Retries queued obsolete deletions and expired uploads; failures leave durable work for
+     * another call.
+     */
     suspend fun resumeCleanup() {
         for (
         job in

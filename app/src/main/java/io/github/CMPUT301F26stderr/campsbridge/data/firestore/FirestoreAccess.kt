@@ -13,9 +13,22 @@ import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Reads a document from the server, returning null when absent.
+ *
+ * @param T Application model represented by the codec or operation.
+ * @param codec Codec converting stored fields into the application model.
+ */
 internal suspend fun <T> DocumentReference.read(codec: DocumentCodec<T>): T? =
     get(Source.SERVER).await().let { if (it.exists()) codec.decode(it) else null }
 
+/**
+ * Streams the latest decoded snapshots and releases the listener when collection ends.
+ * Listener/decoding failures terminate the Flow.
+ *
+ * @param T Application model represented by the codec or operation.
+ * @param codec Codec converting stored fields into the application model.
+ */
 internal fun <T> DocumentReference.observe(codec: DocumentCodec<T>): Flow<T?> =
     callbackFlow {
         val registration =
@@ -33,6 +46,13 @@ internal fun <T> DocumentReference.observe(codec: DocumentCodec<T>): Flow<T?> =
         awaitClose { registration.remove() }
     }.buffer(Channel.CONFLATED)
 
+/**
+ * Streams the latest decoded snapshots and releases the listener when collection ends.
+ * Listener/decoding failures terminate the Flow.
+ *
+ * @param T Application model represented by the codec or operation.
+ * @param codec Codec converting stored fields into the application model.
+ */
 internal fun <T> Query.observe(codec: DocumentCodec<T>): Flow<List<T>> =
     callbackFlow {
         val registration =
@@ -50,15 +70,35 @@ internal fun <T> Query.observe(codec: DocumentCodec<T>): Flow<List<T>> =
         awaitClose { registration.remove() }
     }.buffer(Channel.CONFLATED)
 
+/**
+ * Reads query results from the server and decodes every document.
+ *
+ * @param T Application model represented by the codec or operation.
+ * @param codec Codec converting stored fields into the application model.
+ */
 internal suspend fun <T> Query.read(codec: DocumentCodec<T>): List<T> =
     get(Source.SERVER).await().documents.map(codec::decode)
 
+/**
+ * Reads and decodes a document in the caller’s transaction, returning null when absent.
+ *
+ * @param T Application model represented by the codec or operation.
+ * @param reference Document reference read within the current transaction.
+ * @param codec Codec converting stored fields into the application model.
+ */
 internal fun <T> Transaction.read(
     reference: DocumentReference,
     codec: DocumentCodec<T>,
 ): T? =
     get(reference).let { if (it.exists()) codec.decode(it) else null }
 
+/**
+ * Reads a required document in this transaction, failing with NOT_FOUND when absent.
+ *
+ * @param T Application model represented by the codec or operation.
+ * @param reference Document reference read within the current transaction.
+ * @param codec Codec converting stored fields into the application model.
+ */
 internal fun <T> Transaction.require(
     reference: DocumentReference,
     codec: DocumentCodec<T>,
@@ -66,6 +106,13 @@ internal fun <T> Transaction.require(
     read(reference, codec)
         ?: throw PersistenceFailure(PersistenceFailure.Reason.NOT_FOUND, reference.path)
 
+/**
+ * Runs a retryable transaction and unwraps typed operation/decoding failures from Firebase
+ * wrappers.
+ *
+ * @param T Application model represented by the codec or operation.
+ * @param body Side-effect-free transaction callback; Firestore may rerun it.
+ */
 internal suspend fun <T> FirebaseFirestore.atomic(body: (Transaction) -> T): T =
     try {
         runTransaction { body(it) }.await()

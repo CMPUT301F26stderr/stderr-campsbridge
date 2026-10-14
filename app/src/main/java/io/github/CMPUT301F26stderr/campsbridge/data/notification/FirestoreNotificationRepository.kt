@@ -30,17 +30,37 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import java.time.Clock
 
-/** Durable database inbox delivery. OS/FCM push transport is a separate integration. */
+/**
+ * Durable database inbox delivery. OS/FCM push transport is a separate integration.
+ *
+ * @param db Firestore client used for queries and coordinated writes.
+ * @param clock Injectable time source for recorded timestamps and deadline checks.
+ */
 class FirestoreNotificationRepository(
     private val db: FirebaseFirestore,
     private val clock: Clock,
 ) : NotificationRepository {
+    /**
+     * Returns a shared notification event, or null when absent.
+     *
+     * @param id Notification event document ID.
+     */
     override suspend fun get(id: String) =
         db.document(FirestorePaths.notification(id)).read(NotificationDocument)
 
+    /**
+     * Observes account-specific inbox receipts; shared event content is fetched separately.
+     *
+     * @param accountId Account ID whose participation or data is addressed.
+     */
     override fun observeInbox(accountId: String) =
         db.collection("${FirestorePaths.account(accountId)}/inbox").observe(InboxReceiptDocument)
 
+    /**
+     * Observes the sender’s events, newest first.
+     *
+     * @param senderId Account ID sending the message or announcement.
+     */
     override fun observeSent(senderId: String) =
         db
             .collection("notifications")
@@ -48,11 +68,22 @@ class FirestoreNotificationRepository(
             .observe(NotificationDocument)
             .map { it.sortedByDescending { event -> event.createdAt } }
 
+    /**
+     * Observes readable notification events, newest first, for log inspection.
+     */
     override fun observeAll() =
         db.collection("notifications").observe(NotificationDocument).map {
             it.sortedByDescending { event -> event.createdAt }
         }
 
+    /**
+     * Captures joined, nonwithdrawn entrants, including draw outcomes, and queues an owner
+     * announcement. Returns the event ID; inbox fan-out resumes separately.
+     *
+     * @param lotteryId Lottery document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param announcement Owner-supplied announcement content.
+     */
     override suspend fun announce(
         lotteryId: String,
         ownerId: String,
@@ -87,6 +118,12 @@ class FirestoreNotificationRepository(
         return id
     }
 
+    /**
+     * Sets an inbox receipt’s first-read time without replacing an existing acknowledgement.
+     *
+     * @param accountId Account ID whose participation or data is addressed.
+     * @param notificationId Shared notification event ID.
+     */
     override suspend fun markRead(
         accountId: String,
         notificationId: String,
@@ -98,6 +135,10 @@ class FirestoreNotificationRepository(
         }
     }
 
+    /**
+     * Resumes receipt fan-out without resetting read times. Draw-result jobs wait for
+     * completion; failed jobs remain retryable. This does not send OS/FCM push messages.
+     */
     override suspend fun resumeDeliveries() {
         val jobs = db.collection("_notificationDeliveries").get(Source.SERVER).await()
         for (job in jobs.documents) {
@@ -126,7 +167,21 @@ class FirestoreNotificationRepository(
     }
 }
 
+/**
+ * Event and delivery-job writes that participate in the caller’s transaction.
+ */
 internal object NotificationWrites {
+    /**
+     * Writes an event and its deduplicated recipient job into the caller’s transaction;
+     * performs no push I/O.
+     *
+     * @param db Firestore client used for queries and coordinated writes.
+     * @param tx Caller-owned Firestore transaction; reads must precede writes.
+     * @param event Shared event whose content and delivery job are written together.
+     * @param recipients Account IDs captured for inbox delivery.
+     * @param waitForDraw Lottery whose completed draw gates receipt delivery, or null for
+     * immediate delivery.
+     */
     fun enqueue(
         db: FirebaseFirestore,
         tx: com.google.firebase.firestore.Transaction,
@@ -144,6 +199,15 @@ internal object NotificationWrites {
         )
     }
 
+    /**
+     * Queues a deterministic confirmation/cancellation event for the reservation entrant.
+     *
+     * @param db Firestore client used for queries and coordinated writes.
+     * @param tx Caller-owned Firestore transaction; reads must precede writes.
+     * @param reservation Stored stay whose inventory, payment, or event is addressed.
+     * @param cancelled Whether to emit cancellation rather than reservation confirmation.
+     * @param at Time the removal, cancellation, or event occurred.
+     */
     fun reservation(
         db: FirebaseFirestore,
         tx: com.google.firebase.firestore.Transaction,

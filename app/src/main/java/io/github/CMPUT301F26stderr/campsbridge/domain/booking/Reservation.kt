@@ -6,11 +6,22 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
+/**
+ * Versioned standard full-refund policy used by simulated booking and cancellation.
+ */
 object BookingPolicy {
     const val VERSION = "full-refund-v1"
     const val TEXT = "Cancelling or rejecting a reservation returns the full simulated payment."
 }
 
+/**
+ * Location and display snapshot retained when a reservation is created.
+ *
+ * @param name Display name shown in the application.
+ * @param locationLabel Human-readable campsite location.
+ * @param location Campsite coordinates used for map display.
+ * @param timeZone IANA timezone used to interpret local stay dates.
+ */
 data class BookedCampsite(
     val name: String,
     val locationLabel: String,
@@ -18,12 +29,27 @@ data class BookedCampsite(
     val timeZone: String,
 )
 
+/**
+ * Rules and policy version acknowledged at booking, preserved for historical display.
+ *
+ * @param rules Campsite rules presented to entrants.
+ * @param cancellationPolicyVersion Version identifying the policy accepted for this booking.
+ * @param acceptedAt Time the booking terms were acknowledged.
+ */
 data class AcceptedTerms(
     val rules: String,
     val cancellationPolicyVersion: String,
     val acceptedAt: Instant,
 )
 
+/**
+ * Audit record identifying when, why, and in which role a stay was cancelled.
+ *
+ * @param at Time the removal, cancellation, or event occurred.
+ * @param actorId Account ID responsible for the requested operation.
+ * @param initiatedAs Role in which the cancellation actor is acting.
+ * @param reason Optional explanation recorded with the operation.
+ */
 data class ReservationCancellation(
     val at: Instant,
     val actorId: String,
@@ -31,6 +57,21 @@ data class ReservationCancellation(
     val reason: String?,
 )
 
+/**
+ * One winning opportunity consumed by a consecutive-night stay at one campsite.
+ *
+ * @param id Reservation document ID.
+ * @param lotteryId Lottery document ID.
+ * @param entrantId Account ID of the entrant using the winning opportunity.
+ * @param campsiteId Campsite document ID.
+ * @param checkInDate First occupied local campsite date.
+ * @param checkOutDate Checkout date, excluded from occupied nights.
+ * @param guestCount Number of guests occupying the entire campsite.
+ * @param bookedCampsite Historical campsite display/location snapshot.
+ * @param acceptedTerms Historical rules and policy acknowledgement.
+ * @param createdAt Original record creation time.
+ * @param cancellation Cancellation metadata, or null while not cancelled.
+ */
 data class Reservation(
     val id: String,
     val lotteryId: String,
@@ -53,6 +94,14 @@ data class Reservation(
         get() = ChronoUnit.DAYS.between(checkInDate, checkOutDate)
 }
 
+/**
+ * Simulated charge and optional full-refund timestamp for a reservation.
+ *
+ * @param reservationId Reservation document ID.
+ * @param amountCents Nonnegative total simulated CAD charge in integer cents.
+ * @param paidAt Time the simulated charge was recorded.
+ * @param refundedAt Full-refund time, or null if not refunded.
+ */
 data class Payment(
     val reservationId: String,
     val amountCents: Long,
@@ -64,6 +113,19 @@ data class Payment(
     }
 }
 
+/**
+ * Stay selection and accepted quote that must still match current data at confirmation.
+ *
+ * @param lotteryId Lottery document ID.
+ * @param entrantId Account ID of the entrant using the winning opportunity.
+ * @param campsiteId Campsite document ID.
+ * @param checkInDate First occupied local campsite date.
+ * @param checkOutDate Checkout date, excluded from occupied nights.
+ * @param guestCount Number of guests occupying the entire campsite.
+ * @param expectedTotalCents Displayed CAD total in cents that confirmation must still match.
+ * @param acceptedRules Campsite rules the entrant acknowledged.
+ * @param policyVersion Cancellation-policy version acknowledged by the entrant.
+ */
 data class BookingRequest(
     val lotteryId: String,
     val entrantId: String,
@@ -82,6 +144,14 @@ data class BookingRequest(
     }
 }
 
+/**
+ * Actor and role requesting cancellation of an existing reservation.
+ *
+ * @param reservationId Reservation document ID.
+ * @param actorId Account ID responsible for the requested operation.
+ * @param initiatedAs Role in which the cancellation actor is acting.
+ * @param reason Optional explanation recorded with the operation.
+ */
 data class CancellationRequest(
     val reservationId: String,
     val actorId: String,
@@ -89,6 +159,12 @@ data class CancellationRequest(
     val reason: String? = null,
 )
 
+/**
+ * Lists occupied calendar dates, including check-in and excluding checkout.
+ *
+ * @param start Inclusive first local date in the range.
+ * @param end Exclusive checkout date; must follow the first date.
+ */
 fun stayNights(
     start: LocalDate,
     end: LocalDate,

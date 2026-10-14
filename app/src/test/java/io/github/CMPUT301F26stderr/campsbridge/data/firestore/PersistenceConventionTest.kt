@@ -63,6 +63,14 @@ class PersistenceConventionTest {
     private val start = LocalDate.parse("2027-05-15")
     private val point = Coordinates(53.0, -118.0)
 
+    /**
+     * Asserts that encoding and decoding preserve an application value at its document path.
+     *
+     * @param T Application model represented by the codec or operation.
+     * @param path Firestore document path carrying identity and decoding context.
+     * @param codec Codec converting stored fields into the application model.
+     * @param value Expected application value after codec round-trip.
+     */
     private fun <T> roundTrip(
         path: String,
         codec: DocumentCodec<T>,
@@ -71,6 +79,10 @@ class PersistenceConventionTest {
         assertEquals(value, codec.decode(path, codec.encode(value)))
     }
 
+    /**
+     * Verifies all document codecs preserve models without duplicating path IDs or derived
+     * night counts.
+     */
     @Test
     fun documentsRoundTripWithoutPersistingIdentityOrDerivedFields() {
         val account =
@@ -198,6 +210,10 @@ class PersistenceConventionTest {
         )
     }
 
+    /**
+     * Verifies compound keys do not collide and image targets/Storage paths follow the
+     * shared convention.
+     */
     @Test
     fun compositeKeysAreUnambiguousAndAttachmentTargetsRoundTrip() {
         assertNotEquals(DocumentKeys.reservation("a_b", "c"), DocumentKeys.reservation("a", "b_c"))
@@ -206,12 +222,20 @@ class PersistenceConventionTest {
         assertEquals("images/blob/original", DocumentKeys.blob("blob"))
     }
 
+    /**
+     * Verifies occupied-night enumeration uses local dates and excludes checkout across a
+     * DST boundary.
+     */
     @Test
     fun nightsUseCalendarDaysAndExcludeCheckoutAcrossDaylightSaving() {
         val arrival = LocalDate.parse("2027-03-13")
         assertEquals(listOf(arrival, arrival.plusDays(1)), stayNights(arrival, arrival.plusDays(2)))
     }
 
+    /**
+     * Verifies missing fields, unknown enum names, and malformed date identities fail as
+     * decoding errors.
+     */
     @Test
     fun missingRequiredFieldsAndUnknownEnumsFailClearly() {
         assertThrows(DocumentDecodingException::class.java) {
@@ -231,6 +255,10 @@ class PersistenceConventionTest {
         }
     }
 
+    /**
+     * Verifies nonfinite settings, invalid time windows, and duplicate offered dates are
+     * rejected.
+     */
     @Test
     fun invalidConfigurationAndNonFiniteSettingsAreRejected() {
         assertThrows(IllegalArgumentException::class.java) {

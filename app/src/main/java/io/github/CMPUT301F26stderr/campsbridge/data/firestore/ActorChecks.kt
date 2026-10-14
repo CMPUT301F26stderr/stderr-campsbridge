@@ -9,6 +9,14 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 
+/**
+ * Reads the account in this transaction and rejects removed accounts or missing required
+ * capability.
+ *
+ * @param db Firestore client used for queries and coordinated writes.
+ * @param id Application entity document ID.
+ * @param role Required capability, or null to accept any active account.
+ */
 internal fun Transaction.activeAccount(
     db: FirebaseFirestore,
     id: String,

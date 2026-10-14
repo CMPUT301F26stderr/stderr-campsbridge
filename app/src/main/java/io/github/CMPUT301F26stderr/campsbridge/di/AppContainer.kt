@@ -22,7 +22,13 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReviewRepository
 import java.time.Clock
 import kotlin.random.Random
 
-/** Application-scoped composition root. Bootstrap/auth and controller wiring remain TODO. */
+/**
+ * Application-scoped composition root. Bootstrap/auth and controller wiring remain TODO.
+ *
+ * @param clients Initialized Firestore/Storage clients for the selected project or emulators.
+ * @param clock Injectable time source for recorded timestamps and deadline checks.
+ * @param random Injectable source for proposing the persisted draw seed.
+ */
 class AppContainer(
     clients: FirebaseClients,
     clock: Clock = Clock.systemUTC(),
@@ -44,7 +50,8 @@ class AppContainer(
         FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock)
 
     /**
-     * Invoke on a controller-owned foreground schedule after Firebase/auth initialization. Failure
+     * Invoke on a controller-owned foreground schedule after Firebase/auth initialization.
+     * Failure
      * is surfaced to the caller; subsequent invocation resumes durable work.
      */
     suspend fun resumePendingWork() {

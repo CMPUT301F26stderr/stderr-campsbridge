@@ -12,7 +12,15 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookedCampsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
 
+/**
+ * Explicit Firestore codec for [Reservation], deriving identity from the document path.
+ */
 object ReservationDocument : DocumentCodec<Reservation>() {
+    /**
+     * Serializes the application model into explicitly named Firestore fields.
+     *
+     * @param value Application value to serialize.
+     */
     override fun encode(value: Reservation): Map<String, Any?> =
         mapOf(
             "lotteryId" to value.lotteryId,
@@ -50,6 +58,11 @@ object ReservationDocument : DocumentCodec<Reservation>() {
                 },
         )
 
+    /**
+     * Reads and validates stored fields, recovering model identity from the document path.
+     *
+     * @param fields Strict field reader with the document’s path context.
+     */
     override fun read(fields: Fields): Reservation {
         require(
             fields.id ==

@@ -13,7 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
+/**
+ * Starter Compose host; application bootstrap and feature navigation are not wired yet.
+ */
 class MainActivity : ComponentActivity() {
+    /**
+     * Hosts the starter greeting under the Compose theme and edge-to-edge scaffold.
+     *
+     * @param savedInstanceState Previously saved activity state, or null on initial
+     * creation.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -30,6 +39,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Displays the starter greeting for the supplied name.
+ *
+ * @param name Display name shown in the application.
+ * @param modifier Layout and semantics supplied by the composable’s caller.
+ */
 @Composable
 fun Greeting(
     name: String,
@@ -41,6 +56,9 @@ fun Greeting(
     )
 }
 
+/**
+ * Previews the starter greeting without application dependencies.
+ */
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {

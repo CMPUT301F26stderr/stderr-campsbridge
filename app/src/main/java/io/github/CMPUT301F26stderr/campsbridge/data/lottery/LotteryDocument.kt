@@ -8,7 +8,15 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.stored
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 
+/**
+ * Explicit Firestore codec for [Lottery], deriving identity from the document path.
+ */
 object LotteryDocument : DocumentCodec<Lottery>() {
+    /**
+     * Serializes the application model into explicitly named Firestore fields.
+     *
+     * @param value Application value to serialize.
+     */
     override fun encode(value: Lottery): Map<String, Any?> =
         mapOf(
             "ownerId" to value.ownerId,
@@ -27,6 +35,11 @@ object LotteryDocument : DocumentCodec<Lottery>() {
             "cancellation" to value.cancellation?.stored(),
         )
 
+    /**
+     * Reads and validates stored fields, recovering model identity from the document path.
+     *
+     * @param fields Strict field reader with the document’s path context.
+     */
     override fun read(fields: Fields): Lottery =
         Lottery(
             fields.id,

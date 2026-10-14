@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.dokka)
     id("com.google.gms.google-services")
 }
 
@@ -34,6 +35,13 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+dokka {
+    dokkaPublications.html {
+        moduleName.set("Campsbridge")
+        outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
     }
 }
 

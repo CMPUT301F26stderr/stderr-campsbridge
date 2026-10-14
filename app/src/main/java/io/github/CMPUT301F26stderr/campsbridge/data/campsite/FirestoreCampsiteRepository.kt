@@ -22,27 +22,60 @@ import kotlinx.coroutines.flow.map
 import java.time.Clock
 import java.time.LocalDate
 
+/**
+ * Firebase-backed implementation for listing publication and owner-managed per-night inventory.
+ *
+ * @param db Firestore client used for queries and coordinated writes.
+ * @param clock Injectable time source for recorded timestamps and deadline checks.
+ */
 class FirestoreCampsiteRepository(
     private val db: FirebaseFirestore,
     private val clock: Clock,
 ) : CampsiteRepository {
+    /**
+     * Returns the stored campsite, or null when its document is absent.
+     *
+     * @param id Campsite document ID.
+     */
     override suspend fun get(id: String) =
         db.document(FirestorePaths.campsite(id)).read(CampsiteDocument)
 
+    /**
+     * Observes one campsite, emitting null if its document is absent.
+     *
+     * @param id Campsite document ID.
+     */
     override fun observe(id: String) =
         db.document(FirestorePaths.campsite(id)).observe(CampsiteDocument)
 
+    /**
+     * Observes published, nonremoved campsites suitable for discovery.
+     */
     override fun observePublished() =
         db.collection("campsites").observe(CampsiteDocument).map { sites ->
             sites.filter { it.isPublished }
         }
 
+    /**
+     * Observes listings belonging to the owner, including drafts and retained records.
+     *
+     * @param ownerId Account ID of the campsite or lottery owner.
+     */
     override fun observeForOwner(ownerId: String) =
         db.collection("campsites").whereEqualTo("ownerId", ownerId).observe(CampsiteDocument)
 
+    /**
+     * Observes all readable campsite records, including drafts and removal history.
+     */
     override fun observeAll() =
         db.collection("campsites").observe(CampsiteDocument)
 
+    /**
+     * Creates an unpublished listing for an active owner and returns its generated ID.
+     *
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param details Editable campsite facts to store.
+     */
     override suspend fun create(
         ownerId: String,
         details: CampsiteDetails,
@@ -58,6 +91,13 @@ class FirestoreCampsiteRepository(
         return reference.id
     }
 
+    /**
+     * Authorizes the active owner and transforms a nonremoved listing transactionally.
+     *
+     * @param id Campsite document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param transform Pure record transformation; may run again if the transaction retries.
+     */
     private suspend fun change(
         id: String,
         ownerId: String,
@@ -73,6 +113,13 @@ class FirestoreCampsiteRepository(
         }
     }
 
+    /**
+     * Replaces editable listing details without changing ownership or publication history.
+     *
+     * @param id Campsite document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param details Editable campsite facts to store.
+     */
     override suspend fun update(
         id: String,
         ownerId: String,
@@ -80,12 +127,25 @@ class FirestoreCampsiteRepository(
     ) =
         change(id, ownerId) { it.copy(details = details) }
 
+    /**
+     * Sets the first publication time; an already published listing keeps its original time.
+     *
+     * @param id Campsite document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     */
     override suspend fun publish(
         id: String,
         ownerId: String,
     ) =
         change(id, ownerId) { it.copy(publishedAt = it.publishedAt ?: clock.instant()) }
 
+    /**
+     * Observes stored nights in the half-open date range; missing nights are not offered.
+     *
+     * @param id Campsite document ID.
+     * @param start Inclusive first local date in the range.
+     * @param endExclusive Exclusive end of the observed calendar range.
+     */
     override fun observeCalendar(
         id: String,
         start: LocalDate,
@@ -97,6 +157,15 @@ class FirestoreCampsiteRepository(
             .whereLessThan(FieldPath.documentId(), endExclusive.toString())
             .observe(CalendarNightDocument)
 
+    /**
+     * Changes each night in its own transaction; earlier nights may remain saved after
+     * failure. Withdrawing an occupied night requires reservation cancellation first.
+     *
+     * @param id Campsite document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param dates Local calendar nights to update.
+     * @param offered Whether to offer or withdraw the requested nights.
+     */
     override suspend fun setOffered(
         id: String,
         ownerId: String,

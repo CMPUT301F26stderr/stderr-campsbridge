@@ -44,38 +44,92 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import java.time.Clock
 
+/**
+ * Firebase-backed implementation for lottery configuration, membership, resumable draws, and
+ * cancellation.
+ *
+ * @param db Firestore client used for queries and coordinated writes.
+ * @param clock Injectable time source for recorded timestamps and deadline checks.
+ * @param random Injectable source for proposing the persisted draw seed.
+ */
 class FirestoreLotteryRepository(
     private val db: FirebaseFirestore,
     private val clock: Clock,
     private val random: kotlin.random.Random = kotlin.random.Random.Default,
 ) : LotteryRepository {
+    /**
+     * Builds a validated reference to the lottery document.
+     *
+     * @param id Lottery document ID.
+     */
     private fun ref(id: String) =
         db.document(FirestorePaths.lottery(id))
 
+    /**
+     * Returns the lottery record, or null when absent.
+     *
+     * @param id Lottery document ID.
+     */
     override suspend fun get(id: String) =
         ref(id).read(LotteryDocument)
 
+    /**
+     * Observes one lottery, emitting null when its document is absent.
+     *
+     * @param id Lottery document ID.
+     */
     override fun observe(id: String) =
         ref(id).observe(LotteryDocument)
 
+    /**
+     * Observes all readable lotteries, including drafts and historical records.
+     */
     override fun observeAll() =
         db.collection("lotteries").observe(LotteryDocument)
 
+    /**
+     * Observes lotteries created by the specified owner.
+     *
+     * @param ownerId Account ID of the campsite or lottery owner.
+     */
     override fun observeForOwner(ownerId: String) =
         db.collection("lotteries").whereEqualTo("ownerId", ownerId).observe(LotteryDocument)
 
+    /**
+     * Observes the campsite/night allocations belonging to a lottery.
+     *
+     * @param id Lottery document ID.
+     */
     override fun observeOffers(id: String) =
         ref(id).collection("offers").observe(LotteryOfferDocument)
 
+    /**
+     * Observes participation records; callers show draw outcomes only after draw completion.
+     *
+     * @param id Lottery document ID.
+     */
     override fun observeEntries(id: String) =
         ref(id).collection("entries").observe(LotteryEntryDocument)
 
+    /**
+     * Observes an account’s entries across lotteries using the queryable account ID.
+     *
+     * @param accountId Account ID whose participation or data is addressed.
+     */
     override fun observeForEntrant(accountId: String) =
         db
             .collectionGroup("entries")
             .whereEqualTo("accountId", accountId)
             .observe(LotteryEntryDocument)
 
+    /**
+     * Creates an unpublished lottery with no offers or participants and returns its ID.
+     *
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param title Display title for the lottery or announcement.
+     * @param description Listing or lottery description.
+     * @param configuration Registration/booking windows and participation limits.
+     */
     override suspend fun create(
         ownerId: String,
         title: String,
@@ -103,6 +157,16 @@ class FirestoreLotteryRepository(
         return reference.id
     }
 
+    /**
+     * Updates descriptions and permitted configuration; published configuration freezes at
+     * registration start.
+     *
+     * @param id Lottery document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param title Display title for the lottery or announcement.
+     * @param description Listing or lottery description.
+     * @param configuration Registration/booking windows and participation limits.
+     */
     override suspend fun update(
         id: String,
         ownerId: String,
@@ -140,6 +204,12 @@ class FirestoreLotteryRepository(
         }
     }
 
+    /**
+     * Rejects a foreign, cancelled, or frozen lottery before changing its offered inventory.
+     *
+     * @param lottery Lottery document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     */
     private fun editable(
         lottery: Lottery,
         ownerId: String,
@@ -160,6 +230,14 @@ class FirestoreLotteryRepository(
         )
     }
 
+    /**
+     * Validates owned offered nights and replaces an allocation while advancing the revision
+     * guard.
+     *
+     * @param id Lottery document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param offer Campsite/night allocation to store.
+     */
     override suspend fun setOffer(
         id: String,
         ownerId: String,
@@ -194,6 +272,13 @@ class FirestoreLotteryRepository(
         }
     }
 
+    /**
+     * Removes an editable campsite allocation and advances the revision guard.
+     *
+     * @param id Lottery document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     * @param campsiteId Campsite document ID.
+     */
     override suspend fun removeOffer(
         id: String,
         ownerId: String,
@@ -208,6 +293,13 @@ class FirestoreLotteryRepository(
         }
     }
 
+    /**
+     * Validates published campsites and offered nights before publication; a revision guard
+     * rejects concurrent allocation edits and registration must still be in the future.
+     *
+     * @param id Lottery document ID.
+     * @param ownerId Account ID of the campsite or lottery owner.
+     */
     override suspend fun publish(
         id: String,
         ownerId: String,
@@ -260,18 +352,39 @@ class FirestoreLotteryRepository(
         }
     }
 
+    /**
+     * Joins or rejoins during registration, updating membership and waiting count
+     * atomically.
+     *
+     * @param id Lottery document ID.
+     * @param accountId Account ID whose participation or data is addressed.
+     */
     override suspend fun join(
         id: String,
         accountId: String,
     ) =
         membership(id, accountId, true)
 
+    /**
+     * Withdraws during registration, updating membership and waiting count atomically.
+     *
+     * @param id Lottery document ID.
+     * @param accountId Account ID whose participation or data is addressed.
+     */
     override suspend fun withdraw(
         id: String,
         accountId: String,
     ) =
         membership(id, accountId, false)
 
+    /**
+     * Applies an idempotent join/withdraw transaction while validating the window and
+     * capacity.
+     *
+     * @param id Lottery document ID.
+     * @param accountId Account ID whose participation or data is addressed.
+     * @param joining True to join/rejoin, false to withdraw.
+     */
     private suspend fun membership(
         id: String,
         accountId: String,
@@ -318,6 +431,13 @@ class FirestoreLotteryRepository(
         }
     }
 
+    /**
+     * Declines an unused winning opportunity during booking; existing reservations prevent
+     * decline.
+     *
+     * @param id Lottery document ID.
+     * @param accountId Account ID whose participation or data is addressed.
+     */
     override suspend fun decline(
         id: String,
         accountId: String,
@@ -351,6 +471,13 @@ class FirestoreLotteryRepository(
         }
     }
 
+    /**
+     * Starts or resumes a deterministic seeded draw after registration closes. Outcomes and
+     * receipt jobs commit per entry; draw completion gates booking and result delivery.
+     * Returns whether already complete.
+     *
+     * @param id Lottery document ID.
+     */
     override suspend fun draw(id: String): DrawResult {
         val drawRef = db.collection("_draws").document(DocumentKeys.id(id))
         val proposedSeed = random.nextLong().toString()
@@ -386,6 +513,12 @@ class FirestoreLotteryRepository(
                 it.state != EntryState.WITHDRAWN
             }
 
+        /**
+         * Hashes the persisted draw seed and account ID to reproduce candidate order on
+         * retries.
+         *
+         * @param account Account document ID.
+         */
         fun rank(account: String): String =
             java.security.MessageDigest
                 .getInstance("SHA-256")
@@ -453,6 +586,14 @@ class FirestoreLotteryRepository(
         return DrawResult.COMPLETED
     }
 
+    /**
+     * Records owner/admin cancellation, finishing any already-started draw before
+     * cancellation.
+     *
+     * @param id Lottery document ID.
+     * @param actorId Account ID responsible for the requested operation.
+     * @param reason Optional explanation recorded with the operation.
+     */
     override suspend fun cancel(
         id: String,
         actorId: String,
@@ -460,7 +601,13 @@ class FirestoreLotteryRepository(
     ) =
         cancelCoordinated(id, actorId, reason, authorize = true)
 
-    /** Only removal jobs call this after the original actor has already been authorized. */
+    /**
+     * Only removal jobs call this after the original actor has already been authorized.
+     *
+     * @param id Lottery document ID.
+     * @param actorId Account ID responsible for the requested operation.
+     * @param reason Optional explanation recorded with the operation.
+     */
     internal suspend fun cancelForRemoval(
         id: String,
         actorId: String,
@@ -468,6 +615,16 @@ class FirestoreLotteryRepository(
     ) =
         cancelCoordinated(id, actorId, reason, authorize = false)
 
+    /**
+     * Serializes draw start and cancellation; completes an in-progress draw before retrying
+     * cancellation.
+     *
+     * @param id Lottery document ID.
+     * @param actorId Account ID responsible for the requested operation.
+     * @param reason Optional explanation recorded with the operation.
+     * @param authorize Whether this call must authorize the actor rather than trust a prior
+     * removal check.
+     */
     private suspend fun cancelCoordinated(
         id: String,
         actorId: String,
@@ -501,6 +658,9 @@ class FirestoreLotteryRepository(
         }
     }
 
+    /**
+     * Draws due active lotteries and resumes interrupted draws; inactive races are skipped.
+     */
     suspend fun resumeDraws() {
         for (lottery in db.collection("lotteries").read(LotteryDocument)) {
             if (

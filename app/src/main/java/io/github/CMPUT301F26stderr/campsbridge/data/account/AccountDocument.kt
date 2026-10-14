@@ -10,7 +10,15 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 
+/**
+ * Explicit Firestore codec for [Account], deriving identity from the document path.
+ */
 object AccountDocument : DocumentCodec<Account>() {
+    /**
+     * Serializes the application model into explicitly named Firestore fields.
+     *
+     * @param value Application value to serialize.
+     */
     override fun encode(value: Account): Map<String, Any?> =
         mapOf(
             "name" to value.name,
@@ -33,6 +41,11 @@ object AccountDocument : DocumentCodec<Account>() {
             "removal" to value.removal?.stored(),
         )
 
+    /**
+     * Reads and validates stored fields, recovering model identity from the document path.
+     *
+     * @param fields Strict field reader with the document’s path context.
+     */
     override fun read(fields: Fields): Account =
         Account(
             fields.id,

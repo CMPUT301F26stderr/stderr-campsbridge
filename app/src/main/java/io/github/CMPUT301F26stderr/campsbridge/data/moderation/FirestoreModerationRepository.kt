@@ -37,13 +37,28 @@ import kotlinx.coroutines.tasks.await
 import java.time.Clock
 import java.time.LocalDate
 
-/** Removal marks the target first; durable jobs resume the dependent cleanup. */
+/**
+ * Removal marks the target first; durable jobs resume the dependent cleanup.
+ *
+ * @param db Firestore client used for queries and coordinated writes.
+ * @param images Image repository used to remove attachments and queue blob cleanup.
+ * @param lotteries Lottery implementation providing coordinated cancellation during removal.
+ * @param clock Injectable time source for recorded timestamps and deadline checks.
+ */
 class FirestoreModerationRepository(
     private val db: FirebaseFirestore,
     private val images: ImageRepository,
     private val lotteries: FirestoreLotteryRepository,
     private val clock: Clock,
 ) : ModerationRepository {
+    /**
+     * Scrubs profile data while retaining identity/history, then resumes dependent removal
+     * work. Self-removal is allowed; removing another account requires admin capability.
+     *
+     * @param accountId Account ID whose participation or data is addressed.
+     * @param actorId Account ID responsible for the requested operation.
+     * @param reason Optional explanation recorded with the operation.
+     */
     override suspend fun removeAccount(
         accountId: String,
         actorId: String,
@@ -73,6 +88,14 @@ class FirestoreModerationRepository(
         resumeRemovalsFor(actorId)
     }
 
+    /**
+     * Marks a listing removed for its owner/admin and resumes dependent cancellation and
+     * cleanup.
+     *
+     * @param campsiteId Campsite document ID.
+     * @param actorId Account ID responsible for the requested operation.
+     * @param reason Optional explanation recorded with the operation.
+     */
     override suspend fun removeCampsite(
         campsiteId: String,
         actorId: String,
@@ -92,6 +115,13 @@ class FirestoreModerationRepository(
         resumeRemovalsFor(actorId)
     }
 
+    /**
+     * Records durable dependent cleanup within the caller’s removal transaction.
+     *
+     * @param tx Caller-owned Firestore transaction; reads must precede writes.
+     * @param target Account or campsite image slot.
+     * @param removal Removal metadata, or null for an account/listing not marked removed.
+     */
     private fun enqueue(
         tx: com.google.firebase.firestore.Transaction,
         target: ImageTarget,
@@ -103,6 +133,15 @@ class FirestoreModerationRepository(
         )
     }
 
+    /**
+     * Retains the first removal metadata and queues dependent campsite cleanup
+     * transactionally.
+     *
+     * @param tx Caller-owned Firestore transaction; reads must precede writes.
+     * @param site Campsite already read within the caller’s transaction.
+     * @param requested Requested removal metadata; an existing first-removal record takes
+     * precedence.
+     */
     private fun markSite(
         tx: com.google.firebase.firestore.Transaction,
         site: Campsite,
@@ -113,9 +152,18 @@ class FirestoreModerationRepository(
         enqueue(tx, ImageTarget(ImageTargetType.CAMPSITE, site.id), removal)
     }
 
+    /**
+     * Drains readable removal jobs, including dependent jobs created while processing.
+     */
     override suspend fun resumeRemovals() =
         resumeRemovalsFor(null)
 
+    /**
+     * Drains pending removal work, optionally limited to the original actor; deletes jobs
+     * only after cleanup.
+     *
+     * @param actorId Account ID responsible for the requested operation.
+     */
     private suspend fun resumeRemovalsFor(actorId: String?) {
         // Account removal may enqueue campsite jobs, so drain until there are no jobs.
         while (true) {
@@ -141,6 +189,13 @@ class FirestoreModerationRepository(
         }
     }
 
+    /**
+     * Queues owned listings, cancels owned lotteries and uncompleted stays, withdraws
+     * unfrozen entries, and removes device tokens while retaining completed history.
+     *
+     * @param id Account document ID.
+     * @param removal Removal metadata, or null for an account/listing not marked removed.
+     */
     private suspend fun cleanupAccount(
         id: String,
         removal: Removal,
@@ -221,6 +276,13 @@ class FirestoreModerationRepository(
         }
     }
 
+    /**
+     * Cancels active owned lotteries that include the site and refunds uncompleted
+     * reservations.
+     *
+     * @param id Campsite document ID.
+     * @param removal Removal metadata, or null for an account/listing not marked removed.
+     */
     private suspend fun cleanupSite(
         id: String,
         removal: Removal,
@@ -244,6 +306,12 @@ class FirestoreModerationRepository(
         }
     }
 
+    /**
+     * Cancels a draft or not-yet-ended lottery through the already-authorized removal path.
+     *
+     * @param id Lottery document ID.
+     * @param removal Removal metadata, or null for an account/listing not marked removed.
+     */
     private suspend fun cancelLottery(
         id: String,
         removal: Removal,
@@ -260,6 +328,13 @@ class FirestoreModerationRepository(
         }
     }
 
+    /**
+     * Cancels/refunds an uncompleted stay in its recorded timezone while preserving
+     * completed stays.
+     *
+     * @param id Reservation document ID.
+     * @param removal Removal metadata, or null for an account/listing not marked removed.
+     */
     private suspend fun cancelFuture(
         id: String,
         removal: Removal,

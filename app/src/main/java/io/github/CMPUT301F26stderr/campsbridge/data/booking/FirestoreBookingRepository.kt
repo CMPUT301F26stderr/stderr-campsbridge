@@ -40,28 +40,62 @@ import kotlinx.coroutines.flow.map
 import java.time.Clock
 import java.time.LocalDate
 
+/**
+ * Firebase-backed implementation for reservation creation/cancellation with coordinated
+ * inventory and simulated payments.
+ *
+ * @param db Firestore client used for queries and coordinated writes.
+ * @param clock Injectable time source for recorded timestamps and deadline checks.
+ */
 class FirestoreBookingRepository(
     private val db: FirebaseFirestore,
     private val clock: Clock,
 ) : BookingRepository {
+    /**
+     * Returns a reservation, including cancellation history, or null when absent.
+     *
+     * @param id Reservation document ID.
+     */
     override suspend fun get(id: String) =
         db.document(FirestorePaths.reservation(id)).read(ReservationDocument)
 
+    /**
+     * Returns the reservation’s simulated payment/refund record, or null when absent.
+     *
+     * @param id Reservation document ID.
+     */
     override suspend fun getPayment(id: String) =
         db.document(FirestorePaths.payment(id)).read(PaymentDocument)
 
+    /**
+     * Observes the entrant’s reservations, including past and cancelled stays.
+     *
+     * @param entrantId Account ID of the entrant using the winning opportunity.
+     */
     override fun observeForEntrant(entrantId: String) =
         db
             .collection("reservations")
             .whereEqualTo("entrantId", entrantId)
             .observe(ReservationDocument)
 
+    /**
+     * Observes reservations for one campsite, including historical stays.
+     *
+     * @param campsiteId Campsite document ID.
+     */
     override fun observeForCampsite(campsiteId: String) =
         db
             .collection("reservations")
             .whereEqualTo("campsiteId", campsiteId)
             .observe(ReservationDocument)
 
+    /**
+     * Validates an unused win, current quote/terms, and every night before atomically
+     * creating the reservation/payment, claiming inventory, and queueing confirmation.
+     * Returns the reservation ID.
+     *
+     * @param request Stay selection and expected price/terms to validate.
+     */
     override suspend fun reserve(request: BookingRequest): String {
         val id = DocumentKeys.reservation(request.lotteryId, request.entrantId)
         val reference = db.document(FirestorePaths.reservation(id))
@@ -164,6 +198,13 @@ class FirestoreBookingRepository(
         return id
     }
 
+    /**
+     * Authorizes the requested actor role and atomically cancels/refunds the stay, releases
+     * inventory, and queues notification. Already cancelled stays are unchanged; the win
+     * stays consumed.
+     *
+     * @param request Actor, role, and reason for cancellation.
+     */
     override suspend fun cancel(request: CancellationRequest) {
         db.atomic { tx ->
             val actor = tx.activeAccount(db, request.actorId, request.initiatedAs)
@@ -185,8 +226,21 @@ class FirestoreBookingRepository(
         }
     }
 
+    /**
+     * Shared cancellation primitive for booking and moderation transactions.
+     */
     internal companion object {
-        /** Caller has already read and authorized actor/subject; all reads precede writes. */
+        /**
+         * Cancels/refunds a stay and releases its inventory in the caller’s transaction.
+         * The caller authorizes the actor first; repeated cancellation is harmless.
+         *
+         * @param db Firestore client used for queries and coordinated writes.
+         * @param tx Caller-owned Firestore transaction; reads must precede writes.
+         * @param reservation Stored stay whose inventory, payment, or event is
+         * addressed.
+         * @param request Actor, role, and reason for cancellation.
+         * @param now Instant used to evaluate the window or record the operation.
+         */
         fun cancelInTransaction(
             db: FirebaseFirestore,
             tx: com.google.firebase.firestore.Transaction,

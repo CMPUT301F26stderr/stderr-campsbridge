@@ -8,7 +8,15 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.stored
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 
+/**
+ * Explicit Firestore codec for [Campsite], deriving identity from the document path.
+ */
 object CampsiteDocument : DocumentCodec<Campsite>() {
+    /**
+     * Serializes the application model into explicitly named Firestore fields.
+     *
+     * @param value Application value to serialize.
+     */
     override fun encode(value: Campsite): Map<String, Any?> =
         mapOf(
             "ownerId" to value.ownerId,
@@ -27,6 +35,11 @@ object CampsiteDocument : DocumentCodec<Campsite>() {
             "removal" to value.removal?.stored(),
         )
 
+    /**
+     * Reads and validates stored fields, recovering model identity from the document path.
+     *
+     * @param fields Strict field reader with the document’s path context.
+     */
     override fun read(fields: Fields): Campsite =
         Campsite(
             fields.id,

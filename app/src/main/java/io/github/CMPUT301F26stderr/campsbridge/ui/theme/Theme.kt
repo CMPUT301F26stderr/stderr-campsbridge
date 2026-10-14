@@ -34,6 +34,13 @@ private val LightColorScheme =
      */
     )
 
+/**
+ * Applies the shared starter color and typography scheme, optionally using wallpaper colors.
+ *
+ * @param darkTheme Whether to use the dark scheme; defaults to the system preference.
+ * @param dynamicColor Whether Android 12+ wallpaper colors replace the fixed starter palette.
+ * @param content Composable content rendered under the shared theme.
+ */
 @Composable
 fun CampsbridgeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
