@@ -333,3 +333,6 @@ ui-debug.log*
 # Local agent instructions.
 /AGENTS.md
 /agents.md
+
+# Python tooling bytecode.
+__pycache__/

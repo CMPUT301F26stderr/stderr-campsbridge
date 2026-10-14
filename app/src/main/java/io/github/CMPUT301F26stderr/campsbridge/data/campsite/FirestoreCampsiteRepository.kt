@@ -52,9 +52,13 @@ class FirestoreCampsiteRepository(
      * Observes published, nonremoved campsites suitable for discovery.
      */
     override fun observePublished() =
-        db.collection("campsites").observe(CampsiteDocument).map { sites ->
-            sites.filter { it.isPublished }
-        }
+        db
+            .collection("campsites")
+            .whereNotEqualTo("publishedAt", null)
+            .observe(CampsiteDocument)
+            .map { sites ->
+                sites.filter { it.isPublished }
+            }
 
     /**
      * Observes listings belonging to the owner, including drafts and retained records.

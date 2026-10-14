@@ -1,6 +1,11 @@
 [extend]
 useDefault = true
 
+# Gradle outputs include dependency archives and copies of public client configuration.
+[[allowlists]]
+description = "Generated Gradle build output"
+paths = ['''^(app/)?build/''']
+
 # Firebase Android client API keys are public project identifiers, packaged in the APK.
 # Match only the Google API key field in the shared client configuration.
 [[allowlists]]

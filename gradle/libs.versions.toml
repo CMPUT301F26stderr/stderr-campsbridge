@@ -12,11 +12,17 @@ firebaseBom = "35.0.0"
 coroutines = "1.10.2"
 desugar = "2.1.5"
 dokka = "2.2.0"
+robolectric = "4.17"
+mockito = "5.20.0"
 
 [libraries]
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
+# Test-only Auth client compatible with this project's Kotlin compiler.
+firebase-auth = { module = "com.google.firebase:firebase-auth", version = { strictly = "24.0.1" } }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

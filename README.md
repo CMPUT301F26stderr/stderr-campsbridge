@@ -28,7 +28,13 @@ An Android campsite reservation app for CMPUT 301, built by a team of six. Entra
    .\gradlew.bat --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug
    ```
 
-The checks run Android Lint, local unit tests, and a debug APK build. Device tests are separate and require an emulator or device.
+The checks run Android Lint, local domain/schema/listener tests, and a debug APK build. Run persistence integration tests separately:
+
+```bash
+nix develop --command bash scripts/check-firebase.sh
+```
+
+This starts disposable Auth, Firestore, and Storage emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests require an Android emulator or device and remain separate.
 
 ## Repository layout
 

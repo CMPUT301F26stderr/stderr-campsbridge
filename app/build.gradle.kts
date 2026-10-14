@@ -33,6 +33,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
     buildFeatures {
         compose = true
     }
@@ -60,10 +63,44 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.mockito)
+    testImplementation(libs.firebase.auth)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+
+// Backend tests share compilation with local tests, but require their own emulator invocation.
+tasks.register<Test>("firebaseIntegrationTest") {
+    val localTests = tasks.named<Test>("testDebugUnitTest").get()
+    testClassesDirs = localTests.testClassesDirs
+    classpath = localTests.classpath
+    systemProperties(localTests.systemProperties)
+    workingDir = localTests.workingDir
+    dependsOn(testClassesDirs)
+    group = "verification"
+    description = "Runs Kotlin repository contracts against the Firebase emulators."
+    include("**/integration/firebase/**")
+    maxParallelForks = 1
+    maxHeapSize = "2g"
+    outputs.upToDateWhen { false }
+    systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
+    jvmArgs(
+        "--enable-native-access=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+    )
+    testLogging {
+        events("failed", "skipped")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    if (name != "firebaseIntegrationTest") exclude("**/integration/firebase/**")
 }

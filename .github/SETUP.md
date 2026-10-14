@@ -15,8 +15,9 @@ Use `CI ready` as the required status in branch rules. Review requirements and b
 | Check | Coverage |
 | --- | --- |
 | Repository checks | Actions syntax, shell scripts, hook configuration, and flake evaluation |
-| Pre-commit checks | YAML/JSON/TOML syntax, conflict markers, oversized files, and secret scanning |
+| Pre-commit checks | YAML/JSON/TOML syntax, conflict markers, oversized files, secret scanning, and repository command tests |
 | Android checks | Android Lint, local unit tests, debug APK build, and artifact upload |
+| Firebase contracts | Rules plus Kotlin repository queries, transactions and recovery using disposable Auth/Firestore/Storage emulators |
 | CI ready | Exact success from every mandatory verification job |
 | Publish beta APK | Update the rolling prerelease after successful main checks |
 
@@ -34,7 +35,7 @@ All jobs require a Linux x64 self-hosted runner with the `self-hosted`, `linux`,
 
 The locked flake supplies three development shells: `repository` for configuration checks, `hooks` for pre-commit tools, and `default` for Android builds. Keep SDK/JDK selections synchronized with the Gradle daemon and application configuration. Workflows enable `nix-command` and `flakes` through `NIX_CONFIG`.
 
-Persistent runners reuse the Nix store and Gradle cache. CI file checks use Nix-packaged pre-commit-hooks 6.0.0, matching the local hook release, and read their arguments from `.pre-commit-config.yaml`. CI does not create or restore Python hook environments. The Android job restores executable permissions on cached Gradle launchers for daemon cleanup.
+Persistent runners reuse the Nix store and Gradle cache. CI file checks use Nix-packaged pre-commit-hooks 6.0.0, matching the local hook release, and read their arguments from `.pre-commit-config.yaml`. CI does not create or restore Python hook environments. The Android and Firebase jobs restore executable permissions on cached Gradle launchers for daemon cleanup.
 
 Store text files with normalized Git line endings; `.gitattributes` preserves CRLF when checking out Windows batch scripts. A batch file with CRLF already stored in its Git blob can otherwise appear modified immediately after checkout.
 

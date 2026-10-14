@@ -46,11 +46,21 @@ CI checks YAML/JSON/TOML syntax, conflict markers, and file size in the PR/push 
 - Keep the change focused and explain the resulting behavior.
 - Use a Conventional Commit PR title such as `feat(lottery): add waitlist joining`; working commits can remain flexible.
 - Link its issue with `Closes #123` when merging will complete the issue.
-- Run `bash scripts/check.sh`, or the equivalent Gradle command in the README. Report checks you could not run and why.
+- Run `bash scripts/check.sh`, or the equivalent Gradle command in the README. For persistence changes, also run `nix develop --command bash scripts/check-firebase.sh`. Report checks you could not run and why.
 - For repository configuration changes, also run `nix develop .#repository --command bash scripts/check-repository.sh`. See the [maintenance guide](.github/SETUP.md) for workflow and runner behavior.
 - Include screenshots for visible UI changes and update affected wiki guidance or diagrams.
 - Request at least one teammate's review. Human review remains required when AI review is added.
-- Resolve feedback and get a passing `CI ready` status before merging. It requires Repository checks, Pre-commit checks, and Android checks to succeed. Use squash merge for a concise main-branch history.
+- Resolve feedback and get a passing `CI ready` status before merging. It requires Repository checks, Pre-commit checks, Android checks, and Firebase contracts to succeed. Use squash merge for a concise main-branch history.
+
+## Test boundaries
+
+- `app/src/test/.../domain/`: pure model validation and derived values.
+- `app/src/test/.../data/firestore/`: exact document contracts and shared listener behavior.
+- `app/src/test/.../integration/firebase/`: feature-owned repository queries, coordinated writes, concurrency and interrupted-operation recovery against local emulators.
+- `app/src/test/.../testsupport/`: realistic fixtures and emulator setup, with no business assertions.
+- `scripts/tests/`: repository command behavior; run with `nix develop .#hooks --command python3 -m unittest discover -s scripts/tests -v`.
+
+The ordinary unit-test task excludes Firebase integration tests; `:app:firebaseIntegrationTest` requires services started by `scripts/check-firebase.sh`. Keep domain constraints in domain tests and persistence invariants in their owning repository suites. For new features, define controller tests with fake repository interfaces and device/UI acceptance tests before implementing the behavior.
 
 ## Done means
 

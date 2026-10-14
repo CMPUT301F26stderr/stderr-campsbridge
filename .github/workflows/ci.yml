@@ -47,6 +47,8 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_REF: ${{ github.event.pull_request.head.sha || github.sha }}
         run: nix develop .#hooks --no-update-lock-file --command bash scripts/check-hooks.sh
+      - name: Verify repository command behavior
+        run: nix develop .#hooks --no-update-lock-file --command python3 -m unittest discover -s scripts/tests -v
 
   android:
     name: Android checks
@@ -92,9 +94,44 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  firebase:
+    name: Firebase contracts
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Expose Nix tools to Gradle setup
+        run: nix develop .#default --no-update-lock-file --command bash scripts/setup-ci-toolchain.sh
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@07d1f8453baaff67fb503883367f8b13e6158a54 # v6
+        with:
+          cache-overwrite-existing: true
+      - name: Verify rules and Kotlin repositories with disposable emulators
+        run: nix develop .#default --no-update-lock-file --command bash scripts/check-firebase.sh
+      - name: Make cached Gradle launchers executable
+        if: always()
+        run: |
+          gradle_distributions="${GRADLE_USER_HOME:-$HOME/.gradle}/wrapper/dists"
+          if [[ -d "$gradle_distributions" ]]; then
+            find "$gradle_distributions" -type f -path '*/bin/gradle' -exec chmod +x {} +
+          fi
+      - name: Upload Firebase test reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: firebase-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            app/build/reports/tests/firebaseIntegrationTest/
+            app/build/test-results/firebaseIntegrationTest/
+          if-no-files-found: warn
+          retention-days: 14
+
   ready:
     name: CI ready
-    needs: [repository, hooks, android]
+    needs: [repository, hooks, android, firebase]
     if: ${{ always() }}
     runs-on: [self-hosted, linux, x64]
     timeout-minutes: 5
@@ -104,10 +141,11 @@ jobs:
           REPOSITORY_RESULT: ${{ needs.repository.result }}
           HOOKS_RESULT: ${{ needs.hooks.result }}
           ANDROID_RESULT: ${{ needs.android.result }}
+          FIREBASE_RESULT: ${{ needs.firebase.result }}
         run: |
-          printf 'Repository checks: %s\nPre-commit checks: %s\nAndroid checks: %s\n' \
-            "$REPOSITORY_RESULT" "$HOOKS_RESULT" "$ANDROID_RESULT"
-          if [[ "$REPOSITORY_RESULT" != success || "$HOOKS_RESULT" != success || "$ANDROID_RESULT" != success ]]; then
+          printf 'Repository checks: %s\nPre-commit checks: %s\nAndroid checks: %s\nFirebase contracts: %s\n' \
+            "$REPOSITORY_RESULT" "$HOOKS_RESULT" "$ANDROID_RESULT" "$FIREBASE_RESULT"
+          if [[ "$REPOSITORY_RESULT" != success || "$HOOKS_RESULT" != success || "$ANDROID_RESULT" != success || "$FIREBASE_RESULT" != success ]]; then
             echo 'CI is not ready: every verification job must succeed.' >&2
             exit 1
           fi
