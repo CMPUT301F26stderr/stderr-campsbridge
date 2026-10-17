@@ -1,4 +1,237 @@
 {
+  "requirements": {
+    "US 01.01.01": {
+      "description": "As an entrant, I want to search for campsites."
+    },
+    "US 01.01.02": {
+      "description": "As an entrant, I want to filter campsites by location, date, and number of guests."
+    },
+    "US 01.01.03": {
+      "description": "As an entrant, I want to see a list of campsites based on my filters."
+    },
+    "US 01.01.04": {
+      "description": "As an entrant, I want to see campsite summary information including name, location, maximum occupancy, and rating."
+    },
+    "US 01.01.05": {
+      "description": "As an entrant, I want to see details of a campsite."
+    },
+    "US 01.01.06": {
+      "description": "As an entrant, I want to join an active lottery from the campsite details screen."
+    },
+    "US 01.02.01": {
+      "description": "As an entrant, I want to join the waiting list for a campsite lottery."
+    },
+    "US 01.02.02": {
+      "description": "As an entrant, I want to leave the waiting list for a campsite lottery."
+    },
+    "US 01.03.01": {
+      "description": "As an entrant, I want to receive a notification when I win the campsite lottery.",
+      "note": "The Inbox illustrates a winning notification; push delivery requires Android/Firebase implementation."
+    },
+    "US 01.03.02": {
+      "description": "As an entrant, I want to receive a notification when I lose the campsite lottery.",
+      "note": "A lost-result screen exists, but an entrant-facing lost-notification example is still missing."
+    },
+    "US 01.04.01": {
+      "description": "As an entrant, if I win the lottery, I want to see available dates that I can reserve the campsite for."
+    },
+    "US 01.04.02": {
+      "description": "As an entrant, if I win a multiple campsite lottery, I want to choose which campsite to reserve and which dates I want."
+    },
+    "US 01.04.03": {
+      "description": "As an entrant, if I win the lottery, I want to decline a reservation if I changed my mind or if none of the remaining dates work for me."
+    },
+    "US 01.05.01": {
+      "description": "As an entrant, I want to receive confirmation of my campsite reservation."
+    },
+    "US 01.05.02": {
+      "description": "As an entrant, I want to receive reservation by notification or downloadable CSV."
+    },
+    "US 01.06.01": {
+      "description": "As an entrant, I want to view a list of my active reservations."
+    },
+    "US 01.06.02": {
+      "description": "As an entrant, I want to view a list of my past reservations."
+    },
+    "US 01.07.01": {
+      "description": "As an entrant, I want to cancel my campsite reservation."
+    },
+    "US 01.07.02": {
+      "description": "As an entrant, I want to receive confirmation of my campsite cancellation by notification or downloadable CSV."
+    },
+    "US 01.07.03": {
+      "description": "As an entrant, I want to update my personal information, such as name, email, and phone number, on my profile."
+    },
+    "US 01.08.01": {
+      "description": "As an entrant, I want to delete my profile."
+    },
+    "US 01.09.01": {
+      "description": "As an entrant, I want to be identified by my device, so that I do not have to use a username and password.",
+      "note": "Password-free setup is illustrated; device identification requires Android implementation."
+    },
+    "US 01.10.01": {
+      "description": "As an entrant, I want to opt out of receiving notifications."
+    },
+    "US 01.11.01": {
+      "description": "As an entrant, I want to see the app policy and guidelines."
+    },
+    "US 01.12.01": {
+      "description": "As an entrant, I want to view campsite details by scanning the promotional QR code.",
+      "note": "The scanner entry and campsite destination are illustrated; the platform scanner is not simulated."
+    },
+    "US 01.13.01": {
+      "description": "As an entrant, I want to give a rating for a campsite."
+    },
+    "US 02.01.01": {
+      "description": "As a campsite owner, I want to register my campsite with the app."
+    },
+    "US 02.01.02": {
+      "description": "As a campsite owner, I want to provide campsite details including name, location, description (amenities), maximum occupancy, map location, optional image, and tags."
+    },
+    "US 02.01.03": {
+      "description": "As a campsite owner, I want to update details about my campsite."
+    },
+    "US 02.01.04": {
+      "description": "As a campsite owner, I want to view details of my campsite."
+    },
+    "US 02.02.01": {
+      "description": "As a campsite owner, I want the system to generate a unique QR code that links to the campsite details."
+    },
+    "US 02.03.01": {
+      "description": "As a campsite owner, I want to view a list of my campsites."
+    },
+    "US 02.04.01": {
+      "description": "As a campsite owner, I want to list my campsite in a lottery for a certain period."
+    },
+    "US 02.04.02": {
+      "description": "As a campsite owner, I want be able to list multiple campsites in a lottery for a certain period."
+    },
+    "US 02.04.03": {
+      "description": "As a campsite owner, I want to set a registration period."
+    },
+    "US 02.04.04": {
+      "description": "As a campsite owner, I want to set a booking period."
+    },
+    "US 02.04.05": {
+      "description": "As a campsite owner, I want to set the number of lottery winners."
+    },
+    "US 02.04.06": {
+      "description": "As a campsite owner, I want to update my campsite lottery listing."
+    },
+    "US 02.04.07": {
+      "description": "As a campsite owner, I want to optionally set a capacity for my lottery waitlist."
+    },
+    "US 02.05.01": {
+      "description": "As a campsite owner, I want the system to automatically draw winners after the registration period ends.",
+      "note": "Drawing and result states are illustrated; automatic triggering at registration close is not demonstrated by the manual fallback journey."
+    },
+    "US 02.06.01": {
+      "description": "As a campsite owner, I want to view the currently booked dates for my campsite."
+    },
+    "US 02.07.01": {
+      "description": "As a campsite owner, I want to view a list of active reservations."
+    },
+    "US 02.07.02": {
+      "description": "As a campsite owner, I want to view a list of past reservations."
+    },
+    "US 02.07.03": {
+      "description": "As a campsite owner, I want to view a list of cancelled reservations."
+    },
+    "US 02.08.01": {
+      "description": "As a campsite owner, I want to reject a reservation."
+    },
+    "US 02.09.01": {
+      "description": "As a campsite owner, I want to view a list of entrants who have joined the waitlist for my campsite lottery."
+    },
+    "US 02.10.01": {
+      "description": "As a campsite owner, I want to send notifications to entrants who have joined the waitlist for my campsite lottery."
+    },
+    "US 02.10.02": {
+      "description": "As a campsite owner, I want to view a list of all notifications I have sent."
+    },
+    "US 02.11.01": {
+      "description": "As a campsite owner, I want entrants to confirm that they have read the campsite rules and policies before confirming their reservation."
+    },
+    "US 02.12.01": {
+      "description": "As a campsite owner, I want to message a user who is reserving my campsite."
+    },
+    "US 03.01.01": {
+      "description": "As an admin, I want to remove registered campsites."
+    },
+    "US 03.02.01": {
+      "description": "As an admin, I want to remove profiles."
+    },
+    "US 03.03.01": {
+      "description": "As an admin, I want to remove images."
+    },
+    "US 03.04.01": {
+      "description": "As an admin, I want to browse campsites."
+    },
+    "US 03.05.01": {
+      "description": "As an admin, I want to browse profiles."
+    },
+    "US 03.06.01": {
+      "description": "As an admin, I want to browse uploaded images so I can remove them if necessary."
+    },
+    "US 03.07.01": {
+      "description": "As an admin, I want to remove campsite owners that violate app policy."
+    },
+    "US 03.08.01": {
+      "description": "As an admin, I want to review logs of all notifications."
+    },
+    "US 03.11.01": {
+      "description": "As an admin, I should be able to be a campsite owner and/or entrant with my admin profile."
+    },
+    "US 03.12.01": {
+      "description": "As an admin, I want to review logs of all messages from campsite owners to entrants who reserved their campsite."
+    },
+    "Feature 1": {
+      "description": "Owners draw reservation opportunities from a lottery waiting list."
+    },
+    "Feature 2": {
+      "description": "Owners set campsite availability and winners reserve available dates."
+    },
+    "Feature 3": {
+      "description": "Scan a promotional QR code to open a campsite and its active lottery.",
+      "note": "QR display, scanner entry, and campsite destinations are illustrated; scanning uses a platform integration."
+    },
+    "Feature 4": {
+      "description": "Use Firebase for campsite data, reservation lists, and real-time status updates.",
+      "note": "Persistence and real-time synchronization require implementation and tests; no screen alone demonstrates this feature."
+    },
+    "Feature 5": {
+      "description": "Provide entrant, owner, and administrator workspaces and privileges."
+    },
+    "Feature 6": {
+      "description": "Upload campsite promotional images and entrant profile images.",
+      "note": "Upload controls and image examples are illustrated; the prototype does not upload files."
+    },
+    "Feature 7": {
+      "description": "Attach campsite coordinates and display the campsite location on a map."
+    },
+    "WOW 1": {
+      "description": "View past and active reservations on a map."
+    },
+    "WOW 2": {
+      "description": "Rank campsites using a match score based on the entrant's filters."
+    },
+    "WOW 3": {
+      "description": "View campsites on a map within a selected radius of the device location."
+    },
+    "WOW 4": {
+      "description": "Reply to reviews in threads and react to reviews."
+    },
+    "WOW 5": {
+      "description": "Browse a featured campsite carousel based on camping preferences.",
+      "note": "Featured content and preference inputs are illustrated; personalization and carousel interaction require implementation."
+    },
+    "WOW 6": {
+      "description": "Offer colorblind mode and adjustable font, button, and component sizes."
+    },
+    "WOW 7": {
+      "description": "Exchange messages between entrants and campsite owners about reservations."
+    }
+  },
   "version": 2,
   "projectId": "2827892958772150662",
   "projectUpdatedAt": "2026-10-17T03:23:19.786412Z",
@@ -357,6 +590,10 @@
           "action": "goto",
           "target": "03.08"
         }
+      ],
+      "requirements": [
+        "US 01.09.01",
+        "US 01.11.01"
       ]
     },
     "01.02": {
@@ -386,6 +623,10 @@
             "owner"
           ]
         }
+      ],
+      "requirements": [
+        "US 01.09.01",
+        "Feature 5"
       ]
     },
     "01.03": {
@@ -409,6 +650,10 @@
           },
           "default": "01.04"
         }
+      ],
+      "requirements": [
+        "US 01.09.01",
+        "US 01.07.03"
       ]
     },
     "01.04": {
@@ -437,6 +682,9 @@
           "root": true,
           "setRole": "entrant"
         }
+      ],
+      "requirements": [
+        "WOW 5"
       ]
     },
     "01.05": {
@@ -465,6 +713,10 @@
           "root": true,
           "setRole": "owner"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "Feature 5"
       ]
     },
     "01.06": {
@@ -488,6 +740,10 @@
           },
           "default": "01.04"
         }
+      ],
+      "requirements": [
+        "US 01.09.01",
+        "US 01.07.03"
       ]
     },
     "02.01": {
@@ -558,6 +814,11 @@
           "action": "goto",
           "target": "01.05"
         }
+      ],
+      "requirements": [
+        "US 01.07.03",
+        "US 01.08.01",
+        "Feature 5"
       ]
     },
     "02.02": {
@@ -577,6 +838,10 @@
           "action": "back",
           "fallback": "02.01"
         }
+      ],
+      "requirements": [
+        "US 01.07.03",
+        "Feature 6"
       ]
     },
     "02.03": {
@@ -596,6 +861,9 @@
           "action": "back",
           "fallback": "02.01"
         }
+      ],
+      "requirements": [
+        "US 01.07.03"
       ]
     },
     "02.04": {
@@ -619,6 +887,10 @@
           },
           "default": "02.05"
         }
+      ],
+      "requirements": [
+        "US 01.08.01",
+        "US 01.09.01"
       ]
     },
     "02.05": {
@@ -639,6 +911,9 @@
           "target": "02.09",
           "root": true
         }
+      ],
+      "requirements": [
+        "US 01.08.01"
       ]
     },
     "02.06": {
@@ -672,6 +947,9 @@
             "admin"
           ]
         }
+      ],
+      "requirements": [
+        "Feature 5"
       ]
     },
     "02.07": {
@@ -720,6 +998,10 @@
           "action": "goto",
           "target": "02.10"
         }
+      ],
+      "requirements": [
+        "US 03.11.01",
+        "Feature 5"
       ]
     },
     "02.08": {
@@ -739,6 +1021,9 @@
           "action": "back",
           "fallback": "02.01"
         }
+      ],
+      "requirements": [
+        "US 01.07.03"
       ]
     },
     "02.09": {
@@ -748,7 +1033,10 @@
       "group": "account",
       "roleHint": null,
       "fallback": null,
-      "rules": []
+      "rules": [],
+      "requirements": [
+        "US 01.08.01"
+      ]
     },
     "02.10": {
       "title": "Admin granted-role sheet clean",
@@ -781,6 +1069,10 @@
             "admin"
           ]
         }
+      ],
+      "requirements": [
+        "US 03.11.01",
+        "Feature 5"
       ]
     },
     "02.11": {
@@ -801,6 +1093,9 @@
           "target": "02.09",
           "root": true
         }
+      ],
+      "requirements": [
+        "US 01.08.01"
       ]
     },
     "03.01": {
@@ -840,6 +1135,12 @@
           "action": "goto",
           "target": "03.07"
         }
+      ],
+      "requirements": [
+        "US 01.10.01",
+        "US 01.11.01",
+        "WOW 5",
+        "WOW 6"
       ]
     },
     "03.02": {
@@ -859,6 +1160,9 @@
           "action": "back",
           "fallback": "03.01"
         }
+      ],
+      "requirements": [
+        "WOW 5"
       ]
     },
     "03.03": {
@@ -873,6 +1177,9 @@
           "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 01.10.01"
       ]
     },
     "03.04": {
@@ -897,6 +1204,9 @@
           "action": "goto",
           "target": "03.06"
         }
+      ],
+      "requirements": [
+        "WOW 6"
       ]
     },
     "03.05": {
@@ -916,6 +1226,9 @@
           "action": "back",
           "fallback": "03.04"
         }
+      ],
+      "requirements": [
+        "WOW 6"
       ]
     },
     "03.06": {
@@ -935,6 +1248,9 @@
           "action": "back",
           "fallback": "03.04"
         }
+      ],
+      "requirements": [
+        "WOW 6"
       ]
     },
     "03.07": {
@@ -959,6 +1275,9 @@
           "action": "goto",
           "target": "03.09"
         }
+      ],
+      "requirements": [
+        "US 01.11.01"
       ]
     },
     "03.08": {
@@ -973,6 +1292,9 @@
           "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 01.11.01"
       ]
     },
     "03.09": {
@@ -987,6 +1309,9 @@
           "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 01.11.01"
       ]
     },
     "04.01": {
@@ -1053,6 +1378,12 @@
           "action": "goto",
           "target": "04.03"
         }
+      ],
+      "requirements": [
+        "US 01.01.01",
+        "US 01.01.04",
+        "US 01.12.01",
+        "WOW 5"
       ]
     },
     "04.02": {
@@ -1072,6 +1403,9 @@
           "action": "goto",
           "target": "04.09"
         }
+      ],
+      "requirements": [
+        "US 01.01.02"
       ]
     },
     "04.03": {
@@ -1116,6 +1450,10 @@
           "action": "goto",
           "target": "06.01"
         }
+      ],
+      "requirements": [
+        "US 01.01.05",
+        "US 01.01.06"
       ]
     },
     "04.04": {
@@ -1130,6 +1468,9 @@
           "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 01.01.05"
       ]
     },
     "04.05": {
@@ -1149,6 +1490,10 @@
           "action": "goto",
           "target": "04.03"
         }
+      ],
+      "requirements": [
+        "US 01.01.05",
+        "Feature 7"
       ]
     },
     "04.06": {
@@ -1163,6 +1508,10 @@
           "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 01.01.05",
+        "Feature 2"
       ]
     },
     "04.07": {
@@ -1177,6 +1526,9 @@
           "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 01.01.05"
       ]
     },
     "04.08": {
@@ -1221,6 +1573,10 @@
           "action": "goto",
           "target": "09.06"
         }
+      ],
+      "requirements": [
+        "US 03.01.01",
+        "US 03.04.01"
       ]
     },
     "04.09": {
@@ -1276,6 +1632,13 @@
           "action": "goto",
           "target": "04.03"
         }
+      ],
+      "requirements": [
+        "US 01.01.01",
+        "US 01.01.03",
+        "US 01.01.04",
+        "US 01.12.01",
+        "WOW 2"
       ]
     },
     "04.10": {
@@ -1337,6 +1700,13 @@
           "action": "goto",
           "target": "04.03"
         }
+      ],
+      "requirements": [
+        "US 01.01.01",
+        "US 01.01.04",
+        "US 01.12.01",
+        "Feature 7",
+        "WOW 3"
       ]
     },
     "04.11": {
@@ -1381,6 +1751,10 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.01.05",
+        "US 01.01.06"
       ]
     },
     "04.12": {
@@ -1446,6 +1820,11 @@
           "action": "goto",
           "target": "04.02"
         }
+      ],
+      "requirements": [
+        "US 01.01.01",
+        "US 01.01.02",
+        "US 01.01.03"
       ]
     },
     "04.13": {
@@ -1465,6 +1844,10 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.01.05",
+        "US 03.01.01"
       ]
     },
     "04.14": {
@@ -1526,6 +1909,10 @@
           "action": "goto",
           "target": "04.10"
         }
+      ],
+      "requirements": [
+        "US 01.01.01",
+        "US 01.01.03"
       ]
     },
     "04.15": {
@@ -1570,6 +1957,10 @@
           "action": "goto",
           "target": "06.01"
         }
+      ],
+      "requirements": [
+        "US 01.01.05",
+        "US 01.01.06"
       ]
     },
     "05.01": {
@@ -1599,6 +1990,10 @@
           "action": "goto",
           "target": "05.02"
         }
+      ],
+      "requirements": [
+        "US 01.13.01",
+        "WOW 4"
       ]
     },
     "05.02": {
@@ -1613,6 +2008,9 @@
           "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "WOW 4"
       ]
     },
     "05.03": {
@@ -1632,6 +2030,9 @@
           "action": "back",
           "fallback": "05.01"
         }
+      ],
+      "requirements": [
+        "US 01.13.01"
       ]
     },
     "06.01": {
@@ -1651,6 +2052,9 @@
           "action": "goto",
           "target": "06.02"
         }
+      ],
+      "requirements": [
+        "US 01.01.06"
       ]
     },
     "06.02": {
@@ -1680,6 +2084,9 @@
           "action": "goto",
           "target": "06.06"
         }
+      ],
+      "requirements": [
+        "US 01.02.01"
       ]
     },
     "06.03": {
@@ -1698,6 +2105,10 @@
           "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 01.04.01",
+        "US 01.04.02"
       ]
     },
     "06.04": {
@@ -1722,6 +2133,9 @@
           "action": "goto",
           "target": "04.06"
         }
+      ],
+      "requirements": [
+        "US 01.04.02"
       ]
     },
     "06.05": {
@@ -1782,6 +2196,9 @@
           "action": "goto",
           "target": "06.06"
         }
+      ],
+      "requirements": [
+        "US 01.02.01"
       ]
     },
     "06.06": {
@@ -1811,6 +2228,10 @@
           "action": "goto",
           "target": "06.16"
         }
+      ],
+      "requirements": [
+        "US 01.02.01",
+        "US 01.02.02"
       ]
     },
     "06.07": {
@@ -1845,6 +2266,11 @@
           "action": "goto",
           "target": "06.17"
         }
+      ],
+      "requirements": [
+        "US 01.04.01",
+        "US 01.04.02",
+        "US 01.04.03"
       ]
     },
     "06.08": {
@@ -1895,6 +2321,9 @@
           "action": "goto",
           "target": "06.05"
         }
+      ],
+      "requirements": [
+        "US 01.04.03"
       ]
     },
     "06.09": {
@@ -1924,6 +2353,9 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.02.01"
       ]
     },
     "06.10": {
@@ -1953,6 +2385,9 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.03.02"
       ]
     },
     "06.11": {
@@ -1982,6 +2417,9 @@
           "action": "goto",
           "target": "06.05"
         }
+      ],
+      "requirements": [
+        "Feature 1"
       ]
     },
     "06.12": {
@@ -2011,6 +2449,10 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.02.01",
+        "US 02.04.07"
       ]
     },
     "06.13": {
@@ -2035,6 +2477,9 @@
           "action": "goto",
           "target": "06.04"
         }
+      ],
+      "requirements": [
+        "US 01.04.01"
       ]
     },
     "06.14": {
@@ -2069,6 +2514,9 @@
           "action": "goto",
           "target": "06.08"
         }
+      ],
+      "requirements": [
+        "US 01.04.01"
       ]
     },
     "06.15": {
@@ -2103,6 +2551,9 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.04.03"
       ]
     },
     "06.16": {
@@ -2122,6 +2573,9 @@
           "action": "goto",
           "target": "06.21"
         }
+      ],
+      "requirements": [
+        "US 01.02.02"
       ]
     },
     "06.17": {
@@ -2141,6 +2595,9 @@
           "action": "goto",
           "target": "06.15"
         }
+      ],
+      "requirements": [
+        "US 01.04.03"
       ]
     },
     "06.18": {
@@ -2170,6 +2627,9 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.02.01"
       ]
     },
     "06.19": {
@@ -2199,6 +2659,9 @@
           "action": "goto",
           "target": "08.16"
         }
+      ],
+      "requirements": [
+        "US 01.05.01"
       ]
     },
     "06.20": {
@@ -2228,6 +2691,9 @@
           "action": "goto",
           "target": "04.01"
         }
+      ],
+      "requirements": [
+        "US 01.02.01"
       ]
     },
     "06.21": {
@@ -2257,6 +2723,10 @@
           "action": "goto",
           "target": "06.06"
         }
+      ],
+      "requirements": [
+        "US 01.02.01",
+        "US 01.02.02"
       ]
     },
     "06.22": {
@@ -2312,6 +2782,9 @@
           "action": "goto",
           "target": "06.07"
         }
+      ],
+      "requirements": [
+        "US 01.04.01"
       ]
     },
     "07.01": {
@@ -2348,6 +2821,9 @@
             "wapiti"
           ]
         }
+      ],
+      "requirements": [
+        "US 01.04.02"
       ]
     },
     "07.02": {
@@ -2371,6 +2847,11 @@
           "action": "goto",
           "target": "07.03"
         }
+      ],
+      "requirements": [
+        "US 01.04.01",
+        "US 01.04.02",
+        "Feature 2"
       ]
     },
     "07.03": {
@@ -2394,6 +2875,9 @@
           "action": "goto",
           "target": "07.04"
         }
+      ],
+      "requirements": [
+        "US 01.04.02"
       ]
     },
     "07.04": {
@@ -2423,6 +2907,9 @@
           "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "checkbox": "input[type=checkbox]"
         }
+      ],
+      "requirements": [
+        "US 02.11.01"
       ]
     },
     "07.05": {
@@ -2466,6 +2953,11 @@
           "action": "goto",
           "target": "07.08"
         }
+      ],
+      "requirements": [
+        "US 01.04.02",
+        "US 01.05.01",
+        "US 02.11.01"
       ]
     },
     "07.06": {
@@ -2490,6 +2982,11 @@
           "action": "goto",
           "target": "06.17"
         }
+      ],
+      "requirements": [
+        "US 01.04.01",
+        "US 01.04.02",
+        "US 01.04.03"
       ]
     },
     "07.07": {
@@ -2534,6 +3031,9 @@
           "action": "goto",
           "target": "07.02"
         }
+      ],
+      "requirements": [
+        "US 01.05.01"
       ]
     },
     "07.08": {
@@ -2558,7 +3058,10 @@
         "target": "08.16",
         "replace": true,
         "root": true
-      }
+      },
+      "requirements": [
+        "US 01.05.01"
+      ]
     },
     "07.09": {
       "title": "E08 Dates conflict",
@@ -2601,6 +3104,10 @@
           "action": "goto",
           "target": "07.02"
         }
+      ],
+      "requirements": [
+        "US 01.04.01",
+        "Feature 2"
       ]
     },
     "08.01": {
@@ -2661,6 +3168,9 @@
           "action": "goto",
           "target": "08.16"
         }
+      ],
+      "requirements": [
+        "US 01.06.01"
       ]
     },
     "08.02": {
@@ -2690,6 +3200,10 @@
           "action": "goto",
           "target": "08.12"
         }
+      ],
+      "requirements": [
+        "US 02.08.01",
+        "US 02.12.01"
       ]
     },
     "08.03": {
@@ -2709,6 +3223,9 @@
           "action": "back",
           "fallback": "08.16"
         }
+      ],
+      "requirements": [
+        "US 01.05.02"
       ]
     },
     "08.04": {
@@ -2727,6 +3244,9 @@
           "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 02.11.01"
       ]
     },
     "08.05": {
@@ -2787,6 +3307,9 @@
           "action": "goto",
           "target": "08.02"
         }
+      ],
+      "requirements": [
+        "US 02.07.01"
       ]
     },
     "08.06": {
@@ -2806,6 +3329,10 @@
           "action": "back",
           "fallback": "08.07"
         }
+      ],
+      "requirements": [
+        "US 01.07.02",
+        "US 02.08.01"
       ]
     },
     "08.07": {
@@ -2835,6 +3362,10 @@
           "action": "goto",
           "target": "13.04"
         }
+      ],
+      "requirements": [
+        "US 01.07.01",
+        "US 01.07.02"
       ]
     },
     "08.08": {
@@ -2905,6 +3436,11 @@
           "action": "goto",
           "target": "08.16"
         }
+      ],
+      "requirements": [
+        "US 01.06.01",
+        "US 01.06.02",
+        "WOW 1"
       ]
     },
     "08.09": {
@@ -2970,6 +3506,9 @@
           "action": "goto",
           "target": "08.16"
         }
+      ],
+      "requirements": [
+        "US 01.06.02"
       ]
     },
     "08.10": {
@@ -3040,6 +3579,9 @@
           "action": "goto",
           "target": "08.01"
         }
+      ],
+      "requirements": [
+        "US 01.06.01"
       ]
     },
     "08.11": {
@@ -3059,6 +3601,9 @@
           "action": "goto",
           "target": "08.07"
         }
+      ],
+      "requirements": [
+        "US 01.07.01"
       ]
     },
     "08.12": {
@@ -3078,6 +3623,9 @@
           "action": "goto",
           "target": "08.07"
         }
+      ],
+      "requirements": [
+        "US 02.08.01"
       ]
     },
     "08.13": {
@@ -3143,6 +3691,10 @@
           "action": "goto",
           "target": "08.07"
         }
+      ],
+      "requirements": [
+        "US 01.07.01",
+        "US 01.07.02"
       ]
     },
     "08.14": {
@@ -3208,6 +3760,9 @@
           "action": "goto",
           "target": "08.02"
         }
+      ],
+      "requirements": [
+        "US 02.07.02"
       ]
     },
     "08.15": {
@@ -3273,6 +3828,9 @@
           "action": "goto",
           "target": "08.02"
         }
+      ],
+      "requirements": [
+        "US 02.07.03"
       ]
     },
     "08.16": {
@@ -3312,6 +3870,11 @@
           "action": "goto",
           "target": "08.11"
         }
+      ],
+      "requirements": [
+        "US 01.05.01",
+        "US 01.07.01",
+        "WOW 7"
       ]
     },
     "09.01": {
@@ -3367,6 +3930,9 @@
           "action": "goto",
           "target": "10.01"
         }
+      ],
+      "requirements": [
+        "US 02.03.01"
       ]
     },
     "09.02": {
@@ -3411,6 +3977,12 @@
           "action": "goto",
           "target": "04.03"
         }
+      ],
+      "requirements": [
+        "US 02.01.04",
+        "US 02.01.03",
+        "US 02.02.01",
+        "US 02.06.01"
       ]
     },
     "09.03": {
@@ -3460,6 +4032,9 @@
           "action": "goto",
           "target": "09.04"
         }
+      ],
+      "requirements": [
+        "US 02.01.03"
       ]
     },
     "09.04": {
@@ -3479,6 +4054,10 @@
           "action": "back",
           "fallback": "09.02"
         }
+      ],
+      "requirements": [
+        "US 02.06.01",
+        "Feature 2"
       ]
     },
     "09.05": {
@@ -3493,6 +4072,10 @@
           "selector": "body > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 02.02.01",
+        "Feature 3"
       ]
     },
     "09.06": {
@@ -3516,6 +4099,9 @@
           },
           "default": "09.01"
         }
+      ],
+      "requirements": [
+        "US 02.01.03"
       ]
     },
     "09.07": {
@@ -3571,6 +4157,10 @@
           "action": "goto",
           "target": "10.01"
         }
+      ],
+      "requirements": [
+        "US 02.03.01",
+        "US 02.01.01"
       ]
     },
     "09.08": {
@@ -3594,6 +4184,10 @@
           "action": "back",
           "fallback": "09.02"
         }
+      ],
+      "requirements": [
+        "US 02.06.01",
+        "Feature 2"
       ]
     },
     "09.09": {
@@ -3643,6 +4237,11 @@
           "action": "goto",
           "target": "10.07"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.01.03",
+        "US 02.01.04"
       ]
     },
     "10.01": {
@@ -3671,6 +4270,10 @@
           "action": "goto",
           "target": "10.02"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.01.02"
       ]
     },
     "10.02": {
@@ -3700,6 +4303,11 @@
           "action": "goto",
           "target": "10.03"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.01.02",
+        "Feature 6"
       ]
     },
     "10.03": {
@@ -3728,6 +4336,11 @@
           "action": "goto",
           "target": "10.04"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.01.02",
+        "Feature 7"
       ]
     },
     "10.04": {
@@ -3756,6 +4369,10 @@
           "action": "goto",
           "target": "10.05"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.01.02"
       ]
     },
     "10.05": {
@@ -3784,6 +4401,10 @@
           "action": "goto",
           "target": "10.06"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.01.02"
       ]
     },
     "10.06": {
@@ -3817,6 +4438,10 @@
           "action": "goto",
           "target": "10.08"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.11.01"
       ]
     },
     "10.07": {
@@ -3883,6 +4508,11 @@
           "target": "09.09",
           "root": true
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "US 02.01.02",
+        "US 02.01.04"
       ]
     },
     "10.08": {
@@ -3911,6 +4541,10 @@
           "action": "goto",
           "target": "10.07"
         }
+      ],
+      "requirements": [
+        "US 02.01.01",
+        "Feature 2"
       ]
     },
     "11.01": {
@@ -3939,6 +4573,9 @@
           "action": "goto",
           "target": "11.02"
         }
+      ],
+      "requirements": [
+        "US 02.04.01"
       ]
     },
     "11.02": {
@@ -3972,6 +4609,10 @@
           "action": "goto",
           "target": "11.03"
         }
+      ],
+      "requirements": [
+        "US 02.04.01",
+        "US 02.04.02"
       ]
     },
     "11.03": {
@@ -3991,6 +4632,10 @@
           "action": "back",
           "fallback": "11.02"
         }
+      ],
+      "requirements": [
+        "US 02.04.01",
+        "US 02.04.02"
       ]
     },
     "11.04": {
@@ -4019,6 +4664,9 @@
           "action": "goto",
           "target": "11.05"
         }
+      ],
+      "requirements": [
+        "US 02.04.03"
       ]
     },
     "11.05": {
@@ -4047,6 +4695,9 @@
           "action": "goto",
           "target": "11.06"
         }
+      ],
+      "requirements": [
+        "US 02.04.04"
       ]
     },
     "11.06": {
@@ -4075,6 +4726,10 @@
           "action": "goto",
           "target": "11.07"
         }
+      ],
+      "requirements": [
+        "US 02.04.05",
+        "US 02.04.07"
       ]
     },
     "11.07": {
@@ -4131,6 +4786,14 @@
           "target": "12.02",
           "root": true
         }
+      ],
+      "requirements": [
+        "US 02.04.01",
+        "US 02.04.02",
+        "US 02.04.03",
+        "US 02.04.04",
+        "US 02.04.05",
+        "US 02.04.07"
       ]
     },
     "12.01": {
@@ -4181,6 +4844,10 @@
           "action": "goto",
           "target": "11.01"
         }
+      ],
+      "requirements": [
+        "US 02.04.01",
+        "US 02.04.06"
       ]
     },
     "12.02": {
@@ -4225,6 +4892,10 @@
           "action": "goto",
           "target": "12.03"
         }
+      ],
+      "requirements": [
+        "US 02.04.06",
+        "US 02.09.01"
       ]
     },
     "12.03": {
@@ -4254,6 +4925,9 @@
           "action": "goto",
           "target": "12.04"
         }
+      ],
+      "requirements": [
+        "US 02.10.02"
       ]
     },
     "12.04": {
@@ -4278,6 +4952,9 @@
           "action": "back",
           "fallback": "12.03"
         }
+      ],
+      "requirements": [
+        "US 02.10.01"
       ]
     },
     "12.05": {
@@ -4302,6 +4979,9 @@
           "action": "goto",
           "target": "12.07"
         }
+      ],
+      "requirements": [
+        "US 02.04.06"
       ]
     },
     "12.06": {
@@ -4321,6 +5001,11 @@
           "action": "goto",
           "target": "08.02"
         }
+      ],
+      "requirements": [
+        "US 02.05.01",
+        "US 02.09.01",
+        "Feature 1"
       ]
     },
     "12.07": {
@@ -4340,6 +5025,9 @@
           "action": "goto",
           "target": "06.20"
         }
+      ],
+      "requirements": [
+        "US 02.04.06"
       ]
     },
     "12.08": {
@@ -4384,6 +5072,10 @@
           "action": "goto",
           "target": "12.09"
         }
+      ],
+      "requirements": [
+        "US 02.05.01",
+        "Feature 1"
       ]
     },
     "12.09": {
@@ -4428,7 +5120,11 @@
         "delay": 1000,
         "target": "12.06",
         "replace": true
-      }
+      },
+      "requirements": [
+        "US 02.05.01",
+        "Feature 1"
+      ]
     },
     "12.10": {
       "title": "O08 Waiting participants",
@@ -4447,6 +5143,9 @@
           "action": "goto",
           "target": "12.11"
         }
+      ],
+      "requirements": [
+        "US 02.09.01"
       ]
     },
     "12.11": {
@@ -4466,6 +5165,9 @@
           "action": "goto",
           "target": "12.10"
         }
+      ],
+      "requirements": [
+        "US 02.09.01"
       ]
     },
     "12.12": {
@@ -4510,6 +5212,10 @@
           "action": "goto",
           "target": "11.07"
         }
+      ],
+      "requirements": [
+        "US 02.04.01",
+        "US 02.04.06"
       ]
     },
     "13.01": {
@@ -4570,6 +5276,11 @@
           "action": "goto",
           "target": "13.02"
         }
+      ],
+      "requirements": [
+        "US 01.03.01",
+        "US 01.05.01",
+        "US 01.05.02"
       ]
     },
     "13.02": {
@@ -4589,6 +5300,9 @@
           "action": "goto",
           "target": "06.02"
         }
+      ],
+      "requirements": [
+        "US 02.10.01"
       ]
     },
     "13.03": {
@@ -4603,6 +5317,9 @@
           "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 03.08.01"
       ]
     },
     "13.04": {
@@ -4617,6 +5334,10 @@
           "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 02.12.01",
+        "WOW 7"
       ]
     },
     "13.05": {
@@ -4631,6 +5352,9 @@
           "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
+      ],
+      "requirements": [
+        "US 03.12.01"
       ]
     },
     "13.06": {
@@ -4681,6 +5405,9 @@
           "action": "goto",
           "target": "13.04"
         }
+      ],
+      "requirements": [
+        "WOW 7"
       ]
     },
     "13.07": {
@@ -4731,6 +5458,10 @@
           "action": "goto",
           "target": "13.06"
         }
+      ],
+      "requirements": [
+        "US 01.03.01",
+        "WOW 7"
       ]
     },
     "13.08": {
@@ -4776,6 +5507,11 @@
           "action": "goto",
           "target": "12.03"
         }
+      ],
+      "requirements": [
+        "US 02.12.01",
+        "US 02.10.02",
+        "WOW 7"
       ]
     },
     "13.09": {
@@ -4800,6 +5536,10 @@
           "action": "goto",
           "target": "13.04"
         }
+      ],
+      "requirements": [
+        "US 02.12.01",
+        "WOW 7"
       ]
     },
     "13.10": {
@@ -4824,6 +5564,9 @@
           "action": "goto",
           "target": "13.03"
         }
+      ],
+      "requirements": [
+        "US 03.08.01"
       ]
     },
     "13.11": {
@@ -4843,6 +5586,10 @@
           "action": "goto",
           "target": "12.02"
         }
+      ],
+      "requirements": [
+        "US 02.10.01",
+        "US 02.10.02"
       ]
     },
     "14.01": {
@@ -4886,6 +5633,9 @@
           "action": "goto",
           "target": "04.08"
         }
+      ],
+      "requirements": [
+        "US 03.04.01"
       ]
     },
     "14.02": {
@@ -4920,6 +5670,11 @@
           "action": "goto",
           "target": "14.09"
         }
+      ],
+      "requirements": [
+        "US 03.02.01",
+        "US 03.05.01",
+        "US 03.07.01"
       ]
     },
     "14.03": {
@@ -4944,6 +5699,10 @@
           "action": "goto",
           "target": "14.08"
         }
+      ],
+      "requirements": [
+        "US 03.03.01",
+        "US 03.06.01"
       ]
     },
     "14.04": {
@@ -4992,6 +5751,9 @@
           "action": "goto",
           "target": "08.07"
         }
+      ],
+      "requirements": [
+        "US 03.08.01"
       ]
     },
     "14.05": {
@@ -5035,6 +5797,10 @@
           "action": "goto",
           "target": "14.02"
         }
+      ],
+      "requirements": [
+        "US 03.05.01",
+        "US 03.07.01"
       ]
     },
     "14.06": {
@@ -5078,6 +5844,9 @@
           "action": "goto",
           "target": "14.03"
         }
+      ],
+      "requirements": [
+        "US 03.06.01"
       ]
     },
     "14.07": {
@@ -5116,6 +5885,9 @@
           "action": "goto",
           "target": "13.05"
         }
+      ],
+      "requirements": [
+        "US 03.12.01"
       ]
     },
     "14.08": {
@@ -5135,6 +5907,9 @@
           "action": "goto",
           "target": "14.06"
         }
+      ],
+      "requirements": [
+        "US 03.03.01"
       ]
     },
     "14.09": {
@@ -5154,6 +5929,10 @@
           "action": "goto",
           "target": "14.10"
         }
+      ],
+      "requirements": [
+        "US 03.02.01",
+        "US 03.07.01"
       ]
     },
     "14.10": {
@@ -5173,6 +5952,10 @@
           "action": "goto",
           "target": "14.04"
         }
+      ],
+      "requirements": [
+        "US 03.02.01",
+        "US 03.05.01"
       ]
     },
     "15.01": {
@@ -5187,7 +5970,8 @@
           "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
           "action": "back"
         }
-      ]
+      ],
+      "requirements": []
     }
   }
 }

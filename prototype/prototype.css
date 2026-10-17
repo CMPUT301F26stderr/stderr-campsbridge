@@ -101,6 +101,21 @@ h1 { font-size: 14px; font-weight: 600; margin: 4px 0; line-height: 1.4; }
 iframe { display: block; width: 390px; height: 884px; transform-origin: top left; border: 0; background: white; }
 #load-error { color: #943d34; font-size: 14px; max-width: 400px; line-height: 1.6; }
 #stage.loading #phone-space { opacity: .6; }
+.requirements-bar {
+  flex-shrink: 0;
+  max-height: 26dvh;
+  overflow: auto;
+  padding: 12px 25px;
+  border-top: 1px solid var(--line);
+  background: white;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.requirements-bar h2 { font-size: 13px; margin: 0 0 6px; }
+.requirements-bar ul { margin: 0; padding-left: 20px; }
+.requirements-bar li + li { margin-top: 5px; }
+.requirement-note { color: var(--muted); margin: 2px 0 0; }
+#requirements-empty { color: var(--muted); margin: 0; }
 @media (max-width: 1050px) {
   .preview-toolbar { align-items: flex-start; flex-direction: column; gap: 8px; padding: 12px 18px; }
   .tools { justify-content: flex-start; }
@@ -111,5 +126,6 @@ iframe { display: block; width: 390px; height: 884px; transform-origin: top left
   .preview-toolbar { padding: 10px 14px; gap: 7px; }
   #stage { padding: 8px 16px 18px; }
   #screen-title { font-size: 12px; }
+  .requirements-bar { padding: 10px 14px; max-height: 24dvh; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

@@ -108,13 +108,28 @@ function findRule(page, node, event) {
   }
   return best;
 }
+function renderRequirements(page) {
+  const list = $('requirements-list'); list.replaceChildren();
+  for (const id of page.requirements) {
+    const requirement = config.requirements[id];
+    const item = document.createElement('li');
+    const label = document.createElement('strong'); label.textContent = `${id}: `;
+    item.append(label, requirement.description);
+    if (requirement.note) {
+      const note = document.createElement('p'); note.className = 'requirement-note';
+      note.textContent = requirement.note; item.append(note);
+    }
+    list.append(item);
+  }
+  $('requirements-empty').hidden = page.requirements.length > 0;
+}
 function render() {
   const page = config.screens[current], token = ++loadToken;
   const asset = new URL(page.asset, location.href).href;
   loadedScreen = null;
   $('screen-id').textContent = current; $('screen-title').textContent = describe(page); $('role').value = state.role;
   $('stage').classList.add('loading'); $('load-error').hidden = true;
-  renderList();
+  renderList(); renderRequirements(page);
   frame.onload = () => {
     if (token !== loadToken || frame.contentWindow.location.href !== asset) return;
     const doc = frame.contentDocument;
