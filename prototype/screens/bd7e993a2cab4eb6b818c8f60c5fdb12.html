@@ -1,0 +1,226 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Review your stay - Campsbridge</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error": "#ffffff",
+            "surface-container-highest": "#e2e3df",
+            "surface-tint": "#006d3b",
+            "primary-fixed-dim": "#70dc95",
+            "inverse-surface": "#2f312f",
+            "outline-variant": "#bdcabd",
+            "inverse-on-surface": "#f1f1ed",
+            "on-secondary": "#ffffff",
+            "inverse-primary": "#70dc95",
+            "on-primary-fixed": "#00210e",
+            "on-surface": "#1a1c1a",
+            "primary-fixed": "#8cf9af",
+            "on-background": "#1a1c1a",
+            "on-secondary-fixed": "#131e17",
+            "on-error-container": "#93000a",
+            "tertiary-container": "#4d805c",
+            "secondary-fixed": "#d9e6da",
+            "tertiary-fixed": "#b8f0c5",
+            "on-tertiary-fixed-variant": "#1d5031",
+            "outline": "#6e7a6f",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#00522b",
+            "surface-variant": "#e2e3df",
+            "surface": "#faf9f6",
+            "secondary-container": "#d9e6da",
+            "error": "#ba1a1a",
+            "tertiary-fixed-dim": "#9dd3aa",
+            "surface-container-low": "#f4f4f0",
+            "error-container": "#ffdad6",
+            "surface-bright": "#faf9f6",
+            "on-secondary-container": "#5b675e",
+            "tertiary": "#346745",
+            "on-primary-container": "#fbfff8",
+            "background": "#faf9f6",
+            "primary": "#006b39",
+            "on-tertiary-container": "#fafff7",
+            "on-surface-variant": "#3e4a40",
+            "surface-dim": "#dadad7",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#eeeeea",
+            "on-primary": "#ffffff",
+            "secondary-fixed-dim": "#bdcabe",
+            "secondary": "#556158",
+            "primary-container": "#00874a",
+            "surface-container-high": "#e8e8e5",
+            "on-tertiary-fixed": "#00210e",
+            "on-secondary-fixed-variant": "#3e4a41"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "gutter-sm": "0.75rem",
+            "margin-lg": "1.5rem",
+            "margin": "1rem",
+            "gutter-lg": "1.5rem",
+            "space-xl": "2rem",
+            "margin-sm": "1rem",
+            "space-xs": "0.25rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "label-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "title-sm": ["Inter"],
+            "title-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "title-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.15px", "fontWeight": "400" }],
+            "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "title-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+            "title-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0.15px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.4px", "fontWeight": "400" }],
+            "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.25px", "fontWeight": "600" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased selection:bg-secondary-fixed min-h-screen flex flex-col font-body-md text-body-md">
+<!-- Android System Status Bar -->
+<div class="fixed top-0 left-0 right-0 h-6 bg-surface-container-lowest z-50 flex items-center justify-between px-margin-sm select-none">
+<span class="font-label-sm text-label-sm text-on-surface">9:41</span>
+<div class="flex items-center gap-space-xs text-on-surface">
+<span class="material-symbols-outlined text-[14px]" data-icon="signal_cellular_4_bar">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="wifi">wifi</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="battery_full">battery_full</span>
+</div>
+</div>
+<!-- Native Android Top App Bar -->
+<header class="fixed top-6 left-0 w-full z-40 flex items-center justify-between px-margin-sm h-14 bg-surface-container-lowest">
+<div class="flex items-center gap-space-sm">
+<button aria-label="Back" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container active:opacity-80 transition-opacity" disabled="true" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md font-semibold text-on-surface">Review your stay</h1>
+</div>
+</header>
+<!-- Main Scrollable Canvas -->
+<main class="flex-1 w-full max-w-md mx-auto pt-24 pb-28 px-margin-sm flex flex-col gap-space-md">
+<!-- Overview Card (Pine Creek + Preview) -->
+<section class="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-space-md flex flex-col gap-space-md">
+<div class="relative w-full h-44 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A tranquil wilderness campsite nestled among tall pine trees along a clear mountain creek under soft morning daylight. The natural light reflects gently off calm water while rustic stone paths and native forest flora highlight a peaceful outdoor retreat. Photographed in an organic, pristine light mode outdoor aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE2COrL_IMMSKFNty6imthjhHuzO6DMjlQ9wwf6idUxcds7dvjRRFXHuwwc_wMcRlxxpaR3NHqZncV-wdlsiq1snjq4wjunkFzFHjAyin69ttXG37zC4XBNgHqw8WYBl7SdhAJ4iGKRGVOdzyo9FIruVyFzTtvmWNj6KUeR2FoDT4VcsWNmN8MLDHtC0pubejA5BnC3OpghnYm1lzSdd6x8Q0qfOFsp5GtEEIAmU18Curn0ALqHks6Pzg0DWjVa5zxXBSnux7kVYc">
+<div class="absolute top-space-sm left-space-sm bg-surface-container-lowest/90 px-space-sm py-0.5 rounded-full backdrop-blur-sm border border-outline-variant/30 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Campsbridge</span>
+</div>
+</div>
+<!-- Campsite Section -->
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">Campsite</span>
+<span class="font-title-lg text-title-lg text-on-surface font-semibold mt-0.5">Pine Creek</span>
+</div>
+<span class="font-label-lg text-label-lg text-outline select-none px-space-xs py-1">Edit</span>
+</div>
+</section>
+<!-- Details Bento Group -->
+<section class="grid grid-cols-1 gap-space-sm">
+<!-- Dates Section -->
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_today">calendar_today</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">Dates</span>
+<span class="font-title-sm text-title-sm text-on-surface font-semibold">May 14–16, 2027 · 2 nights</span>
+</div>
+</div>
+<span class="font-label-lg text-label-lg text-outline select-none px-space-xs py-1">Edit</span>
+</div>
+<!-- Guests Section -->
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="group">group</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">Guests</span>
+<span class="font-title-sm text-title-sm text-on-surface font-semibold">4 guests</span>
+</div>
+</div>
+<span class="font-label-lg text-label-lg text-outline select-none px-space-xs py-1">Edit</span>
+</div>
+<!-- Rules Section -->
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">Park policy</span>
+<span class="font-title-sm text-title-sm text-on-surface font-semibold">Rules accepted</span>
+</div>
+</div>
+<span class="font-label-lg text-label-lg text-outline select-none px-space-xs py-1">View</span>
+</div>
+</section>
+<!-- Pricing & Payment Section -->
+<section class="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-baseline justify-between">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Total</span>
+<span class="font-title-lg text-title-lg font-bold text-on-surface">CAD $130.00</span>
+</div>
+<div class="pt-space-xs flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="info">info</span>
+<span class="font-body-md text-body-md text-secondary">Simulated payment</span>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom CTA Tray -->
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest shadow-[0px_-4px_16px_rgba(0,0,0,0.04)] py-space-sm px-margin-sm">
+<div class="w-full max-w-md mx-auto flex items-center gap-space-sm">
+<!-- Back Navigation Button -->
+<button aria-label="Go back" class="h-14 w-14 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-[0.98] transition-transform duration-200 border border-outline-variant/40 flex-shrink-0" disabled="true" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="chevron_left">chevron_left</span>
+</button>
+<!-- Primary Confirmation Button -->
+<button class="flex-1 h-14 bg-primary-container/80 text-on-primary rounded-full px-space-lg flex items-center justify-center gap-space-sm font-label-lg text-label-lg shadow-sm cursor-not-allowed" disabled="true" type="button"><span class="material-symbols-outlined animate-spin text-[20px]" data-icon="progress_activity">progress_activity</span>Confirming...</button>
+</div>
+</footer>
+</body></html>

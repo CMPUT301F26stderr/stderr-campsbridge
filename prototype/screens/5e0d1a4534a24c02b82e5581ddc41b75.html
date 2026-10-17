@@ -1,0 +1,215 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>E02 Campsite overview - Campsbridge</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed": "#b8f0c5",
+            "on-primary-container": "#fbfff8",
+            "tertiary-fixed-dim": "#9dd3aa",
+            "background": "#faf9f6",
+            "secondary-fixed": "#d9e6da",
+            "on-tertiary-fixed-variant": "#1d5031",
+            "on-background": "#1a1c1a",
+            "primary-container": "#00874a",
+            "on-secondary-fixed": "#131e17",
+            "on-secondary-container": "#5b675e",
+            "on-primary": "#ffffff",
+            "secondary-fixed-dim": "#bdcabe",
+            "surface": "#faf9f6",
+            "on-secondary-fixed-variant": "#3e4a41",
+            "inverse-on-surface": "#f1f1ed",
+            "surface-tint": "#006d3b",
+            "error-container": "#ffdad6",
+            "on-primary-fixed-variant": "#00522b",
+            "surface-container-highest": "#e2e3df",
+            "primary": "#006b39",
+            "tertiary-container": "#4d805c",
+            "primary-fixed-dim": "#70dc95",
+            "on-tertiary-container": "#fafff7",
+            "on-primary-fixed": "#00210e",
+            "surface-bright": "#faf9f6",
+            "inverse-primary": "#70dc95",
+            "surface-dim": "#dadad7",
+            "on-tertiary-fixed": "#00210e",
+            "surface-container-low": "#f4f4f0",
+            "outline-variant": "#bdcabd",
+            "outline": "#6e7a6f",
+            "surface-container-high": "#e8e8e5",
+            "on-surface-variant": "#3e4a40",
+            "primary-fixed": "#8cf9af",
+            "secondary": "#556158",
+            "on-error-container": "#93000a",
+            "surface-variant": "#e2e3df",
+            "surface-container": "#eeeeea",
+            "tertiary": "#346745",
+            "secondary-container": "#d9e6da",
+            "on-surface": "#1a1c1a",
+            "on-secondary": "#ffffff",
+            "error": "#ba1a1a",
+            "surface-container-lowest": "#ffffff",
+            "on-error": "#ffffff",
+            "inverse-surface": "#2f312f"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "gutter": "1rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem",
+            "margin-sm": "1rem",
+            "gutter-sm": "0.75rem",
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "margin-lg": "1.5rem",
+            "gutter-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "label-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "title-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "body-md": ["Inter"],
+            "title-lg": ["Inter"],
+            "title-md": ["Inter"],
+            "label-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.4px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.15px", "fontWeight": "400" }],
+            "title-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+            "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.25px", "fontWeight": "600" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400" }],
+            "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "title-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0.15px", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.5px", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased font-body-md min-h-screen flex justify-center selection:bg-secondary-container">
+<!-- Mobile Device Shell: Max width constrained to native Android aspect ratio -->
+<div class="w-full max-w-md bg-surface-container-lowest min-h-screen flex flex-col relative shadow-sm">
+<!-- 1. Native Android Status Bar -->
+<header class="w-full h-8 px-6 pt-1 flex items-center justify-between text-on-surface select-none z-30 bg-surface-container-lowest">
+<span class="font-label-md text-label-md font-semibold tracking-tight">09:41</span>
+<div class="flex items-center space-x-2 text-on-surface">
+<span class="material-symbols-outlined text-[17px] leading-none" data-icon="signal_cellular_4_bar">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[17px] leading-none" data-icon="wifi">wifi</span>
+<span class="material-symbols-outlined text-[17px] leading-none" data-icon="battery_full">battery_full</span>
+</div>
+</header>
+<!-- 2. Native Top App Bar (Detail View, No Bottom Nav) -->
+<nav class="w-full h-14 px-3 flex items-center justify-between bg-surface-container-lowest z-20">
+<div class="flex items-center space-x-2">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[24px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md text-on-surface font-semibold truncate tracking-tight">Campsite overview</h1>
+</div>
+<div class="flex items-center space-x-1">
+<button aria-label="Share campsite" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[22px]" data-icon="share">share</span>
+</button>
+<button aria-label="More options" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[22px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</nav>
+<!-- Scrollable Content Canvas -->
+<main class="flex-1 w-full pb-36 overflow-y-auto">
+<!-- 3. Landscape Campsite Photo -->
+<div class="w-full aspect-[16/10] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A serene landscape photograph of Pine Creek campsite nestled amidst the towering pine forests near Jasper, Alberta. The scene features crystal-clear alpine creek waters flowing smoothly over rounded river pebbles, surrounded by dense evergreen trees and misty Canadian Rocky Mountain peaks under crisp, natural daylight. The calm outdoor atmosphere emphasizes deep forest greens and earthen stones, creating a pristine and tranquil campsite setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkCKLoBaOwu6M-1ZXLynJD25OLJk44DWqu2IuZL9LXn7enOvqPbQHW8sznXi_LBvlmlb-34SwYJpU7AgmJMhfoUNx1QJ7fEEKorcNkGMI7CyMv7a9PyrrpACHnZ6RfS0syXK1TaStpnlG7pszsF_agxEIk0tdNB2iQxVv0z8PtP9MpKqWDiyPmEfkFhBNwd00cMda3UPEiv_rpn8AdnT1qNsTIxcYjvhRqIurPlWRBDZDE-SS7uI6TA-N1ancUe7iF83IGRYeNJcs">
+</div>
+<!-- 4. Key Details Section -->
+<section class="px-5 pt-5 pb-3">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Pine Creek</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Near Jasper, AB</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant font-medium mt-2 flex items-center flex-wrap">
+<span class="text-primary font-semibold mr-1">★ 4.7</span>
+<span>(128 reviews) · Up to 8 guests · $65.00 CAD / night</span>
+</p>
+</section>
+<!-- Divider -->
+<div class="h-[1px] bg-surface-container-highest mx-5 my-2"></div>
+<!-- 5. Compact Chevron Rows (Links to isolated sub-sheets) -->
+<div class="w-full divide-y divide-surface-container-highest">
+<!-- Row 1: About -->
+<a class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-surface-container transition-colors active:bg-surface-container-high duration-150" href="#about">
+<span class="font-title-sm text-title-sm text-on-surface font-medium">About</span>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Row 2: Map & location -->
+<a class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-surface-container transition-colors active:bg-surface-container-high duration-150" href="#map-location">
+<span class="font-title-sm text-title-sm text-on-surface font-medium">Map &amp; location</span>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Row 3: Availability -->
+<a class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-surface-container transition-colors active:bg-surface-container-high duration-150" href="#availability">
+<span class="font-title-sm text-title-sm text-on-surface font-medium">Availability</span>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Row 4: Rules & guidelines -->
+<a class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-surface-container transition-colors active:bg-surface-container-high duration-150" href="#rules-guidelines">
+<span class="font-title-sm text-title-sm text-on-surface font-medium">Rules &amp; guidelines</span>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Row 5: Reviews -->
+<a class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-surface-container transition-colors active:bg-surface-container-high duration-150" href="#reviews">
+<span class="font-title-sm text-title-sm text-on-surface font-medium">Reviews</span>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</main>
+<!-- 6. Fixed Bottom Docked Action Container -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-surface-container-lowest z-40 px-5 pt-3 pb-2 shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+<div class="flex flex-col items-center">
+<!-- Subtext Above Button for clean lottery context -->
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2 text-center tracking-normal font-medium">
+          Registration closes Apr 20, 2027, 6:00 PM MDT
+        </p>
+<!-- Primary Action Button -->
+<button class="w-full h-14 bg-primary-container text-on-primary rounded-full font-label-lg text-label-lg flex items-center justify-center hover:opacity-95 active:scale-[0.98] transition-transform duration-150 shadow-none font-semibold">
+          Join lottery
+        </button>
+</div>
+<!-- 7. Android Gesture Pill Bar -->
+<div class="w-full h-5 flex items-center justify-center mt-1">
+<div class="w-28 h-1 bg-on-surface-variant rounded-full opacity-30"></div>
+</div>
+</div>
+</div>
+</body></html>

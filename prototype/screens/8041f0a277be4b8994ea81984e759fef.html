@@ -1,0 +1,235 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Campsbridge - Camper Interests</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed": "#00210e",
+            "tertiary-container": "#4d805c",
+            "primary-container": "#00874a",
+            "on-secondary-fixed-variant": "#3e4a41",
+            "primary": "#006b39",
+            "secondary-fixed-dim": "#bdcabe",
+            "tertiary": "#346745",
+            "inverse-on-surface": "#f1f1ed",
+            "on-tertiary": "#ffffff",
+            "secondary": "#556158",
+            "surface-dim": "#dadad7",
+            "primary-fixed": "#8cf9af",
+            "primary-fixed-dim": "#70dc95",
+            "secondary-fixed": "#d9e6da",
+            "secondary-container": "#d9e6da",
+            "on-surface-variant": "#3e4a40",
+            "on-background": "#1a1c1a",
+            "on-secondary-fixed": "#131e17",
+            "surface-container-low": "#f4f4f0",
+            "on-primary-fixed-variant": "#00522b",
+            "error": "#ba1a1a",
+            "surface-container": "#eeeeea",
+            "background": "#faf9f6",
+            "surface-bright": "#faf9f6",
+            "outline": "#6e7a6f",
+            "tertiary-fixed": "#b8f0c5",
+            "on-primary-container": "#fbfff8",
+            "surface": "#ffffff",
+            "outline-variant": "#bdcabd",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed": "#00210e",
+            "surface-tint": "#006d3b",
+            "inverse-surface": "#2f312f",
+            "tertiary-fixed-dim": "#9dd3aa",
+            "on-tertiary-container": "#fafff7",
+            "on-error-container": "#93000a",
+            "surface-container-high": "#e8e8e5",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "on-secondary-container": "#5b675e",
+            "surface-container-highest": "#e2e3df",
+            "inverse-primary": "#70dc95",
+            "error-container": "#ffdad6",
+            "on-secondary": "#ffffff",
+            "surface-variant": "#e2e3df",
+            "on-surface": "#1a1c1a",
+            "on-tertiary-fixed-variant": "#1d5031"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-lg": "1.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "gutter-lg": "1.5rem",
+            "gutter-sm": "0.75rem",
+            "margin-sm": "1rem",
+            "gutter": "1rem",
+            "margin": "1rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem",
+            "space-xl": "2rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "title-md": ["Inter"],
+            "label-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "title-sm": ["Inter"],
+            "title-lg": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+            "title-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0.15px", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "600" }],
+            "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.25px", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "600" }],
+            "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.15px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.4px", "fontWeight": "400" }],
+            "title-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+            "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-high text-on-surface antialiased flex justify-center min-h-screen items-center sm:py-6">
+<!-- Mobile Viewport Shell (Native Android Container) -->
+<main class="w-full max-w-[412px] h-[884px] max-h-[892px] bg-surface flex flex-col justify-between relative overflow-hidden shadow-2xl sm:rounded-[32px] sm:border sm:border-outline-variant/30">
+<!-- Top System & App Navigation Header -->
+<header class="w-full flex-shrink-0 bg-surface z-20">
+<!-- Native Android Status Bar -->
+<div class="w-full h-6 px-6 pt-2 flex items-center justify-between text-on-surface">
+<span class="font-label-md text-label-md font-semibold select-none">9:41</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] leading-none" data-icon="wifi">wifi</span>
+<span class="material-symbols-outlined text-[16px] leading-none" data-icon="signal_cellular_alt">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[16px] leading-none" data-icon="battery_full">battery_full</span>
+</div>
+</div>
+<!-- TopAppBar (Anchored JSON Component execution) -->
+<nav class="w-full h-14 px-4 flex items-center justify-between">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container transition-colors duration-200 active:scale-95" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-title-md text-title-md font-bold text-on-surface tracking-tight">Campsbridge</span>
+<button aria-label="Help" class="w-12 h-12 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors duration-200 active:scale-95" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="help_outline">help_outline</span>
+</button>
+</nav>
+<!-- Linear Step Progress Indicator (Step 3 of 3: all 3 segments filled with #00874A) -->
+<div class="w-full px-6 pt-1 pb-2">
+<div class="flex items-center justify-between pb-1.5">
+<span class="font-label-sm text-label-sm font-semibold text-primary-container">Step 3 of 3</span>
+<span class="font-label-sm text-label-sm text-secondary">Preferences</span>
+</div>
+<div class="w-full flex gap-1.5 h-1">
+<div class="flex-1 h-full bg-primary-container rounded-full"></div>
+<div class="flex-1 h-full bg-primary-container rounded-full"></div>
+<div class="flex-1 h-full bg-primary-container rounded-full"></div>
+</div>
+</div>
+</header>
+<!-- Content Body (Fluid and Airy) -->
+<section class="flex-1 px-6 pt-4 pb-2 overflow-y-auto flex flex-col">
+<!-- Headline & Subtitle -->
+<div class="mb-8">
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-surface tracking-tight">
+          What kind of camping do you enjoy?
+        </h1>
+<p class="font-body-md text-body-md text-secondary mt-1.5">
+          Optional — choose a few interests.
+        </p>
+</div>
+<!-- Filter Chips Container: Unselected Material 3 Native Filter Chips -->
+<div class="flex flex-wrap gap-2.5 items-center select-none" id="chip-group">
+<!-- 1. Tent camping -->
+<button class="group h-10 px-4 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface flex items-center gap-2 transition-all duration-200 hover:bg-surface-container-low active:scale-95" onclick="toggleChip(this)" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-data-[selected=true]:text-primary-container" data-icon="camping">camping</span>
+<span class="font-label-lg text-label-lg font-medium">Tent camping</span>
+</button>
+<!-- 2. National Parks -->
+<button class="group h-10 px-4 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface flex items-center gap-2 transition-all duration-200 hover:bg-surface-container-low active:scale-95" onclick="toggleChip(this)" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-data-[selected=true]:text-primary-container" data-icon="forest">forest</span>
+<span class="font-label-lg text-label-lg font-medium">National Parks</span>
+</button>
+<!-- 3. Backcountry -->
+<button class="group h-10 px-4 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface flex items-center gap-2 transition-all duration-200 hover:bg-surface-container-low active:scale-95" onclick="toggleChip(this)" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-data-[selected=true]:text-primary-container" data-icon="hiking">hiking</span>
+<span class="font-label-lg text-label-lg font-medium">Backcountry</span>
+</button>
+<!-- 4. Campervan & RV -->
+<button class="group h-10 px-4 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface flex items-center gap-2 transition-all duration-200 hover:bg-surface-container-low active:scale-95" onclick="toggleChip(this)" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-data-[selected=true]:text-primary-container" data-icon="rv_hookup">rv_hookup</span>
+<span class="font-label-lg text-label-lg font-medium">Campervan &amp; RV</span>
+</button>
+<!-- 5. Lakeside -->
+<button class="group h-10 px-4 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface flex items-center gap-2 transition-all duration-200 hover:bg-surface-container-low active:scale-95" onclick="toggleChip(this)" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-data-[selected=true]:text-primary-container" data-icon="water">water</span>
+<span class="font-label-lg text-label-lg font-medium">Lakeside</span>
+</button>
+<!-- 6. Family friendly -->
+<button class="group h-10 px-4 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface flex items-center gap-2 transition-all duration-200 hover:bg-surface-container-low active:scale-95" onclick="toggleChip(this)" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-data-[selected=true]:text-primary-container" data-icon="family_restroom">family_restroom</span>
+<span class="font-label-lg text-label-lg font-medium">Family friendly</span>
+</button>
+<!-- 7. Stargazing -->
+<button class="group h-10 px-4 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface flex items-center gap-2 transition-all duration-200 hover:bg-surface-container-low active:scale-95" onclick="toggleChip(this)" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-data-[selected=true]:text-primary-container" data-icon="nights_stay">nights_stay</span>
+<span class="font-label-lg text-label-lg font-medium">Stargazing</span>
+</button>
+</div>
+</section>
+<!-- Bottom Footer Actions (Tactile Pill Buttons) -->
+<footer class="w-full p-6 pt-3 pb-8 bg-surface flex flex-col items-center gap-3">
+<!-- Primary Pill Button -->
+<button class="w-full h-14 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center shadow-sm hover:opacity-95 active:scale-[0.98] transition-all duration-150" type="button">
+        Continue to Explore
+      </button>
+<!-- Secondary Text Button -->
+<button class="w-full h-10 rounded-full text-secondary hover:text-on-surface font-label-lg text-label-lg flex items-center justify-center active:scale-95 transition-all duration-150" type="button">
+        Skip for now
+      </button>
+</footer>
+</main>
+<script>
+    function toggleChip(button) {
+      const isSelected = button.getAttribute('data-selected') === 'true';
+      if (isSelected) {
+        button.removeAttribute('data-selected');
+        button.classList.remove('bg-secondary-fixed', 'border-primary-container', 'text-on-primary-fixed-variant');
+        button.classList.add('bg-surface-container-lowest', 'border-outline-variant', 'text-on-surface');
+      } else {
+        button.setAttribute('data-selected', 'true');
+        button.classList.remove('bg-surface-container-lowest', 'border-outline-variant', 'text-on-surface');
+        button.classList.add('bg-secondary-fixed', 'border-primary-container', 'text-on-primary-fixed-variant');
+      }
+    }
+  </script>
+</body></html>

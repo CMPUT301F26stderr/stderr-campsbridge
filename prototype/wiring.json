@@ -1,0 +1,5193 @@
+{
+  "version": 2,
+  "projectId": "2827892958772150662",
+  "projectUpdatedAt": "2026-10-17T03:23:19.786412Z",
+  "start": "01.01",
+  "defaults": {
+    "role": "entrant",
+    "intent": "entrant",
+    "selectedRole": "entrant",
+    "campsite": "pine-creek"
+  },
+  "destinations": {
+    "entrant": {
+      "home": "04.01",
+      "explore": "04.01",
+      "my-lotteries": "06.05",
+      "reservations": "08.01",
+      "inbox": "13.01",
+      "profile": "02.01",
+      "reservation-detail": "08.16",
+      "campsite-detail": "04.03"
+    },
+    "owner": {
+      "home": "09.01",
+      "campsites": "09.01",
+      "lotteries": "12.01",
+      "reservations": "08.05",
+      "inbox": "13.08",
+      "profile": "02.01",
+      "reservation-detail": "08.02",
+      "campsite-detail": "09.02"
+    },
+    "admin": {
+      "home": "14.01",
+      "browse": "14.01",
+      "logs": "14.04",
+      "profile": "02.07",
+      "reservation-detail": "08.02",
+      "campsite-detail": "04.08"
+    }
+  },
+  "groups": [
+    {
+      "id": "onboarding",
+      "title": "Onboarding",
+      "screens": [
+        "01.01",
+        "01.02",
+        "01.03",
+        "01.04",
+        "01.05",
+        "01.06"
+      ]
+    },
+    {
+      "id": "account",
+      "title": "Profile & account",
+      "screens": [
+        "02.01",
+        "02.02",
+        "02.03",
+        "02.04",
+        "02.05",
+        "02.06",
+        "02.07",
+        "02.08",
+        "02.09",
+        "02.10",
+        "02.11"
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Settings & policies",
+      "screens": [
+        "03.01",
+        "03.02",
+        "03.03",
+        "03.04",
+        "03.05",
+        "03.06",
+        "03.07",
+        "03.08",
+        "03.09"
+      ]
+    },
+    {
+      "id": "discovery",
+      "title": "Explore & campsite details",
+      "screens": [
+        "04.01",
+        "04.02",
+        "04.03",
+        "04.04",
+        "04.05",
+        "04.06",
+        "04.07",
+        "04.08",
+        "04.09",
+        "04.10",
+        "04.11",
+        "04.12",
+        "04.13",
+        "04.14",
+        "04.15"
+      ]
+    },
+    {
+      "id": "reviews",
+      "title": "Reviews & replies",
+      "screens": [
+        "05.01",
+        "05.02",
+        "05.03"
+      ]
+    },
+    {
+      "id": "entrant-lottery",
+      "title": "Entrant lotteries",
+      "screens": [
+        "06.01",
+        "06.02",
+        "06.03",
+        "06.04",
+        "06.05",
+        "06.06",
+        "06.07",
+        "06.08",
+        "06.09",
+        "06.10",
+        "06.11",
+        "06.12",
+        "06.13",
+        "06.14",
+        "06.15",
+        "06.16",
+        "06.17",
+        "06.18",
+        "06.19",
+        "06.20",
+        "06.21",
+        "06.22"
+      ]
+    },
+    {
+      "id": "booking",
+      "title": "Booking flow",
+      "screens": [
+        "07.01",
+        "07.02",
+        "07.03",
+        "07.04",
+        "07.05",
+        "07.06",
+        "07.07",
+        "07.08",
+        "07.09"
+      ]
+    },
+    {
+      "id": "reservation",
+      "title": "Reservations & payments",
+      "screens": [
+        "08.01",
+        "08.02",
+        "08.03",
+        "08.04",
+        "08.05",
+        "08.06",
+        "08.07",
+        "08.08",
+        "08.09",
+        "08.10",
+        "08.11",
+        "08.12",
+        "08.13",
+        "08.14",
+        "08.15",
+        "08.16"
+      ]
+    },
+    {
+      "id": "owner-campsite",
+      "title": "Owner campsite workspace",
+      "screens": [
+        "09.01",
+        "09.02",
+        "09.03",
+        "09.04",
+        "09.05",
+        "09.06",
+        "09.07",
+        "09.08",
+        "09.09"
+      ]
+    },
+    {
+      "id": "campsite-setup",
+      "title": "Campsite setup",
+      "screens": [
+        "10.01",
+        "10.02",
+        "10.03",
+        "10.04",
+        "10.05",
+        "10.06",
+        "10.07",
+        "10.08"
+      ]
+    },
+    {
+      "id": "lottery-setup",
+      "title": "Lottery setup",
+      "screens": [
+        "11.01",
+        "11.02",
+        "11.03",
+        "11.04",
+        "11.05",
+        "11.06",
+        "11.07"
+      ]
+    },
+    {
+      "id": "owner-lottery",
+      "title": "Owner lottery workspace",
+      "screens": [
+        "12.01",
+        "12.02",
+        "12.03",
+        "12.04",
+        "12.05",
+        "12.06",
+        "12.07",
+        "12.08",
+        "12.09",
+        "12.10",
+        "12.11",
+        "12.12"
+      ]
+    },
+    {
+      "id": "communication",
+      "title": "Inbox & conversations",
+      "screens": [
+        "13.01",
+        "13.02",
+        "13.03",
+        "13.04",
+        "13.05",
+        "13.06",
+        "13.07",
+        "13.08",
+        "13.09",
+        "13.10",
+        "13.11"
+      ]
+    },
+    {
+      "id": "admin",
+      "title": "Administration",
+      "screens": [
+        "14.01",
+        "14.02",
+        "14.03",
+        "14.04",
+        "14.05",
+        "14.06",
+        "14.07",
+        "14.08",
+        "14.09",
+        "14.10"
+      ]
+    },
+    {
+      "id": "components",
+      "title": "Shared controls",
+      "screens": [
+        "15.01"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "onboarding",
+      "title": "Start as a camper",
+      "start": "01.01",
+      "role": "entrant",
+      "description": "Welcome, intent, profile setup, interests, and Explore."
+    },
+    {
+      "id": "owner-setup",
+      "title": "Create a campsite and lottery",
+      "start": "09.01",
+      "role": "owner",
+      "description": "Owner listing setup, offered nights, and lottery publication."
+    },
+    {
+      "id": "booking",
+      "title": "Use a winning opportunity",
+      "start": "06.07",
+      "role": "entrant",
+      "description": "Choose campsite, nights, guests, and rules; simulate confirmation."
+    },
+    {
+      "id": "draw",
+      "title": "Draw and review winners",
+      "start": "12.08",
+      "role": "owner",
+      "description": "Manual draw fallback, progress, outcomes, and reservations."
+    },
+    {
+      "id": "messages",
+      "title": "Inbox and conversations",
+      "start": "13.01",
+      "role": "entrant",
+      "description": "Open lottery notices, reservations, announcements, and messages."
+    },
+    {
+      "id": "admin",
+      "title": "Moderate and inspect logs",
+      "start": "14.01",
+      "role": "admin",
+      "description": "Browse campsites, profiles, images, notification and message logs."
+    },
+    {
+      "id": "settings",
+      "title": "Profile and accessibility",
+      "start": "02.01",
+      "role": "entrant",
+      "description": "Edit details, preferences, alert settings, and accessibility choices."
+    },
+    {
+      "id": "conflict",
+      "title": "Booking conflict recovery",
+      "start": "07.09",
+      "role": "entrant",
+      "description": "Review the conflict state and return to date selection."
+    }
+  ],
+  "screens": {
+    "01.01": {
+      "title": "S01 Welcome",
+      "sourceId": "9fca78276f3f4caf954d816a7ed18d0a",
+      "asset": "screens/9fca78276f3f4caf954d816a7ed18d0a.html",
+      "group": "onboarding",
+      "roleHint": null,
+      "fallback": null,
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "01.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "03.08"
+        }
+      ]
+    },
+    "01.02": {
+      "title": "S01a Starting Intent (Step 1 of 3)",
+      "sourceId": "11849626077977070420",
+      "asset": "screens/11849626077977070420.html",
+      "group": "onboarding",
+      "roleHint": null,
+      "fallback": "01.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "01.03"
+        }
+      ],
+      "bindings": [
+        {
+          "selector": "input[type=radio]",
+          "state": "intent",
+          "values": [
+            "entrant",
+            "owner"
+          ]
+        }
+      ]
+    },
+    "01.03": {
+      "title": "S01b Your Name (Step 2 of 3)",
+      "sourceId": "11849626077977068167",
+      "asset": "screens/11849626077977068167.html",
+      "group": "onboarding",
+      "roleHint": null,
+      "fallback": "01.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "branch",
+          "key": "intent",
+          "cases": {
+            "owner": "01.05"
+          },
+          "default": "01.04"
+        }
+      ]
+    },
+    "01.04": {
+      "title": "S01c Camper Interests (Step 3 of 3)",
+      "sourceId": "8041f0a277be4b8994ea81984e759fef",
+      "asset": "screens/8041f0a277be4b8994ea81984e759fef.html",
+      "group": "onboarding",
+      "roleHint": null,
+      "fallback": "01.03",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01",
+          "root": true,
+          "setRole": "entrant"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.01",
+          "root": true,
+          "setRole": "entrant"
+        }
+      ]
+    },
+    "01.05": {
+      "title": "S01d Start Hosting (Step 3 of 3)",
+      "sourceId": "11849626077977070010",
+      "asset": "screens/11849626077977070010.html",
+      "group": "onboarding",
+      "roleHint": null,
+      "fallback": "01.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.01",
+          "root": true,
+          "setRole": "owner"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.01",
+          "root": true,
+          "setRole": "owner"
+        }
+      ]
+    },
+    "01.06": {
+      "title": "S01b Setup failure",
+      "sourceId": "7832084439586657673",
+      "asset": "screens/7832084439586657673.html",
+      "group": "onboarding",
+      "roleHint": null,
+      "fallback": "01.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "branch",
+          "key": "intent",
+          "cases": {
+            "owner": "01.05"
+          },
+          "default": "01.04"
+        }
+      ]
+    },
+    "02.01": {
+      "title": "S02 Profile menu",
+      "sourceId": "7832084439586659952",
+      "asset": "screens/7832084439586659952.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "03.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "02.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "02.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "03.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "02.06"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "01.05"
+        }
+      ]
+    },
+    "02.02": {
+      "title": "S02a Personal details",
+      "sourceId": "7832084439586658135",
+      "asset": "screens/7832084439586658135.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "02.01",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "02.01"
+        }
+      ]
+    },
+    "02.03": {
+      "title": "S02b Final contact details",
+      "sourceId": "11147977936540116227",
+      "asset": "screens/11147977936540116227.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "02.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "02.01"
+        }
+      ]
+    },
+    "02.04": {
+      "title": "S03f Final Manage account",
+      "sourceId": "5661b761bbf34bdca7d1747f2e8d7ee3",
+      "asset": "screens/5661b761bbf34bdca7d1747f2e8d7ee3.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "03.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "branch",
+          "key": "role",
+          "cases": {
+            "owner": "02.11"
+          },
+          "default": "02.05"
+        }
+      ]
+    },
+    "02.05": {
+      "title": "Reviewed Delete profile dialog",
+      "sourceId": "11147977936540115846",
+      "asset": "screens/11147977936540115846.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "02.04",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "02.09",
+          "root": true
+        }
+      ]
+    },
+    "02.06": {
+      "title": "Reviewed Role switch sheet",
+      "sourceId": "11147977936540115465",
+      "asset": "screens/11147977936540115465.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "02.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "switchRole"
+        }
+      ],
+      "bindings": [
+        {
+          "selector": "input[type=radio]",
+          "state": "selectedRole",
+          "values": [
+            "entrant",
+            "owner",
+            "admin"
+          ]
+        }
+      ]
+    },
+    "02.07": {
+      "title": "S02 Admin profile refined",
+      "sourceId": "17716234223389180600",
+      "asset": "screens/17716234223389180600.html",
+      "group": "account",
+      "roleHint": "admin",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@browse",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@logs",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "02.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "02.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "03.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "02.10"
+        }
+      ]
+    },
+    "02.08": {
+      "title": "S02a Failed save",
+      "sourceId": "17716234223389181561",
+      "asset": "screens/17716234223389181561.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "02.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "02.01"
+        }
+      ]
+    },
+    "02.09": {
+      "title": "S03f Profile removed",
+      "sourceId": "17716234223389182522",
+      "asset": "screens/17716234223389182522.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": null,
+      "rules": []
+    },
+    "02.10": {
+      "title": "Admin granted-role sheet clean",
+      "sourceId": "7566310963585171634",
+      "asset": "screens/7566310963585171634.html",
+      "group": "account",
+      "roleHint": "admin",
+      "fallback": "02.07",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "switchRole"
+        }
+      ],
+      "bindings": [
+        {
+          "selector": "input[type=radio]",
+          "state": "selectedRole",
+          "values": [
+            "entrant",
+            "owner",
+            "admin"
+          ]
+        }
+      ]
+    },
+    "02.11": {
+      "title": "S03f Owner delete profile M3 dialog",
+      "sourceId": "7566310963585173631",
+      "asset": "screens/7566310963585173631.html",
+      "group": "account",
+      "roleHint": null,
+      "fallback": "02.04",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "02.09",
+          "root": true
+        }
+      ]
+    },
+    "03.01": {
+      "title": "S03 Settings menu",
+      "sourceId": "7566310963585171532",
+      "asset": "screens/7566310963585171532.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "@profile",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "03.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "03.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "03.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "02.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "03.07"
+        }
+      ]
+    },
+    "03.02": {
+      "title": "S03a Camping preferences",
+      "sourceId": "13361691027664964243",
+      "asset": "screens/13361691027664964243.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "03.01"
+        }
+      ]
+    },
+    "03.03": {
+      "title": "S03b Notifications",
+      "sourceId": "13361691027664963754",
+      "asset": "screens/13361691027664963754.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "03.04": {
+      "title": "S03c Accessibility menu",
+      "sourceId": "13361691027664963265",
+      "asset": "screens/13361691027664963265.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "03.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "03.06"
+        }
+      ]
+    },
+    "03.05": {
+      "title": "S03d Final colorblind mode",
+      "sourceId": "3684baa0fb554b2eb80d0d7c9d2d7484",
+      "asset": "screens/3684baa0fb554b2eb80d0d7c9d2d7484.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.04",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "03.04"
+        }
+      ]
+    },
+    "03.06": {
+      "title": "S03e Sizes clean MOBILE",
+      "sourceId": "15363171414317942297",
+      "asset": "screens/15363171414317942297.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.04",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "03.04"
+        }
+      ]
+    },
+    "03.07": {
+      "title": "S04 Final policies menu",
+      "sourceId": "fc192550728444b1916153bc76ea6f4b",
+      "asset": "screens/fc192550728444b1916153bc76ea6f4b.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "03.08"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "03.09"
+        }
+      ]
+    },
+    "03.08": {
+      "title": "S04a Final guidelines",
+      "sourceId": "15363171414317941990",
+      "asset": "screens/15363171414317941990.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.07",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "03.09": {
+      "title": "S04a Reviewed refund reading",
+      "sourceId": "d084b2caa5ae4de9988c6d3fff45dacd",
+      "asset": "screens/d084b2caa5ae4de9988c6d3fff45dacd.html",
+      "group": "settings",
+      "roleHint": null,
+      "fallback": "03.07",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "04.01": {
+      "title": "E01 Explore populated",
+      "sourceId": "15363171414317941683",
+      "asset": "screens/15363171414317941683.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > input:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.09",
+          "event": "enter"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.10"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.03"
+        }
+      ]
+    },
+    "04.02": {
+      "title": "E01a Refined filters",
+      "sourceId": "4475083508772945260",
+      "asset": "screens/4475083508772945260.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.09"
+        }
+      ]
+    },
+    "04.03": {
+      "title": "E02 Campsite overview",
+      "sourceId": "5e0d1a4534a24c02b82e5581ddc41b75",
+      "asset": "screens/5e0d1a4534a24c02b82e5581ddc41b75.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "04.06"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "04.07"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "05.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.01"
+        }
+      ]
+    },
+    "04.04": {
+      "title": "E02a About",
+      "sourceId": "4475083508772944681",
+      "asset": "screens/4475083508772944681.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "04.05": {
+      "title": "E02b Refined map",
+      "sourceId": "2e56b3c7830b41c7aca5bd53e9199e0f",
+      "asset": "screens/2e56b3c7830b41c7aca5bd53e9199e0f.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.03",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.03"
+        }
+      ]
+    },
+    "04.06": {
+      "title": "E02c Refined availability",
+      "sourceId": "4475083508772944102",
+      "asset": "screens/4475083508772944102.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "04.07": {
+      "title": "E02d Final rules",
+      "sourceId": "9744301054644831052",
+      "asset": "screens/9744301054644831052.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.03",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "04.08": {
+      "title": "E02 Final Adminsiteoverview",
+      "sourceId": "9744301054644832089",
+      "asset": "screens/9744301054644832089.html",
+      "group": "discovery",
+      "roleHint": "admin",
+      "fallback": "14.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "04.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "04.07"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "05.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.06"
+        }
+      ]
+    },
+    "04.09": {
+      "title": "E01 Match results photos consistent",
+      "sourceId": "9744301054644833126",
+      "asset": "screens/9744301054644833126.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.10"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.03"
+        }
+      ]
+    },
+    "04.10": {
+      "title": "E01 Explore map refined",
+      "sourceId": "8287792068142976748",
+      "asset": "screens/8287792068142976748.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > input:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.09",
+          "event": "enter"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.02"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(3) > div:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.03"
+        }
+      ]
+    },
+    "04.11": {
+      "title": "E02 No lottery clean",
+      "sourceId": "8287792068142975031",
+      "asset": "screens/8287792068142975031.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "04.06"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "04.07"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "05.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "04.12": {
+      "title": "E01 No search results",
+      "sourceId": "8287792068142973314",
+      "asset": "screens/8287792068142973314.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.10"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.02"
+        }
+      ]
+    },
+    "04.13": {
+      "title": "E02 Removed campsite",
+      "sourceId": "39af9f1ada1e46fdaff6439f819d679b",
+      "asset": "screens/39af9f1ada1e46fdaff6439f819d679b.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "04.14": {
+      "title": "E01 Loading Consistent",
+      "sourceId": "7605112092733836301",
+      "asset": "screens/7605112092733836301.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > input:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.09",
+          "event": "enter"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.10"
+        }
+      ]
+    },
+    "04.15": {
+      "title": "E02 Missing photo",
+      "sourceId": "7605112092733834524",
+      "asset": "screens/7605112092733834524.html",
+      "group": "discovery",
+      "roleHint": null,
+      "fallback": "04.01",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "04.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "04.07"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "05.01"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.01"
+        }
+      ]
+    },
+    "05.01": {
+      "title": "E03 Reviewed mobile reviews",
+      "sourceId": "7605112092733836843",
+      "asset": "screens/7605112092733836843.html",
+      "group": "reviews",
+      "roleHint": null,
+      "fallback": "04.03",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "05.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > article:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "05.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > article:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "05.02"
+        }
+      ]
+    },
+    "05.02": {
+      "title": "E04 Reviewed mobile thread",
+      "sourceId": "2881886636978091570",
+      "asset": "screens/2881886636978091570.html",
+      "group": "reviews",
+      "roleHint": null,
+      "fallback": "05.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "05.03": {
+      "title": "Reviewed mobile Revieweditor",
+      "sourceId": "2881886636978090975",
+      "asset": "screens/2881886636978090975.html",
+      "group": "reviews",
+      "roleHint": null,
+      "fallback": "05.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "05.01"
+        }
+      ]
+    },
+    "06.01": {
+      "title": "E02e Available lotteries concise",
+      "sourceId": "2881886636978090380",
+      "asset": "screens/2881886636978090380.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "04.03",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > article:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.02"
+        }
+      ]
+    },
+    "06.02": {
+      "title": "E05 Open registration",
+      "sourceId": "15576262789595260449",
+      "asset": "screens/15576262789595260449.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.06"
+        }
+      ]
+    },
+    "06.03": {
+      "title": "E05a Schedule consistent",
+      "sourceId": "15576262789595259692",
+      "asset": "screens/15576262789595259692.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "06.04": {
+      "title": "E05b Included campsites concise",
+      "sourceId": "80b98faada8442b08c3571eed80f6863",
+      "asset": "screens/80b98faada8442b08c3571eed80f6863.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > article:nth-of-type(1) > div:nth-of-type(4) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > article:nth-of-type(2) > div:nth-of-type(4) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.06"
+        }
+      ]
+    },
+    "06.05": {
+      "title": "E06 My lotteries Waiting",
+      "sourceId": "15576262789595258935",
+      "asset": "screens/15576262789595258935.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.22"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "06.08"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.06"
+        }
+      ]
+    },
+    "06.06": {
+      "title": "E05 Joined consistent",
+      "sourceId": "918972903822972037",
+      "asset": "screens/918972903822972037.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.05",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.16"
+        }
+      ]
+    },
+    "06.07": {
+      "title": "E05 Winning opportunity corrected",
+      "sourceId": "918972903822971430",
+      "asset": "screens/918972903822971430.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.22",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.17"
+        }
+      ]
+    },
+    "06.08": {
+      "title": "E06 History corrected",
+      "sourceId": "918972903822974919",
+      "asset": "screens/918972903822974919.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.22"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.05"
+        }
+      ]
+    },
+    "06.09": {
+      "title": "E05 Upcoming clean",
+      "sourceId": "18213964280364723859",
+      "asset": "screens/18213964280364723859.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.05",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "06.10": {
+      "title": "E05 Lost clean",
+      "sourceId": "18213964280364720544",
+      "asset": "screens/18213964280364720544.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.08",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "06.11": {
+      "title": "E05 Drawing clean",
+      "sourceId": "18213964280364721325",
+      "asset": "screens/18213964280364721325.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.05",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.05"
+        }
+      ]
+    },
+    "06.12": {
+      "title": "E05 Full waitlist clean",
+      "sourceId": "524954085153568268",
+      "asset": "screens/524954085153568268.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.05",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "06.13": {
+      "title": "E05 Selected before opening clean",
+      "sourceId": "524954085153569001",
+      "asset": "screens/524954085153569001.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.22",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        }
+      ]
+    },
+    "06.14": {
+      "title": "E05 Expired clean",
+      "sourceId": "524954085153569734",
+      "asset": "screens/524954085153569734.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.08",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.08"
+        }
+      ]
+    },
+    "06.15": {
+      "title": "E05 Declined clean",
+      "sourceId": "1605871554343033878",
+      "asset": "screens/1605871554343033878.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.08",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.08"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "06.16": {
+      "title": "S05a Leave waitlist dialog consistent",
+      "sourceId": "1605871554343032005",
+      "asset": "screens/1605871554343032005.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.06",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.21"
+        }
+      ]
+    },
+    "06.17": {
+      "title": "E05c Decline opportunity dialog consistent",
+      "sourceId": "1605871554343034228",
+      "asset": "screens/1605871554343034228.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.07",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.15"
+        }
+      ]
+    },
+    "06.18": {
+      "title": "E05 Registration closed during join consistent",
+      "sourceId": "12206751396264615117",
+      "asset": "screens/12206751396264615117.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "06.19": {
+      "title": "E05 Booked entry",
+      "sourceId": "12206751396264612092",
+      "asset": "screens/12206751396264612092.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.05",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(3) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(3) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.16"
+        }
+      ]
+    },
+    "06.20": {
+      "title": "E05 Cancelled lottery",
+      "sourceId": "12206751396264613163",
+      "asset": "screens/12206751396264613163.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.05",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.01"
+        }
+      ]
+    },
+    "06.21": {
+      "title": "E05 Withdrawn during registration",
+      "sourceId": "11840297161645384133",
+      "asset": "screens/11840297161645384133.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "06.05",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.06"
+        }
+      ]
+    },
+    "06.22": {
+      "title": "E06 Action needed consistent",
+      "sourceId": "11840297161645386942",
+      "asset": "screens/11840297161645386942.html",
+      "group": "entrant-lottery",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "06.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.07"
+        }
+      ]
+    },
+    "07.01": {
+      "title": "E07a Final campsite choice",
+      "sourceId": "11840297161645385655",
+      "asset": "screens/11840297161645385655.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "06.07",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "branch",
+          "key": "campsite",
+          "cases": {
+            "pine-creek": "07.02"
+          }
+        }
+      ],
+      "bindings": [
+        {
+          "selector": "input[type=radio]",
+          "state": "campsite",
+          "values": [
+            "pine-creek",
+            "wapiti"
+          ]
+        }
+      ]
+    },
+    "07.02": {
+      "title": "E07b Final choose dates",
+      "sourceId": "4125359717923169419",
+      "asset": "screens/4125359717923169419.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.01",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "07.03"
+        }
+      ]
+    },
+    "07.03": {
+      "title": "E07c Refined guests",
+      "sourceId": "4125359717923171030",
+      "asset": "screens/4125359717923171030.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "07.04"
+        }
+      ]
+    },
+    "07.04": {
+      "title": "E08a Refined agreement",
+      "sourceId": "4125359717923168545",
+      "asset": "screens/4125359717923168545.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.05"
+        }
+      ],
+      "gates": [
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "checkbox": "input[type=checkbox]"
+        }
+      ]
+    },
+    "07.05": {
+      "title": "E08 Refined confirm",
+      "sourceId": "604ae15bc5654495944a3b700b3eb4cb",
+      "asset": "screens/604ae15bc5654495944a3b700b3eb4cb.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.04",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(3) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.04"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "07.08"
+        }
+      ]
+    },
+    "07.06": {
+      "title": "E07b No available dates",
+      "sourceId": "3603978599684650801",
+      "asset": "screens/3603978599684650801.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "06.17"
+        }
+      ]
+    },
+    "07.07": {
+      "title": "E08 Quote changed",
+      "sourceId": "3603978599684651724",
+      "asset": "screens/3603978599684651724.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.05",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(3) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(4) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.04"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.08"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "07.02"
+        }
+      ]
+    },
+    "07.08": {
+      "title": "E08 Confirming host consistent",
+      "sourceId": "bd7e993a2cab4eb6b818c8f60c5fdb12",
+      "asset": "screens/bd7e993a2cab4eb6b818c8f60c5fdb12.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.05",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ],
+      "after": {
+        "delay": 900,
+        "target": "08.16",
+        "replace": true,
+        "root": true
+      }
+    },
+    "07.09": {
+      "title": "E08 Dates conflict",
+      "sourceId": "3603978599684652647",
+      "asset": "screens/3603978599684652647.html",
+      "group": "booking",
+      "roleHint": null,
+      "fallback": "07.05",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "07.02"
+        }
+      ]
+    },
+    "08.01": {
+      "title": "E09 Reviewed reservations",
+      "sourceId": "6395886323961615990",
+      "asset": "screens/6395886323961615990.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.09"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.13"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.08"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.16"
+        }
+      ]
+    },
+    "08.02": {
+      "title": "E10 Owner reservation variant",
+      "sourceId": "6395886323961615119",
+      "asset": "screens/6395886323961615119.html",
+      "group": "reservation",
+      "roleHint": "owner",
+      "fallback": "08.05",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(3) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.12"
+        }
+      ]
+    },
+    "08.03": {
+      "title": "E10a Payment clean MOBILE",
+      "sourceId": "6395886323961618344",
+      "asset": "screens/6395886323961618344.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@reservation-detail",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "08.16"
+        }
+      ]
+    },
+    "08.04": {
+      "title": "E10b Final accepted terms",
+      "sourceId": "2603927235450789424",
+      "asset": "screens/2603927235450789424.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@reservation-detail",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "08.05": {
+      "title": "O09 Active reservations clean MOBILE",
+      "sourceId": "2603927235450788705",
+      "asset": "screens/2603927235450788705.html",
+      "group": "reservation",
+      "roleHint": "owner",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@campsites",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.14"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.15"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.02"
+        }
+      ]
+    },
+    "08.06": {
+      "title": "E10a Final refunded payment",
+      "sourceId": "2603927235450787986",
+      "asset": "screens/2603927235450787986.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "08.07",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > aside:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "08.07"
+        }
+      ]
+    },
+    "08.07": {
+      "title": "E10 Reviewed cancelled overview",
+      "sourceId": "3913342777672029263",
+      "asset": "screens/3913342777672029263.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "08.13",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(3) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(3) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.04"
+        }
+      ]
+    },
+    "08.08": {
+      "title": "E09 Reservation map corrected",
+      "sourceId": "3913342777672032096",
+      "asset": "screens/3913342777672032096.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@reservations",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.09"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.13"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.16"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.16"
+        }
+      ]
+    },
+    "08.09": {
+      "title": "E09 Reservations Past",
+      "sourceId": "3913342777672030833",
+      "asset": "screens/3913342777672030833.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.13"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.16"
+        }
+      ]
+    },
+    "08.10": {
+      "title": "Shared reservation load error Consistent",
+      "sourceId": "9587537510922261056",
+      "asset": "screens/9587537510922261056.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@reservations",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.09"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.13"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        }
+      ]
+    },
+    "08.11": {
+      "title": "E10c Cancel reservation dialog consistent refined",
+      "sourceId": "9587537510922263657",
+      "asset": "screens/9587537510922263657.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "08.16",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.07"
+        }
+      ]
+    },
+    "08.12": {
+      "title": "E10d Reject reservation dialog consistent",
+      "sourceId": "9587537510922262162",
+      "asset": "screens/9587537510922262162.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "08.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.07"
+        }
+      ]
+    },
+    "08.13": {
+      "title": "E09 Cancelled reservations clean",
+      "sourceId": "9311734934925477535",
+      "asset": "screens/9311734934925477535.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.09"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > article:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.07"
+        }
+      ]
+    },
+    "08.14": {
+      "title": "O09 Past consistent",
+      "sourceId": "9311734934925476222",
+      "asset": "screens/9311734934925476222.html",
+      "group": "reservation",
+      "roleHint": "owner",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@campsites",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.15"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.02"
+        }
+      ]
+    },
+    "08.15": {
+      "title": "O09 Cancelled consistent",
+      "sourceId": "9311734934925479005",
+      "asset": "screens/9311734934925479005.html",
+      "group": "reservation",
+      "roleHint": "owner",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@campsites",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.14"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.02"
+        }
+      ]
+    },
+    "08.16": {
+      "title": "E10 Confirmed reservation consistent",
+      "sourceId": "16137260834989063414",
+      "asset": "screens/16137260834989063414.html",
+      "group": "reservation",
+      "roleHint": null,
+      "fallback": "@reservations",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.04"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "04.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.11"
+        }
+      ]
+    },
+    "09.01": {
+      "title": "O01 Reviewed Campsites",
+      "sourceId": "16137260834989060975",
+      "asset": "screens/16137260834989060975.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@campsites",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.07"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.01"
+        }
+      ]
+    },
+    "09.02": {
+      "title": "O02 Reviewed Managecampsite",
+      "sourceId": "16137260834989062632",
+      "asset": "screens/16137260834989062632.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "09.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "09.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(6)",
+          "action": "goto",
+          "target": "04.03"
+        }
+      ]
+    },
+    "09.03": {
+      "title": "O02a Edit campsite night wording",
+      "sourceId": "e6ad5e8e00834d75b6a309398bebe24d",
+      "asset": "screens/e6ad5e8e00834d75b6a309398bebe24d.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "09.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "10.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "10.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "10.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(6)",
+          "action": "goto",
+          "target": "10.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(7)",
+          "action": "goto",
+          "target": "09.04"
+        }
+      ]
+    },
+    "09.04": {
+      "title": "O04 Availability corrected",
+      "sourceId": "9992750510225246792",
+      "asset": "screens/9992750510225246792.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "09.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "09.02"
+        }
+      ]
+    },
+    "09.05": {
+      "title": "Final Promotional QR sheet",
+      "sourceId": "9992750510225247035",
+      "asset": "screens/9992750510225247035.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "09.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "09.06": {
+      "title": "O02b Remove campsite dialog",
+      "sourceId": "d650993a89b34e2e941834a5e5a47a40",
+      "asset": "screens/d650993a89b34e2e941834a5e5a47a40.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "@campsite-detail",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "branch",
+          "key": "role",
+          "cases": {
+            "admin": "14.01"
+          },
+          "default": "09.01"
+        }
+      ]
+    },
+    "09.07": {
+      "title": "O01 Drafts with FAB and Nav",
+      "sourceId": "9992750510225247278",
+      "asset": "screens/9992750510225247278.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "09.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@campsites",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.09"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.01"
+        }
+      ]
+    },
+    "09.08": {
+      "title": "O04 Partial save clean MOBILE consistent",
+      "sourceId": "14130154487465058413",
+      "asset": "screens/14130154487465058413.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "09.04",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "09.02"
+        }
+      ]
+    },
+    "09.09": {
+      "title": "O02 Draft campsite management",
+      "sourceId": "14130154487465060422",
+      "asset": "screens/14130154487465060422.html",
+      "group": "owner-campsite",
+      "roleHint": "owner",
+      "fallback": "09.07",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "09.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > a:nth-of-type(6)",
+          "action": "goto",
+          "target": "04.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.07"
+        }
+      ]
+    },
+    "10.01": {
+      "title": "O03a Final Basics",
+      "sourceId": "14130154487465058335",
+      "asset": "screens/14130154487465058335.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "09.01",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.02"
+        }
+      ]
+    },
+    "10.02": {
+      "title": "O03b Photo corrected",
+      "sourceId": "14980685684577234656",
+      "asset": "screens/14980685684577234656.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "10.01",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.03"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.03"
+        }
+      ]
+    },
+    "10.03": {
+      "title": "O03c Final Location",
+      "sourceId": "14980685684577233617",
+      "asset": "screens/14980685684577233617.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "10.02",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.04"
+        }
+      ]
+    },
+    "10.04": {
+      "title": "O03d Reviewed capacityprice",
+      "sourceId": "14980685684577232578",
+      "asset": "screens/14980685684577232578.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "10.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.05"
+        }
+      ]
+    },
+    "10.05": {
+      "title": "O03e Amenities 8-step progress",
+      "sourceId": "14823620046505957871",
+      "asset": "screens/14823620046505957871.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "10.04",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.06"
+        }
+      ]
+    },
+    "10.06": {
+      "title": "O03f Rules corrected",
+      "sourceId": "14823620046505957386",
+      "asset": "screens/14823620046505957386.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "10.05",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "03.09"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.08"
+        }
+      ]
+    },
+    "10.07": {
+      "title": "O03g Review listing final",
+      "sourceId": "14823620046505956901",
+      "asset": "screens/14823620046505956901.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "10.08",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(5) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(6) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(7) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "10.08"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.02",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "09.09",
+          "root": true
+        }
+      ]
+    },
+    "10.08": {
+      "title": "O04 Final setup availability consistent",
+      "sourceId": "6225082418540336643",
+      "asset": "screens/6225082418540336643.html",
+      "group": "campsite-setup",
+      "roleHint": "owner",
+      "fallback": "10.06",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "09.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "10.07"
+        }
+      ]
+    },
+    "11.01": {
+      "title": "O06a Lottery basics step",
+      "sourceId": "6225082418540336614",
+      "asset": "screens/6225082418540336614.html",
+      "group": "lottery-setup",
+      "roleHint": "owner",
+      "fallback": "12.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.02"
+        }
+      ]
+    },
+    "11.02": {
+      "title": "O06b Campsites/nights step",
+      "sourceId": "6225082418540336585",
+      "asset": "screens/6225082418540336585.html",
+      "group": "lottery-setup",
+      "roleHint": "owner",
+      "fallback": "11.01",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > article:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.03"
+        }
+      ]
+    },
+    "11.03": {
+      "title": "O06b1 Allocation final consistent",
+      "sourceId": "5109495634400378755",
+      "asset": "screens/5109495634400378755.html",
+      "group": "lottery-setup",
+      "roleHint": "owner",
+      "fallback": "11.02",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back",
+          "fallback": "11.02"
+        }
+      ]
+    },
+    "11.04": {
+      "title": "O06c Registration window consistent",
+      "sourceId": "5109495634400376718",
+      "asset": "screens/5109495634400376718.html",
+      "group": "lottery-setup",
+      "roleHint": "owner",
+      "fallback": "11.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.05"
+        }
+      ]
+    },
+    "11.05": {
+      "title": "O06d Final Booking window",
+      "sourceId": "5109495634400378777",
+      "asset": "screens/5109495634400378777.html",
+      "group": "lottery-setup",
+      "roleHint": "owner",
+      "fallback": "11.04",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.06"
+        }
+      ]
+    },
+    "11.06": {
+      "title": "O06e Winners capacity step",
+      "sourceId": "2327455239510884981",
+      "asset": "screens/2327455239510884981.html",
+      "group": "lottery-setup",
+      "roleHint": "owner",
+      "fallback": "11.05",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.07"
+        }
+      ]
+    },
+    "11.07": {
+      "title": "O06f Final Review",
+      "sourceId": "2327455239510886218",
+      "asset": "screens/2327455239510886218.html",
+      "group": "lottery-setup",
+      "roleHint": "owner",
+      "fallback": "11.06",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "12.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(3) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.04"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(5) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.06"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.12",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "12.02",
+          "root": true
+        }
+      ]
+    },
+    "12.01": {
+      "title": "O05 My lotteries",
+      "sourceId": "2327455239510887455",
+      "asset": "screens/2327455239510887455.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@campsites",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(4) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.01"
+        }
+      ]
+    },
+    "12.02": {
+      "title": "O07 Reviewed Managelottery",
+      "sourceId": "6627210795608551415",
+      "asset": "screens/6627210795608551415.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "[id=\"overflow-menu\"] > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.07"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "12.10"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "12.03"
+        }
+      ]
+    },
+    "12.03": {
+      "title": "O07a Sent announcements clean MOBILE",
+      "sourceId": "7cb7b3b2a44c405094228dcaad297d49",
+      "asset": "screens/7cb7b3b2a44c405094228dcaad297d49.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.02",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.11"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "13.11"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.04"
+        }
+      ]
+    },
+    "12.04": {
+      "title": "O07b Compose announcement",
+      "sourceId": "6627210795608548174",
+      "asset": "screens/6627210795608548174.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "back",
+          "fallback": "12.03"
+        }
+      ]
+    },
+    "12.05": {
+      "title": "O07c Final Edit lottery",
+      "sourceId": "6627210795608549029",
+      "asset": "screens/6627210795608549029.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.07"
+        }
+      ]
+    },
+    "12.06": {
+      "title": "O08 Results palette consistent",
+      "sourceId": "13838680019630525054",
+      "asset": "screens/13838680019630525054.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(2) > article:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.02"
+        }
+      ]
+    },
+    "12.07": {
+      "title": "O07d Cancel lottery dialog",
+      "sourceId": "13838680019630524421",
+      "asset": "screens/13838680019630524421.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.20"
+        }
+      ]
+    },
+    "12.08": {
+      "title": "O07 Manual draw fallback",
+      "sourceId": "13838680019630523788",
+      "asset": "screens/13838680019630523788.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "12.10"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "12.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.09"
+        }
+      ]
+    },
+    "12.09": {
+      "title": "O07 Drawing in progress",
+      "sourceId": "10122093850171322380",
+      "asset": "screens/10122093850171322380.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.08",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "12.10"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "12.03"
+        }
+      ],
+      "after": {
+        "delay": 1000,
+        "target": "12.06",
+        "replace": true
+      }
+    },
+    "12.10": {
+      "title": "O08 Waiting participants",
+      "sourceId": "10122093850171324083",
+      "asset": "screens/10122093850171324083.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "12.11"
+        }
+      ]
+    },
+    "12.11": {
+      "title": "O08 Withdrawn participants",
+      "sourceId": "10122093850171325786",
+      "asset": "screens/10122093850171325786.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.10"
+        }
+      ]
+    },
+    "12.12": {
+      "title": "O07 Draft lottery management",
+      "sourceId": "3509959953210401352",
+      "asset": "screens/3509959953210401352.html",
+      "group": "owner-lottery",
+      "roleHint": "owner",
+      "fallback": "12.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "11.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "12.10"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "08.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "12.03"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "11.07"
+        }
+      ]
+    },
+    "13.01": {
+      "title": "S05 Final Inbox",
+      "sourceId": "3509959953210401951",
+      "asset": "screens/3509959953210401951.html",
+      "group": "communication",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "13.06"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.07"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "08.16"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "13.02"
+        }
+      ]
+    },
+    "13.02": {
+      "title": "S06 Final entrant announcement",
+      "sourceId": "3509959953210402550",
+      "asset": "screens/3509959953210402550.html",
+      "group": "communication",
+      "roleHint": null,
+      "fallback": "13.01",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.02"
+        }
+      ]
+    },
+    "13.03": {
+      "title": "S06a Final admin event audience",
+      "sourceId": "1733130761301922972",
+      "asset": "screens/1733130761301922972.html",
+      "group": "communication",
+      "roleHint": "admin",
+      "fallback": "13.10",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "13.04": {
+      "title": "S07 Conversation",
+      "sourceId": "1733130761301922971",
+      "asset": "screens/1733130761301922971.html",
+      "group": "communication",
+      "roleHint": null,
+      "fallback": "@inbox",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "13.05": {
+      "title": "S07 Final Adminconversation",
+      "sourceId": "1733130761301922970",
+      "asset": "screens/1733130761301922970.html",
+      "group": "communication",
+      "roleHint": "admin",
+      "fallback": "14.07",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    },
+    "13.06": {
+      "title": "S05 Inbox Messages",
+      "sourceId": "13091609883658690277",
+      "asset": "screens/13091609883658690277.html",
+      "group": "communication",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > article:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.04"
+        }
+      ]
+    },
+    "13.07": {
+      "title": "S05 Empty Inbox",
+      "sourceId": "13091609883658687166",
+      "asset": "screens/13091609883658687166.html",
+      "group": "communication",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@explore",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@my-lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.01"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "13.06"
+        }
+      ]
+    },
+    "13.08": {
+      "title": "S05 Owner Inbox clean",
+      "sourceId": "13091609883658688151",
+      "asset": "screens/13091609883658688151.html",
+      "group": "communication",
+      "roleHint": "owner",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@campsites",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@lotteries",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@reservations",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(4)",
+          "action": "goto",
+          "target": "@inbox",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(5)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.03"
+        }
+      ]
+    },
+    "13.09": {
+      "title": "S07 Failed message send",
+      "sourceId": "6604145909932314038",
+      "asset": "screens/6604145909932314038.html",
+      "group": "communication",
+      "roleHint": null,
+      "fallback": "13.04",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > aside:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "08.16"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.04"
+        }
+      ]
+    },
+    "13.10": {
+      "title": "S06 Admin announcement clean",
+      "sourceId": "6604145909932314181",
+      "asset": "screens/6604145909932314181.html",
+      "group": "communication",
+      "roleHint": "admin",
+      "fallback": "14.04",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.02"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "13.03"
+        }
+      ]
+    },
+    "13.11": {
+      "title": "S06 Owner sent announcement",
+      "sourceId": "6604145909932314324",
+      "asset": "screens/6604145909932314324.html",
+      "group": "communication",
+      "roleHint": "owner",
+      "fallback": "12.03",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "12.02"
+        }
+      ]
+    },
+    "14.01": {
+      "title": "A01 Admin browse",
+      "sourceId": "16283554960712870224",
+      "asset": "screens/16283554960712870224.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@browse",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@logs",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "14.05"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "14.06"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > ul:nth-of-type(1) > li:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.08"
+        }
+      ]
+    },
+    "14.02": {
+      "title": "A02 Final Profile inspection",
+      "sourceId": "16283554960712871351",
+      "asset": "screens/16283554960712871351.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.05",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.03"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(2) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "04.08"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(2) > div:nth-of-type(2) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.02"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.09"
+        }
+      ]
+    },
+    "14.03": {
+      "title": "A03 Image inspection",
+      "sourceId": "16283554960712868382",
+      "asset": "screens/16283554960712868382.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.06",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "04.08"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(5) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.08"
+        }
+      ]
+    },
+    "14.04": {
+      "title": "A04 Final Admin logs",
+      "sourceId": "4456936910069392675",
+      "asset": "screens/4456936910069392675.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "@browse",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "@logs",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "14.07"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(1)",
+          "action": "goto",
+          "target": "06.07"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(2)",
+          "action": "goto",
+          "target": "13.10"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(3)",
+          "action": "goto",
+          "target": "08.07"
+        }
+      ]
+    },
+    "14.05": {
+      "title": "A01 Profiles tab",
+      "sourceId": "4456936910069392928",
+      "asset": "screens/4456936910069392928.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.01",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "@browse",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "@logs",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(2) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.01"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "14.06"
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > main:nth-of-type(1) > section:nth-of-type(1) > article:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.02"
+        }
+      ]
+    },
+    "14.06": {
+      "title": "A01 Image browse refined",
+      "sourceId": "4456936910069393181",
+      "asset": "screens/4456936910069393181.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.01",
+      "rules": [
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(1)",
+          "action": "goto",
+          "target": "@browse",
+          "root": true
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(2)",
+          "action": "goto",
+          "target": "@logs",
+          "root": true
+        },
+        {
+          "selector": "body > nav:nth-of-type(1) > a:nth-of-type(3)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.01"
+        },
+        {
+          "selector": "body > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "14.05"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.03"
+        }
+      ]
+    },
+    "14.07": {
+      "title": "A04 Message logs refined",
+      "sourceId": "13584749546667201620",
+      "asset": "screens/13584749546667201620.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.04",
+      "rules": [
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "@browse",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(2)",
+          "action": "goto",
+          "target": "@logs",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(3)",
+          "action": "goto",
+          "target": "@profile",
+          "root": true
+        },
+        {
+          "selector": "body > div:nth-of-type(1) > header:nth-of-type(1) > nav:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.04"
+        },
+        {
+          "selector": "main > article:nth-of-type(1)",
+          "action": "goto",
+          "target": "13.05"
+        }
+      ]
+    },
+    "14.08": {
+      "title": "A03a Remove image dialog",
+      "sourceId": "13584749546667201601",
+      "asset": "screens/13584749546667201601.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.03",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.06"
+        }
+      ]
+    },
+    "14.09": {
+      "title": "A02a Admin remove account dialog",
+      "sourceId": "13584749546667201582",
+      "asset": "screens/13584749546667201582.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.02",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(2)",
+          "action": "back"
+        },
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.10"
+        }
+      ]
+    },
+    "14.10": {
+      "title": "A02 Removed profile recovery",
+      "sourceId": "3847390040679130181",
+      "asset": "screens/3847390040679130181.html",
+      "group": "admin",
+      "roleHint": "admin",
+      "fallback": "14.05",
+      "rules": [
+        {
+          "selector": "body > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        },
+        {
+          "selector": "body > footer:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "goto",
+          "target": "14.04"
+        }
+      ]
+    },
+    "15.01": {
+      "title": "Shared controls",
+      "sourceId": "18221984054867131374",
+      "asset": "screens/18221984054867131374.html",
+      "group": "components",
+      "roleHint": null,
+      "fallback": "@home",
+      "rules": [
+        {
+          "selector": "body > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > button:nth-of-type(1)",
+          "action": "back"
+        }
+      ]
+    }
+  }
+}

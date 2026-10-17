@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Campsbridge prototype</title>
+  <link rel="stylesheet" href="prototype.css">
+  <script src="prototype.js" defer></script>
+</head>
+<body>
+  <div class="layout">
+    <aside id="browser">
+      <section class="journeys">
+        <h2>Try a journey</h2>
+        <select id="journey" aria-label="Choose a screen journey"><option value="">Choose a journey</option></select>
+        <p id="journey-description">Follow the controls inside the screen, or jump to any design below.</p>
+      </section>
+      <label class="search-label" for="search">All screens <span id="screen-count"></span></label>
+      <input id="search" type="search" placeholder="Search by name or screen ID" autocomplete="off">
+      <nav id="screen-list" aria-label="Prototype screens"></nav>
+    </aside>
+    <main>
+      <div class="preview-toolbar">
+        <div class="screen-info"><span id="screen-id"></span><h1 id="screen-title">Loading screens…</h1></div>
+        <div class="tools">
+          <button id="back" title="Back in the prototype">← Back</button>
+          <select id="role" aria-label="Preview workspace"><option value="entrant">Entrant</option><option value="owner">Owner</option><option value="admin">Administrator</option></select>
+          <button id="guidelines" aria-pressed="true">Red guidelines: On</button>
+          <button id="restart">Restart</button>
+        </div>
+      </div>
+      <div id="stage">
+        <div id="phone-space"><iframe id="screen" title="Campsbridge screen preview" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads" referrerpolicy="no-referrer"></iframe></div>
+        <p id="load-error" hidden></p>
+      </div>
+    </main>
+  </div>
+  <noscript>This prototype needs JavaScript. Serve this folder with a local HTTP server.</noscript>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>S04 Final policies menu</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-highest": "#dfe3e4",
+            "surface-container-lowest": "#ffffff",
+            "on-error-container": "#6e0a12",
+            "on-secondary": "#e8ffea",
+            "surface-container": "#eceeef",
+            "secondary-fixed-dim": "#c4dac6",
+            "primary": "#006e3b",
+            "secondary-container": "#d2e8d4",
+            "on-secondary-fixed-variant": "#4c6050",
+            "surface-container-high": "#e6e9e9",
+            "surface-dim": "#d7dbdb",
+            "on-secondary-fixed": "#314435",
+            "surface-bright": "#f9f9f9",
+            "on-tertiary": "#f2ffc7",
+            "on-surface-variant": "#5b6061",
+            "on-secondary-container": "#435647",
+            "background": "#f9f9f9",
+            "on-primary": "#e8ffe9",
+            "on-error": "#fff7f6",
+            "inverse-surface": "#0c0f0f",
+            "primary-dim": "#006033",
+            "tertiary-dim": "#4c5829",
+            "error-dim": "#67040d",
+            "tertiary-container": "#eefdbe",
+            "tertiary": "#576433",
+            "on-primary-fixed-variant": "#006a39",
+            "on-primary-fixed": "#004a26",
+            "on-tertiary-fixed": "#445022",
+            "on-background": "#2f3334",
+            "inverse-on-surface": "#9c9d9d",
+            "tertiary-fixed-dim": "#e0efb1",
+            "on-tertiary-fixed-variant": "#606d3b",
+            "inverse-primary": "#92ffb5",
+            "primary-container": "#8cf9af",
+            "on-surface": "#2f3334",
+            "error": "#a83836",
+            "error-container": "#fa746f",
+            "secondary": "#506454",
+            "outline-variant": "#aeb3b3",
+            "primary-fixed-dim": "#7eeaa2",
+            "on-tertiary-container": "#566232",
+            "on-primary-container": "#005f32",
+            "tertiary-fixed": "#eefdbe",
+            "primary-fixed": "#8cf9af",
+            "surface-tint": "#006e3b",
+            "secondary-dim": "#445848",
+            "surface-variant": "#dfe3e4",
+            "surface": "#ffffff",
+            "surface-container-low": "#f2f4f4",
+            "outline": "#777b7c",
+            "secondary-fixed": "#d2e8d4"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "display": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-high font-body antialiased min-h-screen flex items-center justify-center p-0 md:p-6 text-on-surface select-none">
+<!-- Mobile device canvas container (portrait 390x884) -->
+<main class="w-full max-w-[390px] h-[884px] max-h-[884px] bg-surface flex flex-col overflow-hidden relative shadow-2xl md:rounded-3xl">
+<!-- Top App Bar following shared component schema (Back action, no bottom shell) -->
+<header class="w-full h-14 px-4 flex items-center justify-between bg-surface z-20 shrink-0">
+<div class="flex items-center space-x-2">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container transition-colors duration-200 active:scale-95" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-on-surface tracking-tight">Policies</h1>
+</div>
+<button aria-label="Help" class="w-12 h-12 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors duration-200 active:scale-95" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="help_outline">help_outline</span>
+</button>
+</header>
+<!-- Content Canvas -->
+<section class="flex-1 px-4 pt-4">
+<div class="bg-surface border border-outline-variant/30 rounded-xl overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
+<!-- Row 1: Guidelines -->
+<a class="min-h-[56px] px-4 py-3.5 flex items-center justify-between hover:bg-surface-container-low transition-colors duration-150 active:bg-surface-container group" href="#guidelines">
+<span class="text-base font-normal text-on-surface tracking-normal group-hover:text-primary transition-colors">
+            Guidelines
+          </span>
+<span class="material-symbols-outlined text-outline text-[22px] group-hover:text-primary transition-colors" data-icon="chevron_right">
+            chevron_right
+          </span>
+</a>
+<!-- Row 2: Reservation & refund policy -->
+<a class="min-h-[56px] px-4 py-3.5 flex items-center justify-between hover:bg-surface-container-low transition-colors duration-150 active:bg-surface-container group" href="#refund-policy">
+<span class="text-base font-normal text-on-surface tracking-normal group-hover:text-primary transition-colors">
+            Reservation &amp; refund policy
+          </span>
+<span class="material-symbols-outlined text-outline text-[22px] group-hover:text-primary transition-colors" data-icon="chevron_right">
+            chevron_right
+          </span>
+</a>
+</div>
+</section>
+</main>
+</body></html>

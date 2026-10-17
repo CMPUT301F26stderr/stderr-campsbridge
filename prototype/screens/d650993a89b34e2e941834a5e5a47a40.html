@@ -1,0 +1,127 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>O02b Remove campsite dialog</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary": "#f2ffc7",
+            "error": "#a83836",
+            "secondary-fixed": "#d2e8d4",
+            "primary-dim": "#006033",
+            "on-surface-variant": "#5b6061",
+            "surface-container-high": "#e6e9e9",
+            "on-tertiary-container": "#566232",
+            "tertiary-container": "#eefdbe",
+            "on-secondary-fixed-variant": "#4c6050",
+            "on-primary-fixed": "#004a26",
+            "surface-dim": "#d7dbdb",
+            "on-secondary": "#e8ffea",
+            "inverse-surface": "#0c0f0f",
+            "surface": "#f9f9f9",
+            "primary-container": "#8cf9af",
+            "on-surface": "#2f3334",
+            "tertiary-fixed": "#eefdbe",
+            "primary-fixed": "#8cf9af",
+            "on-primary-container": "#005f32",
+            "secondary-fixed-dim": "#c4dac6",
+            "tertiary": "#576433",
+            "surface-tint": "#006e3b",
+            "outline": "#777b7c",
+            "error-container": "#fa746f",
+            "on-secondary-container": "#435647",
+            "on-primary": "#e8ffe9",
+            "on-error-container": "#6e0a12",
+            "inverse-on-surface": "#9c9d9d",
+            "secondary-container": "#d2e8d4",
+            "error-dim": "#67040d",
+            "tertiary-dim": "#4c5829",
+            "surface-container-low": "#f2f4f4",
+            "surface-bright": "#f9f9f9",
+            "background": "#f9f9f9",
+            "primary-fixed-dim": "#7eeaa2",
+            "on-error": "#fff7f6",
+            "on-tertiary-fixed-variant": "#606d3b",
+            "inverse-primary": "#92ffb5",
+            "secondary": "#506454",
+            "surface-container-lowest": "#ffffff",
+            "secondary-dim": "#445848",
+            "on-background": "#2f3334",
+            "surface-container-highest": "#dfe3e4",
+            "surface-variant": "#dfe3e4",
+            "primary": "#006e3b",
+            "on-tertiary-fixed": "#445022",
+            "surface-container": "#eceeef",
+            "on-primary-fixed-variant": "#006a39",
+            "outline-variant": "#aeb3b3",
+            "tertiary-fixed-dim": "#e0efb1",
+            "on-secondary-fixed": "#314435"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "display": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body antialiased min-h-screen flex items-center justify-center p-0 m-0 select-none">
+<!-- Mobile Viewport Frame (390px x 884px) -->
+<main class="relative w-[390px] h-[884px] max-w-full max-h-screen overflow-hidden bg-background shadow-2xl flex flex-col justify-center items-center">
+<!-- Dimmed Modal Backdrop -->
+<div class="absolute inset-0 bg-inverse-surface/40 backdrop-blur-[2px] transition-opacity"></div>
+<!-- Centered Material 3 Alert Dialog Card -->
+<div aria-describedby="dialog-description" aria-labelledby="dialog-title" aria-modal="true" class="relative z-10 w-[calc(100%-48px)] max-w-[342px] bg-surface-container-lowest rounded-2xl p-6 shadow-xl flex flex-col items-center text-center" role="alertdialog">
+<!-- Icon Container (Subtle red tint) -->
+<div class="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center mb-4 text-error">
+<span aria-hidden="true" class="material-symbols-outlined text-[28px]" data-icon="delete">delete</span>
+</div>
+<!-- Dialog Title -->
+<h2 class="font-headline font-semibold text-xl text-on-surface tracking-tight mb-1" id="dialog-title">
+        Remove campsite?
+      </h2>
+<!-- Subtitle / Fixture -->
+<p class="font-headline font-medium text-sm text-on-surface-variant mb-3">
+        Pine Creek
+      </p>
+<!-- Dialog Body Content -->
+<p class="font-body text-sm text-on-surface-variant leading-relaxed mb-6 px-1 text-center" id="dialog-description">
+        Removes the listing and cancels affected active lotteries and current/future reservations with simulated refunds. History is retained.
+      </p>
+<!-- Action Buttons Stack (Min 48dp Touch Targets) -->
+<div class="w-full flex flex-col gap-2.5">
+<!-- Destructive Primary Button -->
+<button class="w-full h-12 min-h-[48px] rounded-full bg-error text-on-error font-label font-medium text-sm flex items-center justify-center transition-all duration-150 active:scale-[0.98] hover:bg-error-dim shadow-sm focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2" type="button">
+          Remove
+        </button>
+<!-- Secondary Action Button -->
+<button class="w-full h-12 min-h-[48px] rounded-full bg-surface-container text-on-surface font-label font-medium text-sm flex items-center justify-center transition-all duration-150 active:scale-[0.98] hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-outline focus:ring-offset-2" type="button">
+          Keep campsite
+        </button>
+</div>
+</div>
+</main>
+</body></html>

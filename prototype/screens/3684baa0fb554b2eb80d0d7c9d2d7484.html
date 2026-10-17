@@ -1,0 +1,164 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>S03d Final colorblind mode</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-highest": "#dfe3e4",
+            "surface-container-lowest": "#ffffff",
+            "on-error-container": "#6e0a12",
+            "on-secondary": "#e8ffea",
+            "surface-container": "#eceeef",
+            "secondary-fixed-dim": "#c4dac6",
+            "primary": "#006e3b",
+            "secondary-container": "#d2e8d4",
+            "on-secondary-fixed-variant": "#4c6050",
+            "surface-container-high": "#e6e9e9",
+            "surface-dim": "#d7dbdb",
+            "on-secondary-fixed": "#314435",
+            "surface-bright": "#f9f9f9",
+            "on-tertiary": "#f2ffc7",
+            "on-surface-variant": "#5b6061",
+            "on-secondary-container": "#435647",
+            "background": "#f9f9f9",
+            "on-primary": "#e8ffe9",
+            "on-error": "#fff7f6",
+            "inverse-surface": "#0c0f0f",
+            "primary-dim": "#006033",
+            "tertiary-dim": "#4c5829",
+            "error-dim": "#67040d",
+            "tertiary-container": "#eefdbe",
+            "tertiary": "#576433",
+            "on-primary-fixed-variant": "#006a39",
+            "on-primary-fixed": "#004a26",
+            "on-tertiary-fixed": "#445022",
+            "on-background": "#2f3334",
+            "inverse-on-surface": "#9c9d9d",
+            "tertiary-fixed-dim": "#e0efb1",
+            "on-tertiary-fixed-variant": "#606d3b",
+            "inverse-primary": "#92ffb5",
+            "primary-container": "#8cf9af",
+            "on-surface": "#2f3334",
+            "error": "#a83836",
+            "error-container": "#fa746f",
+            "secondary": "#506454",
+            "outline-variant": "#aeb3b3",
+            "primary-fixed-dim": "#7eeaa2",
+            "on-tertiary-container": "#566232",
+            "on-primary-container": "#005f32",
+            "tertiary-fixed": "#eefdbe",
+            "primary-fixed": "#8cf9af",
+            "surface-tint": "#006e3b",
+            "secondary-dim": "#445848",
+            "surface-variant": "#dfe3e4",
+            "surface": "#f9f9f9",
+            "surface-container-low": "#f2f4f4",
+            "outline": "#777b7c",
+            "secondary-fixed": "#d2e8d4"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "display": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen flex justify-center">
+<!-- Mobile Canvas Frame: Portrait 390x884 constrained -->
+<div class="w-full max-w-[390px] min-h-[884px] h-[884px] bg-surface-container-lowest flex flex-col justify-between relative shadow-sm overflow-hidden">
+<!-- Top Navigation Anchor (Shared TopAppBar Specs adapted for focused sub-task) -->
+<header class="fixed top-0 max-w-[390px] w-full z-50 flex items-center justify-between h-14 px-4 bg-surface-container-lowest">
+<div class="flex items-center gap-2">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-surface-container active:scale-95 transition-all text-on-surface" type="button">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="text-base font-semibold text-on-surface tracking-tight">Colorblind mode</h1>
+</div>
+<button aria-label="Help" class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-surface-container active:scale-95 transition-all text-on-surface-variant" type="button">
+<span class="material-symbols-outlined text-[24px]">help_outline</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 pt-16 px-4 pb-24 overflow-y-auto">
+<!-- Setting Toggle Item -->
+<section class="mt-4 mb-6">
+<div class="py-3 flex items-center justify-between min-h-[48px]">
+<div class="flex flex-col pr-4">
+<span class="text-base font-medium text-on-surface">Colorblind mode</span>
+<span class="text-xs text-on-surface-variant mt-0.5">High-contrast indicators for site map status</span>
+</div>
+<!-- Material 3 Toggle Switch (Active State) -->
+<label class="relative inline-flex items-center cursor-pointer select-none">
+<input checked="" class="sr-only peer" id="toggle-colorblind" type="checkbox">
+<div class="w-[52px] h-8 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:bg-primary transition-colors duration-200 ease-in-out relative">
+<div class="absolute top-[4px] left-[4px] bg-surface-container-lowest w-6 h-6 rounded-full transition-transform duration-200 ease-in-out flex items-center justify-center peer-checked:translate-x-5 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[16px] font-bold">check</span>
+</div>
+</div>
+</label>
+</div>
+</section>
+<!-- Preview Section / Clean Bento Card -->
+<section aria-labelledby="preview-heading">
+<div class="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3">
+<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider" id="preview-heading">Preview</span>
+<!-- 3-State Visual Indicator Matrix -->
+<div class="grid grid-cols-3 gap-2 bg-surface-container-lowest rounded-lg p-3">
+<!-- State 1: Available -->
+<div class="flex flex-col items-center justify-center py-2 px-1 text-center">
+<div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-blue-600 text-[24px]" style="font-variation-settings: 'FILL' 1;">circle</span>
+</div>
+<span class="text-xs font-medium text-on-surface">Available</span>
+</div>
+<!-- State 2: Booked -->
+<div class="flex flex-col items-center justify-center py-2 px-1 text-center">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-outline text-[24px]">close</span>
+</div>
+<span class="text-xs font-medium text-on-surface">Booked</span>
+</div>
+<!-- State 3: Selected -->
+<div class="flex flex-col items-center justify-center py-2 px-1 text-center">
+<div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-600 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-blue-600 text-[22px] font-semibold">check</span>
+</div>
+<span class="text-xs font-medium text-on-surface">Selected</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Docked Bottom Action Bar (No bottom nav per linear subtask intent) -->
+<footer class="fixed bottom-0 max-w-[390px] w-full p-4 bg-surface-container-lowest z-40">
+<button class="w-full h-12 bg-primary hover:bg-primary-dim text-surface-container-lowest font-medium text-sm rounded-full flex items-center justify-center active:scale-95 transition-all shadow-none" type="button">
+        Apply
+      </button>
+</footer>
+</div>
+</body></html>

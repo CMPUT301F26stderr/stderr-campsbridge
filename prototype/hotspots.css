@@ -1,0 +1,11 @@
+/* Preview-only hints, loaded by the shell without editing the screen assets. */
+:root[data-prototype-guidelines] [data-prototype-transition]:not(:disabled):not([aria-disabled="true"]) {
+  cursor: pointer;
+  outline: 3px dotted #f87171 !important;
+  outline-offset: 4px !important;
+}
+
+:root[data-prototype-guidelines] [data-prototype-transition]:focus-visible {
+  outline: 3px solid #ef4444 !important;
+  outline-offset: 4px !important;
+}

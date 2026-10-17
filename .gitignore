@@ -336,3 +336,6 @@ ui-debug.log*
 
 # Python tooling bytecode.
 __pycache__/
+
+# Generated prototype download bundle.
+/prototype/*.zip

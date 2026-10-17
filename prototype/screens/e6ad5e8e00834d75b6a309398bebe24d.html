@@ -1,0 +1,203 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>O02a Edit campsite consistent</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#5b6061",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#c4dac6",
+            "primary-fixed": "#8cf9af",
+            "error-dim": "#67040d",
+            "surface-variant": "#dfe3e4",
+            "surface-container-highest": "#dfe3e4",
+            "on-secondary-container": "#435647",
+            "secondary-container": "#d2e8d4",
+            "on-tertiary-fixed-variant": "#606d3b",
+            "on-secondary-fixed": "#314435",
+            "on-error": "#fff7f6",
+            "secondary": "#506454",
+            "on-primary-fixed": "#004a26",
+            "on-tertiary-container": "#566232",
+            "primary-container": "#8cf9af",
+            "on-secondary-fixed-variant": "#4c6050",
+            "outline-variant": "#aeb3b3",
+            "error-container": "#fa746f",
+            "tertiary-dim": "#4c5829",
+            "tertiary-container": "#eefdbe",
+            "primary": "#006e3b",
+            "on-primary": "#e8ffe9",
+            "inverse-surface": "#0c0f0f",
+            "surface-container": "#eceeef",
+            "tertiary-fixed": "#eefdbe",
+            "primary-dim": "#006033",
+            "error": "#a83836",
+            "on-primary-fixed-variant": "#006a39",
+            "on-secondary": "#e8ffea",
+            "surface-container-low": "#f2f4f4",
+            "on-background": "#2f3334",
+            "inverse-on-surface": "#9c9d9d",
+            "secondary-fixed": "#d2e8d4",
+            "secondary-dim": "#445848",
+            "tertiary-fixed-dim": "#e0efb1",
+            "outline": "#777b7c",
+            "inverse-primary": "#92ffb5",
+            "on-tertiary": "#f2ffc7",
+            "on-surface": "#2f3334",
+            "surface-tint": "#006e3b",
+            "primary-fixed-dim": "#7eeaa2",
+            "surface-dim": "#d7dbdb",
+            "on-tertiary-fixed": "#445022",
+            "surface-bright": "#f9f9f9",
+            "tertiary": "#576433",
+            "background": "#f9f9f9",
+            "on-error-container": "#6e0a12",
+            "on-primary-container": "#005f32",
+            "surface-container-high": "#e6e9e9",
+            "surface": "#f9f9f9"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "display": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest font-body text-on-surface antialiased min-h-screen flex justify-center">
+<!-- Mobile handset container (390 x 884 portrait frame) -->
+<main class="w-full max-w-[390px] min-h-[884px] bg-surface-container-lowest flex flex-col relative select-none">
+<!-- Top App Bar (Material 3 Small) -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest flex items-center h-16 px-4">
+<button aria-label="Go back" class="flex items-center justify-center w-12 h-12 -ml-2 rounded-full hover:bg-surface-container-low active:bg-surface-container active:scale-95 transition-all text-on-surface" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline text-lg font-semibold text-on-surface ml-1 tracking-tight">Edit campsite</h1>
+</header>
+<!-- Content Canvas -->
+<div class="flex-1 flex flex-col pt-2 pb-8">
+<!-- Campsite Header Name in body -->
+<section class="px-4 pb-4">
+<h2 class="font-headline text-2xl font-bold text-on-surface tracking-tight">Pine Creek</h2>
+</section>
+<!-- Seven List Item Category Rows -->
+<nav aria-label="Campsite details editors" class="flex flex-col divide-y divide-surface-container">
+<!-- 1. Basics -->
+<a class="flex items-center min-h-[72px] px-4 py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors group" href="#basics">
+<div class="flex items-center justify-center w-10 h-10 mr-4 text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="edit_note">edit_note</span>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+<span class="font-headline text-base font-medium text-on-surface leading-snug">Basics</span>
+<span class="font-body text-sm text-on-surface-variant truncate">Pine Creek, riverside pitch</span>
+</div>
+<div class="flex items-center justify-center w-6 h-6 text-outline shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- 2. Photo -->
+<a class="flex items-center min-h-[72px] px-4 py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors group" href="#photo">
+<div class="flex items-center justify-center w-10 h-10 mr-4 text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="photo_camera">photo_camera</span>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+<span class="font-headline text-base font-medium text-on-surface leading-snug">Photo</span>
+<span class="font-body text-sm text-on-surface-variant truncate">1 photo uploaded</span>
+</div>
+<div class="flex items-center justify-center w-6 h-6 text-outline shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- 3. Location -->
+<a class="flex items-center min-h-[72px] px-4 py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors group" href="#location">
+<div class="flex items-center justify-center w-10 h-10 mr-4 text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="location_on">location_on</span>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+<span class="font-headline text-base font-medium text-on-surface leading-snug">Location</span>
+<span class="font-body text-sm text-on-surface-variant truncate">Near Jasper, AB</span>
+</div>
+<div class="flex items-center justify-center w-6 h-6 text-outline shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- 4. Capacity & price -->
+<a class="flex items-center min-h-[72px] px-4 py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors group" href="#capacity-price">
+<div class="flex items-center justify-center w-10 h-10 mr-4 text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="payments">payments</span>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+<span class="font-headline text-base font-medium text-on-surface leading-snug">Capacity &amp; price</span>
+<span class="font-body text-sm text-on-surface-variant truncate">8 guests · CAD $65 / night</span>
+</div>
+<div class="flex items-center justify-center w-6 h-6 text-outline shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- 5. Amenities & tags -->
+<a class="flex items-center min-h-[72px] px-4 py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors group" href="#amenities-tags">
+<div class="flex items-center justify-center w-10 h-10 mr-4 text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="deck">deck</span>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+<span class="font-headline text-base font-medium text-on-surface leading-snug">Amenities &amp; tags</span>
+<span class="font-body text-sm text-on-surface-variant truncate">Potable water, cookhouse, lakeside</span>
+</div>
+<div class="flex items-center justify-center w-6 h-6 text-outline shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- 6. Rules -->
+<a class="flex items-center min-h-[72px] px-4 py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors group" href="#rules">
+<div class="flex items-center justify-center w-10 h-10 mr-4 text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="gavel">gavel</span>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+<span class="font-headline text-base font-medium text-on-surface leading-snug">Rules</span>
+<span class="font-body text-sm text-on-surface-variant truncate">Quiet hours: 10 PM – 7 AM. Leave no litter.</span>
+</div>
+<div class="flex items-center justify-center w-6 h-6 text-outline shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- 7. Availability -->
+<a class="flex items-center min-h-[72px] px-4 py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors group" href="#availability">
+<div class="flex items-center justify-center w-10 h-10 mr-4 text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="event_available">event_available</span>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+<span class="font-headline text-base font-medium text-on-surface leading-snug">Availability</span>
+<span class="font-body text-sm text-on-surface-variant truncate">Nights: May 14, 15, 21, 22.</span>
+</div>
+<div class="flex items-center justify-center w-6 h-6 text-outline shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+</nav>
+</div>
+</main>
+</body></html>
