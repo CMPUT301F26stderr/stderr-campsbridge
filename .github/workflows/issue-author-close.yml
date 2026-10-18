@@ -1,0 +1,49 @@
+name: Issue author approval
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: issue-author-close-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  enforce-author-close:
+    name: Require the issue author's closure
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 5
+    steps:
+      - name: Reopen closures made without the issue author
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const closedIssue = context.payload.issue;
+            if (context.payload.sender.id === closedIssue.user.id) {
+              core.info('The issue author closed the issue.');
+              return;
+            }
+
+            const params = { ...context.repo, issue_number: closedIssue.number };
+            const { data: issue } = await github.rest.issues.get(params);
+
+            // Ignore an old event if the issue has since been reopened or closed again.
+            if (issue.state !== 'closed' || issue.closed_at !== closedIssue.closed_at) {
+              core.info('The issue state has changed since this closure.');
+              return;
+            }
+
+            const closer = issue.closed_by ?? context.payload.sender;
+            if (closer.id === issue.user.id) {
+              core.info('The latest closure was made by the issue author.');
+              return;
+            }
+
+            await github.rest.issues.update({ ...params, state: 'open' });
+            await github.rest.issues.createComment({
+              ...params,
+              body: `@${closer.login}, this issue was automatically reopened because only its original author, @${issue.user.login}, may close it. Please ask the author to review the work and close the issue when it is accepted.`,
+            });
