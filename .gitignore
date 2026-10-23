@@ -1,3 +1,6 @@
+.playwright-cli
+output
+
 # ---- Android ----
 # Gradle files
 .gradle/
@@ -339,3 +342,7 @@ __pycache__/
 
 # Generated prototype download bundle.
 /prototype/*.zip
+
+# Personal reference documents; keep the team roster tracked.
+/doc/*
+!/doc/team.txt
