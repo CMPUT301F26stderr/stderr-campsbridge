@@ -59,7 +59,6 @@ internal class NotificationDeliveries(
      */
     fun observe(scope: DeliveryScope) =
         db.collection(scope.path).observe { snapshot ->
-            Fields(snapshot.reference.path, snapshot.data!!).strings("recipientIds")
             DeliveryJob(scope, snapshot.id)
         }
 

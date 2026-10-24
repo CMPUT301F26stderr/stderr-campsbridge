@@ -7,15 +7,19 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirebaseClients
 import io.github.CMPUT301F26stderr.campsbridge.data.image.FirebaseImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.FirestoreLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.maintenance.AdminMaintenance
+import io.github.CMPUT301F26stderr.campsbridge.data.maintenance.FirestoreWorkSource
+import io.github.CMPUT301F26stderr.campsbridge.data.maintenance.SessionPendingWork
 import io.github.CMPUT301F26stderr.campsbridge.data.messaging.FirestoreMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.moderation.FirestoreModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.FirestoreNotificationRepository
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDeliveries
 import io.github.CMPUT301F26stderr.campsbridge.data.review.FirestoreReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.PendingWork
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.MessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.moderation.ModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
@@ -49,6 +53,12 @@ class AppContainer(
     val messages: MessageRepository = FirestoreMessageRepository(clients.firestore, clock)
     val moderation: ModerationRepository =
         FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock)
+
+    val pendingWork: PendingWork =
+        SessionPendingWork(
+            FirestoreWorkSource(lotteries, bookings, NotificationDeliveries(clients.firestore)),
+            clock,
+        )
 
     val maintenance =
         AdminMaintenance(

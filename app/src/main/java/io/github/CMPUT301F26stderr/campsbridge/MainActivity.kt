@@ -1,14 +1,21 @@
 package io.github.CMPUT301F26stderr.campsbridge
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.workSession
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /** Android host; session rules and persistence operations belong to injected ViewModels. */
 class MainActivity : ComponentActivity() {
@@ -21,6 +28,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val services = (application as CampsbridgeApplication).services
         val model = ViewModelProvider(this, appViewModelFactory(services))[AppViewModel::class.java]
+        lifecycleScope.launch {
+            ForegroundWorkRunner(services.repositories.pendingWork) { failure ->
+                Log.w("PendingWork", "Foreground persistence operation will retry", failure)
+            }.run(
+                model.state.map { it.workSession() },
+                lifecycle.currentStateFlow.map { it.isAtLeast(Lifecycle.State.STARTED) },
+            )
+        }
         setContent { AppRoot(model) { id -> profileViewModelFactory(services, id) } }
     }
 }
