@@ -123,38 +123,41 @@ class FirestoreLotteryRepository(
             .observe(LotteryEntryDocument)
 
     /**
-     * Creates an unpublished lottery with no offers or participants and returns its ID.
-     *
-     * @param ownerId Account ID of the campsite or lottery owner.
-     * @param title Display title for the lottery or announcement.
-     * @param description Listing or lottery description.
-     * @param configuration Registration/booking windows and participation limits.
+     * Creates one draft transactionally; retries preserve stored configuration and lifecycle.
+     * Reads confirmed server values after commit; a read failure leaves creation safe to retry.
+     * @param id Stable caller-allocated draft identity.
+     * @param ownerId Active owner creating the draft.
+     * @param title Initial display title.
+     * @param description Initial description.
+     * @param configuration Initial registration/booking windows and limits.
      */
-    override suspend fun create(
+    override suspend fun createDraft(
+        id: String,
         ownerId: String,
         title: String,
         description: String,
         configuration: LotteryConfiguration,
-    ): String {
-        val reference = db.collection("lotteries").document()
+    ): Lottery {
+        val reference = db.document(FirestorePaths.lottery(id))
         db.atomic { tx ->
             tx.activeAccount(db, ownerId, Role.OWNER)
-            tx.set(
-                reference,
-                LotteryDocument.encode(
-                    Lottery(
-                        reference.id,
-                        ownerId,
-                        title,
-                        description,
-                        configuration,
-                        0,
-                        clock.instant(),
-                    ),
-                ) + ("_revision" to 0L),
-            )
+            val existing = tx.read(reference, LotteryDocument)
+            if (existing != null) {
+                requireOperation(
+                    existing.ownerId == ownerId,
+                    CONFLICT,
+                    "Draft ID belongs to another owner",
+                )
+                existing
+            } else {
+                val draft =
+                    Lottery(id, ownerId, title, description, configuration, 0, clock.instant())
+                tx.set(reference, LotteryDocument.encode(draft) + ("_revision" to 0L))
+                draft
+            }
         }
-        return reference.id
+        return reference.read(LotteryDocument)
+            ?: throw PersistenceFailure(PersistenceFailure.Reason.NOT_FOUND, reference.path)
     }
 
     /**

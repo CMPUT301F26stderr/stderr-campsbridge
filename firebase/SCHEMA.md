@@ -12,6 +12,7 @@ This contract defines the Firestore documents, Storage objects, and coordinated 
 - Check-in is inclusive; check-out is exclusive. Classify stays in the recorded campsite timezone.
 - One win permits one reservation at one campsite for consecutive nights. Winners share offered inventory first-come. Different lotteries may offer the same nights. No replacement draws; cancelled reservations still consume their win.
 - Payments and full refunds are simulated. Campsite ownership is immutable. One image attachment per account/campsite initially.
+- Campsite and lottery draft IDs are allocated by the caller before creation and retained across retries. Creation returns the current stored record when the same owner already owns that ID, preserving saved edits and lifecycle metadata; it never overwrites another owner's record. Later edits use the update operation.
 
 Reusable nested records (notation only, not collections):
 
