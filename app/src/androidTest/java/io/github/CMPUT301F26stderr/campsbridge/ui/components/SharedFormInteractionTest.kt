@@ -12,6 +12,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule

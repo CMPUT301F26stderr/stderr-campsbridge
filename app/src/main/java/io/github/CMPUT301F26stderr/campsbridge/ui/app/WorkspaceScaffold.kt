@@ -21,24 +21,41 @@ import androidx.compose.ui.semantics.semantics
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 
 /**
  * Supplies one shared feature frame and a capability-limited workspace switcher.
  * @param state Confirmed ready session.
  * @param onSelectWorkspace Explicit selection callback.
  * @param content Implemented navigation content within the shared insets.
+ * @param title Current destination title.
+ * @param navigationItems Registered peer destinations, empty before those features exist.
+ * @param selectedDestination Selected registered peer identity.
+ * @param onSelectDestination Navigation callback supplied by the graph.
  */
 @Composable
 fun WorkspaceScaffold(
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
+    title: String = stringResource(R.string.profile_title),
+    navigationItems: List<WorkspaceNavigationItem> = emptyList(),
+    selectedDestination: String = "profile",
+    onSelectDestination: (String) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val switchDescription = stringResource(R.string.switch_workspace)
     AppScreen(
-        title = stringResource(R.string.profile_title),
+        title = title,
+        bottomContent = {
+            if (navigationItems.isNotEmpty()) {
+                WorkspaceNavigation(
+                    navigationItems,
+                    selectedDestination,
+                    onSelectDestination,
+                )
+            }
+        },
         actions = {
             if (state.account.roles.size > 1) {
                 Box {

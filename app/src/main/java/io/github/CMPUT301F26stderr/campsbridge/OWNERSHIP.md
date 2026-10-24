@@ -24,6 +24,7 @@ UI state    <- Compose          <- ViewModel <- result or Flow       <- Firebase
 
 - `domain/` does not depend on `data/`, UI, or Firebase.
 - `data/` depends on `domain/` and Firebase SDKs.
+- The shared control library is grouped by layout, actions, forms, selection, rows, summaries, feedback, pickers, images and calendar. Feature cards remain beside their feature; presentation-only navigation reports stable IDs. The debug gallery invokes these same production composables with local fixture state.
 - Controllers receive domain repository interfaces through constructor injection. Fake implementations can satisfy the same contracts for tests and isolated UI work.
 - `di/` knows concrete implementations and supplies dependencies to consumers. Navigation routes connect those dependencies to screens.
 - Screens receive state and callbacks. Reusable components do not construct repositories or acquire ViewModels.

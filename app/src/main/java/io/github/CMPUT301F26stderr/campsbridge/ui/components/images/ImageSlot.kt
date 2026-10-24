@@ -30,10 +30,10 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageFailure
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageOperation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.AppActionButton
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.ConfirmationDialog
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.FailureContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.LocalControlScale
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -49,6 +49,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param emptyIcon Parent-appropriate placeholder icon.
  * @param modifier Caller layout.
  * @param imageShape Shape shared with the parent feature's image convention.
+ * @param imageModifier Optional parent geometry, such as a full-width campsite photo.
  */
 @Composable
 fun ImageSlot(
@@ -62,9 +63,11 @@ fun ImageSlot(
     emptyIcon: ImageVector,
     modifier: Modifier = Modifier,
     imageShape: Shape = MaterialTheme.shapes.medium,
+    imageModifier: Modifier? = null,
 ) {
     var confirmingRemoval by remember { mutableStateOf(false) }
     val imageSize = 128.dp * LocalControlScale.current
+    val geometry = imageModifier ?: Modifier.size(imageSize)
     val reference = state.candidate?.previewReference ?: state.displayUrl
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         if (reference != null) {
@@ -77,11 +80,11 @@ fun ImageSlot(
                 } else {
                     imageDescription
                 },
-                Modifier.size(imageSize).clip(imageShape),
+                geometry.clip(imageShape),
             )
         } else {
             Surface(shape = imageShape, color = MaterialTheme.colorScheme.surfaceVariant) {
-                Box(Modifier.size(imageSize), contentAlignment = Alignment.Center) {
+                Box(geometry, contentAlignment = Alignment.Center) {
                     if (state.loadState == ImageLoadState.LOADING ||
                         state.isResolvingUrl
                     ) {

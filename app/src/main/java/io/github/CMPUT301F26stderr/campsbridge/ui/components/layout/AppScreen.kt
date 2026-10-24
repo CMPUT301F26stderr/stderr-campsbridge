@@ -1,4 +1,4 @@
-package io.github.CMPUT301F26stderr.campsbridge.ui.components
+package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,39 +29,46 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**
  * Owns the shared white app bar, system insets, gutters, and optional bottom actions.
- * @param title Localized page title.
+ * @param title Localized page title, or null to omit the app bar.
  * @param modifier Caller layout.
  * @param onBack Optional return action; absent on root destinations.
  * @param snackbarHostState Optional caller-owned snackbar state.
  * @param bottomContent Optional actions kept above navigation and keyboard insets.
  * @param actions Page-level app-bar actions.
  * @param content Page content; the caller chooses whether it scrolls.
+ * @param backEnabled Whether the visible Back action can be invoked.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScreen(
-    title: String,
+    title: String?,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     snackbarHostState: SnackbarHostState? = null,
     bottomContent: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
+    backEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = { Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
-                actions = actions,
-                navigationIcon = {
-                    if (onBack != null) {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+            if (title != null) {
+                TopAppBar(
+                    title = { Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                    actions = actions,
+                    navigationIcon = {
+                        if (onBack != null) {
+                            IconButton(onClick = onBack, enabled = backEnabled) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    stringResource(R.string.back),
+                                )
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
         },
         snackbarHost = { if (snackbarHostState != null) SnackbarHost(snackbarHostState) },
         bottomBar = { Box(Modifier.navigationBarsPadding().imePadding()) { bottomContent() } },

@@ -13,7 +13,7 @@ Prefer Jetpack and Android platform components. Use official Google SDKs for Fir
 | Screens, forms, dialogs, navigation | Compose, Material 3, and Jetpack Navigation |
 | Featured carousel | Compose carousel or `HorizontalPager`; ranking remains application logic |
 | Date/range selection | Material 3 `DatePicker` / `DateRangePicker` |
-| Booked/free-night calendar | A shared Compose component initially; consider a calendar library if the design becomes substantial |
+| Booked/free-night calendar | Shared `CampsiteCalendar`, composed from Material controls and ordinary layouts |
 | Photo selection | Android Photo Picker through Activity Result contracts |
 | Maps | Google Maps Compose; project/API setup is required |
 | QR scanning | Google Code Scanner; depends on Google Play services |
@@ -29,7 +29,39 @@ Use `AppScreen` for app bars, system/keyboard insets, gutters, optional bottom a
 
 `AppActionButton` blocks repeated taps while submitting. `AppTextField` handles labels, errors, and IME callbacks; callers supply validation. `LoadingContent`, `EmptyContent`, and `FailureContent` distinguish outcomes. `ConfirmationDialog` separates confirm, cancel, and dismissal. Compose ordinary Material components directly when a shared wrapper adds no useful behavior.
 
-Run the debug gallery with Android Studio's `demo.DemoActivity`, or launch its component with adb. It demonstrates local interactions and feedback without signing in or performing repository writes. Default and enlarged-text previews are colocated with the gallery. The gallery is absent from release builds.
+The debug-only `demo.DemoActivity` hosts two offline pages: **Controls** for input, choices, picker dialogs, actions and feedback; **Content** for feature cards, stay summaries, navigation, photos and calendar. Interactions modify local example state; they never construct repositories or write shared data. The campsite photo is bundled in debug assets from the approved prototype.
+
+After installing a debug APK, open the gallery with:
+
+```sh
+adb shell am start -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActivity
+adb shell am start -S -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActivity --ei page 1
+```
+
+`--ez large true` starts with enlarged app typography/controls; system font scaling remains independent. `--ei section N` opens a zero-based section for visual review. The page tabs and Large text action are also interactive. Themed normal/enlarged previews are colocated with the gallery. This activity, example data and photo are absent from release builds.
+
+## Shared component ownership
+
+| Package | Entry points and responsibility |
+| --- | --- |
+| `components/layout` | `AppScreen`, `StepScaffold`, `StepProgress`: frame, insets, optional header/footer, wizard progress/actions. |
+| `components/actions` | `AppActionButton`, `ActionStyle`: shared submission blocking and Material action hierarchy. |
+| `components/forms` | `AppTextField`, `CountStepper`: controlled fields, bounds, helper/error precedence, units and keyboard behavior. |
+| `components/selection` | `ChoiceRow`, `SwitchRow`, `CheckboxRow`, `PreferenceChips`, `DropdownField`: caller-owned selection and one action per row. |
+| `components/rows`, `components/summaries` | `NavigationRow`, `DetailRow`, `StaySummary`: repeated menu and fact layouts. |
+| `components/pickers` | `PickerField` and date/range/time dialogs: temporary selection applied only on Confirm. |
+| `components/feedback` | Loading/empty/retry content, `InlineNotice`, `ConfirmationDialog`, `StatusLabel`. |
+| `components/images`, `components/calendar` | Shared photo presentation/controller integration, `AccountAvatar`, and availability grid. |
+| `common/format` | Exact CAD formatting, local-date/explicit-zone instant display and unambiguous local-time resolution. |
+| Feature `components` folders | `CampsiteCard`, `CampsiteRow`, `LotteryCard`, `ReservationCard`, `DiscoveryToolbar`: reusable feature presentation, without persistence or navigation ownership. |
+
+Routes connect controllers, lifecycle collection, navigation and Android launchers. Screens arrange supplied state and callbacks; feature components compose shared controls; shared controls compose Material. Callbacks report explicit user intent. Selection components do not implement preference mutation, filtering or eligibility rules. Keep those decisions in their existing owner, including reserved teammate functions.
+
+`WorkspaceScaffold` accepts the current title and registered peer destinations from its caller; `WorkspaceNavigation` renders those items and reports IDs. The production graph currently registers Profile only. Do not present gallery destinations as implemented production routes. Primary workspace content uses the workspace frame; details and wizard flows own their appropriate frame. Apply system insets once and avoid stacking app bars.
+
+Use Material controls directly when a wrapper would add no behavior. Add small parameters or content slots for real variants; keep feature-only details beside the feature. An image slot can accept caller geometry, while compact card photos use the same loader with a missing/error placeholder. Business models may be passed directly when appropriate; avoid duplicate UI models without an actual assembly need.
+
+Date-range picker endpoints represent arrival and checkout; checkout is excluded from occupied nights. Picker confirmation does not validate inventory or authorize a booking. Schedule input uses an explicit timezone: `resolveDateTime` returns null for a DST gap or overlap, so the caller requests an unambiguous time rather than silently shifting a deadline.
 
 ## Components and state
 

@@ -19,7 +19,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test

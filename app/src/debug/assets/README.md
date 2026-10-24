@@ -1,0 +1,1 @@
+`gallery_campsite.jpg` is the campsite photograph used by the checked-in Explore prototype (`prototype/screens/15363171414317941683.html`). It is bundled only in debug builds so the component gallery works offline.

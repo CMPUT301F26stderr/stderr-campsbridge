@@ -1,4 +1,4 @@
-package io.github.CMPUT301F26stderr.campsbridge.ui.components
+package io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults

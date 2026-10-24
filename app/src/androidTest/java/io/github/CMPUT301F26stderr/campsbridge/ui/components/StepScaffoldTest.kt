@@ -20,6 +20,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule

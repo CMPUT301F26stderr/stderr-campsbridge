@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.EmptyContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.FailureContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**

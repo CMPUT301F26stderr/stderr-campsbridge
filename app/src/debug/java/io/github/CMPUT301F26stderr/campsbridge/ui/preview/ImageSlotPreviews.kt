@@ -13,8 +13,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageOperation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.ImageSlot
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import java.time.Instant
 

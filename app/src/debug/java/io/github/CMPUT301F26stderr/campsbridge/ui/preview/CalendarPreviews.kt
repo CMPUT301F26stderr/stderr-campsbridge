@@ -8,12 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import java.time.YearMonth
 

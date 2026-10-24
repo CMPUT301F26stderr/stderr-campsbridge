@@ -5,7 +5,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
