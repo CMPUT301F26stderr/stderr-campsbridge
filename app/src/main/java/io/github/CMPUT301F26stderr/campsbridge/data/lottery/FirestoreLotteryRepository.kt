@@ -6,7 +6,6 @@ import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.Fields
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.activeAccount
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.atomic
@@ -16,7 +15,6 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.read
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.removal
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.require
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.stored
-import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationWrites
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.DrawResult
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
@@ -25,10 +23,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfigurati
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.ALREADY_USED
@@ -55,9 +49,10 @@ import java.time.Clock
 class FirestoreLotteryRepository(
     private val db: FirebaseFirestore,
     private val clock: Clock,
-    private val random: kotlin.random.Random = kotlin.random.Random.Default,
+    random: kotlin.random.Random = kotlin.random.Random.Default,
 ) : LotteryRepository {
     private val queries = LotteryQueries(db)
+    private val draws = LotteryDraw(db, clock, random)
 
     /**
      * Builds a validated reference to the lottery document.
@@ -473,120 +468,11 @@ class FirestoreLotteryRepository(
         }
     }
 
-    /**
-     * Starts or resumes a deterministic seeded draw after registration closes. Outcomes and
-     * receipt jobs commit per entry; draw completion gates booking and result delivery.
-     * Returns whether already complete.
-     *
-     * @param id Lottery document ID.
+    /** Starts or resumes the same deterministic operation used by foreground recovery.
+     * @param id Lottery whose closed registration is being drawn.
      */
-    override suspend fun draw(id: String): DrawResult {
-        val drawRef = db.collection("_draws").document(DocumentKeys.id(id))
-        val proposedSeed = random.nextLong().toString()
-        val seed =
-            db.atomic { tx ->
-                val lottery = tx.require(ref(id), LotteryDocument)
-                val previous = tx.get(drawRef)
-                if (lottery.drawnAt != null) return@atomic null
-                requireOperation(
-                    lottery.publishedAt != null && lottery.cancellation == null,
-                    INACTIVE,
-                    "Lottery is inactive",
-                )
-                requireOperation(
-                    clock.instant() >= lottery.configuration.registrationClosesAt,
-                    WINDOW_CLOSED,
-                    "Registration has not closed",
-                )
-                if (previous.exists()) {
-                    Fields(previous.reference.path, previous.data!!).string("seed")
-                } else {
-                    tx.set(drawRef, mapOf("seed" to proposedSeed))
-                    // Conflict with in-flight membership changes; their retry rechecks the
-                    // deadline.
-                    tx.update(ref(id), "waitingCount", lottery.waitingCount)
-                    proposedSeed
-                }
-            } ?: return DrawResult.ALREADY_DRAWN
-        val lottery = get(id) ?: throw PersistenceFailure(NOT_FOUND, "Lottery missing")
-        // After the freeze barrier, membership is fixed. Include applied outcomes on resume.
-        val candidates =
-            ref(id).collection("entries").read(LotteryEntryDocument).filter {
-                it.state != EntryState.WITHDRAWN
-            }
-
-        /**
-         * Hashes the persisted draw seed and account ID to reproduce candidate order on
-         * retries.
-         *
-         * @param account Account document ID.
-         */
-        fun rank(account: String): String =
-            java.security.MessageDigest
-                .getInstance("SHA-256")
-                .digest("$seed:$account".toByteArray(Charsets.UTF_8))
-                .joinToString("") { "%02x".format(it.toInt() and 255) }
-        val winners =
-            candidates
-                .sortedWith(compareBy<LotteryEntry> { rank(it.accountId) }.thenBy { it.accountId })
-                .take(
-                    lottery.configuration.winnerCount
-                        .coerceAtMost(candidates.size.toLong())
-                        .toInt(),
-                ).map { it.accountId }
-                .toSet()
-        for (candidate in candidates) {
-            db.atomic { tx ->
-                val current = tx.require(ref(id), LotteryDocument)
-                if (current.drawnAt != null) return@atomic
-                requireOperation(current.cancellation == null, INACTIVE, "Lottery cancelled")
-                val entryRef = db.document(FirestorePaths.entry(id, candidate.accountId))
-                val entry = tx.require(entryRef, LotteryEntryDocument)
-                if (entry.state != EntryState.WAITING) return@atomic
-                val selected = entry.accountId in winners
-                val now = clock.instant()
-                requireOperation(current.waitingCount > 0, INVALID_STATE, "Invalid waiting count")
-                tx.set(
-                    entryRef,
-                    LotteryEntryDocument.encode(
-                        entry.copy(
-                            state = if (selected) EntryState.OFFERED else EntryState.LOST,
-                            stateChangedAt = now,
-                        ),
-                    ),
-                )
-                tx.update(ref(id), "waitingCount", current.waitingCount - 1)
-                val type =
-                    if (selected) NotificationType.LOTTERY_WON else NotificationType.LOTTERY_LOST
-                val eventId = DocumentKeys.compound(type.name, id, entry.accountId)
-                NotificationWrites.enqueue(
-                    db,
-                    tx,
-                    Notification(
-                        eventId,
-                        null,
-                        type,
-                        NotificationSubject(SubjectType.LOTTERY, id),
-                        null,
-                        now,
-                    ),
-                    listOf(entry.accountId),
-                    waitForDraw = id,
-                )
-            }
-        }
-        db.atomic { tx ->
-            val current = tx.require(ref(id), LotteryDocument)
-            if (current.drawnAt != null) return@atomic
-            requireOperation(
-                current.cancellation == null && current.waitingCount == 0L,
-                INVALID_STATE,
-                "Draw incomplete or cancelled",
-            )
-            tx.update(ref(id), "drawnAt", clock.instant().stored())
-        }
-        return DrawResult.COMPLETED
-    }
+    override suspend fun draw(id: String): DrawResult =
+        draws.draw(id)
 
     /**
      * Records owner/admin cancellation, finishing any already-started draw before
@@ -657,26 +543,6 @@ class FirestoreLotteryRepository(
             if (!finishDraw) return
             // Complete already-started outcomes before cancellation; a retry uses the same seed.
             draw(id)
-        }
-    }
-
-    /**
-     * Draws due active lotteries and resumes interrupted draws; inactive races are skipped.
-     */
-    suspend fun resumeDraws() {
-        for (lottery in db.collection("lotteries").read(LotteryDocument)) {
-            if (
-                lottery.publishedAt != null &&
-                lottery.cancellation == null &&
-                lottery.drawnAt == null &&
-                clock.instant() >= lottery.configuration.registrationClosesAt
-            ) {
-                try {
-                    draw(lottery.id)
-                } catch (failure: PersistenceFailure) {
-                    if (failure.reason != INACTIVE) throw failure
-                }
-            }
         }
     }
 

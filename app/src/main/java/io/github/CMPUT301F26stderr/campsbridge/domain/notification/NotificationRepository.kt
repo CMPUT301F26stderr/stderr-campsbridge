@@ -56,7 +56,4 @@ interface NotificationRepository {
         accountId: String,
         notificationId: String,
     )
-
-    /** Resumes durable delivery work. Call at startup and after mutations. */
-    suspend fun resumeDeliveries()
 }

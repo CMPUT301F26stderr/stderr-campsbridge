@@ -45,13 +45,15 @@ Feature folders indicate the primary owner of an operation, rather than restrict
 
 A controller calls `bookings.reserve(request)` once. It must not separately create a reservation, charge a payment, claim nights, and send a notification: that sequence belongs to the repository operation. Transaction callbacks must avoid external side effects because Firestore can retry them. Storage and Firestore do not share a transaction, so image publication and cleanup require explicit retry coordination.
 
+Draft creation requires a caller-allocated stable ID and returns the saved record. Retries preserve existing data rather than replacing edits. Owner reservation lists derive membership from retained campsite ownership; published campsite lottery lookup joins canonical offers with the owner's published records.
+
 Give each persisted fact one authoritative owner. Derive values such as QR images, fixed Storage paths, and night counts from their inputs. Preserve historical snapshots such as accepted booking terms when current editable data cannot reconstruct them. Document deliberate query copies and coordination metadata in the schema, including the operation responsible for maintaining them.
 
 Document codecs such as `ReservationDocument` translate between application models and Firestore fields. Screens and controllers do not perform this conversion. Avoid duplicate model layers or pass-through use cases unless concrete complexity or reuse justifies them.
 
 ## Current implementation and pending work
 
-Domain contracts, repository implementations, codecs, and the persistence `AppContainer` are implemented. `AppServices` adds identity and local preferences; typed factories supply these dependencies to ViewModels. `AppContainer.resumePendingWork()` is an administrative/global recovery entry point and remains unwired from ordinary startup.
+Domain contracts, repository implementations, codecs, and the persistence `AppContainer` are implemented. `AppServices` adds identity and local preferences; typed factories supply these dependencies to ViewModels. `AppContainer` only constructs dependencies. `AdminMaintenance.resume(adminId)` explicitly authorizes global removal, draw, notification and image recovery; it is unwired from ordinary startup. Lottery reads and draws have separate internal owners (`LotteryQueries`, `LotteryDraw`); booking reads and coordinated writes use `BookingQueries` and `BookingWrites`. A reservation owns its required nested simulated payment, so one observation contains cancellation and refund state together. Notification transaction writes and scoped inbox delivery are separate from the event/history repository.
 
 The root ViewModel restores identity, observes profiles and local setup progress, and confirms permitted workspace selections. The root selects startup/setup/unavailable or the ready workspace graph, whose current destination displays profile fields and explicit photo operations. The shared image controller owns selection/action state; the platform adapter supplies native picker content and fresh upload streams. First-time profile submission and other feature controllers remain pending. Foreground recovery must be scoped to the active account; OS/push delivery remains pending. Feature screens follow the approved prototypes.
 

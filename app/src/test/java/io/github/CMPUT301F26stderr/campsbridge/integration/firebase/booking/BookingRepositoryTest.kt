@@ -92,7 +92,7 @@ class BookingRepositoryTest {
             val job =
                 fixture.entrant.clients.firestore
                     .document(
-                        "_notificationDeliveries/$eventId",
+                        "reservations/$id/_notificationDeliveries/$eventId",
                     ).get(Source.SERVER)
                     .await()
             assertEquals(listOf(fixture.entrant.id), job.get("recipientIds"))
@@ -419,7 +419,7 @@ class BookingRepositoryTest {
         )
         val eventId = DocumentKeys.compound("RESERVATION_CONFIRMED", id)
         assertFalse(firebase.documentExists("notifications/$eventId"))
-        assertFalse(firebase.documentExists("_notificationDeliveries/$eventId"))
+        assertFalse(firebase.documentExists("reservations/$id/_notificationDeliveries/$eventId"))
     }
 
     /** One live reservation contains confirmed payment and a cross-account cancellation/refund. */

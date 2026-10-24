@@ -6,6 +6,7 @@ import io.github.CMPUT301F26stderr.campsbridge.data.campsite.FirestoreCampsiteRe
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirebaseClients
 import io.github.CMPUT301F26stderr.campsbridge.data.image.FirebaseImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.FirestoreLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.data.maintenance.AdminMaintenance
 import io.github.CMPUT301F26stderr.campsbridge.data.messaging.FirestoreMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.moderation.FirestoreModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.FirestoreNotificationRepository
@@ -49,15 +50,12 @@ class AppContainer(
     val moderation: ModerationRepository =
         FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock)
 
-    /**
-     * Administrative/global recovery entry point, deliberately unwired from ordinary startup.
-     * Failure propagates; subsequent invocation resumes durable work. Use account-scoped
-     * foreground operations when wiring normal user sessions.
-     */
-    suspend fun resumePendingWork() {
-        moderation.resumeRemovals()
-        lotteryImplementation.resumeDraws()
-        notifications.resumeDeliveries()
-        imageImplementation.resumeCleanup()
-    }
+    val maintenance =
+        AdminMaintenance(
+            clients.firestore,
+            moderation,
+            lotteryImplementation,
+            imageImplementation,
+            clock,
+        )
 }

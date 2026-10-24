@@ -317,7 +317,7 @@ class ModerationRepositoryTest {
             assertTrue(firebase.documentExists("_removals/campsite_site"))
             firebase.clock.current = firebase.clock.current.plusSeconds(60)
             admin.container.moderation.removeCampsite("site", admin.id, "Retry reason")
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
             assertEquals(
                 first,
                 admin.container.campsites

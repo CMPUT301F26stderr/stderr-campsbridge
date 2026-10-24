@@ -5,7 +5,9 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentDecodingEx
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.DeliveryScope
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.InboxReceiptDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDeliveries
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDocument
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
@@ -26,7 +28,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -93,15 +94,16 @@ class NotificationRepositoryTest {
             val job =
                 fixture.owner.clients.firestore
                     .document(
-                        "_notificationDeliveries/$id",
+                        "lotteries/draw/_notificationDeliveries/$id",
                     ).get(Source.SERVER)
                     .await()
             assertEquals(
                 fixture.entrants.map { it.id }.toSet(),
                 (job.get("recipientIds") as List<*>).toSet(),
             )
-            val admin = firebase.registeredActor(Role.ADMIN)
-            admin.container.notifications.resumeDeliveries()
+            NotificationDeliveries(
+                fixture.owner.clients.firestore,
+            ).resume(DeliveryScope.Lottery("draw"))
             for (actor in fixture.entrants) {
                 assertEquals(
                     listOf(InboxReceipt(id, null)),
@@ -123,6 +125,7 @@ class NotificationRepositoryTest {
                     .first()
                     .isEmpty(),
             )
+            val admin = firebase.registeredActor(Role.ADMIN)
             assertEquals(
                 1,
                 admin.container.notifications
@@ -130,7 +133,7 @@ class NotificationRepositoryTest {
                     .first()
                     .size,
             )
-            assertFalse(firebase.documentExists("_notificationDeliveries/$id"))
+            assertFalse(firebase.documentExists("lotteries/draw/_notificationDeliveries/$id"))
         }
 
     /** A draw result remains pending until the final completion marker is stored. */
@@ -170,34 +173,36 @@ class NotificationRepositoryTest {
                 )
             firebase.seed("notifications/$eventId", NotificationDocument.encode(event))
             firebase.seed(
-                "_notificationDeliveries/$eventId",
+                "lotteries/draw/_notificationDeliveries/$eventId",
                 mapOf(
                     "recipientIds" to listOf(recipient.id),
-                    "waitForDraw" to "draw",
                 ),
             )
-            val admin = firebase.registeredActor(Role.ADMIN)
-            admin.container.notifications.resumeDeliveries()
+            NotificationDeliveries(
+                fixture.owner.clients.firestore,
+            ).resume(DeliveryScope.Lottery("draw"))
             assertTrue(
                 recipient.container.notifications
                     .observeInbox(recipient.id)
                     .first()
                     .isEmpty(),
             )
-            assertTrue(firebase.documentExists("_notificationDeliveries/$eventId"))
+            assertTrue(firebase.documentExists("lotteries/draw/_notificationDeliveries/$eventId"))
             firebase.seed(
                 "lotteries/draw",
                 LotteryDocument.encode(fixture.lottery.copy(waitingCount = 0, drawnAt = now)) +
                     ("_revision" to 0L),
             )
-            admin.container.notifications.resumeDeliveries()
+            NotificationDeliveries(
+                fixture.owner.clients.firestore,
+            ).resume(DeliveryScope.Lottery("draw"))
             assertEquals(
                 listOf(InboxReceipt(eventId, null)),
                 recipient.container.notifications
                     .observeInbox(recipient.id)
                     .first(),
             )
-            assertFalse(firebase.documentExists("_notificationDeliveries/$eventId"))
+            assertFalse(firebase.documentExists("lotteries/draw/_notificationDeliveries/$eventId"))
         }
 
     /** Resuming partial fan-out preserves existing read receipts and delivers the remaining ones. */
@@ -213,19 +218,33 @@ class NotificationRepositoryTest {
                 )
             val first = fixture.entrants.first()
             val readAt = firebase.clock.instant().minusSeconds(30)
+            // Delivery uses the captured audience even if membership changes after sending.
+            val second = fixture.entrants.last()
+            firebase.seed(
+                "lotteries/draw/entries/${second.id}",
+                LotteryEntryDocument.encode(
+                    LotteryEntry(
+                        "draw",
+                        second.id,
+                        EntryState.WITHDRAWN,
+                        firebase.clock.instant(),
+                        firebase.clock.instant(),
+                    ),
+                ),
+            )
             firebase.seed(
                 "accounts/${first.id}/inbox/$id",
                 InboxReceiptDocument.encode(InboxReceipt(id, readAt)),
             )
-            val admin = firebase.registeredActor(Role.ADMIN)
-            admin.container.notifications.resumeDeliveries()
+            NotificationDeliveries(
+                fixture.owner.clients.firestore,
+            ).resume(DeliveryScope.Lottery("draw"))
             assertEquals(
                 listOf(InboxReceipt(id, readAt)),
                 first.container.notifications
                     .observeInbox(first.id)
                     .first(),
             )
-            val second = fixture.entrants.last()
             assertEquals(
                 listOf(InboxReceipt(id, null)),
                 second.container.notifications
@@ -233,10 +252,12 @@ class NotificationRepositoryTest {
                     .first(),
             )
             firebase.seed(
-                "_notificationDeliveries/$id",
-                mapOf("recipientIds" to fixture.entrants.map { it.id }, "waitForDraw" to null),
+                "lotteries/draw/_notificationDeliveries/$id",
+                mapOf("recipientIds" to fixture.entrants.map { it.id }),
             )
-            admin.container.notifications.resumeDeliveries()
+            NotificationDeliveries(
+                fixture.owner.clients.firestore,
+            ).resume(DeliveryScope.Lottery("draw"))
             assertEquals(
                 listOf(InboxReceipt(id, readAt)),
                 first.container.notifications
@@ -250,7 +271,38 @@ class NotificationRepositoryTest {
                     .first()
                     .size,
             )
-            assertFalse(firebase.documentExists("_notificationDeliveries/$id"))
+            assertFalse(firebase.documentExists("lotteries/draw/_notificationDeliveries/$id"))
+        }
+
+    /** A parent-scoped replay leaves another owner's queued announcement untouched. */
+    @Test(timeout = 60000)
+    fun scopedReplayDoesNotProcessUnrelatedWork() =
+        runBlocking<Unit> {
+            val fixture = firebase.drawFixture(entrants = 1, winners = 1)
+            val otherOwner = firebase.registeredActor(Role.OWNER)
+            firebase.seed(
+                "lotteries/other",
+                LotteryDocument.encode(
+                    fixture.lottery.copy(id = "other", ownerId = otherOwner.id),
+                ),
+            )
+            val id =
+                fixture.owner.container.notifications.announce(
+                    "draw",
+                    fixture.owner.id,
+                    Announcement("Here", "This lottery"),
+                )
+            val otherId =
+                otherOwner.container.notifications.announce(
+                    "other",
+                    otherOwner.id,
+                    Announcement("There", "Other lottery"),
+                )
+            NotificationDeliveries(
+                fixture.owner.clients.firestore,
+            ).resume(DeliveryScope.Lottery("draw"))
+            assertFalse(firebase.documentExists("lotteries/draw/_notificationDeliveries/$id"))
+            assertTrue(firebase.documentExists("lotteries/other/_notificationDeliveries/$otherId"))
         }
 
     /** A failed fan-out retains its job; repaired data lets a later attempt finish delivery. */
@@ -268,17 +320,21 @@ class NotificationRepositoryTest {
             firebase.seed("accounts/${first.id}/inbox/$id", mapOf("readAt" to "invalid timestamp"))
             val admin = firebase.registeredActor(Role.ADMIN)
             try {
-                admin.container.notifications.resumeDeliveries()
+                NotificationDeliveries(
+                    fixture.owner.clients.firestore,
+                ).resume(DeliveryScope.Lottery("draw"))
                 error("Expected receipt decoding failure")
             } catch (_: DocumentDecodingException) {
-                assertTrue(firebase.documentExists("_notificationDeliveries/$id"))
+                assertTrue(firebase.documentExists("lotteries/draw/_notificationDeliveries/$id"))
             }
             firebase.seed(
                 "accounts/${first.id}/inbox/$id",
                 InboxReceiptDocument.encode(InboxReceipt(id, null)),
             )
-            admin.container.notifications.resumeDeliveries()
-            assertFalse(firebase.documentExists("_notificationDeliveries/$id"))
+            NotificationDeliveries(
+                fixture.owner.clients.firestore,
+            ).resume(DeliveryScope.Lottery("draw"))
+            assertFalse(firebase.documentExists("lotteries/draw/_notificationDeliveries/$id"))
             for (recipient in fixture.entrants) {
                 assertEquals(
                     listOf(InboxReceipt(id, null)),

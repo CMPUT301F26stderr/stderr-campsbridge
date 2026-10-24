@@ -113,7 +113,7 @@ class ImageRepositoryTest {
                     .downloadUrl(current.blobId)
                     .contains("127.0.0.1:9199"),
             )
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists(old.blobId))
             assertTrue(blobExists(current.blobId))
             assertFalse(firebase.documentExists("_storageCleanup/${old.blobId}"))
@@ -138,8 +138,8 @@ class ImageRepositoryTest {
             assertEquals(attachment.blobId, result.obsoleteBlobId)
             assertNull(owner.container.images.get(target))
             assertTrue(blobExists(attachment.blobId))
-            admin.container.resumePendingWork()
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists(attachment.blobId))
             assertNull(
                 owner.container.images
@@ -179,7 +179,7 @@ class ImageRepositoryTest {
                 contentType = "image/png",
             )
             assertTrue(blobExists("late"))
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists("late"))
             assertFalse(firebase.documentExists("_imageUploads/late"))
             assertTrue(blobExists(attached.blobId))
@@ -225,7 +225,7 @@ class ImageRepositoryTest {
             assertTrue(blobExists(failure.uploadedBlobId))
             assertTrue(firebase.documentExists("_imageUploads/${failure.uploadedBlobId}"))
             intent(failure.uploadedBlobId, target, expired = true, finished = true)
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists(failure.uploadedBlobId))
             assertTrue(blobExists(old.blobId))
         }

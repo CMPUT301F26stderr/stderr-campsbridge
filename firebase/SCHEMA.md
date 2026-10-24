@@ -240,9 +240,8 @@ These are implementation-owned records, not additional application entities:
 ```text
 lotteries/{lotteryId}._revision: Int                    # Absent means zero
 _draws/{lotteryId}: { seed: String }
-_notificationDeliveries/{notificationId}: {
-  recipientIds: List<AccountId>, waitForDraw: LotteryId?
-}
+lotteries/{lotteryId}/_notificationDeliveries/{notificationId}: { recipientIds: List<AccountId> }
+reservations/{reservationId}/_notificationDeliveries/{notificationId}: { recipientIds: List<AccountId> }
 _storageCleanup/{blobId}: { queuedAt: Timestamp, attachmentId: String }
 _imageUploads/{blobId}: {
   attachmentId: String, expiresAt: Timestamp,
@@ -252,6 +251,8 @@ _removals/{attachmentId}: Removal
 ```
 
 The lottery revision guards a queried offer set against concurrent edits during publication. A draw first creates its seed and conflicts with in-flight membership changes, then assigns deterministic outcomes in per-entry transactions. Each assignment decrements the waiting count and queues its result event; completion requires zero waiting entries. Retrying uses the same seed and never resets completed entry states. Cancellation checks the draw marker transactionally: if a draw already started, finish it before cancelling. Historical completed-draw notifications remain deliverable after cancellation.
+
+Notification jobs live under their lottery (results/announcements) or reservation (confirmations/cancellations/message alerts). The parent path owns scope; event type and lottery completion gate result delivery without a copied gate field. Scoped listeners discover every job, including generated announcement/message IDs. Only explicit administrative maintenance uses a collection-group scan.
 
 Notification jobs own a captured recipient set until receipts are created; retries preserve existing read timestamps. Event creation and its job are atomic with the originating write. Delivery jobs are deleted only after fan-out completes. Image replacement/removal queues obsolete blob cleanup with the attachment change. Upload intent is persisted before bytes are sent, with a 15-minute expiry and a 10-minute transfer timeout. Publication reads/deletes that intent in its transaction; cleanup claims expired intents as abandoned so publication cannot race deletion. If an interrupted uploader never acknowledged completion and no object exists, retain its abandoned intent to catch a late upload. An upload followed by ambiguous publication failure reports `ImagePublicationException` with the blob ID for reconciliation; never delete a possibly published blob blindly. Removal jobs are deleted only after dependent cleanup completes.
 

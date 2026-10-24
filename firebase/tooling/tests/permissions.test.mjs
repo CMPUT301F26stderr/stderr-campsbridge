@@ -46,10 +46,11 @@ async function seed(records) {
     await batch.commit();
   });
 }
-function event(batch, database, type, subjectType, subjectId, recipients, senderId = null, announcement = null) {
+function event(batch, database, type, subjectType, subjectId, recipients, senderId = null, announcement = null, reservationScope = null) {
   const id = pair(type, subjectId, ...(subjectType === 'LOTTERY' && type !== 'OWNER_ANNOUNCEMENT' ? recipients : []));
   batch.set(doc(database, `notifications/${id}`), { senderId, type, subject: { type: subjectType, id: subjectId }, announcement, createdAt: now() });
-  batch.set(doc(database, `_notificationDeliveries/${id}`), { recipientIds: recipients, waitForDraw: type.startsWith('LOTTERY_') ? subjectId : null });
+  const parent = subjectType === 'LOTTERY' ? `lotteries/${subjectId}` : `reservations/${reservationScope ?? subjectId}`;
+  batch.set(doc(database, `${parent}/_notificationDeliveries/${id}`), { recipientIds: recipients });
   return id;
 }
 function booking(uid = 'entrant', amount = 13000) {
@@ -377,5 +378,35 @@ test('campsite-scoped offer query and owner-scoped published lottery query work 
   const invalid = writeBatch(db('owner'));
   invalid.set(doc(db('owner'), 'lotteries/draft-lottery/offers/site'), { campsiteId: 'draft', nights: ['2027-05-15'] });
   invalid.update(doc(db('owner'), 'lotteries/draft-lottery'), { _revision: 1 });
+  await assertFails(invalid.commit());
+});
+
+test('delivery queues are discoverable through permitted parents and globally only by admin', async () => {
+  await seed({
+    [`reservations/${reservationId}`]: reservation(),
+    'lotteries/open/_notificationDeliveries/announcement': { recipientIds: ['entrant'] },
+    [`reservations/${reservationId}/_notificationDeliveries/message`]: { recipientIds: ['owner'] },
+  });
+  await assertSucceeds(getDocs(collection(db('owner'), 'lotteries/open/_notificationDeliveries')));
+  await assertFails(getDocs(collection(db('entrant'), 'lotteries/open/_notificationDeliveries')));
+  for (const uid of ['owner', 'entrant']) {
+    await assertSucceeds(getDocs(collection(db(uid), `reservations/${reservationId}/_notificationDeliveries`)));
+  }
+  await assertFails(getDocs(collection(db('other'), `reservations/${reservationId}/_notificationDeliveries`)));
+  await assertSucceeds(getDocs(collectionGroup(db('admin'), '_notificationDeliveries')));
+  await assertFails(getDocs(collectionGroup(db('owner'), '_notificationDeliveries')));
+  await assertFails(getDocs(collection(db('owner'), '_notificationDeliveries')));
+});
+
+test('message event and delivery job share the reservation context', async () => {
+  await seed({ [`reservations/${reservationId}`]: reservation() });
+  const database = db('entrant');
+  const valid = writeBatch(database);
+  valid.set(doc(database, 'messages/m'), { reservationId, senderId: 'entrant', body: 'Hello', createdAt: now(), readAt: null });
+  event(valid, database, 'NEW_MESSAGE', 'MESSAGE', 'm', ['owner'], 'entrant', null, reservationId);
+  await assertSucceeds(valid.commit());
+  const invalid = writeBatch(database);
+  invalid.set(doc(database, 'messages/wrong'), { reservationId, senderId: 'entrant', body: 'Hello', createdAt: now(), readAt: null });
+  event(invalid, database, 'NEW_MESSAGE', 'MESSAGE', 'wrong', ['owner'], 'entrant', null, 'elsewhere');
   await assertFails(invalid.commit());
 });
