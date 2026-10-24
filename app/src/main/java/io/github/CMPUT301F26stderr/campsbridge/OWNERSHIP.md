@@ -8,7 +8,7 @@ These packages belong to the single Gradle module `:app`. The boundaries below a
 | --- | --- | --- |
 | `domain/` | Application models, enums, invariants, request types, failures, and repository interfaces, grouped by feature. | Uses ordinary Kotlin/JVM types and coroutines. No Firebase SDK types, Android UI, document paths, or dependency on `data/`. |
 | `data/` | Repository implementations, document codecs, queries, listeners, transactions, Storage operations, and durable persistence coordination. | Implements domain contracts and exposes application models. Firebase snapshots and serialization details stay here. |
-| `di/` | Dependency construction and wiring through `AppContainer`. | Supplies implementations through interfaces, including injected Firebase clients, clock, and randomness. Does not own screen behavior or business rules. |
+| `di/` | Dependency construction through `AppContainerFactory`, `AppServices`, and the persistence `AppContainer`. | Supplies implementations through interfaces, including injected Firebase clients, clock, and randomness. Does not own screen behavior or business rules. |
 | `ui/` | Compose presentation, shared components, theme, and controllers/ViewModels. | Uses domain contracts through controllers. Does not access Firestore or Storage directly. |
 | `navigation/` | Destinations, route arguments, navigation graph, and route wiring. | Connects screens and controllers. Does not perform persistence operations or decide booking eligibility. |
 | `platform/` | Android integrations such as identity/auth, location, QR scanning/rendering, file sharing, and OS/push notifications. | Keeps platform-specific implementation details behind small integration interfaces or components. |
@@ -51,8 +51,8 @@ Document codecs such as `ReservationDocument` translate between application mode
 
 ## Current implementation and pending work
 
-Domain contracts, Firestore/Storage repository implementations, codecs, and `AppContainer` are implemented. `AppContainer.resumePendingWork()` coordinates resumable persistence work; application wiring must schedule it after Firebase/auth initialization.
+Domain contracts, repository implementations, codecs, and the persistence `AppContainer` are implemented. `AppServices` adds identity and local preferences; typed factories supply these dependencies to ViewModels. `AppContainer.resumePendingWork()` is an administrative/global recovery entry point and remains unwired from ordinary startup.
 
-Feature screens/controllers, navigation destinations, shared feature components, and platform integrations remain placeholders. The starter activity/theme are present. Live Firebase/auth setup, foreground scheduling, and OS/push delivery still require integration. Screen contracts and navigation will follow the agreed prototypes.
+The root ViewModel restores identity, observes profiles and local setup progress, and confirms permitted workspace selections. The root selects startup/setup/unavailable or the ready workspace graph, whose current destination is a read-only profile. First-time profile submission and other feature controllers remain pending. Foreground recovery must be scoped to the active account; OS/push delivery remains pending. Feature screens follow the approved prototypes.
 
 When changing a repository contract or persisted field, update affected consumers, readers, writers, queries, fixtures, and relevant tests together. Record whether existing data requires compatibility handling, migration, or development reseeding.

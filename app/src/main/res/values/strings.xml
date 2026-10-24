@@ -18,4 +18,22 @@
     <string name="gallery_fill">Use example name</string>
     <string name="gallery_dialog">Example confirmation</string>
     <string name="gallery_dialog_body">This demo closes the dialog without saving data.</string>
+    <string name="startup_loading">Starting Campsbridge</string>
+    <string name="startup_failure">Could not start Campsbridge</string>
+    <string name="setup_title">Profile setup</string>
+    <string name="setup_pending">Profile setup is not available yet.</string>
+    <string name="account_unavailable">Account unavailable</string>
+    <string name="account_unavailable_body">This account is no longer available.</string>
+    <string name="profile_title">Profile</string>
+    <string name="profile_loading">Loading profile</string>
+    <string name="profile_failure">Could not load profile</string>
+    <string name="email">Email</string>
+    <string name="phone">Phone</string>
+    <string name="not_provided">Not provided</string>
+    <string name="account_roles">Account roles</string>
+    <string name="role_entrant">Camper</string>
+    <string name="role_owner">Campsite owner</string>
+    <string name="role_admin">Administrator</string>
+    <string name="switch_workspace">Switch workspace</string>
+    <string name="workspace_selection_failure">Could not switch workspaces. Select a workspace to retry.</string>
 </resources>
