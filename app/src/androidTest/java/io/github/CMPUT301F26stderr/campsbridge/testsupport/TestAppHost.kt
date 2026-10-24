@@ -12,10 +12,10 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepo
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.preview.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 

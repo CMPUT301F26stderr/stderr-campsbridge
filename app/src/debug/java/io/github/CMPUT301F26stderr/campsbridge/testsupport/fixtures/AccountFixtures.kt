@@ -1,4 +1,4 @@
-package io.github.CMPUT301F26stderr.campsbridge.ui.preview
+package io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings

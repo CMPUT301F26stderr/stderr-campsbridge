@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -35,9 +36,12 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.LocalControlScale
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
@@ -224,3 +228,61 @@ private fun calendarMark(status: CalendarDayStatus): String =
             CalendarDayStatus.OCCUPIED -> R.string.calendar_occupied_mark
         },
     )
+
+/**
+ * Frames fixture inventory without repositories or simulated persistence.
+ * @param editing Whether to show an owner's editable selection.
+ */
+@Composable
+private fun CalendarPreviewContent(editing: Boolean) {
+    val month = YearMonth.of(2027, 5)
+    val days =
+        (1..month.lengthOfMonth()).associate { number ->
+            val date = month.atDay(number)
+            val status =
+                when {
+                    number in 7..8 -> CalendarDayStatus.OCCUPIED
+                    date.dayOfWeek.value in 5..6 -> CalendarDayStatus.AVAILABLE
+                    else -> CalendarDayStatus.UNAVAILABLE
+                }
+            date to CalendarDayState(status, editing && status != CalendarDayStatus.OCCUPIED)
+        }
+    val selection =
+        if (editing) {
+            CalendarSelection.Dates(setOf(month.atDay(14), month.atDay(15)))
+        } else {
+            CalendarSelection.Stay(month.atDay(7), month.atDay(9))
+        }
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.calendar_title)) {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                CampsiteCalendar(
+                    CalendarState(month, days, selection, selectionEnabled = editing),
+                    {},
+                    {},
+                )
+            }
+        }
+    }
+}
+
+/** Shows read-only inventory and the occupied nights of a saved stay. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+private fun ReadOnlyCalendarPreview() {
+    CalendarPreviewContent(false)
+}
+
+/** Shows editable offered nights with occupied dates unavailable for editing. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+private fun EditableCalendarPreview() {
+    CalendarPreviewContent(true)
+}
+
+/** Shows the same content with enlarged system text. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
+@Composable
+private fun EnlargedCalendarPreview() {
+    CalendarPreviewContent(true)
+}

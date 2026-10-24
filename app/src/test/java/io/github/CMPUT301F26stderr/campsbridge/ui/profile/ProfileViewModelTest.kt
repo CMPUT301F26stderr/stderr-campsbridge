@@ -5,7 +5,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.preview.sampleAccount
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest

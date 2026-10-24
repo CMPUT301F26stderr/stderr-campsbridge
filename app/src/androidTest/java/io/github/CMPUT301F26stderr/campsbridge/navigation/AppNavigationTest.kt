@@ -13,7 +13,7 @@ import androidx.compose.ui.test.performClick
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
-import io.github.CMPUT301F26stderr.campsbridge.ui.preview.sampleAccount
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals

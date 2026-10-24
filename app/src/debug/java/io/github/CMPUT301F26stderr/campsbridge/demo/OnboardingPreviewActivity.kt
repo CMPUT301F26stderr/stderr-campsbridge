@@ -10,9 +10,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.navigation.OnboardingNavigation
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
+import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingPreviewContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.preview.OnboardingPreviewContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
 /** Debug-only onboarding fixtures; interactive mode stops at the reserved name integration. */

@@ -85,7 +85,8 @@ The profile currently connects this path to its existing account's image slot. T
 - Use shared colors, typography, spacing, and shapes; put user-visible text in string resources.
 - Preserve system font scaling and apply the account's font/control scaling consistently. Use layouts that tolerate large text.
 - Provide meaningful semantics and labels. Communicate availability and errors with more than color alone; color-blind mode uses a shared palette.
-- Add themed previews with realistic fixtures, long text, and enlarged fonts. Keep interactive demos separate from production screens; do not fake successful saves or put throwing placeholders in preview paths.
+- Put themed `@Preview` functions at the bottom of the screen or component file in `src/main`, so Android Studio shows them while editing that content. Use small sample values without repositories or Firebase. Cover realistic content, feedback and enlarged fonts.
+- Keep interactive demo activities, galleries, fake repositories and shared test fixtures in `src/debug`. Production screens must not fake successful saves or contain throwing placeholders in preview paths.
 
 ## References
 
