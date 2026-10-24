@@ -1,6 +1,6 @@
 # Campsbridge screen prototype
 
-[Open the published storyboard](https://cmput301f26stderr.github.io/stderr-campsbridge/). Changes to `prototype/` on `main` are published by the **Publish storyboard** workflow, which can also be run manually. Deployment includes the viewer and screen assets, excluding this README and the generated ZIP.
+[Open the published storyboard](https://cmput301f26stderr.github.io/stderr-campsbridge/storyboard/). Successful CI runs on `main` publish the viewer alongside API documentation; CI can also be run manually. Deployment includes the viewer and screen assets, excluding this README and the generated ZIP.
 
 Run `python3 -m http.server 8080` in this folder and open http://localhost:8080.
 

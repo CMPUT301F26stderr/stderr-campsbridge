@@ -5,6 +5,7 @@ An Android campsite reservation app for CMPUT 301, built by a team of six. Entra
 ## Team workspace
 
 - [GitHub Wiki](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki): onboarding, architecture, responsibilities, UI storyboards, decisions, and meeting notes.
+- [Project site](https://cmput301f26stderr.github.io/stderr-campsbridge/): interactive storyboard and generated Kotlin API documentation.
 - [Issues](https://github.com/CMPUT301F26stderr/stderr-campsbridge/issues): requirements, tasks, bugs, and acceptance criteria.
 - [Projects](https://github.com/orgs/CMPUT301F26stderr/projects): the team's Kanban board.
 - Canva: editable prototypes; keep the design links and exported diagrams in the wiki.
@@ -53,6 +54,7 @@ The current app restores a device-linked identity and shows an existing account'
 | `doc/` | Course reference documents and team roster |
 | `firebase/` | Persistence contract, Firestore/Storage rules, indexes, and emulator configuration |
 | `scripts/` | Shared development commands |
+| `pages/` | Minimal landing page for the published storyboard and API documentation |
 | `gradle/` and root build files | Reproducible build configuration |
 
 Detailed team documentation belongs in the wiki. Keep executable configuration, agent instructions, and short contribution rules in this repository.

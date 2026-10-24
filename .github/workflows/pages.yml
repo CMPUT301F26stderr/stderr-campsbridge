@@ -1,12 +1,7 @@
-name: Publish storyboard
+name: Publish project site
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - prototype/**
-      - .github/workflows/pages.yml
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -17,7 +12,7 @@ concurrency:
 
 jobs:
   publish:
-    name: Build and deploy storyboard
+    name: Build and deploy project site
     runs-on: [self-hosted, linux, x64]
     timeout-minutes: 10
     permissions:
@@ -34,18 +29,25 @@ jobs:
           persist-credentials: false
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Download verified API documentation
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: api-docs
+          path: ${{ runner.temp }}/pages-${{ github.run_id }}-${{ github.run_attempt }}/docs
       - name: Build static site
         env:
-          SITE_DIR: ${{ runner.temp }}/storyboard-${{ github.run_id }}-${{ github.run_attempt }}
+          SITE_DIR: ${{ runner.temp }}/pages-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
-          mkdir -p "$SITE_DIR"
+          test -f "$SITE_DIR/docs/index.html"
+          mkdir -p "$SITE_DIR/storyboard"
+          cp pages/index.html "$SITE_DIR/index.html"
           cp prototype/index.html prototype/prototype.css prototype/prototype.js \
-            prototype/hotspots.css prototype/wiring.json "$SITE_DIR/"
-          cp -R prototype/screens "$SITE_DIR/screens"
+            prototype/hotspots.css prototype/wiring.json "$SITE_DIR/storyboard/"
+          cp -R prototype/screens "$SITE_DIR/storyboard/screens"
       - name: Upload Pages site
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
-          path: ${{ runner.temp }}/storyboard-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pages-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Deploy Pages site
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
