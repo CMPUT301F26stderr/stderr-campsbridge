@@ -179,14 +179,6 @@ object FirestorePaths {
         "reservations/${DocumentKeys.id(id)}"
 
     /**
-     * Builds the validated Firestore document path for a simulated payment.
-     *
-     * @param id Reservation document ID.
-     */
-    fun payment(id: String) =
-        "payments/${DocumentKeys.id(id)}"
-
-    /**
      * Builds the validated Firestore document path for a image attachment.
      *
      * @param target Account or campsite image slot.

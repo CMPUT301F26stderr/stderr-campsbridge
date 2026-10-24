@@ -8,6 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.AcceptedTerms
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookedCampsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRequest
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Payment
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
@@ -104,6 +105,7 @@ object CampingFixtures {
             BookedCampsite("River Camp", "Jasper", location, "America/Edmonton"),
             AcceptedTerms("Be kind", BookingPolicy.VERSION, now),
             now,
+            Payment(13000, now),
         )
 
     /** Builds an accepted quote matching the campsite and two-night stay. */

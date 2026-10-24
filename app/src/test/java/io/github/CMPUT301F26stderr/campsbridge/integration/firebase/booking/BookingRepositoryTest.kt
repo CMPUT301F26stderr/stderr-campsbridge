@@ -1,12 +1,16 @@
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
 import com.google.firebase.firestore.Source
+import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.stored
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryOfferDocument
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
@@ -22,9 +26,16 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.seed
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -62,8 +73,8 @@ class BookingRepositoryTest {
                 fixture.request.policyVersion,
                 reservation.acceptedTerms.cancellationPolicyVersion,
             )
-            assertEquals(13000L, bookings.getPayment(id)!!.amountCents)
-            assertNull(bookings.getPayment(id)!!.refundedAt)
+            assertEquals(13000L, bookings.get(id)!!.payment.amountCents)
+            assertNull(bookings.get(id)!!.payment.refundedAt)
             val calendar =
                 fixture.owner.container.campsites
                     .observeCalendar(
@@ -115,7 +126,8 @@ class BookingRepositoryTest {
             assertEquals(
                 13000L,
                 fixture.entrant.container.bookings
-                    .getPayment(id)!!
+                    .get(id)!!
+                    .payment
                     .amountCents,
             )
         }
@@ -402,10 +414,55 @@ class BookingRepositoryTest {
         )
         assertNull(
             fixture.entrant.container.bookings
-                .getPayment(id),
+                .get(id)
+                ?.payment,
         )
         val eventId = DocumentKeys.compound("RESERVATION_CONFIRMED", id)
         assertFalse(firebase.documentExists("notifications/$eventId"))
         assertFalse(firebase.documentExists("_notificationDeliveries/$eventId"))
     }
+
+    /** One live reservation contains confirmed payment and a cross-account cancellation/refund. */
+    @Test(timeout = 60000)
+    fun observesCompleteReservationAcrossBookingAndCancellation() =
+        runBlocking {
+            val fixture = firebase.bookingFixture()
+            val bookings = fixture.entrant.container.bookings
+            val id = DocumentKeys.reservation(fixture.request.lotteryId, fixture.entrant.id)
+            val records = Channel<Reservation?>(Channel.UNLIMITED)
+            val observation =
+                launch {
+                    try {
+                        bookings.observe(id).collect { records.send(it) }
+                    } finally {
+                        records.close()
+                    }
+                }
+            try {
+                assertNull(withTimeout(5000) { records.receive() })
+                assertEquals(id, bookings.reserve(fixture.request))
+                val confirmed =
+                    withTimeout(5000) {
+                        records.receiveAsFlow().filterNotNull().first { it.cancellation == null }
+                    }
+                val charge = ReservationDocument.encode(confirmed)["payment"] as Map<*, *>
+                assertEquals(fixture.request.expectedTotalCents, charge["amountCents"])
+                assertNull(charge["refundedAt"])
+                fixture.owner.container.bookings.cancel(
+                    CancellationRequest(id, fixture.owner.id, Role.OWNER),
+                )
+                val cancelled =
+                    withTimeout(5000) {
+                        records.receiveAsFlow().filterNotNull().first { it.cancellation != null }
+                    }
+                val refund = ReservationDocument.encode(cancelled)["payment"] as Map<*, *>
+                assertEquals(charge["amountCents"], refund["amountCents"])
+                assertEquals(charge["paidAt"], refund["paidAt"])
+                assertEquals(cancelled.cancellation!!.at.stored(), refund["refundedAt"])
+                assertEquals(confirmed.acceptedTerms, cancelled.acceptedTerms)
+                assertEquals(confirmed.bookedCampsite, cancelled.bookedCampsite)
+            } finally {
+                observation.cancelAndJoin()
+            }
+        }
 }

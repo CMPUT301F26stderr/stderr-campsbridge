@@ -37,7 +37,7 @@ const reservation = () => ({ lotteryId: 'book', entrantId: 'entrant', campsiteId
   checkInDate: '2027-05-15', checkOutDate: '2027-05-17', guestCount: 4,
   bookedCampsite: { name: 'Camp', locationLabel: 'Jasper', location: new GeoPoint(53, -118), timeZone: 'America/Edmonton' },
   acceptedTerms: { rules: 'Be kind', cancellationPolicyVersion: 'full-refund-v1', acceptedAt: now() },
-  createdAt: now(), cancellation: null });
+  createdAt: now(), cancellation: null, payment: { amountCents: 13000, paidAt: now(), refundedAt: null } });
 
 async function seed(records) {
   await env.withSecurityRulesDisabled(async ctx => {
@@ -55,8 +55,7 @@ function event(batch, database, type, subjectType, subjectId, recipients, sender
 function booking(uid = 'entrant', amount = 13000) {
   const database = db(uid);
   const batch = writeBatch(database);
-  batch.set(doc(database, `reservations/${reservationId}`), reservation());
-  batch.set(doc(database, `payments/${reservationId}`), { amountCents: amount, paidAt: now(), refundedAt: null });
+  batch.set(doc(database, `reservations/${reservationId}`), { ...reservation(), payment: { amountCents: amount, paidAt: now(), refundedAt: null } });
   for (const night of ['2027-05-15', '2027-05-16']) batch.update(doc(database, `campsites/site/calendar/${night}`), { reservationId });
   event(batch, database, 'RESERVATION_CONFIRMED', 'RESERVATION', reservationId, ['entrant']);
   return batch.commit();
@@ -172,7 +171,7 @@ test('coordinated winning booking succeeds; outsider booking, duplicate booking 
   await assertFails(booking('entrant', 1));
   await assertSucceeds(booking());
   await assertFails(booking());
-  await assertFails(updateDoc(doc(db('entrant'), `payments/${reservationId}`), { amountCents: 1 }));
+  await assertFails(updateDoc(doc(db('entrant'), `reservations/${reservationId}`), { 'payment.amountCents': 1 }));
   await assertFails(getDoc(doc(db('other'), `reservations/${reservationId}`)));
   await assertSucceeds(getDoc(doc(db('owner'), `reservations/${reservationId}`)));
 });
@@ -182,8 +181,7 @@ test('cancellation requires matching refund, releases nights and retains booking
   await assertFails(updateDoc(doc(db('entrant'), `reservations/${reservationId}`), { cancellation }));
   const database = db('entrant');
   const b = writeBatch(database);
-  b.update(doc(database, `reservations/${reservationId}`), { cancellation });
-  b.update(doc(database, `payments/${reservationId}`), { refundedAt: now() });
+  b.update(doc(database, `reservations/${reservationId}`), { cancellation, 'payment.refundedAt': now() });
   for (const night of ['2027-05-15', '2027-05-16']) b.update(doc(database, `campsites/site/calendar/${night}`), { reservationId: null });
   event(b, database, 'RESERVATION_CANCELLED', 'RESERVATION', reservationId, ['entrant']);
   await assertSucceeds(b.commit());
@@ -267,7 +265,6 @@ test('booking cannot grant an unrelated account a confirmation receipt', async (
   const database = db('entrant');
   const b = writeBatch(database);
   b.set(doc(database, `reservations/${reservationId}`), reservation());
-  b.set(doc(database, `payments/${reservationId}`), { amountCents: 13000, paidAt: now(), refundedAt: null });
   b.update(doc(database, 'campsites/site/calendar/2027-05-15'), { reservationId });
   b.update(doc(database, 'campsites/site/calendar/2027-05-16'), { reservationId });
   event(b, database, 'RESERVATION_CONFIRMED', 'RESERVATION', reservationId, ['other']);
@@ -278,8 +275,7 @@ test('cancellation actor and role cannot be spoofed; an owner rejection succeeds
   const database = db('owner');
   function reject(actorId, initiatedAs) {
     const b = writeBatch(database);
-    b.update(doc(database, `reservations/${reservationId}`), { cancellation: { at: now(), actorId, initiatedAs, reason: 'Closed' } });
-    b.update(doc(database, `payments/${reservationId}`), { refundedAt: now() });
+    b.update(doc(database, `reservations/${reservationId}`), { cancellation: { at: now(), actorId, initiatedAs, reason: 'Closed' }, 'payment.refundedAt': now() });
     return b.commit();
   }
   await assertFails(reject('entrant', 'ENTRANT'));

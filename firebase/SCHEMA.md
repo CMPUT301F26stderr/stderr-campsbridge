@@ -143,18 +143,18 @@ reservations/{reservationId}
     initiatedAs: ENTRANT | OWNER | ADMIN,
     reason: String?
   }?
-
-payments/{reservationId}
-  amountCents: Int
-  paidAt: Timestamp
-  refundedAt: Timestamp?
+  payment: {
+    amountCents: Int,
+    paidAt: Timestamp,
+    refundedAt: Timestamp?
+  }
 ```
 
 `reservationId = reservationKey(lotteryId, entrantId)`: use one collision-free, Firestore-safe encoding helper. The fields remain queryable relationships. Check document existence during booking; cancellation does not remove it. Every occupied night must belong to the lottery offer and be free in the calendar; guest count must fit the campsite.
 
 The campsite snapshot and accepted terms are historical facts, independent of later listing edits. Retain all referenced policy versions in application resources. Owner identity follows immutable campsite ownership. Night count, active/past labels, and cancellation status are derived.
 
-Payment owns the charged total. Initially charge current nightly price times nights; reject/reconfirm a stale displayed quote. `refundedAt` records a full refund; no separate amount or status is needed. Booking creates the payment; cancellation records the refund.
+The nested payment record owns the charged total and is a required part of each reservation; it has no separate ID or collection. A single reservation observation includes cancellation and refund facts together. Initially charge current nightly price times nights; reject/reconfirm a stale displayed quote. `refundedAt` records a full refund; no separate amount or status is needed. Booking creates the payment; cancellation records the refund.
 
 ## Images
 

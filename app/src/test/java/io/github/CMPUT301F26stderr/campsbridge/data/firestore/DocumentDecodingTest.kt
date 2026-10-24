@@ -13,7 +13,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Owns malformed-data diagnostics and compatibility; domain validation matrices live elsewhere. */
+/** Owns malformed-data diagnostics and required structure; domain value matrices live elsewhere. */
 class DocumentDecodingTest {
     /** Required fields cannot silently default or change their Firestore storage type. */
     @Test fun rejectsMissingAndWronglyTypedRequiredFields() {
@@ -32,7 +32,7 @@ class DocumentDecodingTest {
         }
     }
 
-    /** Optional fields remain nullable when older documents omit them. */
+    /** Nullable fields may be omitted without inventing non-null values. */
     @Test fun readsOmittedOptionalFields() {
         assertEquals(
             CampingFixtures.account().copy(email = null, phone = null),
@@ -116,5 +116,41 @@ class DocumentDecodingTest {
                 )
             }
         assertTrue(failure.cause is IllegalArgumentException)
+    }
+
+    /** The reservation owns the complete simulated charge rather than a separate document. */
+    @Test fun storesPaymentInsideReservation() {
+        assertEquals(
+            mapOf(
+                "amountCents" to 13000L,
+                "paidAt" to CampingFixtures.now.stored(),
+                "refundedAt" to null,
+            ),
+            ReservationDocument.encode(CampingFixtures.reservation())["payment"],
+        )
+    }
+
+    /** A reservation requires a valid payment object with strict nested field types. */
+    @Test fun rejectsMissingOrMalformedReservationPayment() {
+        val path = "reservations/4:draw7:entrant"
+        val fields = PersistenceFixtures.reservationFields
+        val payment =
+            mapOf(
+                "amountCents" to 13000L,
+                "paidAt" to CampingFixtures.now.stored(),
+                "refundedAt" to null,
+            )
+        listOf(
+            fields - "payment",
+            fields + ("payment" to true),
+            fields + ("payment" to (payment - "paidAt")),
+            fields + ("payment" to (payment + ("amountCents" to 13000.0))),
+            fields + ("payment" to (payment + ("amountCents" to -1L))),
+            fields + ("payment" to (payment + ("refundedAt" to "yesterday"))),
+        ).forEach { data ->
+            assertThrows(
+                DocumentDecodingException::class.java,
+            ) { ReservationDocument.decode(path, data) }
+        }
     }
 }

@@ -268,28 +268,21 @@ service cloud.firestore {
           && r.bookedCampsite == {'name': s.name, 'locationLabel': s.locationLabel, 'location': s.location, 'timeZone': s.timeZone}
           && r.acceptedTerms.rules == s.rules && r.acceptedTerms.cancellationPolicyVersion == 'full-refund-v1'
           && getAfter(/databases/$(database)/documents/campsites/$(r.campsiteId)/calendar/$(r.checkInDate)).data.reservationId == id
-          && getAfter(/databases/$(database)/documents/payments/$(id)).data.refundedAt == null;
+          && r.payment is map && r.payment.keys().hasOnly(['amountCents', 'paidAt', 'refundedAt'])
+          && r.payment.amountCents is int && r.payment.amountCents >= 0 && r.payment.paidAt is timestamp
+          && r.payment.amountCents == s.nightlyPriceCents * (day(r.checkOutDate) - day(r.checkInDate)).seconds() / 86400
+          && r.payment.refundedAt == null;
       }
       allow get: if signed() && (resource == null || participant(resource.data) || admin());
       allow list: if participant(resource.data) || admin();
       allow create: if booking(request.resource.data);
-      allow update: if canCancel(resource.data) && resource.data.cancellation == null && changes(['cancellation'])
+      allow update: if canCancel(resource.data) && resource.data.cancellation == null && changes(['cancellation', 'payment'])
         && request.resource.data.cancellation is map && request.resource.data.cancellation.at is timestamp
         && request.resource.data.cancellation.initiatedAs in ['ENTRANT', 'OWNER', 'ADMIN']
         && cancellationActor(resource.data, request.resource.data.cancellation)
-        && getAfter(/databases/$(database)/documents/payments/$(id)).data.refundedAt != null;
-    }
-    match /payments/{id} {
-      allow get: if signed() && (resource == null || participant(get(/databases/$(database)/documents/reservations/$(id)).data) || admin());
-      allow list: if admin();
-      allow create: if role('ENTRANT') && !exists(/databases/$(database)/documents/reservations/$(id))
-        && getAfter(/databases/$(database)/documents/reservations/$(id)).data.entrantId == request.auth.uid
-        && request.resource.data.refundedAt == null && request.resource.data.amountCents is int
-        && request.resource.data.amountCents == site(getAfter(/databases/$(database)/documents/reservations/$(id)).data.campsiteId).nightlyPriceCents
-          * (day(getAfter(/databases/$(database)/documents/reservations/$(id)).data.checkOutDate) - day(getAfter(/databases/$(database)/documents/reservations/$(id)).data.checkInDate)).seconds() / 86400;
-      allow update: if canCancel(get(/databases/$(database)/documents/reservations/$(id)).data)
-        && resource.data.refundedAt == null && changes(['refundedAt']) && request.resource.data.refundedAt is timestamp
-        && getAfter(/databases/$(database)/documents/reservations/$(id)).data.cancellation != null;
+        && resource.data.payment.refundedAt == null
+        && request.resource.data.payment.diff(resource.data.payment).affectedKeys().hasOnly(['refundedAt'])
+        && request.resource.data.payment.refundedAt is timestamp;
     }
     match /messages/{id} {
       function r() { return get(/databases/$(database)/documents/reservations/$(resource.data.reservationId)).data; }

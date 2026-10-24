@@ -8,18 +8,17 @@ import kotlinx.coroutines.flow.Flow
  */
 interface BookingRepository {
     /**
-     * Returns a reservation, including cancellation history, or null when absent.
+     * Returns a complete reservation with payment and cancellation history, or null when absent.
      *
      * @param id Reservation document ID.
      */
     suspend fun get(id: String): Reservation?
 
     /**
-     * Returns the reservation’s simulated payment/refund record, or null when absent.
-     *
-     * @param id Reservation document ID.
+     * Observes a complete reservation including its payment, or null when absent.
+     * @param id Reservation document identity.
      */
-    suspend fun getPayment(id: String): Payment?
+    fun observe(id: String): Flow<Reservation?>
 
     /**
      * Observes the entrant’s reservations, including past and cancelled stays.

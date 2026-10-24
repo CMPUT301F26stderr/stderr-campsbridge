@@ -1,7 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.moderation
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.DeviceRegistrationDocument
-import io.github.CMPUT301F26stderr.campsbridge.data.booking.PaymentDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
@@ -252,7 +251,8 @@ class ModerationRepositoryTest {
             assertEquals("Unavailable", current.cancellation.reason)
             assertNotNull(
                 admin.container.bookings
-                    .getPayment(uncompleted)!!
+                    .get(uncompleted)!!
+                    .payment
                     .refundedAt,
             )
             assertNull(
@@ -262,7 +262,8 @@ class ModerationRepositoryTest {
             )
             assertNull(
                 admin.container.bookings
-                    .getPayment(completed)!!
+                    .get(completed)!!
+                    .payment
                     .refundedAt,
             )
             val calendar =
@@ -345,12 +346,9 @@ class ModerationRepositoryTest {
                 entrantId = entrant.id,
                 checkInDate = checkout.minusDays(1),
                 checkOutDate = checkout,
+                payment = Payment(6500, CampingFixtures.now),
             )
         firebase.seed("reservations/$reservationId", ReservationDocument.encode(reservation))
-        firebase.seed(
-            "payments/$reservationId",
-            PaymentDocument.encode(Payment(reservationId, 6500, reservation.createdAt)),
-        )
         for (night in stayNights(reservation.checkInDate, checkout)) {
             firebase.seed(
                 "campsites/site/calendar/$night",
