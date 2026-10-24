@@ -132,6 +132,7 @@
       # Hook checks need Python, Go, and Java, but not the Android SDK.
       hooks = pkgs.mkShell {
         packages = [
+          pkgs.gh
           pkgs.bash
           pkgs.git
           pkgs.gnutar
@@ -150,6 +151,7 @@
       # Repository validation does not need the Android SDK or app toolchain.
       repository = pkgs.mkShell {
         packages = [
+          pkgs.python3
           pkgs.bash
           pkgs.git
           pkgs.gh
