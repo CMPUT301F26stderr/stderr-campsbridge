@@ -23,7 +23,7 @@ import java.time.Clock
 import kotlin.random.Random
 
 /**
- * Application-scoped composition root. Bootstrap/auth and controller wiring remain TODO.
+ * Application-scoped persistence composition root; platform services are wired in AppServices.
  *
  * @param clients Initialized Firestore/Storage clients for the selected project or emulators.
  * @param clock Injectable time source for recorded timestamps and deadline checks.
@@ -50,9 +50,9 @@ class AppContainer(
         FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock)
 
     /**
-     * Invoke on a controller-owned foreground schedule after Firebase/auth initialization.
-     * Failure
-     * is surfaced to the caller; subsequent invocation resumes durable work.
+     * Administrative/global recovery entry point, deliberately unwired from ordinary startup.
+     * Failure propagates; subsequent invocation resumes durable work. Use account-scoped
+     * foreground operations when wiring normal user sessions.
      */
     suspend fun resumePendingWork() {
         moderation.resumeRemovals()

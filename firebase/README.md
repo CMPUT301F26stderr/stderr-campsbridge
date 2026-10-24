@@ -16,7 +16,15 @@ nix develop --command firebase emulators:start --config firebase/firebase.json -
 
 The container exposes domain repository interfaces and `resumePendingWork()` for draws, removal cascades, inbox delivery, and obsolete image cleanup. Its current global queries require an admin-capable client. Application/controller scheduling after initialization and mutations still needs wiring with retry/error feedback. Inbox delivery creates Firestore receipts; OS/FCM push delivery requires a separate platform integration.
 
-Provide Firebase options through bootstrap configuration. This persistence layer compiles without `google-services.json`. Keep cloud environment setup and deployment instructions in the team Wiki.
+The application uses the checked-in `app/google-services.json` for cloud resources. Anonymous Auth must be enabled in that project. The persistence repositories themselves still accept explicitly configured clients.
+
+For a debug APK connected entirely to the disposable `demo-stderr` emulators:
+
+```bash
+nix develop --command bash ./gradlew :app:assembleDebug -PfirebaseEmulatorHost=10.0.2.2
+```
+
+Use a host reachable from the device. `AppContainerFactory` configures Auth, Firestore, and Storage together before use. Omitting the property selects cloud configuration; use the same property for subsequent debug builds until returning to cloud. Startup establishes identity and reads a profile; it does not create sample accounts. Seed development accounts deliberately through emulator tooling when testing existing-user flows. Keep cloud deployment procedures in the team Wiki.
 
 ## Testing and pending work
 
@@ -32,6 +40,6 @@ The command installs pinned Node test dependencies, starts disposable Auth/Fires
 
 Pending work:
 
-- Firebase project configuration and device authentication/bootstrap.
+- Enable anonymous Auth and deploy the agreed rules/indexes in the configured cloud project.
 - Application/controller lifecycle wiring and OS/FCM push delivery.
 - Seed and migration commands; see [tooling conventions](tooling/README.md).

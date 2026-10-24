@@ -18,6 +18,12 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        val emulatorHost = providers.gradleProperty("firebaseEmulatorHost").orElse("").get()
+        buildConfigField(
+            "String",
+            "FIREBASE_EMULATOR_HOST",
+            groovy.json.JsonOutput.toJson(emulatorHost),
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -68,7 +75,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.mockito)
-    testImplementation(libs.firebase.auth)
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -150,7 +160,7 @@ tasks.register<JacocoReport>("unitCoverageReport") {
     }
 }
 
-// This existing pure guard provides a nonempty, behaviorally asserted baseline.
+// Require full line/branch coverage only for these small pure rules.
 tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
     dependsOn("testDebugUnitTest")
     executionData(unitExecution)
@@ -165,11 +175,21 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                     "io/github/CMPUT301F26stderr/campsbridge/domain/shared/TypesKt.class",
                 ).asFile.isFile,
         ) { "The measured production guard is missing" }
+        check(
+            compiledSources
+                .get()
+                .file(
+                    "io/github/CMPUT301F26stderr/campsbridge/ui/app/WorkspaceSelectionKt.class",
+                ).asFile.isFile,
+        ) { "The measured workspace rule is missing" }
         true
     }
     classDirectories.from(
         fileTree(debugClasses) {
-            include("**/domain/shared/TypesKt.class")
+            include(
+                "**/domain/shared/TypesKt.class",
+                "**/ui/app/WorkspaceSelectionKt.class",
+            )
         },
     )
     violationRules {
