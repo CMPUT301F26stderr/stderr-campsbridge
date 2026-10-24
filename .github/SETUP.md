@@ -16,8 +16,9 @@ Use `CI ready` as the required status in branch rules. Review requirements and b
 | --- | --- |
 | Repository checks | Actions syntax, shell scripts, hook configuration, and flake evaluation |
 | Pre-commit checks | YAML/JSON/TOML syntax, conflict markers, oversized files, secret scanning, and repository command tests |
-| Android checks | Android Lint, local unit tests, debug APK build, and artifact upload |
+| Android checks | Android Lint, local unit tests, line/branch reporting, scoped pure-logic coverage, debug APK build, and artifact upload |
 | Firebase contracts | Rules plus Kotlin repository queries, transactions and recovery using disposable Auth/Firestore/Storage emulators |
+| Android UI checks | Instrumented Compose interactions on a disposable API 35 emulator |
 | CI ready | Exact success from every mandatory verification job |
 | Publish beta APK | Update the rolling prerelease after successful main checks |
 
@@ -27,13 +28,13 @@ After Android checks pass, CI uploads `app-debug.apk` directly. A missing APK or
 
 After `CI ready` passes, main pushes and manual main runs publish that run's APK to the rolling `beta` prerelease. Pull requests do not publish. Only the publishing job has `contents: write`; it also has `actions: read` to download the verified artifact. `scripts/publish-apk.sh` creates or updates the prerelease, moves its tag to the verified commit, and replaces `app-debug.apk`. Superseded commits do not publish. Keep the tag and asset name synchronized with the [README download link](../README.md#testing). Release assets remain available until replaced or removed.
 
-Device tests, Firebase deployment, and AI review are not part of the current workflow.
+Firebase deployment and AI review are not part of the current workflow.
 
 ## Runner and toolchain maintenance
 
 All jobs require a Linux x64 self-hosted runner with the `self-hosted`, `linux`, and `x64` labels. The runner needs Nix, Bash, Git, access to the Nix daemon, a writable home/cache, and network access for downloads. Jobs wait when no matching runner is online.
 
-The locked flake supplies three development shells: `repository` for configuration checks, `hooks` for pre-commit tools, and `default` for Android builds. Keep SDK/JDK selections synchronized with the Gradle daemon and application configuration. Workflows enable `nix-command` and `flakes` through `NIX_CONFIG`.
+The locked flake supplies `repository` for configuration checks, `hooks` for pre-commit tools, `default` for Android builds, and `ui` for Android builds plus a pinned emulator/system image. The UI job requires usable `/dev/kvm`; its script owns a temporary AVD and its emulator process. Images are downloaded on first use and retained in the Nix store. Device test reports are uploaded even on failure. Keep SDK/JDK selections synchronized with the Gradle daemon and application configuration. Workflows enable `nix-command` and `flakes` through `NIX_CONFIG`.
 
 Persistent runners reuse the Nix store and Gradle cache. CI file checks use Nix-packaged pre-commit-hooks 6.0.0, matching the local hook release, and read their arguments from `.pre-commit-config.yaml`. CI does not create or restore Python hook environments. The Android and Firebase jobs restore executable permissions on cached Gradle launchers for daemon cleanup.
 

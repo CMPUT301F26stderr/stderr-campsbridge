@@ -1,4 +1,5 @@
 plugins {
+    jacoco
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dokka)
@@ -62,6 +63,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.mockito)
@@ -103,4 +105,82 @@ tasks.register<Test>("firebaseIntegrationTest") {
 
 tasks.withType<Test>().configureEach {
     if (name != "firebaseIntegrationTest") exclude("**/integration/firebase/**")
+}
+
+// Keep line and branch reports compatible with the pinned JDK 25 toolchain.
+jacoco {
+    toolVersion = libs.versions.jacoco.get()
+}
+
+val debugClasses =
+    layout.buildDirectory.dir(
+        "intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes",
+    )
+val unitExecution =
+    layout.buildDirectory.file(
+        "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+    )
+
+tasks.register<JacocoReport>("unitCoverageReport") {
+    dependsOn("testDebugUnitTest")
+    executionData(unitExecution)
+    val executionFile = unitExecution
+    val compiledSources = debugClasses
+    setOnlyIf {
+        check(executionFile.get().asFile.isFile) { "Unit coverage data is missing" }
+        check(
+            compiledSources
+                .get()
+                .file(
+                    "io/github/CMPUT301F26stderr/campsbridge/domain/shared/TypesKt.class",
+                ).asFile.isFile,
+        ) { "The measured production guard is missing" }
+        true
+    }
+    classDirectories.from(
+        fileTree(debugClasses) {
+            exclude("**/testsupport/**", "**/demo/**")
+        },
+    )
+    sourceDirectories.from("src/main/java")
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+// This existing pure guard provides a nonempty, behaviorally asserted baseline.
+tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
+    dependsOn("testDebugUnitTest")
+    executionData(unitExecution)
+    val executionFile = unitExecution
+    val compiledSources = debugClasses
+    setOnlyIf {
+        check(executionFile.get().asFile.isFile) { "Unit coverage data is missing" }
+        check(
+            compiledSources
+                .get()
+                .file(
+                    "io/github/CMPUT301F26stderr/campsbridge/domain/shared/TypesKt.class",
+                ).asFile.isFile,
+        ) { "The measured production guard is missing" }
+        true
+    }
+    classDirectories.from(
+        fileTree(debugClasses) {
+            include("**/domain/shared/TypesKt.class")
+        },
+    )
+    violationRules {
+        rule {
+            limit {
+                counter = "LINE"
+                minimum = "1.0".toBigDecimal()
+            }
+            limit {
+                counter = "BRANCH"
+                minimum = "1.0".toBigDecimal()
+            }
+        }
+    }
 }

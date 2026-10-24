@@ -50,17 +50,36 @@ CI checks YAML/JSON/TOML syntax, conflict markers, and file size in the PR/push 
 - For repository configuration changes, also run `nix develop .#repository --command bash scripts/check-repository.sh`. See the [maintenance guide](.github/SETUP.md) for workflow and runner behavior.
 - Include screenshots for visible UI changes and update affected wiki guidance or diagrams.
 - Request at least one teammate's review. Human review remains required when AI review is added.
-- Resolve feedback and get a passing `CI ready` status before merging. It requires Repository checks, Pre-commit checks, Android checks, and Firebase contracts to succeed. Use squash merge for a concise main-branch history.
+- Resolve feedback and get a passing `CI ready` status before merging. It requires Repository checks, Pre-commit checks, Android checks, Firebase contracts, and Android UI checks to succeed. Use squash merge for a concise main-branch history.
 
 ## Test boundaries
 
 - `app/src/test/.../domain/`: pure model validation and derived values.
 - `app/src/test/.../data/firestore/`: exact document contracts and shared listener behavior.
 - `app/src/test/.../integration/firebase/`: feature-owned repository queries, coordinated writes, concurrency and interrupted-operation recovery against local emulators.
-- `app/src/test/.../testsupport/`: realistic fixtures and emulator setup, with no business assertions.
+- `app/src/test/.../ui/`: ViewModel/controller contracts with fake dependencies and controlled coroutine scheduling.
+- `app/src/test/.../testsupport/`: JUnit rules, fixtures, and emulator setup, with no business assertions.
+- `app/src/debug/.../testsupport/`: shared debug fakes and controllable time, without JUnit dependencies.
+- `app/src/androidTest/`: Compose interactions and Android platform wiring on a device or emulator.
 - `scripts/tests/`: repository command behavior; run with `nix develop .#hooks --command python3 -m unittest discover -s scripts/tests -v`.
 
 The ordinary unit-test task excludes Firebase integration tests; `:app:firebaseIntegrationTest` requires services started by `scripts/check-firebase.sh`. Keep domain constraints in domain tests and persistence invariants in their owning repository suites. For new features, define controller tests with fake repository interfaces and device/UI acceptance tests before implementing the behavior.
+
+Run line/branch reporting and the scoped pure-logic gate with:
+
+```bash
+nix develop --command bash ./gradlew :app:unitCoverageReport :app:pureLogicCoverage
+```
+
+Reports are under `app/build/reports/jacoco/unitCoverageReport/`. The 100% line/branch gate initially covers the existing `requireOperation` guard; add new small pure-rule classes deliberately. This is not a module-wide coverage claim.
+
+Run instrumented tests on a disposable API 35 device with:
+
+```bash
+nix develop .#ui --command bash scripts/check-android-ui.sh
+```
+
+The host must provide usable KVM. To use an already running dedicated test device, set `ANDROID_SERIAL` instead. The script fails if no tests execute or any test is skipped. Content tests do not require Firebase or production bootstrap.
 
 ## Done means
 
