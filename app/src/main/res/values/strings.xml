@@ -55,4 +55,13 @@
     <string name="photo_remove_failure">Could not remove photo</string>
     <string name="photo_selection_failure">Could not read selected photo</string>
     <string name="photo_display_failure">Could not display photo</string>
+    <string name="calendar_title">Availability</string>
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_available">Available</string>
+    <string name="calendar_unavailable">Unavailable</string>
+    <string name="calendar_occupied">Occupied</string>
+    <string name="calendar_available_mark">○</string>
+    <string name="calendar_unavailable_mark">–</string>
+    <string name="calendar_occupied_mark">×</string>
 </resources>

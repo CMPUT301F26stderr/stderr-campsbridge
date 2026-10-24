@@ -192,6 +192,21 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                     "io/github/CMPUT301F26stderr/campsbridge/ui/common/images/ImageSlotState.class",
                 ).asFile.isFile,
         ) { "The measured image action rules are missing" }
+        listOf(
+            "ui/common/input/PositiveCountInputKt.class",
+            "ui/common/input/PriceInputKt.class",
+            "ui/components/calendar/MonthCellsKt.class",
+        ).forEach { path ->
+            check(
+                compiledSources
+                    .get()
+                    .file(
+                        "io/github/CMPUT301F26stderr/campsbridge/$path",
+                    ).asFile.isFile,
+            ) {
+                "The measured calendar/input rule is missing: $path"
+            }
+        }
         true
     }
     classDirectories.from(
@@ -200,6 +215,9 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 "**/domain/shared/TypesKt.class",
                 "**/ui/app/WorkspaceSelectionKt.class",
                 "**/ui/common/images/ImageSlotState.class",
+                "**/ui/common/input/PositiveCountInputKt.class",
+                "**/ui/common/input/PriceInputKt.class",
+                "**/ui/components/calendar/MonthCellsKt.class",
             )
         },
     )
