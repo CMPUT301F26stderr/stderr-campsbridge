@@ -7,6 +7,7 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.read
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import java.time.Clock
 
 /**
@@ -15,46 +16,39 @@ import java.time.Clock
  * @param clock Injectable operation time supplied to coordinated writes.
  */
 class FirestoreBookingRepository(
-    private val db: FirebaseFirestore,
+    db: FirebaseFirestore,
     clock: Clock,
 ) : BookingRepository {
     private val writes = BookingWrites(db, clock)
+    private val queries = BookingQueries(db)
 
     /**
      * Returns a complete reservation, including payment/refund, or null when absent.
      * @param id Reservation document ID.
      */
     override suspend fun get(id: String) =
-        db.document(FirestorePaths.reservation(id)).read(ReservationDocument)
+        queries.get(id)
 
     /**
      * Observes reservation and payment state through one document listener.
      * @param id Reservation document ID.
      */
     override fun observe(id: String) =
-        db.document(FirestorePaths.reservation(id)).observe(ReservationDocument)
+        queries.observe(id)
 
     /**
      * Observes the entrant's reservations, including past and cancelled stays.
      * @param entrantId Entrant whose stays are requested.
      */
     override fun observeForEntrant(entrantId: String) =
-        db
-            .collection(
-                "reservations",
-            ).whereEqualTo("entrantId", entrantId)
-            .observe(ReservationDocument)
+        queries.forEntrant(entrantId)
 
     /**
      * Observes all retained reservations at one campsite.
      * @param campsiteId Campsite whose stays are requested.
      */
     override fun observeForCampsite(campsiteId: String) =
-        db
-            .collection(
-                "reservations",
-            ).whereEqualTo("campsiteId", campsiteId)
-            .observe(ReservationDocument)
+        queries.forCampsite(campsiteId)
 
     /**
      * Atomically consumes a win, charges the simulated payment and claims every night.
@@ -69,4 +63,11 @@ class FirestoreBookingRepository(
      */
     override suspend fun cancel(request: CancellationRequest) =
         writes.cancel(request)
+
+    /**
+     * Observes all retained stays through the current owner's campsites, including removed sites.
+     * @param ownerId Account whose campsite ownership determines the result.
+     */
+    override fun observeForOwner(ownerId: String) =
+        queries.forOwner(ownerId)
 }

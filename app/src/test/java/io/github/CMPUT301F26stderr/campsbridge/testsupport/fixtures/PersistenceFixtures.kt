@@ -233,7 +233,7 @@ object PersistenceFixtures {
             DocumentFixture(
                 "lotteries/draw/offers/site",
                 LotteryOfferDocument,
-                mapOf("nights" to listOf("2027-05-15", "2027-05-17")),
+                mapOf("campsiteId" to "site", "nights" to listOf("2027-05-15", "2027-05-17")),
                 LotteryOffer("site", listOf(date, date.plusDays(2))),
             ),
             DocumentFixture(

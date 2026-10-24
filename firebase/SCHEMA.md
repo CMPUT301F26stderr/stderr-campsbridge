@@ -97,6 +97,7 @@ lotteries/{lotteryId}
   cancellation: Cancellation?
 
 lotteries/{lotteryId}/offers/{campsiteId}
+  campsiteId: CampsiteId                             # Collection-group query field; equals path ID
   nights: List<Date>                                 # Unique, sorted
 
 lotteries/{lotteryId}/entries/{accountId}
@@ -108,6 +109,7 @@ lotteries/{lotteryId}/entries/{accountId}
 
 - `winnerCount` is the maximum winners; select fewer if fewer entrants are eligible. `waitlistCapacity = null` is unlimited. `waitingCount` counts `WAITING` entries and is maintained by the lottery repository, initially zero.
 - Require `registrationOpensAt < registrationClosesAt <= bookingOpensAt < bookingClosesAt`.
+- `campsiteId` on each offer is an immutable query copy of its path ID, validated by codecs and writes. Campsite lookup joins those memberships with the owner-scoped published lottery query; no global lottery scan or copied publication state is needed.
 - Offers alone own lottery-to-campsite/night membership; no separate campsite-ID list. Every offered campsite belongs to the lottery owner. Publishing validates offered calendar nights. Retain allocations after the lottery ends.
 - Freeze allocations, windows, winner count, and capacity once registration begins. Descriptive edits remain allowed. Cancellation is explicit.
 - Entries transition `WAITING <-> WITHDRAWN` during registration, `WAITING -> LOST | OFFERED` at draw, and unused `OFFERED -> DECLINED` during booking. Rejoining refreshes `joinedAt`.

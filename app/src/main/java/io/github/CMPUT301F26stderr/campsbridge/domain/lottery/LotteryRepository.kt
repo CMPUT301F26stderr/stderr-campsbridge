@@ -184,4 +184,10 @@ interface LotteryRepository {
         actorId: String,
         reason: String? = null,
     )
+
+    /**
+     * Observes associated published, noncancelled lotteries.
+     * @param campsiteId Published campsite whose lottery memberships are requested.
+     */
+    fun observePublishedForCampsite(campsiteId: String): Flow<List<Lottery>>
 }

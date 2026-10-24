@@ -217,7 +217,8 @@ service cloud.firestore {
           && (lottery(id).publishedAt == null || request.time < lottery(id).registrationOpensAt)
           && site(campsite).ownerId == request.auth.uid && site(campsite).removal == null
           && getAfter(/databases/$(database)/documents/lotteries/$(id)).data.get('_revision', 0) == lottery(id).get('_revision', 0) + 1
-          && request.resource.data.keys().hasOnly(['nights']) && request.resource.data.nights is list && request.resource.data.nights.size() > 0;
+          && request.resource.data.keys().hasOnly(['campsiteId', 'nights']) && request.resource.data.campsiteId == campsite
+          && request.resource.data.nights is list && request.resource.data.nights.size() > 0;
         allow delete: if ownsLottery(id) && lottery(id).cancellation == null
           && (lottery(id).publishedAt == null || request.time < lottery(id).registrationOpensAt)
           && getAfter(/databases/$(database)/documents/lotteries/$(id)).data.get('_revision', 0) == lottery(id).get('_revision', 0) + 1;
@@ -245,7 +246,10 @@ service cloud.firestore {
       }
     }
     match /{parent=**}/entries/{entry} { allow read: if signed() && (resource.data.accountId == request.auth.uid || admin()); }
-    match /{parent=**}/offers/{offer} { allow read: if admin(); }
+    match /{parent=**}/offers/{offer} {
+      allow read: if admin() || (signed() && site(resource.data.campsiteId).publishedAt != null
+        && site(resource.data.campsiteId).removal == null);
+    }
 
     match /reservations/{id} {
       function cancellationActor(r, c) {

@@ -57,6 +57,8 @@ class FirestoreLotteryRepository(
     private val clock: Clock,
     private val random: kotlin.random.Random = kotlin.random.Random.Default,
 ) : LotteryRepository {
+    private val queries = LotteryQueries(db)
+
     /**
      * Builds a validated reference to the lottery document.
      *
@@ -71,7 +73,7 @@ class FirestoreLotteryRepository(
      * @param id Lottery document ID.
      */
     override suspend fun get(id: String) =
-        ref(id).read(LotteryDocument)
+        queries.get(id)
 
     /**
      * Observes one lottery, emitting null when its document is absent.
@@ -79,13 +81,13 @@ class FirestoreLotteryRepository(
      * @param id Lottery document ID.
      */
     override fun observe(id: String) =
-        ref(id).observe(LotteryDocument)
+        queries.observe(id)
 
     /**
      * Observes all readable lotteries, including drafts and historical records.
      */
     override fun observeAll() =
-        db.collection("lotteries").observe(LotteryDocument)
+        queries.observeAll()
 
     /**
      * Observes lotteries created by the specified owner.
@@ -93,7 +95,7 @@ class FirestoreLotteryRepository(
      * @param ownerId Account ID of the campsite or lottery owner.
      */
     override fun observeForOwner(ownerId: String) =
-        db.collection("lotteries").whereEqualTo("ownerId", ownerId).observe(LotteryDocument)
+        queries.observeForOwner(ownerId)
 
     /**
      * Observes the campsite/night allocations belonging to a lottery.
@@ -101,7 +103,7 @@ class FirestoreLotteryRepository(
      * @param id Lottery document ID.
      */
     override fun observeOffers(id: String) =
-        ref(id).collection("offers").observe(LotteryOfferDocument)
+        queries.observeOffers(id)
 
     /**
      * Observes participation records; callers show draw outcomes only after draw completion.
@@ -109,7 +111,7 @@ class FirestoreLotteryRepository(
      * @param id Lottery document ID.
      */
     override fun observeEntries(id: String) =
-        ref(id).collection("entries").observe(LotteryEntryDocument)
+        queries.observeEntries(id)
 
     /**
      * Observes an account’s entries across lotteries using the queryable account ID.
@@ -117,10 +119,7 @@ class FirestoreLotteryRepository(
      * @param accountId Account ID whose participation or data is addressed.
      */
     override fun observeForEntrant(accountId: String) =
-        db
-            .collectionGroup("entries")
-            .whereEqualTo("accountId", accountId)
-            .observe(LotteryEntryDocument)
+        queries.observeForEntrant(accountId)
 
     /**
      * Creates one draft transactionally; retries preserve stored configuration and lifecycle.
@@ -680,4 +679,11 @@ class FirestoreLotteryRepository(
             }
         }
     }
+
+    /**
+     * Observes canonical campsite memberships and their owner's published lottery records.
+     * @param campsiteId Published campsite whose noncancelled lotteries are requested.
+     */
+    override fun observePublishedForCampsite(campsiteId: String) =
+        queries.publishedForCampsite(campsiteId)
 }

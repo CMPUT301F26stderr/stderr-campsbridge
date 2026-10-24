@@ -51,4 +51,10 @@ interface BookingRepository {
      * @param request Actor, role, and reason for cancellation.
      */
     suspend fun cancel(request: CancellationRequest)
+
+    /**
+     * Observes retained reservations across all campsites owned by the account.
+     * @param ownerId Account whose campsite ownership determines the result.
+     */
+    fun observeForOwner(ownerId: String): Flow<List<Reservation>>
 }

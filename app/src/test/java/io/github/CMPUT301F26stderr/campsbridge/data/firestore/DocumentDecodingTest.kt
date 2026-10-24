@@ -153,4 +153,18 @@ class DocumentDecodingTest {
             ) { ReservationDocument.decode(path, data) }
         }
     }
+
+    /** Offer query metadata must agree with the authoritative document path. */
+    @Test fun rejectsInvalidOfferQueryIdentity() {
+        val path = "lotteries/draw/offers/site"
+        val nights = mapOf("nights" to listOf("2027-05-15"))
+        listOf(nights, nights + ("campsiteId" to "other"), nights + ("campsiteId" to 1L)).forEach {
+            assertThrows(DocumentDecodingException::class.java) {
+                io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryOfferDocument.decode(
+                    path,
+                    it,
+                )
+            }
+        }
+    }
 }
