@@ -40,6 +40,14 @@ Run the debug gallery with Android Studio's `demo.DemoActivity`, or launch its c
 - Trigger writes through explicit user actions. Display confirmed success only after the repository operation succeeds.
 - Keep loading, empty, failure, and in-progress states explicit. Preserve entered data after failures.
 
+## Images
+
+`ImageSlotController` owns one immutable `ImageTarget`, selected content, attachment observation, serialized actions, and transient download references. Its parent ViewModel owns the lifetime. Selection/cancellation/discard do not upload; Save is explicit. Failed saves retain the candidate. An unconfirmed publication blocks another write until a matching server read establishes success; presentation code never deletes Storage blobs directly.
+
+Routes use the platform Photo Picker and `PhotoContentReader`. The reader checks MIME/access on IO and supplies a fresh lazy stream factory; the existing image repository opens/closes the stream. Shared `ImageSlot` and `RemoteImage` content use Material controls and Coil, including its OkHttp network module. Decode/URL errors retry display; they do not reupload.
+
+The profile currently connects this path to its existing account's image slot. The debug-only FileProvider exposes only the test-photo cache directory to support instrumented fixtures; release builds do not register it.
+
 ## Accessibility and previews
 
 - Use shared colors, typography, spacing, and shapes; put user-visible text in string resources.

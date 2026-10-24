@@ -36,4 +36,23 @@
     <string name="role_admin">Administrator</string>
     <string name="switch_workspace">Switch workspace</string>
     <string name="workspace_selection_failure">Could not switch workspaces. Select a workspace to retry.</string>
+    <string name="photo_preview">Selected photo preview</string>
+    <string name="profile_photo">Profile photo</string>
+    <string name="photo_empty">No photo yet</string>
+    <string name="photo_choose">Choose photo</string>
+    <string name="photo_save">Save photo</string>
+    <string name="photo_discard">Discard selection</string>
+    <string name="photo_remove">Remove photo</string>
+    <string name="photo_remove_title">Remove photo?</string>
+    <string name="photo_remove_body">Your saved photo will be removed.</string>
+    <string name="remove">Remove</string>
+    <string name="photo_saving">Saving photo</string>
+    <string name="photo_removing">Removing photo</string>
+    <string name="photo_checking">Checking photo status</string>
+    <string name="photo_unconfirmed">The photo change is unconfirmed. Check again before making another change.</string>
+    <string name="photo_load_failure">Could not load photo</string>
+    <string name="photo_save_failure">Could not save photo</string>
+    <string name="photo_remove_failure">Could not remove photo</string>
+    <string name="photo_selection_failure">Could not read selected photo</string>
+    <string name="photo_display_failure">Could not display photo</string>
 </resources>

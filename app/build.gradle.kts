@@ -57,6 +57,8 @@ dokka {
 }
 
 dependencies {
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
@@ -183,6 +185,13 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                     "io/github/CMPUT301F26stderr/campsbridge/ui/app/WorkspaceSelectionKt.class",
                 ).asFile.isFile,
         ) { "The measured workspace rule is missing" }
+        check(
+            compiledSources
+                .get()
+                .file(
+                    "io/github/CMPUT301F26stderr/campsbridge/ui/common/images/ImageSlotState.class",
+                ).asFile.isFile,
+        ) { "The measured image action rules are missing" }
         true
     }
     classDirectories.from(
@@ -190,6 +199,7 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
             include(
                 "**/domain/shared/TypesKt.class",
                 "**/ui/app/WorkspaceSelectionKt.class",
+                "**/ui/common/images/ImageSlotState.class",
             )
         },
     )

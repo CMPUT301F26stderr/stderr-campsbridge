@@ -71,7 +71,7 @@ Run line/branch reporting and the scoped pure-logic gate with:
 nix develop --command bash ./gradlew :app:unitCoverageReport :app:pureLogicCoverage
 ```
 
-Reports are under `app/build/reports/jacoco/unitCoverageReport/`. The 100% line/branch gate covers `requireOperation` and `permittedWorkspace`; add new small pure-rule classes deliberately. This is not a module-wide coverage claim.
+Reports are under `app/build/reports/jacoco/unitCoverageReport/`. The 100% line/branch gate covers `requireOperation`, `permittedWorkspace`, and image action availability; add new small pure-rule classes deliberately. This is not a module-wide coverage claim.
 
 Run instrumented tests on a disposable API 35 device with:
 

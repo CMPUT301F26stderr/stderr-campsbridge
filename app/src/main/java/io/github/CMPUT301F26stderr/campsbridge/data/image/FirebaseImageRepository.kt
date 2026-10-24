@@ -28,7 +28,9 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INACTIVE
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.time.Clock
 import java.util.UUID
@@ -81,7 +83,7 @@ class FirebaseImageRepository(
             .toString()
 
     /**
-     * Records upload intent, uploads and closes the supplied stream, then switches the
+     * Records upload intent, opens/uploads/closes the stream on IO, then switches the
      * attachment transactionally. Obsolete cleanup may be deferred; ambiguous publication
      * requires reconciliation.
      *
@@ -107,23 +109,32 @@ class FirebaseImageRepository(
                 ),
             ).await()
         val objectRef = storage.reference.child(DocumentKeys.blob(blobId))
-        upload.openStream().use { stream ->
-            val task =
-                objectRef.putStream(
-                    stream,
-                    StorageMetadata
-                        .Builder()
-                        .setContentType(upload.contentType)
-                        .setCustomMetadata("attachmentId", DocumentKeys.attachment(target))
-                        .build(),
-                )
-            try {
-                withTimeout(600_000) { task.await() }
-            } catch (cancelled: CancellationException) {
-                task.cancel()
-                throw cancelled
+        // Carry failure as a value so opening errors retain their identity across dispatchers.
+        val transfer =
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    upload.openStream().use { stream ->
+                        val task =
+                            objectRef.putStream(
+                                stream,
+                                StorageMetadata
+                                    .Builder()
+                                    .setContentType(upload.contentType)
+                                    .setCustomMetadata(
+                                        "attachmentId",
+                                        DocumentKeys.attachment(target),
+                                    ).build(),
+                            )
+                        try {
+                            withTimeout(600_000) { task.await() }
+                        } catch (cancelled: CancellationException) {
+                            task.cancel()
+                            throw cancelled
+                        }
+                    }
+                }
             }
-        }
+        transfer.getOrThrow()
         uploadRef.update("uploadFinished", true).await()
         val attachment = ImageAttachment(target, blobId, clock.instant())
         val old =

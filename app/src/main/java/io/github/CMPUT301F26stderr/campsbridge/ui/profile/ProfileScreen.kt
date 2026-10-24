@@ -22,12 +22,14 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param state Observed presentation state.
  * @param onRetry Explicit observation retry.
  * @param modifier Parent layout.
+ * @param photoContent Shared photo controls supplied by the route; absent in read-only fixtures.
  */
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    photoContent: @Composable () -> Unit = {},
 ) {
     Column(
         modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -49,6 +51,7 @@ fun ProfileScreen(
             is ProfileUiState.Content -> {
                 val account = state.account
                 Text(account.name, style = MaterialTheme.typography.headlineMedium)
+                photoContent()
                 ProfileField(stringResource(R.string.email), account.email)
                 ProfileField(stringResource(R.string.phone), account.phone)
                 Text(
