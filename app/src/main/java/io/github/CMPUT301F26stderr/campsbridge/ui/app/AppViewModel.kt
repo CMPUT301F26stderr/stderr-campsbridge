@@ -35,7 +35,6 @@ class AppViewModel(
     private var accountId: String? = null
     private var account: Account? = null
     private var progress: LocalAccountProgress? = null
-    private var workspace: Role? = null
     private var selecting = false
     private var selectionFailed = false
 
@@ -50,7 +49,6 @@ class AppViewModel(
         selectionJob?.cancel()
         selecting = false
         selectionFailed = false
-        workspace = null
         account = null
         progress = null
         accountId = null
@@ -97,11 +95,6 @@ class AppViewModel(
             viewModelScope.launch {
                 try {
                     preferences.setWorkspace(id, role)
-                    if (generation ==
-                        attempt
-                    ) {
-                        workspace = permittedWorkspace(account?.roles.orEmpty(), role)
-                    }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
@@ -135,8 +128,7 @@ class AppViewModel(
                 }
 
                 else -> {
-                    workspace = permittedWorkspace(record.roles, workspace ?: local.workspace)
-                    val permitted = workspace
+                    val permitted = permittedWorkspace(record.roles, local.workspace)
                     if (permitted == null) {
                         SessionState.Unavailable
                     } else {

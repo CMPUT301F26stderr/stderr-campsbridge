@@ -43,7 +43,7 @@ nix develop .#ui --command bash scripts/check-android-ui.sh
 
 This uses a disposable API 35 emulator and requires usable KVM on Linux. See [CONTRIBUTING.md](CONTRIBUTING.md#test-boundaries) for existing-device and coverage commands.
 
-The current app restores a device-linked identity and shows an existing account's profile, including native photo selection, explicit saving, and confirmed removal. Name/contact editing remains pending. First-time profile submission and other feature screens remain pending. Use the [Firebase setup](firebase/README.md) to select cloud or disposable emulators; production startup does not create sample profiles.
+The current app restores a device-linked identity and shows an existing account's profile, including native photo selection, explicit saving, and confirmed removal. First-time users can open the short onboarding flow. Its name submission intentionally remains blocked until the reserved teammate validator is integrated; the remaining flow is wired and tested through an injected validator. Name/contact editing and other feature screens remain pending. Use the [Firebase setup](firebase/README.md) to select cloud or disposable emulators; production startup does not create sample profiles.
 
 ## Repository layout
 

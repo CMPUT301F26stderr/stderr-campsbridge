@@ -40,11 +40,11 @@ class AppNavigationTest {
         compose.onNodeWithText("Alex Chen").assertDoesNotExist()
     }
 
-    /** A missing profile stops at the explicit unfinished setup boundary. */
-    @Test fun missingProfileShowsSetupBoundary() {
+    /** A missing profile enters welcome without inventing a completed profile. */
+    @Test fun missingProfileShowsWelcome() {
         host.accounts.account.value = null
         compose.setContent { host.Content() }
-        compose.onNodeWithText("Profile setup").assertIsDisplayed()
+        compose.onNodeWithText("Get started").assertIsDisplayed()
         compose.onNodeWithText("Alex Chen").assertDoesNotExist()
     }
 

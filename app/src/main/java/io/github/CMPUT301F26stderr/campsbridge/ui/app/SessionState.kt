@@ -8,7 +8,7 @@ sealed interface SessionState {
     /** Identity or required reads are pending. */
     data object Initializing : SessionState
 
-    /** First-time or interrupted setup needs its future feature flow.
+    /** First-time or interrupted setup needs the onboarding flow.
      * @param accountId Established identity.
      * @param account Existing active profile, retained for accessibility during interrupted setup.
      */

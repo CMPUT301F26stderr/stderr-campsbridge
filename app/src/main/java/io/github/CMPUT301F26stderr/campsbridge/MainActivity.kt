@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -36,6 +37,10 @@ class MainActivity : ComponentActivity() {
                 lifecycle.currentStateFlow.map { it.isAtLeast(Lifecycle.State.STARTED) },
             )
         }
-        setContent { AppRoot(model) { id -> profileViewModelFactory(services, id) } }
+        setContent {
+            AppRoot(model, { id -> onboardingViewModelFactory(services, id) }) { id ->
+                profileViewModelFactory(services, id)
+            }
+        }
     }
 }

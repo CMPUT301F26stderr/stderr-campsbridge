@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application android:usesCleartextTraffic="true">
         <activity android:name=".demo.DemoActivity" android:exported="true" />
+        <activity android:name=".demo.OnboardingPreviewActivity" android:exported="true" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.testfiles"

@@ -105,6 +105,33 @@ class AppViewModelTest {
             }
         }
 
+    /** A late owner-capability snapshot must honor the already stored setup workspace. */
+    @Test fun ownerCompletionBeforeCapabilityEmissionHonorsStoredWorkspace() =
+        runTest {
+            val accounts = FakeAccountRepository(sampleAccount(setOf(Role.ENTRANT)))
+            val preferences =
+                FakeLocalAppPreferences().apply {
+                    progress.value = LocalAccountProgress(SetupProgress.IN_PROGRESS, Role.OWNER)
+                }
+            val model = AppViewModel(FakeIdentityProvider(), accounts, preferences)
+            val store = ViewModelStore().apply { put("app", model) }
+            try {
+                runCurrent()
+                assertTrue(model.state.value is SessionState.SetupRequired)
+                preferences.progress.value =
+                    LocalAccountProgress(SetupProgress.COMPLETED, Role.OWNER)
+                runCurrent()
+                accounts.account.value = sampleAccount(setOf(Role.ENTRANT, Role.OWNER))
+                runCurrent()
+                assertEquals(Role.OWNER, (model.state.value as SessionState.Ready).workspace)
+                assertEquals(0, accounts.writes)
+                assertEquals(0, preferences.workspaceWrites)
+            } finally {
+                store.clear()
+                runCurrent()
+            }
+        }
+
     /** Identity failure can be retried without manufacturing a session. */
     @Test fun identityFailureAndRetry() =
         runTest {

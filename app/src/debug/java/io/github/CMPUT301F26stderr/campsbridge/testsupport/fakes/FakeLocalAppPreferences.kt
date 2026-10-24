@@ -19,6 +19,8 @@ class FakeLocalAppPreferences : LocalAppPreferences {
     var readFailure: Exception? = null
     var writeFailure: Exception? = null
     var workspaceWrites = 0
+    var setupFailureOn: SetupProgress? = null
+    var setupFailure: Exception? = null
 
     /** Emits controlled values only after the optional read gate resolves.
      * @param accountId Identity owning the local state.
@@ -40,6 +42,7 @@ class FakeLocalAppPreferences : LocalAppPreferences {
     ) {
         writeGate?.await()
         writeFailure?.let { throw it }
+        if (progress == setupFailureOn) setupFailure?.let { throw it }
         val state = values.getOrPut(accountId) { MutableStateFlow(LocalAccountProgress()) }
         state.value = state.value.copy(setup = progress)
     }
