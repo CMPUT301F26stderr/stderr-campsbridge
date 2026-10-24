@@ -16,15 +16,17 @@ nix develop --command firebase emulators:start --config firebase/firebase.json -
 
 The container exposes domain repository interfaces and account-scoped `PendingWork`. Ready foreground sessions observe owner lotteries and entrant/owner reservations, draw due lotteries, and resume their durable inbox jobs with bounded retries. `AdminMaintenance.resume(adminId)` separately authorizes global removal, draw, delivery and obsolete-image cleanup. Inbox delivery creates Firestore receipts; closed-app scheduling and OS/FCM push delivery remain separate integrations.
 
-The application uses the checked-in `app/google-services.json` for cloud resources. Anonymous Auth must be enabled in that project. The persistence repositories themselves still accept explicitly configured clients.
+The `firebaseDebug` and `release` variants use the checked-in `app/google-services.json` for cloud resources. Anonymous Auth must be enabled in that project. The persistence repositories themselves still accept explicitly configured clients.
 
-For a debug APK connected entirely to the disposable `demo-stderr` emulators:
+The normal `debug` launcher is an offline demo and does not connect to Firebase. Select `firebaseDebug` in Android Studio for backend work; no activity-launch commands are needed.
+
+For a Firebase debug APK connected entirely to the disposable `demo-stderr` emulators:
 
 ```bash
-nix develop --command bash ./gradlew :app:assembleDebug -PfirebaseEmulatorHost=10.0.2.2
+nix develop --command bash ./gradlew :app:assembleFirebaseDebug -PfirebaseEmulatorHost=10.0.2.2
 ```
 
-Use a host reachable from the device. `AppContainerFactory` configures Auth, Firestore, and Storage together before use. Omitting the property selects cloud configuration; use the same property for subsequent debug builds until returning to cloud. Startup establishes identity and reads a profile; it does not create sample accounts. Seed development accounts deliberately through emulator tooling when testing existing-user flows. Keep cloud deployment procedures in the team Wiki.
+Use a host reachable from the device. `AppContainerFactory` configures Auth, Firestore, and Storage together before use. Omitting the property selects cloud configuration in Firebase-enabled variants; use the same property for subsequent Firebase builds until returning to cloud. The property does not change the offline `debug` launcher. Startup establishes identity and reads a profile; it does not create sample accounts. Seed development accounts deliberately through emulator tooling when testing existing-user flows. Keep cloud deployment procedures in the team Wiki.
 
 ## Testing and pending work
 

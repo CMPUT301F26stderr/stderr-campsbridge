@@ -208,6 +208,7 @@ fun OnboardingScreen(
  * @param submitting Whether the operation is pending.
  * @param pending Whether name validation has not been integrated.
  * @param large Whether to apply enlarged account controls and text.
+ * @param onBack Optional device-host exit action; editor previews keep passive callbacks.
  */
 @Composable
 internal fun OnboardingPreviewContent(
@@ -216,6 +217,7 @@ internal fun OnboardingPreviewContent(
     submitting: Boolean = false,
     pending: Boolean = false,
     large: Boolean = false,
+    onBack: () -> Unit = {},
 ) {
     CampsbridgeTheme(
         if (large) AccountSettings(fontScale = 1.25, controlScale = 1.5) else AccountSettings(),
@@ -239,7 +241,7 @@ internal fun OnboardingPreviewContent(
                 nameValidationPending = pending,
             ),
             {},
-            {},
+            onBack,
             {},
             {},
             {},

@@ -15,7 +15,7 @@ An Android campsite reservation app for CMPUT 301, built by a team of six. Entra
 
 1. Clone this repository and open its root in Android Studio.
 2. Install the SDK required by `app/build.gradle.kts` (currently Android API 37). The Gradle daemon requires JDK 25, as recorded in `gradle/gradle-daemon-jvm.properties`.
-3. Allow Gradle sync to finish, then run the `app` configuration on an emulator or device.
+3. Allow Gradle sync to finish, select the `debug` build variant, then run the `app` configuration on an emulator or device. It opens the offline demo without Firebase setup. Use **Demo tools** to switch scenarios, reset sample data, or inspect screens and the component gallery.
 4. [Install the shared pre-commit hooks](CONTRIBUTING.md#install-local-hooks) after cloning. They run automatically on commits.
 5. Before opening a PR, run the same Android checks used by CI:
 
@@ -43,7 +43,9 @@ nix develop .#ui --command bash scripts/check-android-ui.sh
 
 This uses a disposable API 35 emulator and requires usable KVM on Linux. See [CONTRIBUTING.md](CONTRIBUTING.md#test-boundaries) for existing-device and coverage commands.
 
-The current app restores a device-linked identity and shows an existing account's profile, including native photo selection, explicit saving, and confirmed removal. First-time users can open the short onboarding flow. Its name submission intentionally remains blocked until the reserved teammate validator is integrated; the remaining flow is wired and tested through an injected validator. Name/contact editing and other feature screens remain pending. Use the [Firebase setup](firebase/README.md) to select cloud or disposable emulators; production startup does not create sample profiles.
+The default `debug` build uses local sample accounts and private cached photos. Profile display, workspace switching and photo selection/save/removal work locally. The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name submission remains blocked until the reserved teammate validator is integrated; name/contact editing and other feature screens remain pending.
+
+Select `firebaseDebug` in Android Studio for real account identity, Firestore and Storage, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.
 
 ## Repository layout
 
@@ -65,6 +67,6 @@ Detailed team documentation belongs in the wiki. Keep executable configuration, 
 
 Use **Download Latest APK** above to download `app-debug.apk` from the rolling [beta prerelease](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/tag/beta), without signing in to GitHub. CI updates it after all checks pass on `main`. Open the APK on your Android device to install it, and allow installation from the app you used to open the APK if Android prompts you. The build-status badge links to CI runs and check reports.
 
-The beta download stays available until replaced by a newer verified build. Per-run APKs and check reports remain available as Actions artifacts for 14 days.
+CI publishes the offline `debug` demo to the rolling beta. Firebase-connected builds use the separate `firebaseDebug` variant. The beta download stays available until replaced by a newer verified build. Per-run APKs and check reports remain available as Actions artifacts for 14 days.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses the [GNU GPL v3 license](LICENSE).

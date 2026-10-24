@@ -48,6 +48,7 @@ class OnboardingPreviewActivity : ComponentActivity() {
                     intent.getBooleanExtra("submitting", false),
                     intent.getBooleanExtra("pending", false),
                     intent.getBooleanExtra("large", false),
+                    onBack = ::finish,
                 )
             }
         }

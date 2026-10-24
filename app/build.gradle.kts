@@ -29,6 +29,10 @@ android {
     }
 
     buildTypes {
+        create("firebaseDebug") {
+            initWith(getByName("debug"))
+            matchingFallbacks += "debug"
+        }
         release {
             optimization {
                 enable = false
@@ -88,6 +92,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    add("firebaseDebugImplementation", libs.androidx.compose.ui.tooling)
 }
 
 // Backend tests share compilation with local tests, but require their own emulator invocation.

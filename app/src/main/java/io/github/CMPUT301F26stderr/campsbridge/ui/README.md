@@ -29,7 +29,9 @@ Use `AppScreen` for app bars, system/keyboard insets, gutters, optional bottom a
 
 `AppActionButton` blocks repeated taps while submitting. `AppTextField` handles labels, errors, and IME callbacks; callers supply validation. `LoadingContent`, `EmptyContent`, and `FailureContent` distinguish outcomes. `ConfirmationDialog` separates confirm, cancel, and dismissal. Compose ordinary Material components directly when a shared wrapper adds no useful behavior.
 
-The debug-only `demo.DemoActivity` hosts two offline pages: **Controls** for input, choices, picker dialogs, actions and feedback; **Content** for feature cards, stay summaries, navigation, photos and calendar. Interactions modify local example state; they never construct repositories or write shared data. The campsite photo is bundled in debug assets from the approved prototype.
+The normal `debug` build opens `demo.OfflineDemoActivity`, which supplies local repositories to the real root, onboarding and profile controllers. Its **Demo tools** menu switches/reset scenarios and opens onboarding previews or the component gallery. `firebaseDebug` retains the Firebase launcher.
+
+The debug-only `demo.DemoActivity` gallery hosts two offline pages: **Controls** for input, choices, picker dialogs, actions and feedback; **Content** for feature cards, stay summaries, navigation, photos and calendar. Interactions modify local example state; they never construct repositories or write shared data. The campsite photo is bundled in debug assets from the approved prototype.
 
 After installing a debug APK, open the gallery with:
 

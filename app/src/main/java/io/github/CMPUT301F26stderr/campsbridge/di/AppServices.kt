@@ -5,12 +5,12 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.LocalAppPref
 
 /**
  * Application-scoped repositories and platform services supplied to ViewModel factories.
- * @param repositories Existing persistence composition root.
- * @param identity Device-session adapter for the selected Firebase environment.
+ * @param repositories Repository interfaces supplied by the selected application host.
+ * @param identity Device-session adapter supplied by the selected application host.
  * @param preferences One installation-local preferences store.
  */
 class AppServices(
-    val repositories: AppContainer,
+    val repositories: AppRepositories,
     val identity: IdentityProvider,
     val preferences: LocalAppPreferences,
 )
