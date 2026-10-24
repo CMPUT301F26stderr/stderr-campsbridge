@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.LocalControlScale
 
 /**
  * Presents a shared form action and blocks taps while its operation is pending.
@@ -35,7 +36,7 @@ fun AppActionButton(
     Button(
         onClick = onClick,
         enabled = enabled && !isSubmitting,
-        modifier = modifier.heightIn(min = 48.dp),
+        modifier = modifier.heightIn(min = 48.dp * LocalControlScale.current.coerceAtLeast(1f)),
     ) {
         if (isSubmitting) {
             CircularProgressIndicator(

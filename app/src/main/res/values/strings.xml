@@ -1,3 +1,21 @@
 <resources>
-    <string name="app_name">stderr-campsbridge</string>
+    <string name="app_name">Campsbridge</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="gallery_title">Component gallery</string>
+    <string name="gallery_intro">Local examples of shared controls and feedback.</string>
+    <string name="gallery_name">Name</string>
+    <string name="gallery_name_error">A name is required</string>
+    <string name="gallery_confirm">Open confirmation</string>
+    <string name="gallery_pending">Saving</string>
+    <string name="gallery_disabled">Unavailable action</string>
+    <string name="gallery_empty">No photos yet</string>
+    <string name="gallery_failure">Unable to load this example</string>
+    <string name="gallery_fill">Use example name</string>
+    <string name="gallery_dialog">Example confirmation</string>
+    <string name="gallery_dialog_body">This demo closes the dialog without saving data.</string>
 </resources>

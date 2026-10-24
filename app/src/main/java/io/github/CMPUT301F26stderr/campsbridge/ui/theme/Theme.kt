@@ -1,72 +1,44 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.ColorMode
 
-private val DarkColorScheme =
-    darkColorScheme(
-        primary = Purple80,
-        secondary = PurpleGrey80,
-        tertiary = Pink80,
-    )
-
-private val LightColorScheme =
-    lightColorScheme(
-        primary = Purple40,
-        secondary = PurpleGrey40,
-        tertiary = Pink40,
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-     */
-    )
+val LocalControlScale = compositionLocalOf { 1f }
 
 /**
- * Applies the shared starter color and typography scheme, optionally using wallpaper colors.
- *
- * @param darkTheme Whether to use the dark scheme; defaults to the system preference.
- * @param dynamicColor Whether Android 12+ wallpaper colors replace the fixed starter palette.
- * @param content Composable content rendered under the shared theme.
+ * Applies the approved white/green Material theme and account accessibility preferences.
+ * @param settings Account preferences, or defaults before startup resolves.
+ * @param content Content rendered without altering Android's system font scale.
  */
 @Composable
 fun CampsbridgeTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    settings: AccountSettings = AccountSettings(),
     content: @Composable () -> Unit,
 ) {
-    val colorScheme =
-        when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-
-            darkTheme -> {
-                DarkColorScheme
-            }
-
-            else -> {
-                LightColorScheme
-            }
-        }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content,
-    )
+    val typography = remember(settings.fontScale) { appTypography(settings.fontScale.toFloat()) }
+    CompositionLocalProvider(
+        LocalControlScale provides settings.controlScale.toFloat(),
+        LocalMinimumInteractiveComponentSize provides
+            (48.dp * settings.controlScale.toFloat().coerceAtLeast(1f)),
+    ) {
+        MaterialTheme(
+            colorScheme =
+                if (settings.colorMode ==
+                    ColorMode.COLOR_BLIND
+                ) {
+                    ColorBlindColors
+                } else {
+                    StandardColors
+                },
+            typography = typography,
+            content = content,
+        )
+    }
 }

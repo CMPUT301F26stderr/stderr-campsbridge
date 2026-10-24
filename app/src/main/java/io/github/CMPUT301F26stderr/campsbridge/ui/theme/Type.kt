@@ -2,35 +2,54 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import io.github.CMPUT301F26stderr.campsbridge.R
 
-// Set of Material typography styles to start with
-val Typography =
-    Typography(
-        bodyLarge =
-            TextStyle(
-                fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp,
-                lineHeight = 24.sp,
-                letterSpacing = 0.5.sp,
-            ),
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+private val Inter =
+    FontFamily(
+        Font(R.font.inter_regular, FontWeight.Normal),
+        Font(R.font.inter_medium, FontWeight.Medium),
+        Font(R.font.inter_semibold, FontWeight.SemiBold),
+        Font(R.font.inter_bold, FontWeight.Bold),
     )
-     */
+
+/**
+ * Applies application scaling to Material typography; Android still applies system scaling.
+ * @param scale Account font-size multiplier.
+ */
+fun appTypography(scale: Float): Typography {
+    val base = Typography()
+    return Typography(
+        displayLarge = scaledStyle(base.displayLarge, scale),
+        displayMedium = scaledStyle(base.displayMedium, scale),
+        displaySmall = scaledStyle(base.displaySmall, scale),
+        headlineLarge = scaledStyle(base.headlineLarge, scale),
+        headlineMedium = scaledStyle(base.headlineMedium, scale),
+        headlineSmall = scaledStyle(base.headlineSmall, scale),
+        titleLarge = scaledStyle(base.titleLarge, scale),
+        titleMedium = scaledStyle(base.titleMedium, scale),
+        titleSmall = scaledStyle(base.titleSmall, scale),
+        bodyLarge = scaledStyle(base.bodyLarge, scale),
+        bodyMedium = scaledStyle(base.bodyMedium, scale),
+        bodySmall = scaledStyle(base.bodySmall, scale),
+        labelLarge = scaledStyle(base.labelLarge, scale),
+        labelMedium = scaledStyle(base.labelMedium, scale),
+        labelSmall = scaledStyle(base.labelSmall, scale),
+    )
+}
+
+/** Uses the bundled font and scales a specified Material text style once.
+ * @param style Material base style.
+ * @param scale Application multiplier.
+ */
+private fun scaledStyle(
+    style: TextStyle,
+    scale: Float,
+): TextStyle =
+    style.copy(
+        fontFamily = Inter,
+        fontSize = style.fontSize * scale,
+        lineHeight = style.lineHeight * scale,
     )
