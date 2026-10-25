@@ -24,6 +24,7 @@ class FakeCampsiteRepository(
     val observedIds = mutableListOf<String>()
     var activeObservers = 0
     var allObservations = 0
+    var publishedObservations = 0
     var readFailure: Exception? = null
     var readGate: CompletableDeferred<Unit>? = null
     val readIds = mutableListOf<String>()
@@ -40,6 +41,7 @@ class FakeCampsiteRepository(
     val calendarFailure = MutableStateFlow<Exception?>(null)
     val observedCalendars = mutableListOf<Triple<String, LocalDate, LocalDate>>()
     var activeCalendarObservers = 0
+    var calendarHandler: ((String, LocalDate, LocalDate) -> Flow<List<CalendarNight>>)? = null
 
     /** Captures one explicit inventory operation without simulating its transaction.
      * @param id Actual saved campsite identity.
@@ -75,7 +77,10 @@ class FakeCampsiteRepository(
 
     /** Supplies active published records. */
     override fun observePublished(): Flow<List<Campsite>> =
-        controlled { rows -> rows.filter { it.isPublished } }
+        flow {
+            publishedObservations++
+            emitAll(controlled { rows -> rows.filter { it.isPublished } })
+        }
 
     /** Supplies the requested owner's records, including retained removal facts.
      * @param ownerId Requested owner.
@@ -107,12 +112,13 @@ class FakeCampsiteRepository(
             observedCalendars.add(Triple(id, start, endExclusive))
             activeCalendarObservers++
             try {
-                emitAll(
-                    combine(calendarNights, calendarFailure) { nights, failure ->
-                        failure?.let { throw it }
-                        nights.filter { it.date >= start && it.date < endExclusive }
-                    },
-                )
+                val source =
+                    calendarHandler?.invoke(id, start, endExclusive)
+                        ?: combine(calendarNights, calendarFailure) { nights, failure ->
+                            failure?.let { throw it }
+                            nights.filter { it.date >= start && it.date < endExclusive }
+                        }
+                emitAll(source)
             } finally {
                 activeCalendarObservers--
             }

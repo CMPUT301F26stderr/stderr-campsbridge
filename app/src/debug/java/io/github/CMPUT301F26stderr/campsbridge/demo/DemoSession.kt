@@ -8,6 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAppPreferences
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.di.AppRepositories
 import io.github.CMPUT301F26stderr.campsbridge.di.AppServices
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
@@ -126,6 +127,7 @@ private class DemoRepositories(
 ) : AppRepositories {
     override val accounts = DemoAccountRepository(listOfNotNull(account))
     override val images = DemoImageRepository(directory)
+    override val reviews = DemoReviewRepository()
     override val campsites =
         DemoCampsiteRepository(
             if (account != null && Role.OWNER in account.roles) {

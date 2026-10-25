@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
@@ -30,6 +32,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onClick Parent-owned open action.
  * @param modifier Caller layout.
  * @param status Optional caller-derived lifecycle/eligibility text.
+ * @param ratingText Optional real rating read feedback supplied by the caller.
+ * @param photoContent Optional caller-owned read feedback inside the standard image geometry.
  */
 @Composable
 fun CampsiteCard(
@@ -38,20 +42,32 @@ fun CampsiteCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     status: String? = null,
+    ratingText: String? = null,
+    photoContent: (@Composable () -> Unit)? = null,
 ) {
     Card(onClick, modifier.fillMaxWidth()) {
-        RemoteImage(
-            photoReference,
-            campsite.details.name,
-            Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-            compactFailure = true,
-        )
+        if (photoContent == null) {
+            RemoteImage(
+                photoReference,
+                campsite.details.name,
+                Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                compactFailure = true,
+            )
+        } else {
+            Box(
+                Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                contentAlignment = Alignment.Center,
+            ) {
+                photoContent()
+            }
+        }
         Column(
             Modifier.padding(Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
             Text(campsite.details.name, style = MaterialTheme.typography.titleLarge)
             Text(campsite.details.locationLabel, style = MaterialTheme.typography.bodyMedium)
+            ratingText?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             status?.let {
                 Text(
                     it,

@@ -19,6 +19,10 @@ fun CampsiteDetailRoute(
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val photo by model.photoState.collectAsStateWithLifecycle()
+    if (model.context != CampsiteDetailContext.MANAGE) {
+        CampsiteDetailScreen(state, photo, onBack, model::retry, model::retryPhoto)
+        return
+    }
     CampsiteManagementScreen(
         state,
         photo,

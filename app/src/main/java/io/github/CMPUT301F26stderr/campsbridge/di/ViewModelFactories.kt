@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
@@ -161,6 +162,25 @@ fun availabilityViewModelFactory(
                 services.clock,
                 createSavedStateHandle(),
                 remainingAvailabilityEdits,
+            )
+        }
+    }
+
+/** Constructs the discovery owner with reserved matching/ordering dependencies explicitly pending.
+ * @param services Selected host's published listing, attachment and rating sources.
+ */
+fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            ExploreViewModel(
+                services.repositories.campsites,
+                services.repositories.images,
+                services.repositories.reviews,
+                createSavedStateHandle(),
+                matchesText = null,
+                matchesCapacity = null,
+                sortCampsites = null,
+                clock = services.clock,
             )
         }
     }

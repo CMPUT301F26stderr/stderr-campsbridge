@@ -9,6 +9,7 @@ import java.util.Locale
 /** Registered destinations only; add feature routes when their implementations exist. */
 object AppDestination {
     const val AVAILABILITY_EDITOR = "owner/campsites/{campsiteId}/availability/edit"
+    const val EXPLORE = "entrant/explore"
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"

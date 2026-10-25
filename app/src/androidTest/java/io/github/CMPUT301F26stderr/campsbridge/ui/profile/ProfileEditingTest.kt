@@ -3,6 +3,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
@@ -35,7 +37,7 @@ class ProfileEditingTest {
     /** Primary and editor share one model but each owns exactly one visible frame. */
     @Test fun menuAndEditorsHaveOneFrameAndActualBack() {
         compose.setContent { host.Content() }
-        compose.onAllNodesWithText("Profile").assertCountEquals(1)
+        compose.onAllNodes(hasText("Profile") and !hasClickAction()).assertCountEquals(1)
         compose.onAllNodesWithContentDescription("Back").assertCountEquals(0)
         compose.onNodeWithText("Personal details").performClick()
         compose.onAllNodesWithText("Personal details").assertCountEquals(1)
