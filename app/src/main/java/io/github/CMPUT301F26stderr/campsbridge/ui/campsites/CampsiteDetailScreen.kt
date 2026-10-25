@@ -28,7 +28,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
-/** Read-only saved overview shared by entrants, owner previews and admin inspection.
+/** Saved overview shared by entrants, owner previews and admin inspection.
  * @param state Actual listing outcome, never copied from a discovery row.
  * @param photo Independent attachment/display state.
  * @param onBack Returns to the actual caller.
@@ -36,9 +36,10 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onRetryPhoto Retries only attachment/display reads.
  * @param modifier Caller layout.
  * @param rating Independent real rating result.
- * @param context Fixed caller presentation; never supplies mutation callbacks.
+ * @param context Fixed caller presentation; only VIEW renders entrant participation.
  * @param onRetryRatings Retries only the failed rating read.
  * @param onOpenSection Opens a child within the same saved reader graph.
+ * @param lotteryContent Optional actual entrant entry owned by the saved route.
  */
 @Composable
 fun CampsiteDetailScreen(
@@ -52,6 +53,7 @@ fun CampsiteDetailScreen(
     context: CampsiteDetailContext = CampsiteDetailContext.VIEW,
     onRetryRatings: () -> Unit = {},
     onOpenSection: (CampsiteDetailSection) -> Unit = {},
+    lotteryContent: (@Composable () -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.campsite), modifier, onBack = onBack) {
         when (state) {
@@ -120,6 +122,7 @@ fun CampsiteDetailScreen(
                         ),
                     )
                     DetailRow(stringResource(R.string.campsite_reference), site.id)
+                    if (context == CampsiteDetailContext.VIEW) lotteryContent?.invoke()
                     for (section in listOf(
                         CampsiteDetailSection.ABOUT,
                         CampsiteDetailSection.MAP,

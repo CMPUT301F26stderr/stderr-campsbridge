@@ -9,6 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepositor
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
@@ -32,6 +33,7 @@ import java.time.ZoneId
  * @param reviews Optional rating source.
  * @param savedState Small retained calendar inputs.
  * @param clock Initial calendar month in the saved campsite's zone.
+ * @param lotteries Scoped associated lotteries and entrant operations.
  */
 class CampsiteDetailViewModel(
     private val accountId: String,
@@ -43,6 +45,7 @@ class CampsiteDetailViewModel(
     private val reviews: ReviewRepository,
     private val savedState: SavedStateHandle,
     private val clock: Clock,
+    private val lotteries: LotteryRepository,
 ) : ViewModel() {
     private val mutableState =
         MutableStateFlow<CampsiteDetailUiState>(CampsiteDetailUiState.Loading)
@@ -58,6 +61,16 @@ class CampsiteDetailViewModel(
     private val mutableInventory =
         MutableStateFlow<CampsiteInventoryUiState>(CampsiteInventoryUiState.Loading)
     val inventory = mutableInventory.asStateFlow()
+    private val campsiteLotteries =
+        CampsiteLotteriesController(
+            accountId,
+            campsiteId,
+            context,
+            lotteries,
+            clock,
+            viewModelScope,
+        )
+    val lotteryState = campsiteLotteries.state
     private var observation: Job? = null
     private var photo: ImageSlotController? = null
     private var photoJob: Job? = null
@@ -75,6 +88,54 @@ class CampsiteDetailViewModel(
     init {
         observe()
     }
+
+    /** Recalculates registration after foreground return. */
+    fun refreshTime() =
+        campsiteLotteries.refreshTime()
+
+    /** Retries only the failed campsite-lottery association. */
+    fun retryLotteries() =
+        campsiteLotteries.retry()
+
+    /** Retries only the sole choice's failed own-entry source. */
+    fun retryLotteryMembership() =
+        campsiteLotteries.retryMembership()
+
+    /** Sets actual choice-child visibility.
+     * @param visible Whether the child is composed.
+     */
+    fun setLotteryChoicesVisible(visible: Boolean) =
+        campsiteLotteries.setChoicesVisible(visible)
+
+    /** Retries one failed allocation label.
+     * @param lotteryId Actual displayed row identity.
+     */
+    fun retryLotteryOffer(lotteryId: String) =
+        campsiteLotteries.retryOffer(lotteryId)
+
+    /** Joins the displayed sole choice after rechecking current facts.
+     * @param lotteryId Identity supplied by the rendered action.
+     */
+    fun joinLottery(lotteryId: String) =
+        campsiteLotteries.join(lotteryId)
+
+    /** Requests explicit withdrawal confirmation for the displayed choice.
+     * @param lotteryId Identity supplied by the rendered action.
+     */
+    fun requestLeaveLottery(lotteryId: String) =
+        campsiteLotteries.requestLeave(lotteryId)
+
+    /** Dismisses the matching unsubmitted confirmation.
+     * @param lotteryId Identity supplied by the rendered dialog.
+     */
+    fun dismissLeaveLottery(lotteryId: String) =
+        campsiteLotteries.dismissLeave(lotteryId)
+
+    /** Rechecks and submits the matching withdrawal.
+     * @param lotteryId Identity supplied by the rendered dialog.
+     */
+    fun confirmLeaveLottery(lotteryId: String) =
+        campsiteLotteries.confirmLeave(lotteryId)
 
     /** Retries the failed record observation. */
     fun retry() {
@@ -149,6 +210,7 @@ class CampsiteDetailViewModel(
                             mutableState.value = CampsiteDetailUiState.Unavailable
                         } else {
                             mutableState.value = CampsiteDetailUiState.Content(site)
+                            campsiteLotteries.updateCampsite(site)
                             startPhoto()
                             if (context != CampsiteDetailContext.MANAGE) {
                                 if (mutableMonth.value == null) {
@@ -312,6 +374,7 @@ class CampsiteDetailViewModel(
 
     /** Clears supplemental readers when the authoritative saved parent cannot be presented. */
     private fun stopSupplementalReads() {
+        campsiteLotteries.updateCampsite(null)
         ownerVersion++
         ratingVersion++
         ownerJob?.cancel()
@@ -337,6 +400,7 @@ class CampsiteDetailViewModel(
 
     /** Cancels pending reads without replacing the final observable snapshot on clear. */
     override fun onCleared() {
+        campsiteLotteries.close()
         sourceVersion++
         ownerVersion++
         ratingVersion++

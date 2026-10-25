@@ -18,6 +18,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param deadline Formatted relevant deadline, including timezone where needed.
  * @param onClick Parent-owned detail action.
  * @param modifier Caller layout.
+ * @param supportingContent Optional actual row facts, such as campsite-scoped offered nights.
  */
 @Composable
 fun LotteryCard(
@@ -26,6 +27,7 @@ fun LotteryCard(
     deadline: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    supportingContent: (@Composable () -> Unit)? = null,
 ) {
     Card(onClick, modifier.fillMaxWidth()) {
         Column(
@@ -39,6 +41,7 @@ fun LotteryCard(
             )
             Text(lottery.title, style = MaterialTheme.typography.titleMedium)
             Text(deadline, style = MaterialTheme.typography.bodyMedium)
+            supportingContent?.invoke()
         }
     }
 }

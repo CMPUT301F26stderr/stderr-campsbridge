@@ -20,6 +20,13 @@ class FakeLotteryRepository(
 ) : LotteryRepository {
     val recordFailure = MutableStateFlow<Exception?>(null)
     val offerFailure = MutableStateFlow<Exception?>(null)
+    val offerFailures = MutableStateFlow<Map<String, Exception>>(emptyMap())
+    val observedOfferIds = mutableListOf<String>()
+    val associationFailure = MutableStateFlow<Exception?>(null)
+    val associations = MutableStateFlow<Map<String, List<Lottery>>>(emptyMap())
+    val associationRequests = mutableListOf<String>()
+    var activeAssociationObservers = 0
+        private set
     val ownerFailure = MutableStateFlow<Exception?>(null)
     val entrantFailure = MutableStateFlow<Exception?>(null)
     val entriesFailure = MutableStateFlow<Exception?>(null)
@@ -107,10 +114,11 @@ class FakeLotteryRepository(
      */
     override fun observeOffers(id: String): Flow<List<LotteryOffer>> =
         flow {
+            observedOfferIds.add(id)
             activeOfferObservers++
             try {
-                combine(liveOffers, offerFailure) { rows, failure ->
-                    failure?.let { throw it }
+                combine(liveOffers, offerFailure, offerFailures) { rows, failure, scopedFailures ->
+                    (failure ?: scopedFailures[id])?.let { throw it }
                     rows[id].orEmpty()
                 }.collect { emit(it) }
             } finally {
@@ -173,11 +181,22 @@ class FakeLotteryRepository(
             }
         }
 
-    /** Rejects unconfigured associated-lottery reads.
+    /** Exposes explicit scoped associations without reconstructing the persistence query.
      * @param campsiteId Requested campsite.
      */
     override fun observePublishedForCampsite(campsiteId: String): Flow<List<Lottery>> =
-        unsupported()
+        flow {
+            associationRequests.add(campsiteId)
+            activeAssociationObservers++
+            try {
+                combine(associations, associationFailure) { rows, failure ->
+                    failure?.let { throw it }
+                    rows[campsiteId].orEmpty()
+                }.collect { emit(it) }
+            } finally {
+                activeAssociationObservers--
+            }
+        }
 
     /** Captures creation and requires an explicitly supplied outcome.
      * @param id Retained target.

@@ -148,30 +148,7 @@ fun LotteryDetailScreen(
                         Text(lotteryLifecycleLabel(state.lifecycle))
                     }
                     if (record.description.isNotEmpty()) Text(record.description)
-                    when (val membership = state.membership) {
-                        LotteryMembershipRead.NotApplicable -> {
-                            Unit
-                        }
-
-                        LotteryMembershipRead.Loading -> {
-                            Text(
-                                stringResource(R.string.lottery_membership_loading),
-                            )
-                        }
-
-                        LotteryMembershipRead.Failure -> {
-                            FailureContent(
-                                stringResource(R.string.lottery_membership_failed),
-                                onRetryMembership,
-                            )
-                        }
-
-                        is LotteryMembershipRead.Content -> {
-                            Text(
-                                lotteryMembershipLabel(membership.status),
-                            )
-                        }
-                    }
+                    LotteryMembershipReadContent(state.membership, onRetryMembership)
                     when (val opportunity = state.opportunity) {
                         LotteryOpportunityRead.NotApplicable -> {
                             Unit
@@ -310,23 +287,6 @@ fun LotteryDetailScreen(
         }
     }
 }
-
-/** Localizes only confirmed or explicitly pending own participation facts.
- * @param status Display-safe status supplied by the controller.
- */
-@Composable
-private fun lotteryMembershipLabel(status: LotteryMembershipStatus): String =
-    stringResource(
-        when (status) {
-            LotteryMembershipStatus.NOT_JOINED -> R.string.lottery_not_joined
-            LotteryMembershipStatus.WAITING -> R.string.lottery_membership_waiting
-            LotteryMembershipStatus.WITHDRAWN -> R.string.lottery_membership_withdrawn
-            LotteryMembershipStatus.RESULTS_PENDING -> R.string.lottery_draw_pending
-            LotteryMembershipStatus.WON -> R.string.lottery_membership_won
-            LotteryMembershipStatus.LOST -> R.string.lottery_membership_lost
-            LotteryMembershipStatus.DECLINED -> R.string.lottery_membership_declined
-        },
-    )
 
 /** Localizes derived lifecycle facts for shared list/detail presentation.
  * @param lifecycle Explicit controller-derived phase.

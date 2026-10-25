@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -8,6 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.NoticeTone
 
@@ -73,3 +75,51 @@ internal fun LotteryMembershipActions(
         )
     }
 }
+
+/** Displays own-entry knowledge independently from shared command feedback.
+ * @param membership Current display-safe own-entry outcome.
+ * @param onRetry Explicit source retry, never a command replay.
+ */
+@Composable
+internal fun LotteryMembershipReadContent(
+    membership: LotteryMembershipRead,
+    onRetry: () -> Unit,
+) {
+    when (membership) {
+        LotteryMembershipRead.NotApplicable -> {
+            Unit
+        }
+
+        LotteryMembershipRead.Loading -> {
+            Text(stringResource(R.string.lottery_membership_loading))
+        }
+
+        LotteryMembershipRead.Failure -> {
+            FailureContent(
+                stringResource(R.string.lottery_membership_failed),
+                onRetry,
+            )
+        }
+
+        is LotteryMembershipRead.Content -> {
+            Text(lotteryMembershipLabel(membership.status))
+        }
+    }
+}
+
+/** Localizes only confirmed or explicitly pending own participation facts.
+ * @param status Display-safe status supplied by the controller.
+ */
+@Composable
+internal fun lotteryMembershipLabel(status: LotteryMembershipStatus): String =
+    stringResource(
+        when (status) {
+            LotteryMembershipStatus.NOT_JOINED -> R.string.lottery_not_joined
+            LotteryMembershipStatus.WAITING -> R.string.lottery_membership_waiting
+            LotteryMembershipStatus.WITHDRAWN -> R.string.lottery_membership_withdrawn
+            LotteryMembershipStatus.RESULTS_PENDING -> R.string.lottery_draw_pending
+            LotteryMembershipStatus.WON -> R.string.lottery_membership_won
+            LotteryMembershipStatus.LOST -> R.string.lottery_membership_lost
+            LotteryMembershipStatus.DECLINED -> R.string.lottery_membership_declined
+        },
+    )

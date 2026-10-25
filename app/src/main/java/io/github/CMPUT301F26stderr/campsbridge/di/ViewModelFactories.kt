@@ -198,6 +198,7 @@ fun campsiteDetailViewModelFactory(
                 services.repositories.reviews,
                 createSavedStateHandle(),
                 services.clock,
+                services.repositories.lotteries,
             )
         }
     }

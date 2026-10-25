@@ -40,6 +40,7 @@ internal fun campsiteSectionTitle(section: CampsiteDetailSection): String =
             CampsiteDetailSection.MAP -> R.string.campsite_map_title
             CampsiteDetailSection.AVAILABILITY -> R.string.availability_title
             CampsiteDetailSection.RULES -> R.string.campsite_rules_title
+            CampsiteDetailSection.LOTTERIES -> R.string.campsite_available_lotteries
         },
     )
 

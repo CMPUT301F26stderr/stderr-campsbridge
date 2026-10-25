@@ -1,8 +1,11 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 
@@ -17,6 +20,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
  * @param onPreview Opens the separate owner preview graph.
  * @param onCreateLottery Opens new single-site lottery setup for a published owned listing.
  * @param onViewLotteries Opens the real owner list scoped to this listing's allocations.
+ * @param onOpenLottery Opens an actual entrant lottery detail; absent in preview/inspection.
  */
 @Composable
 fun CampsiteDetailRoute(
@@ -29,6 +33,7 @@ fun CampsiteDetailRoute(
     onPreview: (() -> Unit)? = null,
     onCreateLottery: (() -> Unit)? = null,
     onViewLotteries: (() -> Unit)? = null,
+    onOpenLottery: ((String) -> Unit)? = null,
     onBack: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -39,6 +44,18 @@ fun CampsiteDetailRoute(
         val rating by model.ratingState.collectAsStateWithLifecycle()
         val month by model.month.collectAsStateWithLifecycle()
         val inventory by model.inventory.collectAsStateWithLifecycle()
+        val lotteries by model.lotteryState.collectAsStateWithLifecycle()
+        val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
+            .collectAsStateWithLifecycle()
+        LaunchedEffect(model, lifecycle) {
+            if (lifecycle == Lifecycle.State.RESUMED) model.refreshTime()
+        }
+        if (section == CampsiteDetailSection.LOTTERIES) {
+            DisposableEffect(model) {
+                model.setLotteryChoicesVisible(true)
+                onDispose { model.setLotteryChoicesVisible(false) }
+            }
+        }
         when (section) {
             CampsiteDetailSection.OVERVIEW -> {
                 CampsiteDetailScreen(
@@ -51,6 +68,30 @@ fun CampsiteDetailRoute(
                     context = model.context,
                     onRetryRatings = model::retryRatings,
                     onOpenSection = onOpenSection,
+                    lotteryContent =
+                        if (model.context == CampsiteDetailContext.VIEW &&
+                            onOpenLottery != null
+                        ) {
+                            {
+                                val site = (state as? CampsiteDetailUiState.Content)?.campsite
+                                if (site != null) {
+                                    CampsiteLotteryEntry(
+                                        lotteries,
+                                        site.details.timeZone,
+                                        model::retryLotteries,
+                                        model::retryLotteryMembership,
+                                        model::joinLottery,
+                                        model::requestLeaveLottery,
+                                        model::dismissLeaveLottery,
+                                        model::confirmLeaveLottery,
+                                        onOpenLottery,
+                                        { onOpenSection(CampsiteDetailSection.LOTTERIES) },
+                                    )
+                                }
+                            }
+                        } else {
+                            null
+                        },
                 )
             }
 
@@ -87,6 +128,20 @@ fun CampsiteDetailRoute(
                     model::retry,
                     onOpenPolicy,
                 )
+            }
+
+            CampsiteDetailSection.LOTTERIES -> {
+                if (onOpenLottery != null) {
+                    CampsiteLotteryChoicesScreen(
+                        state,
+                        lotteries,
+                        onBack,
+                        model::retry,
+                        model::retryLotteries,
+                        model::retryLotteryOffer,
+                        onOpenLottery,
+                    )
+                }
             }
         }
         return
