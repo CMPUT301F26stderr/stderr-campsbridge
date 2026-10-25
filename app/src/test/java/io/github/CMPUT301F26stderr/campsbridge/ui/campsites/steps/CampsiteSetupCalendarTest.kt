@@ -2,7 +2,9 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.offeredNightCalendarState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -28,7 +30,7 @@ class CampsiteSetupCalendarTest {
                 ),
             )
         val state =
-            setupCalendarState(
+            offeredNightCalendarState(
                 month,
                 inventory,
                 mapOf(
@@ -52,16 +54,31 @@ class CampsiteSetupCalendarTest {
             CampsiteInventoryUiState.Loading,
             CampsiteInventoryUiState.Failure,
         )) {
-            val state = setupCalendarState(month, inventory, emptyMap())
+            val state = offeredNightCalendarState(month, inventory, emptyMap())
             assertFalse(state.selectionEnabled)
             assertTrue(state.days.values.none { it.isSelectable })
         }
     }
 
+    /** Working selection can differ from desired offers without changing those displayed facts. */
+    @Test fun independentWorkingSelectionDoesNotChangeRequestedOfferStatus() {
+        val first = month.atDay(14)
+        val second = first.plusDays(1)
+        val state =
+            offeredNightCalendarState(
+                month,
+                CampsiteInventoryUiState.Content(emptyList()),
+                mapOf(first to true),
+                setOf(second),
+            )
+        assertEquals(CalendarDayStatus.AVAILABLE, state.days.getValue(first).status)
+        assertEquals(CalendarSelection.Dates(setOf(second)), state.selection)
+    }
+
     /** Display cells are exactly the visible month; other-month input remains parent-owned. */
     @Test fun monthMappingDoesNotInventOtherMonthCells() {
         val state =
-            setupCalendarState(
+            offeredNightCalendarState(
                 month,
                 CampsiteInventoryUiState.Content(emptyList()),
                 mapOf(month.plusMonths(1).atDay(1) to true),

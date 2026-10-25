@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
@@ -135,6 +136,31 @@ fun campsiteSetupViewModelFactory(
                 services.clock,
                 createSavedStateHandle(),
                 remainingAvailabilityEdits = remainingAvailabilityEdits,
+            )
+        }
+    }
+
+/** Constructs the independent saved-listing editor with the same F08 boundary as setup.
+ * @param services Selected host's repository and clock.
+ * @param ownerId Confirmed owner identity.
+ * @param campsiteId Actual saved listing identity.
+ * @param remainingAvailabilityEdits Reserved F08 integration; null keeps requested dates pending.
+ */
+fun availabilityViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    campsiteId: String,
+    remainingAvailabilityEdits: AvailabilityDifference? = null,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            AvailabilityViewModel(
+                ownerId,
+                campsiteId,
+                services.repositories.campsites,
+                services.clock,
+                createSavedStateHandle(),
+                remainingAvailabilityEdits,
             )
         }
     }

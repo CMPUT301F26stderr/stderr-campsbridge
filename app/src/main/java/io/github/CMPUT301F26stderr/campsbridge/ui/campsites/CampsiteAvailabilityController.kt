@@ -63,6 +63,32 @@ class CampsiteAvailabilityController(
     parentScope: CoroutineScope,
     private val remainingEdits: AvailabilityDifference? = null,
 ) : AutoCloseable {
+    /** Reads restoration metadata without creating a controller or querying an unverified parent. */
+    companion object {
+        /** Reports retained date intent so the containing route can confirm early abandonment.
+         * @param savedState Containing feature's primitive restoration store.
+         * @param stateKey Same prefix supplied when the controller is constructed.
+         */
+        internal fun hasSavedRequests(
+            savedState: SavedStateHandle,
+            stateKey: String,
+        ): Boolean =
+            savedState.get<ArrayList<String>>("${stateKey}requested.dates").orEmpty().isNotEmpty()
+
+        /** Clears abandoned intent before parent resolution, without constructing a range reader.
+         * @param savedState Containing feature's primitive restoration store.
+         * @param stateKey Same prefix supplied when the controller is constructed.
+         */
+        internal fun discardSavedRequests(
+            savedState: SavedStateHandle,
+            stateKey: String,
+        ) {
+            savedState["${stateKey}requested.dates"] = arrayListOf<String>()
+            savedState["${stateKey}requested.offered"] = booleanArrayOf()
+            savedState["${stateKey}unacknowledged"] = arrayListOf<String>()
+        }
+    }
+
     private val owner = SupervisorJob(parentScope.coroutineContext[Job])
     private val scope = CoroutineScope(parentScope.coroutineContext + owner)
     private var targetId = campsiteId
@@ -105,14 +131,41 @@ class CampsiteAvailabilityController(
      */
     fun toggleDate(date: LocalDate) {
         val current = state.value
-        if (!scope.isActive || current.isSaving) return
-        val inventory = current.inventory as? CampsiteInventoryUiState.Content ?: return
-        if (targetId != null && YearMonth.from(date) != current.month) return
+        if (!canEdit(date)) return
+        val inventory = current.inventory as CampsiteInventoryUiState.Content
         val night = inventory.nights.find { it.date == date }
-        if (night?.reservationId != null) return
-        if (date !in known) known[date] = night?.isOffered ?: false
-        val offered = current.requested[date] ?: known.getValue(date)
-        publish(current.copy(requested = current.requested + (date to !offered)))
+        val offered = current.requested[date] ?: (night?.isOffered ?: false)
+        setRequestedOffered(setOf(date), !offered)
+    }
+
+    /** Reports whether the current loaded range permits a local date choice.
+     * @param date Candidate local night.
+     */
+    fun canEdit(date: LocalDate): Boolean {
+        val current = state.value
+        if (!scope.isActive || current.isSaving) return false
+        val inventory = current.inventory as? CampsiteInventoryUiState.Content ?: return false
+        return (targetId == null || YearMonth.from(date) == current.month) &&
+            inventory.nights.none { it.date == date && it.reservationId != null }
+    }
+
+    /** Applies one explicit desired value to known unoccupied dates; selection alone never calls this.
+     * @param dates Requested local nights in the visible range.
+     * @param offered Desired offered value.
+     */
+    fun setRequestedOffered(
+        dates: Set<LocalDate>,
+        offered: Boolean,
+    ) {
+        val editable = dates.filter(::canEdit)
+        if (editable.isEmpty()) return
+        val current = state.value
+        val inventory = current.inventory as CampsiteInventoryUiState.Content
+        val nights = inventory.nights.associateBy { it.date }
+        for (date in editable) {
+            if (date !in known) known[date] = nights[date]?.isOffered ?: false
+        }
+        publish(current.copy(requested = current.requested + editable.associateWith { offered }))
     }
 
     /** Retries the visible range without fetching or creating another parent. */

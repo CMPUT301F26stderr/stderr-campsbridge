@@ -14,6 +14,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
@@ -34,6 +36,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
  * @param onSelectDestination Primary tab selection.
  * @param listFactory Inventory constructor dependencies.
  * @param detailFactory Saved reader dependencies for an ID/context.
+ * @param availabilityFactory Dependencies for the separate saved inventory editor.
  * @param setupFactory Local editor dependencies for a new or existing draft.
  */
 internal fun NavGraphBuilder.campsiteGraph(
@@ -45,6 +48,7 @@ internal fun NavGraphBuilder.campsiteGraph(
     listFactory: ViewModelProvider.Factory,
     detailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     setupFactory: (String?) -> ViewModelProvider.Factory,
+    availabilityFactory: (String) -> ViewModelProvider.Factory,
 ) {
     composable(AppDestination.ownerCampsites()) {
         val model: CampsiteListViewModel = viewModel(factory = listFactory)
@@ -84,12 +88,28 @@ internal fun NavGraphBuilder.campsiteGraph(
                     viewModelStoreOwner = parent,
                     factory = detailFactory(id, context),
                 )
-            CampsiteDetailRoute(model, onResume = {
+            CampsiteDetailRoute(model, onAvailability = {
+                controller.navigate(
+                    AppDestination.availabilityEditor(id),
+                ) { launchSingleTop = true }
+            }, onResume = {
                 controller.navigate(
                     AppDestination.campsiteSetupGraph(id),
                 ) { launchSingleTop = true }
             }) { controller.popBackStack() }
         }
+    }
+    composable(
+        AppDestination.AVAILABILITY_EDITOR,
+        arguments =
+            listOf(
+                navArgument("campsiteId") {
+                },
+            ),
+    ) { entry ->
+        val id = checkNotNull(entry.arguments?.getString("campsiteId"))
+        val model: AvailabilityViewModel = viewModel(factory = availabilityFactory(id))
+        AvailabilityRoute(model) { controller.popBackStack() }
     }
     for (pattern in listOf(
         AppDestination.CAMPSITE_SETUP_NEW,

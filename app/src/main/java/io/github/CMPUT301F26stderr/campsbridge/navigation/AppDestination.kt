@@ -8,6 +8,7 @@ import java.util.Locale
 
 /** Registered destinations only; add feature routes when their implementations exist. */
 object AppDestination {
+    const val AVAILABILITY_EDITOR = "owner/campsites/{campsiteId}/availability/edit"
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
@@ -50,6 +51,12 @@ object AppDestination {
         "${workspace.name.lowercase(
             Locale.ROOT,
         )}/campsites/${Uri.encode(campsiteId)}/detail/${context.routeKey}"
+
+    /** Opens a separate inventory editor without sharing a read-only calendar route.
+     * @param campsiteId Actual saved listing identity.
+     */
+    fun availabilityEditor(campsiteId: String): String =
+        "owner/campsites/${Uri.encode(campsiteId)}/availability/edit"
 
     /** Separates profile graph state by workspace within the current account.
      * @param workspace Granted workspace selected by the root session.

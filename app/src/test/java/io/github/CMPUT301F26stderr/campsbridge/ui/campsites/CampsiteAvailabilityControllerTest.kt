@@ -141,6 +141,19 @@ class CampsiteAvailabilityControllerTest {
             assertEquals(0, sites.writeCalls)
         }
 
+    /** Explicit batch choices reject occupied and out-of-range dates before any save operation. */
+    @Test fun explicitBatchChoiceKeepsOnlyKnownUnoccupiedDates() =
+        runTest {
+            sites.calendarNights.value = listOf(CalendarNight(second, true, "reservation"))
+            val calendar = controller()
+            runCurrent()
+            calendar.setRequestedOffered(setOf(first, second, first.plusMonths(1)), true)
+            assertEquals(mapOf(first to true), calendar.state.value.requested)
+            calendar.setRequestedOffered(setOf(first), false)
+            assertEquals(mapOf(first to false), calendar.state.value.requested)
+            assertEquals(0, sites.writeCalls)
+        }
+
     /** Missing teammate behavior preserves the desired values and blocks real inventory writes. */
     @Test fun missingComparisonNeverPretendsToSaveRequestedDates() =
         runTest {

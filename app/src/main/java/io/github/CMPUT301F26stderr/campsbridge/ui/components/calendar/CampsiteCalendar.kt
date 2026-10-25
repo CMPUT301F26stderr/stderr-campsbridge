@@ -57,6 +57,7 @@ import java.util.Locale
  * @param onMonthChange Requests a different displayed month.
  * @param onDateClick Delivers a selectable date; the caller updates selection.
  * @param modifier Layout customization from the parent.
+ * @param enabled Whether month and date controls accept input during a caller-owned operation.
  */
 @Composable
 fun CampsiteCalendar(
@@ -64,7 +65,9 @@ fun CampsiteCalendar(
     onMonthChange: (YearMonth) -> Unit,
     onDateClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
+    val displayState = if (enabled) state else state.copy(selectionEnabled = false)
     val locale = LocalConfiguration.current.locales[0]
     val monthFormat = remember(locale) { DateTimeFormatter.ofPattern("LLLL yyyy", locale) }
     val cells =
@@ -75,7 +78,7 @@ fun CampsiteCalendar(
     val minimumCell = 48.dp * LocalControlScale.current.coerceAtLeast(1f)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { onMonthChange(state.month.minusMonths(1)) }) {
+            IconButton(onClick = { onMonthChange(state.month.minusMonths(1)) }, enabled = enabled) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     stringResource(R.string.calendar_previous_month),
@@ -87,7 +90,7 @@ fun CampsiteCalendar(
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
             )
-            IconButton(onClick = { onMonthChange(state.month.plusMonths(1)) }) {
+            IconButton(onClick = { onMonthChange(state.month.plusMonths(1)) }, enabled = enabled) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowForward,
                     stringResource(R.string.calendar_next_month),
@@ -119,7 +122,7 @@ fun CampsiteCalendar(
                             } else {
                                 CalendarDate(
                                     date,
-                                    state,
+                                    displayState,
                                     cellWidth,
                                     minimumCell,
                                     locale,

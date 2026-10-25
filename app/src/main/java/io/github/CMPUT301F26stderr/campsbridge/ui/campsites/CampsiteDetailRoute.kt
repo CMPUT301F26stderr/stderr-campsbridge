@@ -6,6 +6,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /** Connects the current saved summary to its own graph-scoped read owner.
  * @param model Management graph owner, never borrowed from another context.
+ * @param onAvailability Opens the independent saved inventory editor.
  * @param onResume Opens the registered setup parent for an unpublished draft.
  * @param onBack Returns to the caller's retained primary destination.
  */
@@ -13,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun CampsiteDetailRoute(
     model: CampsiteDetailViewModel,
     onResume: (() -> Unit)? = null,
+    onAvailability: (() -> Unit)? = null,
     onBack: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -24,5 +26,6 @@ fun CampsiteDetailRoute(
         model::retry,
         model::retryPhoto,
         onResume = onResume,
+        onAvailability = onAvailability,
     )
 }

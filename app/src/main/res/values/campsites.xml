@@ -80,4 +80,15 @@
     <string name="campsite_discard_body">Your unsaved input and selected photo will be discarded. Confirmed saves are retained.</string>
     <string name="campsite_discard_confirm">Discard changes</string>
     <string name="campsite_edit_section">Edit %1$s</string>
+    <string name="availability_title">Availability</string>
+    <string name="availability_hint">Select unoccupied nights, then choose Offer or Withdraw. Changes are saved only when you tap Save changes.</string>
+    <string name="availability_selected">Selected nights: %1$d</string>
+    <string name="availability_offer">Offer nights</string>
+    <string name="availability_withdraw">Withdraw nights</string>
+    <string name="availability_save">Save changes</string>
+    <string name="availability_retry_remaining">Retry remaining</string>
+    <string name="availability_saving">Saving date changes</string>
+    <string name="availability_saved">Availability saved.</string>
+    <string name="availability_discard_title">Discard unsaved date changes?</string>
+    <string name="availability_discard_body">Remaining date changes and selection will be discarded. Confirmed saves are retained.</string>
 </resources>

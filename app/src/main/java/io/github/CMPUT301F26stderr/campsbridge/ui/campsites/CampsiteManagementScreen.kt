@@ -41,6 +41,7 @@ import java.time.Instant
  * @param onRetry Retries the listing read.
  * @param onRetryPhoto Retries an attachment/display reference read.
  * @param modifier Caller layout.
+ * @param onAvailability Opens the registered independent offer editor.
  * @param onResume Opens existing draft setup; never used for a published listing.
  */
 @Composable
@@ -52,6 +53,7 @@ fun CampsiteManagementScreen(
     onRetryPhoto: () -> Unit,
     modifier: Modifier = Modifier,
     onResume: (() -> Unit)? = null,
+    onAvailability: (() -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.manage_campsite), modifier, onBack = onBack) {
         when (state) {
@@ -115,6 +117,11 @@ fun CampsiteManagementScreen(
                         ),
                     )
                     DetailRow(stringResource(R.string.campsite_reference), site.id)
+                    if (onAvailability != null) {
+                        TextButton(
+                            onAvailability,
+                        ) { Text(stringResource(R.string.availability_title)) }
+                    }
                     if (!site.isPublished && onResume != null) {
                         TextButton(onResume) { Text(stringResource(R.string.campsite_resume)) }
                     }

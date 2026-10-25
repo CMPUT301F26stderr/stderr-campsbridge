@@ -30,6 +30,7 @@ import java.util.Locale
  * @param onSelectWorkspace Root-owned capability-limited selection.
  * @param campsiteListFactory Owner inventory dependencies.
  * @param campsiteDetailFactory Saved reader dependencies keyed by identity/context.
+ * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Local editor dependencies for a new/saved draft.
  * @param modifier Host layout; child screens own their own insets.
  */
@@ -41,6 +42,7 @@ fun AppNavigation(
     campsiteListFactory: ViewModelProvider.Factory,
     campsiteDetailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     campsiteSetupFactory: (String?) -> ViewModelProvider.Factory,
+    availabilityFactory: (String) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -94,6 +96,7 @@ fun AppNavigation(
             campsiteListFactory,
             campsiteDetailFactory,
             campsiteSetupFactory,
+            availabilityFactory,
         )
     }
     LaunchedEffect(state.workspace) {

@@ -17,6 +17,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccoun
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
@@ -35,6 +36,7 @@ class TestAppHost : AutoCloseable {
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
     val campsites = FakeCampsiteRepository()
+    var availabilityCreations = 0
     var campsiteSetupCreations = 0
     var remainingAvailabilityEdits: AvailabilityDifference? = null
     var campsiteListCreations = 0
@@ -116,6 +118,20 @@ class TestAppHost : AutoCloseable {
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                             createSavedStateHandle(),
                             remainingAvailabilityEdits = remainingAvailabilityEdits,
+                        )
+                    }
+                }
+            }, { accountId, id ->
+                viewModelFactory {
+                    initializer {
+                        availabilityCreations++
+                        AvailabilityViewModel(
+                            accountId,
+                            id,
+                            campsites,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            createSavedStateHandle(),
+                            remainingAvailabilityEdits,
                         )
                     }
                 }
