@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
@@ -13,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.bookingQuote
@@ -36,15 +38,15 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 
-/** Owns one winner's source-backed wizard draft and explicit terms/quote approvals; no writes.
+/** Owns one winner's draft, current approvals and guarded reservation/recovery commands.
  * @param entrantId Actual account whose own win is required.
  * @param lotteryId Saved lottery identity from navigation.
  * @param campsiteId Saved offered campsite identity from navigation.
  * @param lotteries Parent, own membership and allocation sources.
  * @param campsites Current site and half-open inventory sources.
- * @param bookings Server-confirmed consuming reservation lookup.
+ * @param bookings Atomic reservations and server-confirmed consuming history.
  * @param clock Explicit time for booking windows and campsite-local today.
- * @param savedState Primitive unsubmitted dates/month/guest input and known consumption identity.
+ * @param savedState Primitive draft, uncertainty marker and known consuming identity.
  * @param availableNights Reserved F15; null explicitly leaves date eligibility pending.
  */
 class BookingViewModel(
@@ -87,6 +89,11 @@ class BookingViewModel(
         savedState
             .get<String>("bookingReservationId")
             ?.takeIf { it.isNotBlank() }
+    private var recoveryRequired = savedState.get<Boolean>("bookingRecoveryRequired") == true
+    private val writer = BookingWriter(bookings)
+    private var submissionJob: Job? = null
+    private var submissionVersion = 0L
+    private var submissionSnapshot: BookingUiState.Content? = null
     private var closed = false
     private var lottery: Lottery? = null
     private var ownEntry: LotteryEntry? = null
@@ -117,6 +124,15 @@ class BookingViewModel(
             savedState.get<String>("bookingCompletion")?.takeIf { it == knownReservationId },
         )
     val completion = mutableCompletion.asStateFlow()
+    private val mutableSubmission =
+        MutableStateFlow<BookingSubmission>(
+            if (recoveryRequired && knownReservationId == null) {
+                BookingSubmission.Recovering
+            } else {
+                BookingSubmission.Idle
+            },
+        )
+    val submission = mutableSubmission.asStateFlow()
 
     private val calendarJob =
         viewModelScope.launch(start = CoroutineStart.LAZY) {
@@ -146,9 +162,178 @@ class BookingViewModel(
                     it
             }
         } else {
+            setRecoveryRequired(false)
             render()
         }
+        if (recoveryRequired && knownReservationId == null) startSubmission(null)
     }
+
+    /** Revalidates a reviewed stay and starts one guarded reservation attempt. */
+    fun confirm() {
+        if (!canEdit(BookingStep.REVIEW)) return
+        reconcile()
+        var current = state.value as? BookingUiState.Content ?: return
+        error = null
+        enterReview(current)
+        current = state.value as? BookingUiState.Content ?: return
+        if (draft.step != BookingStep.REVIEW) return
+        val quote = current.quote as? BookingQuote.Value ?: return
+        if (draft.reviewedTotalCents != quote.totalCents) return
+        val guests =
+            parsePositiveCount(draft.guestInput, current.campsite.details.maxGuests)
+                as? PositiveCountInput.Value ?: return
+        val agreement = draft.agreement ?: return
+        val request =
+            BookingRequest(
+                lotteryId,
+                entrantId,
+                campsiteId,
+                checkNotNull(draft.checkIn),
+                checkNotNull(draft.checkOut),
+                guests.count,
+                quote.totalCents,
+                agreement.rules,
+                agreement.policyVersion,
+            )
+        submissionSnapshot = current
+        startSubmission(request)
+    }
+
+    /** Retries only read-only confirmation of an unresolved attempt, without another reserve. */
+    fun retryRecovery() {
+        if (closed || knownReservationId != null || !recoveryRequired ||
+            mutableSubmission.value != BookingSubmission.Unknown
+        ) {
+            return
+        }
+        startSubmission(null)
+    }
+
+    /** Reports whether a current terms/review page may open its packaged policy child. */
+    fun canReadPolicy(): Boolean =
+        canEdit() && draft.step in setOf(BookingStep.TERMS, BookingStep.REVIEW)
+
+    /** Installs one command before suspension; null requests only resolve prior uncertainty.
+     * @param request Frozen reviewed stay, or null for identity-only recovery.
+     */
+    private fun startSubmission(request: BookingRequest?) {
+        if (closed || knownReservationId != null || submissionJob?.isActive == true) return
+        val version = ++submissionVersion
+        mutableSubmission.value =
+            if (request == null) {
+                BookingSubmission.Recovering
+            } else {
+                BookingSubmission.Submitting
+            }
+        setRecoveryRequired(true)
+        syncCalendar()
+        render()
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                try {
+                    val result =
+                        if (request == null) {
+                            writer.recover(lotteryId, entrantId)
+                        } else {
+                            writer.submit(request) {
+                                if (!closed && submissionVersion == version) {
+                                    mutableSubmission.value = BookingSubmission.Recovering
+                                }
+                            }
+                        }
+                    currentCoroutineContext().ensureActive()
+                    if (!closed && submissionVersion == version) finishSubmission(result)
+                } catch (cancelled: CancellationException) {
+                    if (!closed && submissionVersion == version && recoveryRequired) {
+                        mutableSubmission.value = BookingSubmission.Unknown
+                    }
+                    throw cancelled
+                }
+            }
+        submissionJob = pending
+        pending.start()
+    }
+
+    /** Applies confirmed outcomes; unknown results keep the same locked attempt.
+     * @param result One acknowledged/rejected or read-only recovery result.
+     */
+    private fun finishSubmission(result: BookingWriteResult) {
+        when (result) {
+            is BookingWriteResult.Saved -> {
+                rememberReservation(result.id)
+            }
+
+            BookingWriteResult.Unknown -> {
+                mutableSubmission.value = BookingSubmission.Unknown
+            }
+
+            BookingWriteResult.Absent -> {
+                setRecoveryRequired(false)
+                submissionSnapshot = null
+                mutableSubmission.value = BookingSubmission.Absent
+                opportunityAttempted = true
+                opportunityUnused = true
+                opportunityFailed = false
+                calendar.stop()
+                reconcile()
+            }
+
+            is BookingWriteResult.Rejected -> {
+                setRecoveryRequired(false)
+                submissionSnapshot = null
+                mutableSubmission.value = BookingSubmission.Rejected(result.reason)
+                error = null
+                draft =
+                    when (result.reason) {
+                        PersistenceFailure.Reason.CONFLICT -> {
+                            draft.copy(
+                                step = BookingStep.DATES,
+                                returnToReview = true,
+                            )
+                        }
+
+                        PersistenceFailure.Reason.STALE_QUOTE -> {
+                            draft.copy(
+                                step = BookingStep.TERMS,
+                                returnToReview = true,
+                                agreement = null,
+                                reviewedTotalCents = null,
+                            )
+                        }
+
+                        else -> {
+                            draft
+                        }
+                    }
+                saveDraft()
+                calendar.stop()
+                reconcile()
+            }
+        }
+    }
+
+    /** Retains a primitive marker; clearing it requires an acknowledged or known outcome.
+     * @param required Whether a previous mutation still needs server confirmation.
+     */
+    private fun setRecoveryRequired(required: Boolean) {
+        recoveryRequired = required
+        if (required) {
+            savedState["bookingRecoveryRequired"] = true
+        } else {
+            savedState.remove<Boolean>("bookingRecoveryRequired")
+        }
+    }
+
+    /** Blocks conflicting input independently of failed or unavailable current sources. */
+    private fun submissionBlocksEditing(): Boolean =
+        when (mutableSubmission.value) {
+            BookingSubmission.Submitting,
+            BookingSubmission.Recovering,
+            BookingSubmission.Unknown,
+            -> true
+
+            else -> false
+        }
 
     /** Validates the displayed step and enters the next step or returns to review.
      * @param displayedStep Step whose footer was actually displayed; rejects queued old actions.
@@ -176,7 +361,11 @@ class BookingViewModel(
 
     /** Moves within this wizard or requests explicit abandonment from its first step. */
     fun back() {
-        if (closed || mutableDiscardPrompt.value || mutableExitRequested.value) return
+        if (closed || submissionBlocksEditing() || mutableDiscardPrompt.value ||
+            mutableExitRequested.value
+        ) {
+            return
+        }
         if (state.value !is BookingUiState.Content || draft.step == BookingStep.DATES) {
             requestExit()
             return
@@ -248,7 +437,11 @@ class BookingViewModel(
 
     /** Requests abandonment independently of current source success or failure. */
     fun requestExit() {
-        if (closed || mutableExitRequested.value || mutableDiscardPrompt.value) return
+        if (closed || submissionBlocksEditing() || mutableExitRequested.value ||
+            mutableDiscardPrompt.value
+        ) {
+            return
+        }
         val dirty =
             draft.checkIn != null || draft.checkOut != null ||
                 draft.guestInput != "1" || draft.agreement != null
@@ -262,7 +455,7 @@ class BookingViewModel(
 
     /** Requests route navigation after explicit abandonment; performs no persistence write. */
     fun confirmDiscard() {
-        if (closed || !mutableDiscardPrompt.value) return
+        if (closed || submissionBlocksEditing() || !mutableDiscardPrompt.value) return
         mutableDiscardPrompt.value = false
         mutableExitRequested.value = true
     }
@@ -298,7 +491,7 @@ class BookingViewModel(
      * @param step Optional field-owning step; null checks shared wizard actions.
      */
     private fun canEdit(step: BookingStep? = null): Boolean =
-        !closed && !mutableDiscardPrompt.value &&
+        !closed && !submissionBlocksEditing() && !mutableDiscardPrompt.value &&
             !mutableExitRequested.value && state.value is BookingUiState.Content &&
             (step == null || draft.step == step)
 
@@ -467,7 +660,7 @@ class BookingViewModel(
      * @param source Exact failed or cancelled source.
      */
     fun retry(source: BookingReadSource) {
-        if (closed || knownReservationId != null) return
+        if (closed || submissionBlocksEditing() || knownReservationId != null) return
         if (source == BookingReadSource.OPPORTUNITY) {
             if (!opportunityInFlight && !opportunityUnused && hasOwnDrawnWin()) loadOpportunity()
             return
@@ -501,17 +694,21 @@ class BookingViewModel(
 
     /** Retries only failed displayed-month inventory. */
     fun retryVisibleInventory() {
-        if (!closed) calendar.retryVisible()
+        if (!closed && !submissionBlocksEditing()) calendar.retryVisible()
     }
 
     /** Retries only failed selected-range inventory. */
     fun retrySelectedInventory() {
-        if (!closed) calendar.retrySelection()
+        if (!closed && !submissionBlocksEditing()) calendar.retrySelection()
     }
 
     /** Rechecks windows/local today and unused consumption after foreground return. */
     fun refreshTime() {
         if (closed || knownReservationId != null) return
+        if (submissionBlocksEditing()) {
+            reconcile()
+            return
+        }
         jobs.keys
             .toList()
             .filter(::sourceWasInterrupted)
@@ -592,7 +789,7 @@ class BookingViewModel(
         if (knownReservationId == null) {
             if (!hasOwnDrawnWin()) {
                 stopOpportunity()
-            } else if (!opportunityAttempted) {
+            } else if (!opportunityAttempted && !submissionBlocksEditing()) {
                 loadOpportunity()
             }
         }
@@ -627,7 +824,11 @@ class BookingViewModel(
 
     /** Server-confirms consuming history before edits; UI never derives the stored key. */
     private fun loadOpportunity() {
-        if (closed || opportunityInFlight || knownReservationId != null || !hasOwnDrawnWin()) return
+        if (closed || submissionBlocksEditing() || opportunityInFlight ||
+            knownReservationId != null || !hasOwnDrawnWin()
+        ) {
+            return
+        }
         val version = ++opportunityVersion
         opportunityJob?.cancel()
         opportunityAttempted = true
@@ -650,11 +851,10 @@ class BookingViewModel(
                     opportunityInFlight = false
                     opportunityUnused = reservation == null
                     if (reservation != null) {
-                        knownReservationId = reservation.id
-                        savedState["bookingReservationId"] = reservation.id
+                        rememberReservation(reservation.id)
+                    } else {
+                        reconcile()
                     }
-                    reconcile()
-                    if (reservation != null) complete(reservation.id)
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
@@ -674,6 +874,19 @@ class BookingViewModel(
         pending.start()
     }
 
+    /** Shares consuming identity between ordinary entry and submission recovery.
+     * @param id Repository-confirmed saved reservation identity.
+     */
+    private fun rememberReservation(id: String) {
+        knownReservationId = id
+        savedState["bookingReservationId"] = id
+        setRecoveryRequired(false)
+        submissionSnapshot = null
+        mutableSubmission.value = BookingSubmission.Idle
+        reconcile()
+        complete(id)
+    }
+
     /** Invalidates unknown/unused lookup evidence when the required own-winning facts retire. */
     private fun stopOpportunity() {
         if (!opportunityAttempted) return
@@ -688,6 +901,10 @@ class BookingViewModel(
 
     /** Supplies exactly the visible month and chosen range while current facts permit editing. */
     private fun syncCalendar() {
+        if (submissionBlocksEditing()) {
+            calendar.stop()
+            return
+        }
         val editable = readOutcome() as? BookingUiState.Content
         if (editable == null) {
             calendar.stop()
@@ -761,6 +978,12 @@ class BookingViewModel(
     /** Projects inventory/F15/date/quote results without mutating or resubscribing the child. */
     private fun render() {
         if (closed) return
+        val frozen = submissionSnapshot
+        if (submissionBlocksEditing() && frozen != null && knownReservationId == null) {
+            mutableState.value = frozen
+            scheduleTime()
+            return
+        }
         val outcome = readOutcome()
         mutableState.value =
             if (outcome is BookingUiState.Content) {
@@ -884,6 +1107,8 @@ class BookingViewModel(
     /** Releases all sources and invalidates queued/noncooperative work when the graph retires. */
     override fun onCleared() {
         closed = true
+        submissionVersion++
+        submissionJob?.cancel()
         versions.keys.toList().forEach { versions[it] = checkNotNull(versions[it]) + 1 }
         jobs.values.forEach { it.cancel() }
         opportunityVersion++
