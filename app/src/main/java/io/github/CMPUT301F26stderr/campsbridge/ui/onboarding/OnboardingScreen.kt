@@ -118,7 +118,7 @@ fun OnboardingScreen(
                     OnboardingStep.INTENT -> R.string.next
                     OnboardingStep.NAME -> R.string.onboarding_continue
                     OnboardingStep.INTERESTS -> R.string.onboarding_finish
-                    else -> R.string.onboarding_setup_later
+                    else -> R.string.onboarding_finish
                 }
             val nextEnabled =
                 when (state.step) {

@@ -82,6 +82,12 @@ object AppDestination {
     fun contactDetails(workspace: Role): String =
         "${profileGraph(workspace)}/contact"
 
+    /** Addresses existing-account hosting without restarting onboarding.
+     * @param workspace Actual caller's retained profile graph.
+     */
+    fun ownerIntroduction(workspace: Role): String =
+        "${profileGraph(workspace)}/start-hosting"
+
     /** Addresses this workspace's implemented settings menu.
      * @param workspace Owning workspace.
      */

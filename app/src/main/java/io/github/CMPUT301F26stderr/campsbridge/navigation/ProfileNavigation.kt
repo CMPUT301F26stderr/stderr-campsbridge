@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.OwnerIntroductionRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
@@ -37,6 +38,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.SettingsScreen
  * @param profileFactory Dependencies for the shared parent profile model.
  * @param navigationItems Registered peer destinations only.
  * @param onSelectDestination Parent-owned primary navigation.
+ * @param onOwnerWorkspaceReady Opens the selected owner primary after removing the introduction.
  */
 internal fun NavGraphBuilder.profileGraph(
     controller: NavHostController,
@@ -46,6 +48,7 @@ internal fun NavGraphBuilder.profileGraph(
     profileFactory: ViewModelProvider.Factory,
     navigationItems: List<WorkspaceNavigationItem>,
     onSelectDestination: (String) -> Unit,
+    onOwnerWorkspaceReady: () -> Unit,
 ) {
     navigation(
         AppDestination.profileMenu(workspace),
@@ -78,6 +81,12 @@ internal fun NavGraphBuilder.profileGraph(
                                 true
                         }
                     },
+                    onStartHosting = {
+                        controller.navigate(AppDestination.ownerIntroduction(workspace)) {
+                            launchSingleTop =
+                                true
+                        }
+                    },
                     workspaceContent = {
                         if (state.account.roles.size >
                             1
@@ -101,6 +110,18 @@ internal fun NavGraphBuilder.profileGraph(
             ) {
                 controller.popBackStack()
             }
+        }
+        composable(AppDestination.ownerIntroduction(workspace)) { entry ->
+            OwnerIntroductionRoute(
+                profileGraphModel(controller, entry, workspace, profileFactory),
+                state,
+                { onSelectWorkspace(Role.OWNER) },
+                {
+                    controller.popBackStack()
+                    onOwnerWorkspaceReady()
+                },
+                { controller.popBackStack() },
+            )
         }
         composable(AppDestination.contactDetails(workspace)) { entry ->
             ContactDetailsRoute(

@@ -75,6 +75,25 @@ fun AppNavigation(
             }
         }
     }
+
+    /** Opens the retained primary for a confirmed workspace after any editor-owned handoff.
+     * @param workspace Root-confirmed capability selection.
+     */
+    fun openWorkspace(workspace: Role) {
+        val prefix = workspace.name.lowercase(Locale.ROOT) + "/"
+        if (controller.currentBackStackEntry?.destination?.hierarchy?.none {
+                it.route?.startsWith(prefix) ==
+                    true
+            } ==
+            true
+        ) {
+            controller.navigate(selectedPrimaries[workspace.name] ?: defaultPrimary(workspace)) {
+                popUpTo(controller.graph.id) { saveState = true }
+                restoreState = true
+                launchSingleTop = true
+            }
+        }
+    }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
         for (workspace in Role.entries) {
             profileGraph(
@@ -85,6 +104,7 @@ fun AppNavigation(
                 profileFactory,
                 if (workspace == Role.OWNER) ownerItems else emptyList(),
                 selectPrimary,
+                { openWorkspace(Role.OWNER) },
             )
         }
         campsiteGraph(
@@ -99,22 +119,16 @@ fun AppNavigation(
             availabilityFactory,
         )
     }
-    LaunchedEffect(state.workspace) {
-        val prefix = state.workspace.name.lowercase(Locale.ROOT) + "/"
-        if (controller.currentBackStackEntry
-                ?.destination
-                ?.hierarchy
-                ?.none { it.route?.startsWith(prefix) == true } ==
-            true
-        ) {
-            controller.navigate(
-                selectedPrimaries[state.workspace.name] ?: defaultPrimary(state.workspace),
-            ) {
-                popUpTo(controller.graph.id) { saveState = true }
-                restoreState = true
-                launchSingleTop = true
+    LaunchedEffect(state.workspace, state.isSelectingWorkspace) {
+        if (state.isSelectingWorkspace) return@LaunchedEffect
+        // The introduction consumes its request and removes itself before saving the old stack.
+        val hostingIntroduction =
+            Role.entries.any {
+                controller.currentDestination?.route ==
+                    AppDestination.ownerIntroduction(it)
             }
-        }
+        if (state.workspace == Role.OWNER && hostingIntroduction) return@LaunchedEffect
+        openWorkspace(state.workspace)
     }
 }
 

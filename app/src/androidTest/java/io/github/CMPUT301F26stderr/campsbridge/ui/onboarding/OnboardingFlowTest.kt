@@ -61,7 +61,7 @@ class OnboardingFlowTest {
         enterName(owner = true, name = "Host")
         compose.onNodeWithText("Continue").performClick()
         compose.onNodeWithText("Ready to add your campsite?").assertIsDisplayed()
-        compose.onNodeWithText("Set up later").performClick()
+        compose.onNodeWithText("Finish setup").performClick()
         compose.onNodeWithText("My campsites").assertIsDisplayed()
         compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Host").assertIsDisplayed()
