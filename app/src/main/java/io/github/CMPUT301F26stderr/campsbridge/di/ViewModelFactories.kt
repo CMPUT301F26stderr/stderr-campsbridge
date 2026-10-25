@@ -11,7 +11,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
@@ -294,6 +296,31 @@ fun reservationDetailViewModelFactory(
                 reservationId,
                 context,
                 services.repositories.bookings,
+            )
+        }
+    }
+
+/** Constructs the account-root receipt owner; reserved ordering/count remain explicitly pending.
+ * @param services Current host's repository interfaces.
+ * @param accountId Ready recipient identity, independent of workspace selection.
+ */
+fun inboxViewModelFactory(
+    services: AppServices,
+    accountId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            val repositories = services.repositories
+            InboxViewModel(
+                accountId,
+                repositories.notifications,
+                NotificationContentLoader(
+                    repositories.notifications,
+                    repositories.lotteries,
+                    repositories.bookings,
+                ),
+                sortItems = null,
+                countUnread = null,
             )
         }
     }

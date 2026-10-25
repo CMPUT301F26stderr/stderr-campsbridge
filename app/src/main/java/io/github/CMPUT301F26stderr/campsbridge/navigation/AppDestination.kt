@@ -24,6 +24,12 @@ object AppDestination {
     const val ENTRANT_LOTTERY_DETAIL = "entrant/lotteries/{lotteryId}/detail"
     const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
 
+    /** Addresses one workspace entry to the same account Inbox.
+     * @param workspace Actual entrant or owner primary presentation.
+     */
+    fun inbox(workspace: Role): String =
+        "${workspace.name.lowercase(Locale.ROOT)}/inbox"
+
     /** Registers one saved reservation parent per caller presentation.
      * @param context Explicit entrant or owner context.
      */

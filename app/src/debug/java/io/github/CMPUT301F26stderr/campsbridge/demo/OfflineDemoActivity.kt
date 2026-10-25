@@ -43,6 +43,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
@@ -165,6 +166,9 @@ class OfflineDemoActivity : ComponentActivity() {
                                             id,
                                             context,
                                         )
+                                    },
+                                    { accountId ->
+                                        inboxViewModelFactory(session.services, accountId)
                                     },
                                 )
                             }

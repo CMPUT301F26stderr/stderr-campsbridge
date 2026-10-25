@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +41,7 @@ import java.util.Locale
  * @param lotteryDetailFactory Saved owner-reader dependencies.
  * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
  * @param reservationDetailFactory Saved aggregate dependencies keyed by ID/context.
+ * @param inboxFactory One account receipt owner shared by both workspace primaries.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -56,6 +58,7 @@ fun AppNavigation(
     lotteryDetailFactory: (String, LotteryContext) -> ViewModelProvider.Factory,
     lotteryListFactory: (LotteryContext, String?) -> ViewModelProvider.Factory,
     reservationDetailFactory: (String, ReservationContext) -> ViewModelProvider.Factory,
+    inboxFactory: ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -74,6 +77,11 @@ fun AppNavigation(
                 Icons.Default.DateRange,
             ),
             WorkspaceNavigationItem(
+                AppDestination.inbox(Role.OWNER),
+                stringResource(R.string.inbox_title),
+                Icons.Default.Notifications,
+            ),
+            WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.OWNER),
                 stringResource(R.string.profile_title),
                 Icons.Default.Person,
@@ -90,6 +98,11 @@ fun AppNavigation(
                 AppDestination.ENTRANT_LOTTERIES,
                 stringResource(R.string.lotteries),
                 Icons.Default.DateRange,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.inbox(Role.ENTRANT),
+                stringResource(R.string.inbox_title),
+                Icons.Default.Notifications,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.ENTRANT),
@@ -138,6 +151,15 @@ fun AppNavigation(
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
         lotterySetupGraph(controller, lotterySetupFactory)
+        inboxGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            ownerItems,
+            entrantItems,
+            selectPrimary,
+            inboxFactory,
+        )
         reservationGraph(controller, reservationDetailFactory)
         lotteryDetailGraph(controller, lotteryDetailFactory) { id ->
             controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
