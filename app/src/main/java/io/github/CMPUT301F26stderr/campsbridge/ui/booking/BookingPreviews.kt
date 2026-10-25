@@ -9,6 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
@@ -75,6 +76,7 @@ internal fun previewBooking(step: BookingStep = BookingStep.DATES): BookingUiSta
         stayValidation = StaySelectionInput.VALID,
         quote = BookingQuote.Value(13000),
         guestCount = 3,
+        canConfirm = step == BookingStep.REVIEW,
     )
 }
 
@@ -103,7 +105,10 @@ class BookingPreviewProvider : PreviewParameterProvider<BookingUiState> {
                 stayValidation = null,
             ),
             previewBooking(BookingStep.REVIEW).let {
-                it.copy(draft = it.draft.copy(reviewedTotalCents = null, agreement = null))
+                it.copy(
+                    draft = it.draft.copy(reviewedTotalCents = null, agreement = null),
+                    canConfirm = false,
+                )
             },
         )
 }
@@ -116,6 +121,39 @@ class BookingPreviewProvider : PreviewParameterProvider<BookingUiState> {
 @Composable
 private fun BookingPreview(
     @PreviewParameter(BookingPreviewProvider::class) state: BookingUiState,
+) =
+    BookingPreviewContent(state, BookingSubmission.Idle)
+
+/** Supplies actual pending and retry outcomes without starting any operation. */
+class BookingSubmissionPreviewProvider : PreviewParameterProvider<BookingSubmission> {
+    override val values: Sequence<BookingSubmission> =
+        sequenceOf(
+            BookingSubmission.Submitting,
+            BookingSubmission.Recovering,
+            BookingSubmission.Unknown,
+            BookingSubmission.Absent,
+            BookingSubmission.Rejected(PersistenceFailure.Reason.CONFLICT),
+        )
+}
+
+/** Illustrates submission/recovery feedback with inert callbacks and no fake booking success.
+ * @param submission Supplied command phase or recovery result.
+ */
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Composable
+private fun BookingSubmissionPreview(
+    @PreviewParameter(BookingSubmissionPreviewProvider::class) submission: BookingSubmission,
+) =
+    BookingPreviewContent(previewBooking(BookingStep.REVIEW), submission)
+
+/** Shares passive callback binding for screen and operation-state previews.
+ * @param state Actual-shaped source/draft facts.
+ * @param submission Independent command phase to display.
+ */
+@Composable
+private fun BookingPreviewContent(
+    state: BookingUiState,
+    submission: BookingSubmission,
 ) {
     CampsbridgeTheme {
         BookingScreen(
@@ -137,6 +175,9 @@ private fun BookingPreview(
             {},
             {},
             {},
+            {},
+            {},
+            submission,
             {},
             {},
         )

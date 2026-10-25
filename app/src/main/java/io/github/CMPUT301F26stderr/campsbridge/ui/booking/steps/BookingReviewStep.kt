@@ -60,5 +60,4 @@ fun BookingReviewStep(
     }
     if (state.quote == BookingQuote.Overflow) Text(stringResource(R.string.booking_quote_overflow))
     Text(stringResource(R.string.reservation_simulated_payment))
-    Text(stringResource(R.string.booking_confirmation_pending))
 }

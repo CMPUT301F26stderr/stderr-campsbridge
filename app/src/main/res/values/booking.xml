@@ -5,7 +5,6 @@
     <string name="booking_terms_title">Rules and policy</string>
     <string name="booking_review_title">Review your stay</string>
     <string name="booking_confirm">Confirm reservation</string>
-    <string name="booking_confirmation_pending">Reservation confirmation is not available in this build.</string>
     <string name="booking_date_hint">Choose an arrival, then a checkout. Checkout is not an occupied night.</string>
     <string name="booking_deadline">Book by %1$s</string>
     <string name="booking_clear_dates">Clear dates</string>
@@ -46,4 +45,12 @@
     <string name="booking_not_open">Booking has not opened yet.</string>
     <string name="booking_closed">The booking deadline has passed.</string>
     <string name="booking_already_reserved">This win has already been used for a reservation.</string>
+    <string name="booking_submitting">Confirming your reservation…</string>
+    <string name="booking_recovering">Checking your reservation…</string>
+    <string name="booking_recovery_unknown">The result is not confirmed. Check before trying again.</string>
+    <string name="booking_check_result">Check reservation</string>
+    <string name="booking_recovery_absent">No reservation was found. Review your stay before confirming again.</string>
+    <string name="booking_conflict">These nights changed. Review your dates and try again.</string>
+    <string name="booking_rejected_quote">The price or rules changed. Review and accept the current details.</string>
+    <string name="booking_rejected">The reservation was not made. Review your stay and try again.</string>
 </resources>

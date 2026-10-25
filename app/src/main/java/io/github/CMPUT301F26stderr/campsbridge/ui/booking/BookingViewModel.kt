@@ -1018,19 +1018,29 @@ class BookingViewModel(
                     } else {
                         null
                     }
-                outcome.copy(
-                    calendar = read,
-                    eligibilityPending = availableNights == null,
-                    visibleEligibleNights = visible,
-                    selectedEligibleNights = selected,
-                    stayValidation = validation,
-                    quote = quote,
-                    error = error,
-                    guestCount =
-                        (
-                            parsePositiveCount(draft.guestInput, Long.MAX_VALUE)
-                                as? PositiveCountInput.Value
-                        )?.count,
+                val content =
+                    outcome.copy(
+                        calendar = read,
+                        eligibilityPending = availableNights == null,
+                        visibleEligibleNights = visible,
+                        selectedEligibleNights = selected,
+                        stayValidation = validation,
+                        quote = quote,
+                        error = error,
+                        guestCount =
+                            (
+                                parsePositiveCount(draft.guestInput, Long.MAX_VALUE)
+                                    as? PositiveCountInput.Value
+                            )?.count,
+                    )
+                val amount = (quote as? BookingQuote.Value)?.totalCents
+                content.copy(
+                    canConfirm =
+                        draft.step == BookingStep.REVIEW && amount != null &&
+                            draft.reviewedTotalCents == amount &&
+                            listOf(BookingStep.DATES, BookingStep.GUESTS, BookingStep.TERMS).all {
+                                stepError(content, it) == null
+                            },
                 )
             } else {
                 outcome

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.BookingReviewStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.GuestsStep
@@ -44,6 +45,9 @@ import java.time.YearMonth
  * @param onRetryVisible Retries displayed inventory independently.
  * @param onRetrySelected Retries selected inventory independently.
  * @param onReservation Reopens actual known consuming history.
+ * @param submission Independent command/result state; unknown consumption blocks conflicting input.
+ * @param onConfirm Submits only the currently reviewed stay through the parent.
+ * @param onRecover Retries only server confirmation of an unresolved result.
  * @param modifier Caller layout.
  */
 @Composable
@@ -68,10 +72,16 @@ fun BookingScreen(
     onRetryVisible: () -> Unit,
     onRetrySelected: () -> Unit,
     onReservation: () -> Unit,
+    submission: BookingSubmission,
+    onConfirm: () -> Unit,
+    onRecover: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(onBack = onBack)
-    val enabled = !discardPrompt && !exitPending
+    val blocked =
+        submission == BookingSubmission.Submitting ||
+            submission == BookingSubmission.Recovering || submission == BookingSubmission.Unknown
+    BackHandler { if (!blocked) onBack() }
+    val enabled = !discardPrompt && !exitPending && !blocked
     if (state is BookingUiState.Content) {
         val step = state.draft.step
         val title = bookingStepTitle(step)
@@ -79,9 +89,10 @@ fun BookingScreen(
             title,
             stringResource(R.string.onboarding_step, step.ordinal + 1, BookingStep.entries.size),
             onBack,
-            { onNext(step) },
+            { if (step == BookingStep.REVIEW) onConfirm() else onNext(step) },
             modifier,
-            nextEnabled = enabled && step != BookingStep.REVIEW,
+            nextEnabled = enabled && (step != BookingStep.REVIEW || state.canConfirm),
+            isSubmitting = submission == BookingSubmission.Submitting,
             nextLabel =
                 stringResource(
                     if (step ==
@@ -94,8 +105,9 @@ fun BookingScreen(
                 ),
             steps = StepProgress(step.ordinal + 1, BookingStep.entries.size),
             onCancel = onExit,
-            exitEnabled = !exitPending,
+            exitEnabled = !exitPending && !blocked,
         ) {
+            BookingSubmissionFeedback(submission, onRecover)
             Text(state.campsite.details.name, style = MaterialTheme.typography.titleMedium)
             state.error?.let { Text(bookingErrorText(it), color = MaterialTheme.colorScheme.error) }
             when (step) {
@@ -129,36 +141,39 @@ fun BookingScreen(
             stringResource(R.string.booking_title),
             modifier,
             onBack = onBack,
-            backEnabled = !exitPending,
+            backEnabled = !exitPending && !blocked,
         ) {
-            when (state) {
-                BookingUiState.Loading -> {
-                    LoadingContent()
-                }
+            BookingSubmissionFeedback(submission, onRecover)
+            if (!blocked) {
+                when (state) {
+                    BookingUiState.Loading -> {
+                        LoadingContent()
+                    }
 
-                is BookingUiState.Failure -> {
-                    FailureContent(
-                        stringResource(R.string.booking_read_failed),
-                        { onRetry(state.source) },
-                        enabled,
-                    )
-                }
+                    is BookingUiState.Failure -> {
+                        FailureContent(
+                            stringResource(R.string.booking_read_failed),
+                            { onRetry(state.source) },
+                            enabled,
+                        )
+                    }
 
-                is BookingUiState.Unavailable -> {
-                    Text(bookingUnavailableText(state.reason))
-                }
+                    is BookingUiState.Unavailable -> {
+                        Text(bookingUnavailableText(state.reason))
+                    }
 
-                is BookingUiState.Reserved -> {
-                    Text(stringResource(R.string.booking_already_reserved))
-                    AppActionButton(
-                        stringResource(R.string.reservation_view),
-                        onReservation,
-                        enabled = enabled,
-                    )
-                }
+                    is BookingUiState.Reserved -> {
+                        Text(stringResource(R.string.booking_already_reserved))
+                        AppActionButton(
+                            stringResource(R.string.reservation_view),
+                            onReservation,
+                            enabled = enabled,
+                        )
+                    }
 
-                is BookingUiState.Content -> {
-                    Unit
+                    is BookingUiState.Content -> {
+                        Unit
+                    }
                 }
             }
         }
@@ -172,6 +187,61 @@ fun BookingScreen(
             onDismissDiscard,
             confirmLabel = stringResource(R.string.booking_discard),
         )
+    }
+}
+
+/** Shows transaction outcome independently of source failure, without inventing saved success.
+ * @param submission Current guarded command outcome.
+ * @param onRecover Explicit read-only retry while consumption remains unknown.
+ */
+@Composable
+private fun BookingSubmissionFeedback(
+    submission: BookingSubmission,
+    onRecover: () -> Unit,
+) {
+    when (submission) {
+        BookingSubmission.Idle -> {
+            Unit
+        }
+
+        BookingSubmission.Submitting -> {
+            LoadingContent(stringResource(R.string.booking_submitting))
+        }
+
+        BookingSubmission.Recovering -> {
+            LoadingContent(stringResource(R.string.booking_recovering))
+        }
+
+        BookingSubmission.Unknown -> {
+            Text(stringResource(R.string.booking_recovery_unknown))
+            AppActionButton(stringResource(R.string.booking_check_result), onRecover)
+        }
+
+        BookingSubmission.Absent -> {
+            Text(stringResource(R.string.booking_recovery_absent))
+        }
+
+        is BookingSubmission.Rejected -> {
+            Text(
+                stringResource(
+                    when (submission.reason) {
+                        PersistenceFailure.Reason.CONFLICT -> R.string.booking_conflict
+
+                        PersistenceFailure.Reason.STALE_QUOTE -> R.string.booking_rejected_quote
+
+                        PersistenceFailure.Reason.WINDOW_CLOSED -> R.string.booking_closed
+
+                        PersistenceFailure.Reason.NOT_FOUND,
+                        PersistenceFailure.Reason.INACTIVE,
+                        -> R.string.booking_site_unavailable
+
+                        PersistenceFailure.Reason.NOT_ALLOWED -> R.string.booking_not_winner
+
+                        else -> R.string.booking_rejected
+                    },
+                ),
+            )
+        }
     }
 }
 

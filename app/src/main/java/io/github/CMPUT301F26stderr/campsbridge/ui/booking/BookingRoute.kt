@@ -25,6 +25,7 @@ fun BookingRoute(
     val discard by model.discardPrompt.collectAsStateWithLifecycle()
     val exit by model.exitRequested.collectAsStateWithLifecycle()
     val completion by model.completion.collectAsStateWithLifecycle()
+    val submission by model.submission.collectAsStateWithLifecycle()
     val owner = LocalLifecycleOwner.current
     val lifecycle by owner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
     DisposableEffect(model) {
@@ -65,11 +66,16 @@ fun BookingRoute(
         model::editStep,
         model::acknowledgeQuote,
         {
-            if (owner.lifecycle.currentState == Lifecycle.State.RESUMED) onPolicy()
+            if (owner.lifecycle.currentState == Lifecycle.State.RESUMED && model.canReadPolicy()) {
+                onPolicy()
+            }
         },
         model::retry,
         model::retryVisibleInventory,
         model::retrySelectedInventory,
         model::requestReservationOpen,
+        submission,
+        model::confirm,
+        model::retryRecovery,
     )
 }

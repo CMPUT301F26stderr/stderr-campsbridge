@@ -31,6 +31,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancell
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.navigation.AppDestination
 import io.github.CMPUT301F26stderr.campsbridge.navigation.bookingGraph
 import io.github.CMPUT301F26stderr.campsbridge.navigation.reservationGraph
@@ -41,6 +42,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepo
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
+import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -112,7 +114,7 @@ class BookingFlowTest {
         open("I have read and accept these rules and the reservation policy.")
         next()
         compose.onNodeWithText("Review your stay").assertIsDisplayed()
-        compose.onNodeWithText("Confirm reservation").assertIsNotEnabled()
+        compose.onNodeWithText("Confirm reservation").assertIsEnabled()
         open("Edit guests")
         compose.onNodeWithTag("booking-guests").performTextReplacement("3")
         next()
@@ -128,6 +130,7 @@ class BookingFlowTest {
             assertEquals(listOf(site.id), sites.observedIds)
             assertTrue(lotteries.events.isEmpty())
             assertTrue(bookings.observedRecordIds.isEmpty())
+            assertTrue(bookings.reserveRequests.isEmpty())
         }
     }
 
@@ -189,7 +192,7 @@ class BookingFlowTest {
         open("I have read and accept these rules and the reservation policy.")
         next()
         compose.onNodeWithText("Review your stay").assertIsDisplayed()
-        compose.onNodeWithText("Confirm reservation").assertIsNotEnabled()
+        compose.onNodeWithText("Confirm reservation").assertIsEnabled()
     }
 
     /** A failed parent still permits confirmed abandonment to the actual original caller. */
@@ -317,6 +320,123 @@ class BookingFlowTest {
         compose.onNodeWithText(draw.title).assertIsDisplayed()
         compose.runOnIdle { assertEquals(1, actual.lotteryDetailCreations) }
     }
+
+    /** Confirmation blocks Back/edits, survives recreation and opens its saved reader. */
+    @Test fun heldConfirmationLocksTheWizardAndBackCannotReopenItAfterSuccess() {
+        val held = CompletableDeferred<String>()
+        val saved = savedBooking()
+        bookings.reserveHandler = { held.await() }
+        val restoration = StateRestorationTester(compose)
+        start(restoration)
+        review()
+        compose.onNodeWithText("Confirm reservation").assertIsEnabled().performClick()
+        compose.onNodeWithText("Confirming your reservation…").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Confirm reservation").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
+        compose.onNodeWithText("Cancel").assertIsNotEnabled()
+        compose.onNodeWithText("Edit dates").performScrollTo().assertIsNotEnabled()
+        pressBack()
+        compose.onNodeWithText("Review your stay").assertIsDisplayed()
+        compose.onNodeWithText("Discard this booking draft?").assertDoesNotExist()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Confirm reservation").assertIsNotEnabled()
+        compose.runOnIdle {
+            assertEquals(1, bookings.reserveRequests.size)
+            assertEquals(1, creations)
+            bookings.records.value = listOf(saved)
+            held.complete(saved.id)
+        }
+        compose.onNodeWithText("Confirmed").assertIsDisplayed()
+        open("Payment & refund")
+        compose.onNodeWithText("CAD 130.00").assertIsDisplayed()
+        pressBack()
+        pressBack()
+        compose.onNodeWithText("Open booking").assertIsDisplayed()
+        compose.onNodeWithText("Review your stay").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, bookings.reserveRequests.size) }
+    }
+
+    /** Unknown results allow only recovery, including cancelled saved history. */
+    @Test fun failedConfirmationRecoveryBlocksBackAndRetriesOnlyTheHistoryRead() {
+        bookings.reserveHandler = { throw IOException("Lost acknowledgement") }
+        val saved =
+            savedBooking().let {
+                it.copy(
+                    cancellation =
+                        ReservationCancellation(
+                            clock.instant(),
+                            "owner",
+                            Role.OWNER,
+                            null,
+                        ),
+                    payment = it.payment.copy(refundedAt = clock.instant()),
+                )
+            }
+        start()
+        review()
+        compose.runOnIdle {
+            bookings.opportunityHandler = { _, _ -> throw IOException("Unknown history") }
+        }
+        compose.onNodeWithText("Confirm reservation").performClick()
+        compose
+            .onNodeWithText("The result is not confirmed. Check before trying again.")
+            .performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("Confirm reservation").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
+        pressBack()
+        compose.onNodeWithText("Discard this booking draft?").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(1, bookings.reserveRequests.size)
+            bookings.records.value = listOf(saved)
+            bookings.opportunityHandler = { _, _ -> saved }
+        }
+        open("Check reservation")
+        compose.onNodeWithText("Cancelled by owner").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(1, bookings.reserveRequests.size) }
+        pressBack()
+        compose.onNodeWithText("Open booking").assertIsDisplayed()
+    }
+
+    /** A conflict preserves input and returns to date correction. */
+    @Test fun conflictingDatesRemainEditableAndCanBeExplicitlyConfirmedAfterReview() {
+        bookings.reserveHandler = {
+            throw PersistenceFailure(PersistenceFailure.Reason.CONFLICT, "Claimed")
+        }
+        start()
+        review()
+        compose.onNodeWithText("Confirm reservation").performClick()
+        compose.onNodeWithText("Choose dates").assertIsDisplayed()
+        compose
+            .onNodeWithText("These nights changed. Review your dates and try again.")
+            .performScrollTo()
+            .assertIsDisplayed()
+        next()
+        compose.onNodeWithText("Review your stay").assertIsDisplayed()
+        val saved = savedBooking()
+        compose.runOnIdle {
+            bookings.reserveHandler = {
+                bookings.records.value = listOf(saved)
+                saved.id
+            }
+        }
+        compose.onNodeWithText("Confirm reservation").performClick()
+        compose.onNodeWithText("Confirmed").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(2, bookings.reserveRequests.size)
+            assertEquals(bookings.reserveRequests.first(), bookings.reserveRequests.last())
+        }
+    }
+
+    /** Creates the complete saved aggregate returned by this transaction boundary. */
+    private fun savedBooking() =
+        previewReservation().copy(
+            id = "saved/A ?1",
+            lotteryId = draw.id,
+            entrantId = "entrant",
+            campsiteId = site.id,
+            guestCount = 1,
+        )
 
     /** Hosts registered graphs with explicit sources and no network bootstrap.
      * @param restoration Optional actual navigation save/restore driver.

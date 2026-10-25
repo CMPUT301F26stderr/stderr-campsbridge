@@ -120,6 +120,7 @@ sealed interface BookingUiState {
      * @param quote Checked current amount for positive date ranges, or null before a range exists.
      * @param error Feedback from the latest explicit step/approval action.
      * @param guestCount Positive parsed guest input for display, independent of capacity feedback.
+     * @param canConfirm Current validated review/terms/amount permits an explicit attempt.
      */
     data class Content(
         val lottery: Lottery,
@@ -136,5 +137,6 @@ sealed interface BookingUiState {
         val quote: BookingQuote? = null,
         val error: BookingStepError? = null,
         val guestCount: Long? = null,
+        val canConfirm: Boolean = false,
     ) : BookingUiState
 }
