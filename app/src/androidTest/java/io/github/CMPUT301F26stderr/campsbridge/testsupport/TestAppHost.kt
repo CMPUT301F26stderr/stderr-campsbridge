@@ -9,12 +9,15 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
@@ -26,6 +29,9 @@ class TestAppHost : AutoCloseable {
     val identity = FakeIdentityProvider()
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
+    val campsites = FakeCampsiteRepository()
+    var campsiteListCreations = 0
+    var campsiteDetailCreations = 0
     var profileCreations = 0
     var parseEmail: ((String) -> OptionalContactInput)? = null
     var parsePhone: ((String) -> OptionalContactInput)? = null
@@ -62,7 +68,7 @@ class TestAppHost : AutoCloseable {
                         )
                     }
                 }
-            }) { id ->
+            }, { id ->
                 viewModelFactory {
                     initializer {
                         profileCreations++
@@ -77,7 +83,21 @@ class TestAppHost : AutoCloseable {
                         )
                     }
                 }
-            }
+            }, { id ->
+                viewModelFactory {
+                    initializer {
+                        campsiteListCreations++
+                        CampsiteListViewModel(id, campsites, images, createSavedStateHandle())
+                    }
+                }
+            }, { accountId, id, context ->
+                viewModelFactory {
+                    initializer {
+                        campsiteDetailCreations++
+                        CampsiteDetailViewModel(accountId, id, context, campsites, images)
+                    }
+                }
+            })
         }
     }
 

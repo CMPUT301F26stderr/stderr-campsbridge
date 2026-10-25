@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAppPreferences
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.di.AppRepositories
 import io.github.CMPUT301F26stderr.campsbridge.di.AppServices
@@ -19,6 +20,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.WorkSession
 import io.github.CMPUT301F26stderr.campsbridge.platform.identity.IdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.LocalAccountProgress
 import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.SetupProgress
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -124,6 +126,19 @@ private class DemoRepositories(
 ) : AppRepositories {
     override val accounts = DemoAccountRepository(listOfNotNull(account))
     override val images = DemoImageRepository(directory)
+    override val campsites =
+        DemoCampsiteRepository(
+            if (account != null && Role.OWNER in account.roles) {
+                listOf(
+                    sampleCampsite("demo-river", account.id),
+                    sampleCampsite("demo-draft", account.id, published = false).let {
+                        it.copy(details = it.details.copy(name = "Forest clearing"))
+                    },
+                )
+            } else {
+                emptyList()
+            },
+        )
     override val pendingWork = DemoPendingWork()
 }
 

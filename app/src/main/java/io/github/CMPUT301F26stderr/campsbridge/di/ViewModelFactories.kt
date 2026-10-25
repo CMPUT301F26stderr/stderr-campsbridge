@@ -5,6 +5,9 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
@@ -61,5 +64,49 @@ fun onboardingViewModelFactory(
                 parseName = null,
             )
             // Connect ::parseDisplayName here after the reserved task passes review.
+        }
+    }
+
+/** Constructs the inventory owner with F11 ordering explicitly pending.
+ * @param services Selected host's dependencies.
+ * @param ownerId Confirmed owner identity.
+ */
+fun campsiteListViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            CampsiteListViewModel(
+                ownerId,
+                services.repositories.campsites,
+                services.repositories.images,
+                createSavedStateHandle(),
+                sortCampsites = null,
+            )
+        }
+    }
+
+/** Constructs a saved reader for one account/record/context parent entry.
+ * @param services Selected host's dependencies.
+ * @param accountId Ready identity.
+ * @param campsiteId Saved listing identity.
+ * @param context Caller-validated presentation.
+ */
+fun campsiteDetailViewModelFactory(
+    services: AppServices,
+    accountId: String,
+    campsiteId: String,
+    context: CampsiteDetailContext,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            CampsiteDetailViewModel(
+                accountId,
+                campsiteId,
+                context,
+                services.repositories.campsites,
+                services.repositories.images,
+            )
         }
     }

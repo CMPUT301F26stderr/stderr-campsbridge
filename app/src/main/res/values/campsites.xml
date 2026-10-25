@@ -1,0 +1,17 @@
+<resources>
+    <string name="my_campsites">My campsites</string>
+    <string name="campsites">Campsites</string>
+    <string name="campsite_published">Published</string>
+    <string name="campsite_drafts">Drafts</string>
+    <string name="campsite_draft">Draft</string>
+    <string name="campsite_list_empty_published">No published campsites yet.</string>
+    <string name="campsite_list_empty_drafts">No saved drafts yet.</string>
+    <string name="campsite_list_failure">Could not load your campsites.</string>
+    <string name="campsite_ordering_pending">Alphabetical ordering is pending in this build.</string>
+    <string name="manage_campsite">Manage campsite</string>
+    <string name="campsite_detail_failure">Could not load this campsite.</string>
+    <string name="campsite_unavailable">Campsite unavailable</string>
+    <string name="campsite_location">Location</string>
+    <string name="campsite_nightly_price">Nightly price</string>
+    <string name="campsite_reference">Campsite reference</string>
+</resources>

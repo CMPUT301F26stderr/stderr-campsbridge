@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.KeyEvent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -33,11 +34,21 @@ class OfflineDemoTest {
             assertTrue(FirebaseApp.getApps(context).isEmpty())
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Existing owner").performClick()
+            compose.onNodeWithText("My campsites").assertIsDisplayed()
+            compose.onNodeWithText("River Camp").assertIsDisplayed()
+            compose.onNodeWithText("Drafts").performClick()
+            compose.onNodeWithText("Forest clearing").assertIsDisplayed()
+            compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Jordan Lee").assertIsDisplayed()
             scenario.recreate()
             compose.onNodeWithText("Jordan Lee").assertIsDisplayed()
+            compose.onNodeWithText("Campsites").performClick()
+            compose.onNodeWithText("Drafts").assertIsSelected()
+            compose.onNodeWithText("Forest clearing").assertIsDisplayed()
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Reset scenario").performClick()
+            compose.onNodeWithText("My campsites").assertIsDisplayed()
+            compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Jordan Lee").assertIsDisplayed()
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("New account").performClick()
