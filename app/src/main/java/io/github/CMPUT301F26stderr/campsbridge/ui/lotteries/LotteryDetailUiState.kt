@@ -4,42 +4,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 
-/** Own participation labels; an unfinished draw never exposes provisional winners or losers. */
-enum class LotteryMembershipStatus {
-    NOT_JOINED,
-    WAITING,
-    WITHDRAWN,
-    RESULTS_PENDING,
-    WON,
-    LOST,
-    DECLINED,
-}
-
-/** The one explicit membership mutation awaiting acknowledgement or observed confirmation. */
-enum class LotteryMembershipAction { JOIN, LEAVE }
-
-/** Membership-command feedback without raw repository or transport details. */
-enum class LotteryMembershipActionError { FULL, CLOSED, FAILED }
-
-/** Independent own-entry source; owner management does not query this lane. */
-sealed interface LotteryMembershipRead {
-    /** This presentation does not require entrant membership. */
-    data object NotApplicable : LotteryMembershipRead
-
-    /** The current account's membership has not emitted. */
-    data object Loading : LotteryMembershipRead
-
-    /** Own-entry observation failed; parent and offers remain readable. */
-    data object Failure : LotteryMembershipRead
-
-    /** A confirmed own-entry outcome, with provisional draw states hidden.
-     * @param status Current displayable participation facts.
-     */
-    data class Content(
-        val status: LotteryMembershipStatus,
-    ) : LotteryMembershipRead
-}
-
 /** Server-confirmed consuming reservation and its subsequent aggregate observation. */
 sealed interface LotteryOpportunityRead {
     /** No completed own winning opportunity requires this read. */
@@ -114,11 +78,7 @@ sealed interface LotteryDetailUiState {
      * @param canContinue Whether the current owner may reopen the unpublished active draft.
      * @param membership Independent own participation, hidden for owner management.
      * @param opportunity Server-confirmed consumption and live saved history.
-     * @param canJoin Current parent/window/own-entry facts permit joining or rejoining.
-     * @param canLeave Current parent/window/own-entry facts permit withdrawal.
-     * @param isConfirmingLeave Whether the explicit withdrawal confirmation is open.
-     * @param membershipAction One pending write or its awaited observed confirmation.
-     * @param membershipError Last membership-command failure, independent of read failures.
+     * @param participation Shared entrant command feedback; independent of source reads.
      * @param canDraw Current owner/lifecycle facts permit the manual fallback.
      * @param isDrawing An actual manual repository call is pending acknowledgement.
      * @param drawFailed The last manual call failed while the parent remains incomplete.
@@ -130,11 +90,7 @@ sealed interface LotteryDetailUiState {
         val lifecycle: LotteryLifecycle,
         val membership: LotteryMembershipRead = LotteryMembershipRead.NotApplicable,
         val opportunity: LotteryOpportunityRead = LotteryOpportunityRead.NotApplicable,
-        val canJoin: Boolean = false,
-        val canLeave: Boolean = false,
-        val isConfirmingLeave: Boolean = false,
-        val membershipAction: LotteryMembershipAction? = null,
-        val membershipError: LotteryMembershipActionError? = null,
+        val participation: LotteryMembershipUiState = LotteryMembershipUiState(),
         val canDraw: Boolean = false,
         val isDrawing: Boolean = false,
         val drawFailed: Boolean = false,

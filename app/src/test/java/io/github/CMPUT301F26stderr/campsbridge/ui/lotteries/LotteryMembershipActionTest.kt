@@ -12,6 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepo
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -43,13 +44,13 @@ class LotteryMembershipActionTest {
     @Test fun membershipStatesSupplyOnlyTheirEligibleAction() =
         withModel { model, _ ->
             runCurrent()
-            assertTrue(content(model).canJoin)
-            assertFalse(content(model).canLeave)
+            assertTrue(content(model).participation.canJoin)
+            assertFalse(content(model).participation.canLeave)
             for (state in EntryState.entries) {
                 lotteries.entries.value = listOf(entry(state))
                 runCurrent()
-                assertEquals(state == EntryState.WITHDRAWN, content(model).canJoin)
-                assertEquals(state == EntryState.WAITING, content(model).canLeave)
+                assertEquals(state == EntryState.WITHDRAWN, content(model).participation.canJoin)
+                assertEquals(state == EntryState.WAITING, content(model).participation.canLeave)
             }
             assertTrue(lotteries.events.isEmpty())
         }
@@ -62,9 +63,9 @@ class LotteryMembershipActionTest {
             model.requestLeave()
             model.confirmLeave()
             runCurrent()
-            assertFalse(content(model).canJoin)
-            assertFalse(content(model).canLeave)
-            assertFalse(content(model).isConfirmingLeave)
+            assertFalse(content(model).participation.canJoin)
+            assertFalse(content(model).participation.canLeave)
+            assertFalse(content(model).participation.isConfirmingLeave)
             assertTrue(lotteries.events.isEmpty())
             assertTrue(lotteries.entrantRequests.isEmpty())
         }
@@ -88,12 +89,12 @@ class LotteryMembershipActionTest {
     @Test fun staleOpenPresentationCannotJoinAtExactClose() =
         withModel { model, _ ->
             runCurrent()
-            assertTrue(content(model).canJoin)
+            assertTrue(content(model).participation.canJoin)
             clock.advance(Duration.ofSeconds(30))
             model.join()
             runCurrent()
             assertTrue(lotteries.events.isEmpty())
-            assertFalse(content(model).canJoin)
+            assertFalse(content(model).participation.canJoin)
         }
 
     /** Unknown or failed membership cannot be treated as confirmed absence. */
@@ -109,8 +110,8 @@ class LotteryMembershipActionTest {
             model.requestLeave()
             model.confirmLeave()
             runCurrent()
-            assertFalse(content(model).canJoin)
-            assertFalse(content(model).canLeave)
+            assertFalse(content(model).participation.canJoin)
+            assertFalse(content(model).participation.canLeave)
             assertTrue(lotteries.events.isEmpty())
         }
 
@@ -122,7 +123,7 @@ class LotteryMembershipActionTest {
             try {
                 lotteries.joinHandler = { _, _ -> gate.await() }
                 model.join()
-                assertEquals(LotteryMembershipAction.JOIN, content(model).membershipAction)
+                assertEquals(LotteryMembershipAction.JOIN, content(model).participation.action)
                 model.join()
                 model.requestLeave()
                 model.confirmLeave()
@@ -131,15 +132,15 @@ class LotteryMembershipActionTest {
                 assertEquals(LotteryMembershipStatus.NOT_JOINED, membership(model))
                 gate.complete(Unit)
                 runCurrent()
-                assertEquals(LotteryMembershipAction.JOIN, content(model).membershipAction)
+                assertEquals(LotteryMembershipAction.JOIN, content(model).participation.action)
                 model.join()
                 runCurrent()
                 assertEquals(1, lotteries.events.size)
                 lotteries.entries.value = listOf(entry(EntryState.WAITING))
                 runCurrent()
-                assertNull(content(model).membershipAction)
+                assertNull(content(model).participation.action)
                 assertEquals(LotteryMembershipStatus.WAITING, membership(model))
-                assertTrue(content(model).canLeave)
+                assertTrue(content(model).participation.canLeave)
             } finally {
                 gate.complete(Unit)
             }
@@ -159,14 +160,14 @@ class LotteryMembershipActionTest {
                 model.requestLeave()
                 model.confirmLeave()
                 runCurrent()
-                assertEquals(LotteryMembershipAction.JOIN, content(model).membershipAction)
-                assertFalse(content(model).isConfirmingLeave)
+                assertEquals(LotteryMembershipAction.JOIN, content(model).participation.action)
+                assertFalse(content(model).participation.isConfirmingLeave)
                 assertEquals(listOf("join:draw:entrant"), lotteries.events)
                 gate.complete(Unit)
                 runCurrent()
-                assertNull(content(model).membershipAction)
+                assertNull(content(model).participation.action)
                 model.requestLeave()
-                assertTrue(content(model).isConfirmingLeave)
+                assertTrue(content(model).participation.isConfirmingLeave)
             } finally {
                 gate.complete(Unit)
             }
@@ -185,12 +186,12 @@ class LotteryMembershipActionTest {
                 runCurrent()
                 lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
                 runCurrent()
-                assertEquals(LotteryMembershipAction.JOIN, content(model).membershipAction)
+                assertEquals(LotteryMembershipAction.JOIN, content(model).participation.action)
                 gate.complete(Unit)
                 runCurrent()
-                assertNull(content(model).membershipAction)
+                assertNull(content(model).participation.action)
                 assertEquals(LotteryMembershipStatus.WITHDRAWN, membership(model))
-                assertTrue(content(model).canJoin)
+                assertTrue(content(model).participation.canJoin)
                 assertEquals(listOf("join:draw:entrant"), lotteries.events)
             } finally {
                 gate.complete(Unit)
@@ -214,10 +215,10 @@ class LotteryMembershipActionTest {
                 runCurrent()
                 gate.complete(Unit)
                 runCurrent()
-                assertNull(content(model).membershipAction)
-                assertFalse(content(model).isConfirmingLeave)
+                assertNull(content(model).participation.action)
+                assertFalse(content(model).participation.isConfirmingLeave)
                 assertEquals(LotteryMembershipStatus.WAITING, membership(model))
-                assertTrue(content(model).canLeave)
+                assertTrue(content(model).participation.canLeave)
                 assertEquals(listOf("withdraw:draw:entrant"), lotteries.events)
             } finally {
                 gate.complete(Unit)
@@ -231,12 +232,12 @@ class LotteryMembershipActionTest {
             runCurrent()
             model.confirmLeave()
             model.requestLeave()
-            assertTrue(content(model).isConfirmingLeave)
+            assertTrue(content(model).participation.isConfirmingLeave)
             assertTrue(lotteries.events.isEmpty())
             model.dismissLeave()
             model.confirmLeave()
             runCurrent()
-            assertFalse(content(model).isConfirmingLeave)
+            assertFalse(content(model).participation.isConfirmingLeave)
             assertTrue(lotteries.events.isEmpty())
         }
 
@@ -255,17 +256,17 @@ class LotteryMembershipActionTest {
                 model.join()
                 runCurrent()
                 assertEquals(listOf("withdraw:draw:entrant"), lotteries.events)
-                assertTrue(content(model).isConfirmingLeave)
+                assertTrue(content(model).participation.isConfirmingLeave)
                 assertEquals(LotteryMembershipStatus.WAITING, membership(model))
                 gate.complete(Unit)
                 runCurrent()
-                assertEquals(LotteryMembershipAction.LEAVE, content(model).membershipAction)
+                assertEquals(LotteryMembershipAction.LEAVE, content(model).participation.action)
                 lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
                 runCurrent()
-                assertNull(content(model).membershipAction)
-                assertFalse(content(model).isConfirmingLeave)
+                assertNull(content(model).participation.action)
+                assertFalse(content(model).participation.isConfirmingLeave)
                 assertEquals(LotteryMembershipStatus.WITHDRAWN, membership(model))
-                assertTrue(content(model).canJoin)
+                assertTrue(content(model).participation.canJoin)
             } finally {
                 gate.complete(Unit)
             }
@@ -280,7 +281,7 @@ class LotteryMembershipActionTest {
             clock.advance(Duration.ofSeconds(30))
             model.confirmLeave()
             runCurrent()
-            assertFalse(content(model).isConfirmingLeave)
+            assertFalse(content(model).participation.isConfirmingLeave)
             assertTrue(lotteries.events.isEmpty())
         }
 
@@ -299,20 +300,20 @@ class LotteryMembershipActionTest {
             for ((failure, error) in failures) {
                 lotteries.joinHandler = { _, _ -> throw failure }
                 model.join()
-                assertNull(content(model).membershipError)
+                assertNull(content(model).participation.error)
                 runCurrent()
                 assertEquals(parent, content(model).lottery)
                 assertEquals(LotteryMembershipStatus.NOT_JOINED, membership(model))
-                assertEquals(error, content(model).membershipError)
-                assertNull(content(model).membershipAction)
+                assertEquals(error, content(model).participation.error)
+                assertNull(content(model).participation.action)
             }
             assertEquals(3, lotteries.events.count { it == "join:draw:entrant" })
             lotteries.joinHandler =
                 { _, _ -> lotteries.entries.value = listOf(entry(EntryState.WAITING)) }
             model.join()
             runCurrent()
-            assertNull(content(model).membershipError)
-            assertNull(content(model).membershipAction)
+            assertNull(content(model).participation.error)
+            assertNull(content(model).participation.action)
             assertEquals(LotteryMembershipStatus.WAITING, membership(model))
         }
 
@@ -326,11 +327,11 @@ class LotteryMembershipActionTest {
             model.confirmLeave()
             runCurrent()
             assertEquals(LotteryMembershipStatus.WAITING, membership(model))
-            assertEquals(LotteryMembershipActionError.FAILED, content(model).membershipError)
-            assertFalse(content(model).isConfirmingLeave)
+            assertEquals(LotteryMembershipActionError.FAILED, content(model).participation.error)
+            assertFalse(content(model).participation.isConfirmingLeave)
             model.requestLeave()
-            assertTrue(content(model).isConfirmingLeave)
-            assertNull(content(model).membershipError)
+            assertTrue(content(model).participation.isConfirmingLeave)
+            assertNull(content(model).participation.error)
         }
 
     /** Draw completion removes actions without erasing historical facts. */
@@ -341,12 +342,12 @@ class LotteryMembershipActionTest {
             model.requestLeave()
             lotteries.records.value = listOf(parent.copy(drawnAt = clock.instant()))
             runCurrent()
-            assertFalse(content(model).isConfirmingLeave)
+            assertFalse(content(model).participation.isConfirmingLeave)
             model.confirmLeave()
             model.join()
             runCurrent()
-            assertFalse(content(model).canJoin)
-            assertFalse(content(model).canLeave)
+            assertFalse(content(model).participation.canJoin)
+            assertFalse(content(model).participation.canLeave)
             assertTrue(lotteries.events.isEmpty())
         }
 
@@ -361,8 +362,8 @@ class LotteryMembershipActionTest {
             model.requestLeave()
             model.confirmLeave()
             runCurrent()
-            assertFalse(content(model).canJoin)
-            assertFalse(content(model).canLeave)
+            assertFalse(content(model).participation.canJoin)
+            assertFalse(content(model).participation.canLeave)
             lotteries.records.value = listOf(parent.copy(publishedAt = null))
             runCurrent()
             model.join()
@@ -378,10 +379,10 @@ class LotteryMembershipActionTest {
             lotteries.entries.value = listOf(entry(EntryState.WAITING))
             runCurrent()
             model.requestLeave()
-            assertTrue(content(model).isConfirmingLeave)
+            assertTrue(content(model).participation.isConfirmingLeave)
             lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
             runCurrent()
-            assertFalse(content(model).isConfirmingLeave)
+            assertFalse(content(model).participation.isConfirmingLeave)
             model.confirmLeave()
             runCurrent()
             assertTrue(lotteries.events.isEmpty())
@@ -397,7 +398,7 @@ class LotteryMembershipActionTest {
             lotteries.entrantFailure.value = IOException("entry offline")
             runCurrent()
             assertEquals(LotteryMembershipRead.Failure, content(model).membership)
-            assertEquals(LotteryMembershipAction.JOIN, content(model).membershipAction)
+            assertEquals(LotteryMembershipAction.JOIN, content(model).participation.action)
             lotteries.entrantFailure.value = null
             model.retryMembership()
             runCurrent()
@@ -406,7 +407,7 @@ class LotteryMembershipActionTest {
             assertEquals(listOf("join:draw:entrant"), lotteries.events)
             lotteries.entries.value = listOf(entry(EntryState.WAITING))
             runCurrent()
-            assertNull(content(model).membershipAction)
+            assertNull(content(model).participation.action)
         }
 
     /** A quick draw may replace WAITING before observation without leaving Join stuck pending. */
@@ -418,7 +419,7 @@ class LotteryMembershipActionTest {
             runCurrent()
             lotteries.entries.value = listOf(entry(EntryState.OFFERED))
             runCurrent()
-            assertNull(content(model).membershipAction)
+            assertNull(content(model).participation.action)
             assertEquals(LotteryMembershipStatus.RESULTS_PENDING, membership(model))
             assertTrue(bookings.opportunityRequests.isEmpty())
             lotteries.records.value = listOf(parent.copy(drawnAt = clock.instant()))
@@ -508,6 +509,20 @@ class LotteryMembershipActionTest {
      */
     private fun membership(model: LotteryDetailViewModel): LotteryMembershipStatus =
         (content(model).membership as LotteryMembershipRead.Content).status
+
+    /** Cancelled repository work releases the real parent action without a failed-save notice. */
+    @Test fun cancelledRequestDoesNotLeaveTheParentSubmitting() =
+        withModel { model, _ ->
+            runCurrent()
+            lotteries.joinHandler = { _, _ -> throw CancellationException("cancelled request") }
+            model.join()
+            runCurrent()
+            assertEquals(listOf("join:draw:entrant"), lotteries.events)
+            assertNull(content(model).participation.action)
+            assertNull(content(model).participation.error)
+            assertTrue(content(model).participation.canJoin)
+            assertEquals(parent, content(model).lottery)
+        }
 
     /** Creates one own entry for this fixed opportunity.
      * @param state Exact persisted membership state supplied by the test.

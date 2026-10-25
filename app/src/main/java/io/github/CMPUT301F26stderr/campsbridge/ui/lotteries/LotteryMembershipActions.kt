@@ -20,13 +20,13 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.NoticeTone
  */
 @Composable
 internal fun LotteryMembershipActions(
-    state: LotteryDetailUiState.Content,
+    state: LotteryMembershipUiState,
     onJoin: () -> Unit,
     onRequestLeave: () -> Unit,
     onDismissLeave: () -> Unit,
     onConfirmLeave: () -> Unit,
 ) {
-    state.membershipError?.let { failure ->
+    state.error?.let { failure ->
         InlineNotice(
             stringResource(R.string.lottery_membership_update_failed),
             stringResource(
@@ -39,23 +39,23 @@ internal fun LotteryMembershipActions(
             tone = NoticeTone.ERROR,
         )
     }
-    if (state.canJoin || state.membershipAction == LotteryMembershipAction.JOIN) {
+    if (state.canJoin || state.action == LotteryMembershipAction.JOIN) {
         AppActionButton(
             stringResource(R.string.lottery_join_waitlist),
             onJoin,
             Modifier.fillMaxWidth(),
-            enabled = state.canJoin && state.membershipAction == null,
-            isSubmitting = state.membershipAction == LotteryMembershipAction.JOIN,
+            enabled = state.canJoin && state.action == null,
+            isSubmitting = state.action == LotteryMembershipAction.JOIN,
             progressDescription = stringResource(R.string.lottery_joining_waitlist),
         )
     }
-    if (state.canLeave || state.membershipAction == LotteryMembershipAction.LEAVE) {
+    if (state.canLeave || state.action == LotteryMembershipAction.LEAVE) {
         AppActionButton(
             stringResource(R.string.lottery_leave_waitlist),
             onRequestLeave,
             Modifier.fillMaxWidth(),
-            enabled = state.canLeave && state.membershipAction == null,
-            isSubmitting = state.membershipAction == LotteryMembershipAction.LEAVE,
+            enabled = state.canLeave && state.action == null,
+            isSubmitting = state.action == LotteryMembershipAction.LEAVE,
             progressDescription = stringResource(R.string.lottery_leaving_waitlist),
             style = ActionStyle.SECONDARY,
         )
@@ -67,7 +67,7 @@ internal fun LotteryMembershipActions(
             onConfirmLeave,
             onDismissLeave,
             onDismissLeave,
-            isSubmitting = state.membershipAction == LotteryMembershipAction.LEAVE,
+            isSubmitting = state.action == LotteryMembershipAction.LEAVE,
             confirmLabel = stringResource(R.string.lottery_leave_confirm),
             destructive = true,
         )

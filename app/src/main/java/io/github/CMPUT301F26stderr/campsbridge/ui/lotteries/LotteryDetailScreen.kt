@@ -212,7 +212,7 @@ fun LotteryDetailScreen(
                         }
                     }
                     LotteryMembershipActions(
-                        state,
+                        state.participation,
                         onJoin,
                         onRequestLeave,
                         onDismissLeave,
@@ -437,31 +437,40 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
                     canContinue = false,
                     lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
                     membership = LotteryMembershipRead.Content(LotteryMembershipStatus.NOT_JOINED),
-                    canJoin = true,
+                    participation = LotteryMembershipUiState(canJoin = true),
                 ),
                 content.copy(
                     lottery = record.copy(publishedAt = record.createdAt),
                     canContinue = false,
                     lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
                     membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WITHDRAWN),
-                    canJoin = true,
-                    membershipAction = LotteryMembershipAction.JOIN,
+                    participation =
+                        LotteryMembershipUiState(
+                            canJoin = true,
+                            action = LotteryMembershipAction.JOIN,
+                        ),
                 ),
                 content.copy(
                     lottery = record.copy(publishedAt = record.createdAt),
                     canContinue = false,
                     lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
                     membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WAITING),
-                    canLeave = true,
-                    isConfirmingLeave = true,
+                    participation =
+                        LotteryMembershipUiState(
+                            canLeave = true,
+                            isConfirmingLeave = true,
+                        ),
                 ),
                 content.copy(
                     lottery = record.copy(publishedAt = record.createdAt),
                     canContinue = false,
                     lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
                     membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WITHDRAWN),
-                    canJoin = true,
-                    membershipError = LotteryMembershipActionError.FAILED,
+                    participation =
+                        LotteryMembershipUiState(
+                            canJoin = true,
+                            error = LotteryMembershipActionError.FAILED,
+                        ),
                 ),
                 content.copy(offers = LotteryOffersState.Content(emptyList())),
                 content.copy(offers = LotteryOffersState.Failure),
