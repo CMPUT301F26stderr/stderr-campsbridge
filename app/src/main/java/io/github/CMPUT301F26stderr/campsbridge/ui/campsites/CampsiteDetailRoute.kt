@@ -16,6 +16,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
  * @param onOpenPolicy Opens the selected exact packaged policy.
  * @param onPreview Opens the separate owner preview graph.
  * @param onCreateLottery Opens new single-site lottery setup for a published owned listing.
+ * @param onViewLotteries Opens the real owner list scoped to this listing's allocations.
  */
 @Composable
 fun CampsiteDetailRoute(
@@ -27,6 +28,7 @@ fun CampsiteDetailRoute(
     onOpenPolicy: (PolicyId) -> Unit = {},
     onPreview: (() -> Unit)? = null,
     onCreateLottery: (() -> Unit)? = null,
+    onViewLotteries: (() -> Unit)? = null,
     onBack: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -99,5 +101,6 @@ fun CampsiteDetailRoute(
         onAvailability = onAvailability,
         onPreview = onPreview,
         onCreateLottery = onCreateLottery,
+        onViewLotteries = onViewLotteries,
     )
 }

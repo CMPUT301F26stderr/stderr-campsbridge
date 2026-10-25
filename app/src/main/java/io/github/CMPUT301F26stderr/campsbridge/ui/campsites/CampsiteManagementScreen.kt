@@ -45,6 +45,7 @@ import java.time.Instant
  * @param onResume Opens existing draft setup; never used for a published listing.
  * @param onPreview Opens the separate read-only owner preview graph.
  * @param onCreateLottery Opens the registered local lottery setup from a published listing.
+ * @param onViewLotteries Opens the registered allocation-filtered owner list.
  */
 @Composable
 fun CampsiteManagementScreen(
@@ -58,6 +59,7 @@ fun CampsiteManagementScreen(
     onAvailability: (() -> Unit)? = null,
     onPreview: (() -> Unit)? = null,
     onCreateLottery: (() -> Unit)? = null,
+    onViewLotteries: (() -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.manage_campsite), modifier, onBack = onBack) {
         when (state) {
@@ -128,6 +130,11 @@ fun CampsiteManagementScreen(
                         TextButton(
                             onCreateLottery,
                         ) { Text(stringResource(R.string.lottery_create)) }
+                    }
+                    if (onViewLotteries != null) {
+                        TextButton(
+                            onViewLotteries,
+                        ) { Text(stringResource(R.string.campsite_lotteries)) }
                     }
                     if (onAvailability != null) {
                         TextButton(

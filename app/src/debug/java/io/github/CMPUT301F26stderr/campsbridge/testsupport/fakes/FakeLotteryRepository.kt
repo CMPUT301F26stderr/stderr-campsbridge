@@ -20,6 +20,16 @@ class FakeLotteryRepository(
 ) : LotteryRepository {
     val recordFailure = MutableStateFlow<Exception?>(null)
     val offerFailure = MutableStateFlow<Exception?>(null)
+    val ownerFailure = MutableStateFlow<Exception?>(null)
+    val entrantFailure = MutableStateFlow<Exception?>(null)
+    val entries = MutableStateFlow<List<LotteryEntry>>(emptyList())
+    val ownerRequests = mutableListOf<String>()
+    val entrantRequests = mutableListOf<String>()
+    val observedRecordIds = mutableListOf<String>()
+    var activeOwnerObservers = 0
+        private set
+    var activeEntrantObservers = 0
+        private set
     var activeRecordObservers = 0
     var activeOfferObservers = 0
     val records = MutableStateFlow(initial)
@@ -73,6 +83,7 @@ class FakeLotteryRepository(
      */
     override fun observe(id: String): Flow<Lottery?> =
         flow {
+            observedRecordIds.add(id)
             activeRecordObservers++
             try {
                 combine(records, recordFailure) { rows, failure ->
@@ -104,7 +115,18 @@ class FakeLotteryRepository(
      * @param ownerId Requested owner.
      */
     override fun observeForOwner(ownerId: String): Flow<List<Lottery>> =
-        records.map { rows -> rows.filter { it.ownerId == ownerId } }
+        flow {
+            ownerRequests.add(ownerId)
+            activeOwnerObservers++
+            try {
+                combine(records, ownerFailure) { rows, failure ->
+                    failure?.let { throw it }
+                    rows.filter { it.ownerId == ownerId }
+                }.collect { emit(it) }
+            } finally {
+                activeOwnerObservers--
+            }
+        }
 
     /** Rejects global reads until their actual administration consumer configures them. */
     override fun observeAll(): Flow<List<Lottery>> =
@@ -116,11 +138,22 @@ class FakeLotteryRepository(
     override fun observeEntries(id: String): Flow<List<LotteryEntry>> =
         unsupported()
 
-    /** Rejects unconfigured entrant aggregates.
+    /** Exposes own membership fixtures with controlled failure and listener lifetime.
      * @param accountId Requested account.
      */
     override fun observeForEntrant(accountId: String): Flow<List<LotteryEntry>> =
-        unsupported()
+        flow {
+            entrantRequests.add(accountId)
+            activeEntrantObservers++
+            try {
+                combine(entries, entrantFailure) { rows, failure ->
+                    failure?.let { throw it }
+                    rows.filter { it.accountId == accountId }
+                }.collect { emit(it) }
+            } finally {
+                activeEntrantObservers--
+            }
+        }
 
     /** Rejects unconfigured associated-lottery reads.
      * @param campsiteId Requested campsite.

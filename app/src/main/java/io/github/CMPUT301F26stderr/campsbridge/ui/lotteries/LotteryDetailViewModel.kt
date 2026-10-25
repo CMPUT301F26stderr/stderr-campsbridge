@@ -158,15 +158,7 @@ class LotteryDetailViewModel(
     private fun scheduleTime() {
         stopTime()
         val current = state.value as? LotteryDetailUiState.Content ?: return
-        val configuration = current.lottery.configuration
-        val deadline =
-            when (current.lifecycle) {
-                LotteryLifecycle.UPCOMING -> configuration.registrationOpensAt
-                LotteryLifecycle.REGISTRATION_OPEN -> configuration.registrationClosesAt
-                LotteryLifecycle.AWAITING_BOOKING -> configuration.bookingOpensAt
-                LotteryLifecycle.BOOKING_OPEN -> configuration.bookingClosesAt
-                else -> null
-            } ?: return
+        val deadline = lotteryDeadline(current.lottery, current.lifecycle) ?: return
         val pending =
             viewModelScope.launch(start = CoroutineStart.LAZY) {
                 awaitDeadline(clock, deadline)

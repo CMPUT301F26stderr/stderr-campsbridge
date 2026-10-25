@@ -13,9 +13,35 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+
+/** Constructs the owner-scoped list and optional management allocation filter.
+ * @param services Current host's scoped sources and clock.
+ * @param ownerId Ready owner identity.
+ * @param campsiteId Optional saved listing association.
+ */
+fun lotteryListViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    campsiteId: String? = null,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotteryListViewModel(
+                ownerId,
+                LotteryListContext.OWNER,
+                services.repositories.lotteries,
+                services.repositories.bookings,
+                services.clock,
+                createSavedStateHandle(),
+                campsiteId,
+            )
+        }
+    }
 
 /** Constructs the saved/new lottery form; reserved F13 remains explicitly pending.
  * @param services Current host's repository interfaces and clock.

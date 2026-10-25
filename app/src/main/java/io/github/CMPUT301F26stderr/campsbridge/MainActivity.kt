@@ -15,6 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
@@ -62,6 +63,12 @@ class MainActivity : ComponentActivity() {
                 { exploreViewModelFactory(services) },
                 { ownerId, id -> lotterySetupViewModelFactory(services, ownerId, id) },
                 { ownerId, id -> lotteryDetailViewModelFactory(services, ownerId, id) },
+                {
+                    ownerId,
+                    campsiteId,
+                    ->
+                    lotteryListViewModelFactory(services, ownerId, campsiteId)
+                },
             )
         }
     }

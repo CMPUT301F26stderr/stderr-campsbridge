@@ -29,6 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param exploreFactory Factory for this account's discovery/filter graph.
  * @param lotterySetupFactory Factory for this owner's new/saved lottery setup graph.
  * @param lotteryDetailFactory Factory for this owner's saved lottery overview.
+ * @param lotteryListFactory Factory for the owner's primary or campsite-filtered list.
  */
 @Composable
 fun AppRoot(
@@ -42,6 +43,7 @@ fun AppRoot(
     exploreFactory: () -> ViewModelProvider.Factory,
     lotterySetupFactory: (String, String?) -> ViewModelProvider.Factory,
     lotteryDetailFactory: (String, String) -> ViewModelProvider.Factory,
+    lotteryListFactory: (String, String?) -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -107,6 +109,9 @@ fun AppRoot(
                                 exploreFactory(),
                                 { id -> lotterySetupFactory(session.account.id, id) },
                                 { id -> lotteryDetailFactory(session.account.id, id) },
+                                { campsiteId ->
+                                    lotteryListFactory(session.account.id, campsiteId)
+                                },
                             )
                         }
                     }

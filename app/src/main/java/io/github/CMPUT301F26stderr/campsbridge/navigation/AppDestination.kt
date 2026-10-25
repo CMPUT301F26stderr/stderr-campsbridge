@@ -17,6 +17,14 @@ object AppDestination {
     const val LOTTERY_SETUP = "owner/lottery-setup/new"
     const val LOTTERY_SETUP_SAVED = "owner/lottery-setup/saved/{lotteryId}"
     const val LOTTERY_DETAIL = "owner/lotteries/{lotteryId}/detail"
+    const val OWNER_LOTTERIES = "owner/lotteries"
+    const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
+
+    /** Addresses the owner's allocation-filtered list from actual campsite management.
+     * @param campsiteId Saved listing identity; punctuation is encoded as one argument.
+     */
+    fun campsiteLotteries(campsiteId: String): String =
+        "owner/campsites/${Uri.encode(campsiteId)}/lotteries"
 
     /** Addresses one new form or an existing draft without copying record state.
      * @param lotteryId Actual saved target, or null for a new form.

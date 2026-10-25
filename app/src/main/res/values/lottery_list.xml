@@ -1,0 +1,19 @@
+<resources>
+    <string name="lotteries">Lotteries</string>
+    <string name="my_lotteries">My lotteries</string>
+    <string name="campsite_lotteries">Campsite lotteries</string>
+    <string name="lottery_action_needed">Action needed</string>
+    <string name="lottery_waiting">Waiting</string>
+    <string name="lottery_history">History</string>
+    <string name="lottery_list_failed">Could not load your lotteries.</string>
+    <string name="lottery_list_empty">No lotteries in %1$s.</string>
+    <string name="lottery_filtered_campsite">Showing campsite %1$s</string>
+    <string name="lottery_show_all">Show all lotteries</string>
+    <string name="lottery_reference_loading">Loading linked lottery</string>
+    <string name="lottery_reference_missing">Linked lottery is unavailable</string>
+    <string name="lottery_reference_failed">Could not load linked lottery</string>
+    <string name="lottery_booking_deadline">Booking closes %1$s</string>
+    <string name="lottery_registration_starts">Registration opens %1$s</string>
+    <string name="lottery_registration_ends">Registration closes %1$s</string>
+    <string name="lottery_booking_starts">Booking opens %1$s</string>
+</resources>

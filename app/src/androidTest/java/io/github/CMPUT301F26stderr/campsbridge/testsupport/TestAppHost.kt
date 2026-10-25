@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
@@ -30,6 +31,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
@@ -51,6 +54,8 @@ class TestAppHost : AutoCloseable {
     @Volatile var keyboardVisible = false
         private set
     val lotteries = FakeLotteryRepository()
+    val bookings = FakeBookingRepository()
+    var lotteryListCreations = 0
     val reviews = FakeReviewRepository()
     val campsiteOwners = FakeAccountRepository(sampleAccount())
     var newLotteryId: () -> String = {
@@ -219,6 +224,21 @@ class TestAppHost : AutoCloseable {
                             lotteries,
                             campsites,
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                        )
+                    }
+                }
+            }, { ownerId, campsiteId ->
+                viewModelFactory {
+                    initializer {
+                        lotteryListCreations++
+                        LotteryListViewModel(
+                            ownerId,
+                            LotteryListContext.OWNER,
+                            lotteries,
+                            bookings,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            createSavedStateHandle(),
+                            campsiteId,
                         )
                     }
                 }

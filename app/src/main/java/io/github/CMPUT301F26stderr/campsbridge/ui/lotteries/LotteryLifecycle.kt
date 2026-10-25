@@ -52,3 +52,19 @@ fun lotteryLifecycle(
             LotteryLifecycle.CLOSED
         }
     }
+
+/** Selects the next boundary for this confirmed phase; pending draws need source updates.
+ * @param lottery Saved window configuration.
+ * @param lifecycle Phase evaluated against the same clock as the caller's current state.
+ */
+internal fun lotteryDeadline(
+    lottery: Lottery,
+    lifecycle: LotteryLifecycle,
+): Instant? =
+    when (lifecycle) {
+        LotteryLifecycle.UPCOMING -> lottery.configuration.registrationOpensAt
+        LotteryLifecycle.REGISTRATION_OPEN -> lottery.configuration.registrationClosesAt
+        LotteryLifecycle.AWAITING_BOOKING -> lottery.configuration.bookingOpensAt
+        LotteryLifecycle.BOOKING_OPEN -> lottery.configuration.bookingClosesAt
+        else -> null
+    }

@@ -44,6 +44,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
@@ -133,6 +134,16 @@ class OfflineDemoActivity : ComponentActivity() {
                                         id,
                                         ->
                                         lotteryDetailViewModelFactory(session.services, ownerId, id)
+                                    },
+                                    {
+                                        ownerId,
+                                        campsiteId,
+                                        ->
+                                        lotteryListViewModelFactory(
+                                            session.services,
+                                            ownerId,
+                                            campsiteId,
+                                        )
                                     },
                                 )
                             }

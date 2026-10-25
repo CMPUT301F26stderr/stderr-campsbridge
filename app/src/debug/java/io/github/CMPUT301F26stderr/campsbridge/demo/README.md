@@ -8,7 +8,7 @@ Implemented local interactions include profile observation, capability-limited w
 
 `AppRepositories` is the feature dependency boundary. `DemoAccountRepository`, `DemoAppPreferences`, `DemoImageRepository`, `DemoCampsiteRepository` and `DemoReviewRepository` provide local behavior without unit-test failure hooks. Add demo behavior alongside the first real consumer. Keep shared business rules in their existing owner and never implement reserved teammate functions as a demo fallback.
 
-Published campsite management also opens the shared six-step local lottery setup. Its campsite choice, allocation and native schedule inputs use the existing demo reads; no lottery is saved or published. Review labels the pending schedule validation, with both submission actions disabled. The demo lottery repository supplies empty read-only results and explicitly rejects distributed writes.
+The owner workspace includes the shared Published/Drafts lottery list and campsite-management allocation filter. Published campsite management also opens the shared six-step local lottery setup. Its campsite choice, allocation and native schedule inputs use the existing demo reads; no lottery is saved or published. Review labels the pending schedule validation, with both submission actions disabled. The demo lottery and booking repositories supply empty read-only results and explicitly reject distributed writes.
 
 Select `firebaseDebug` to run the real Firebase-backed app, or build `release` for delivery. These variants use `MainActivity` and exclude the demo launcher, menu and local repositories. The existing `firebaseEmulatorHost` Gradle property selects emulator endpoints only for Firebase-enabled hosts; see the [Firebase guide](../../../../../../../../../firebase/README.md).
 

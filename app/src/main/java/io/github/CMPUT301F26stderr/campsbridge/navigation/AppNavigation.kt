@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import java.util.Locale
  * @param exploreFactory Discovery/filter dependencies for the current account.
  * @param lotterySetupFactory New/saved lottery-setup dependencies for the current owner.
  * @param lotteryDetailFactory Saved owner-reader dependencies.
+ * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -49,6 +51,7 @@ fun AppNavigation(
     exploreFactory: ViewModelProvider.Factory,
     lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
     lotteryDetailFactory: (String) -> ViewModelProvider.Factory,
+    lotteryListFactory: (String?) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -60,6 +63,11 @@ fun AppNavigation(
                 AppDestination.ownerCampsites(),
                 stringResource(R.string.campsites),
                 Icons.Default.Home,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.OWNER_LOTTERIES,
+                stringResource(R.string.lotteries),
+                Icons.Default.DateRange,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.OWNER),
@@ -121,6 +129,14 @@ fun AppNavigation(
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
         lotterySetupGraph(controller, lotterySetupFactory, lotteryDetailFactory)
+        lotteryListGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            ownerItems,
+            selectPrimary,
+            lotteryListFactory,
+        )
         for (workspace in Role.entries) {
             profileGraph(
                 controller,
