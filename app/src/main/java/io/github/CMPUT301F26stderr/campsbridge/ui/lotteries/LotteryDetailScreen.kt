@@ -44,6 +44,7 @@ import java.time.format.FormatStyle
  * @param onContinue Opens setup for this saved identity.
  * @param onParticipants Registered owner participant destination, absent for entrants.
  * @param onReservation Registered saved-record destination, absent until its graph is supplied.
+ * @param onBooking Registered single-site winner flow; current state still gates entry.
  */
 @Composable
 fun LotteryDetailRoute(
@@ -52,6 +53,7 @@ fun LotteryDetailRoute(
     onContinue: () -> Unit,
     onParticipants: (() -> Unit)? = null,
     onReservation: ((String) -> Unit)? = null,
+    onBooking: ((String, String) -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
@@ -74,6 +76,7 @@ fun LotteryDetailRoute(
         model::draw,
         onParticipants = onParticipants,
         onReservation = onReservation,
+        onBooking = onBooking,
     )
 }
 
@@ -94,6 +97,7 @@ fun LotteryDetailRoute(
  * @param modifier Caller layout.
  * @param onParticipants Registered owner-only child; no action is shown for drafts.
  * @param onReservation Opens an actual consuming saved record; no booking success is fabricated.
+ * @param onBooking Opens the actual single-site winner flow with saved identities.
  */
 @Composable
 fun LotteryDetailScreen(
@@ -112,6 +116,7 @@ fun LotteryDetailScreen(
     modifier: Modifier = Modifier,
     onParticipants: (() -> Unit)? = null,
     onReservation: ((String) -> Unit)? = null,
+    onBooking: ((String, String) -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.lottery_detail_title), modifier, onBack = onBack) {
         when (state) {
@@ -172,6 +177,17 @@ fun LotteryDetailScreen(
 
                         LotteryOpportunityRead.Unused -> {
                             Text(stringResource(R.string.lottery_opportunity_unused))
+                            val offer =
+                                (state.offers as? LotteryOffersState.Content)
+                                    ?.offers
+                                    ?.singleOrNull()
+                            if (onBooking != null && offer != null &&
+                                state.lifecycle == LotteryLifecycle.BOOKING_OPEN
+                            ) {
+                                AppActionButton(stringResource(R.string.booking_title), {
+                                    onBooking(record.id, offer.offer.campsiteId)
+                                })
+                            }
                         }
 
                         is LotteryOpportunityRead.Reserved -> {

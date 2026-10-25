@@ -23,6 +23,17 @@ object AppDestination {
     const val ENTRANT_LOTTERIES = "entrant/lotteries"
     const val ENTRANT_LOTTERY_DETAIL = "entrant/lotteries/{lotteryId}/detail"
     const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
+    const val BOOKING = "entrant/booking/{lotteryId}/{campsiteId}"
+
+    /** Addresses one winning opportunity without copying source facts into navigation.
+     * @param lotteryId Actual saved lottery identity.
+     * @param campsiteId Actual selected allocation identity.
+     */
+    fun booking(
+        lotteryId: String,
+        campsiteId: String,
+    ): String =
+        "entrant/booking/${Uri.encode(lotteryId)}/${Uri.encode(campsiteId)}"
 
     /** Addresses one workspace entry to the same account Inbox.
      * @param workspace Actual entrant or owner primary presentation.
