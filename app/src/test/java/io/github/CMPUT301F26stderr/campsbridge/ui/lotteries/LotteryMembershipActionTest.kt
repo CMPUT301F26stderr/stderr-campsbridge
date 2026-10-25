@@ -7,6 +7,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
@@ -484,6 +485,7 @@ class LotteryMembershipActionTest {
                         clock,
                         bookings,
                         context,
+                        accounts = FakeAccountRepository(),
                     )
                 store.put("detail", model)
                 block(model, store)

@@ -20,6 +20,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.ParticipantListRoute
 
 /** Registers account-scoped primary lists and the owner-management association filter.
  * @param controller Account navigation host.
@@ -132,12 +133,36 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                 val id = requireNotNull(parent.arguments?.getString("lotteryId"))
                 val model: LotteryDetailViewModel =
                     viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
-                LotteryDetailRoute(model, { controller.popBackStack(pattern, inclusive = true) }, {
-                    controller.navigate(AppDestination.lotterySetupGraph(id)) {
-                        launchSingleTop =
-                            true
-                    }
-                })
+                LotteryDetailRoute(
+                    model,
+                    { controller.popBackStack(pattern, inclusive = true) },
+                    {
+                        controller.navigate(AppDestination.lotterySetupGraph(id)) {
+                            launchSingleTop =
+                                true
+                        }
+                    },
+                    onParticipants =
+                        if (context == LotteryContext.OWNER) {
+                            {
+                                controller.navigate(AppDestination.lotteryParticipants(id)) {
+                                    launchSingleTop =
+                                        true
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                )
+            }
+            if (context == LotteryContext.OWNER) {
+                composable("$pattern/participants") { entry ->
+                    val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                    val id = requireNotNull(parent.arguments?.getString("lotteryId"))
+                    val model: LotteryDetailViewModel =
+                        viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
+                    ParticipantListRoute(model) { controller.popBackStack() }
+                }
             }
         }
     }

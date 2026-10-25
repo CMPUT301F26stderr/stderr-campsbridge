@@ -13,6 +13,8 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
@@ -53,6 +55,8 @@ class TestAppHost : AutoCloseable {
 
     @Volatile var keyboardVisible = false
         private set
+    var participantFilter: ((List<LotteryEntry>, EntryState?) -> List<LotteryEntry>)? = null
+    val lotteryAccounts = FakeAccountRepository()
     val lotteries = FakeLotteryRepository()
     val bookings = FakeBookingRepository()
     var lotteryListCreations = 0
@@ -228,6 +232,9 @@ class TestAppHost : AutoCloseable {
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                             bookings,
                             context,
+                            lotteryAccounts,
+                            createSavedStateHandle(),
+                            participantFilter,
                         )
                     }
                 }

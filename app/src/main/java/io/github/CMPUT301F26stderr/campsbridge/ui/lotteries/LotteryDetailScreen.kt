@@ -42,12 +42,14 @@ import java.time.format.FormatStyle
  * @param model Actual saved-record owner.
  * @param onBack Returns to the retained caller.
  * @param onContinue Opens setup for this saved identity.
+ * @param onParticipants Registered owner participant destination, absent for entrants.
  */
 @Composable
 fun LotteryDetailRoute(
     model: LotteryDetailViewModel,
     onBack: () -> Unit,
     onContinue: () -> Unit,
+    onParticipants: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
@@ -67,6 +69,7 @@ fun LotteryDetailRoute(
         model::requestLeave,
         model::dismissLeave,
         model::confirmLeave,
+        onParticipants = onParticipants,
     )
 }
 
@@ -84,6 +87,7 @@ fun LotteryDetailRoute(
  * @param onDismissLeave Dismisses an unsubmitted withdrawal.
  * @param onConfirmLeave Submits an explicitly confirmed withdrawal.
  * @param modifier Caller layout.
+ * @param onParticipants Registered owner-only child; no action is shown for drafts.
  */
 @Composable
 fun LotteryDetailScreen(
@@ -99,6 +103,7 @@ fun LotteryDetailScreen(
     onDismissLeave: () -> Unit,
     onConfirmLeave: () -> Unit,
     modifier: Modifier = Modifier,
+    onParticipants: (() -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.lottery_detail_title), modifier, onBack = onBack) {
         when (state) {
@@ -210,6 +215,12 @@ fun LotteryDetailScreen(
                         onDismissLeave,
                         onConfirmLeave,
                     )
+                    if (onParticipants != null && record.publishedAt != null) {
+                        AppActionButton(
+                            stringResource(R.string.lottery_participants),
+                            onParticipants,
+                        )
+                    }
                     if (state.canContinue) {
                         AppActionButton(
                             stringResource(R.string.lottery_continue_setup),

@@ -60,6 +60,12 @@ object AppDestination {
     ): String =
         lotteryDetailPattern(context).replace("{lotteryId}", Uri.encode(lotteryId))
 
+    /** Opens the owner participant child under its actual saved parent.
+     * @param lotteryId Saved parent identity.
+     */
+    fun lotteryParticipants(lotteryId: String): String =
+        "${lotteryDetail(lotteryId)}/participants"
+
     /** Addresses a distinct local/new or saved-ID setup parent.
      * @param campsiteId Existing unpublished target, or null for a new form.
      */

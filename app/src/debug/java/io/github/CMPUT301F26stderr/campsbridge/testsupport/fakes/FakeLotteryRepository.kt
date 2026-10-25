@@ -22,6 +22,10 @@ class FakeLotteryRepository(
     val offerFailure = MutableStateFlow<Exception?>(null)
     val ownerFailure = MutableStateFlow<Exception?>(null)
     val entrantFailure = MutableStateFlow<Exception?>(null)
+    val entriesFailure = MutableStateFlow<Exception?>(null)
+    val entriesRequests = mutableListOf<String>()
+    var activeEntriesObservers = 0
+        private set
     val entries = MutableStateFlow<List<LotteryEntry>>(emptyList())
     val ownerRequests = mutableListOf<String>()
     val entrantRequests = mutableListOf<String>()
@@ -134,11 +138,22 @@ class FakeLotteryRepository(
     override fun observeAll(): Flow<List<Lottery>> =
         unsupported()
 
-    /** Rejects unconfigured participant reads.
+    /** Exposes controlled lottery-scoped entries without any account-wide query.
      * @param id Requested lottery.
      */
     override fun observeEntries(id: String): Flow<List<LotteryEntry>> =
-        unsupported()
+        flow {
+            entriesRequests.add(id)
+            activeEntriesObservers++
+            try {
+                combine(entries, entriesFailure) { rows, failure ->
+                    failure?.let { throw it }
+                    rows.filter { it.lotteryId == id }
+                }.collect { emit(it) }
+            } finally {
+                activeEntriesObservers--
+            }
+        }
 
     /** Exposes own membership fixtures with controlled failure and listener lifetime.
      * @param accountId Requested account.

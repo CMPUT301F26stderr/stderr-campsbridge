@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
@@ -273,5 +274,6 @@ class LotteryDetailViewModelTest {
             clock,
             FakeBookingRepository(),
             LotteryContext.OWNER,
+            accounts = FakeAccountRepository(),
         ).also { store.put("detail", it) }
 }

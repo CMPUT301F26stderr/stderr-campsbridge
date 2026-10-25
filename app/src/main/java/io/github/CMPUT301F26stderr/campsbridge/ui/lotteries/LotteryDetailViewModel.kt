@@ -1,7 +1,9 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
@@ -28,6 +30,9 @@ import java.time.Clock
  * @param campsites Names and zones for referenced allocations.
  * @param bookings Authoritative opportunity and saved reservation source.
  * @param context Explicit owner management or entrant presentation.
+ * @param accounts Referenced participant profile labels.
+ * @param savedState Small restorable participant filter.
+ * @param filterParticipants Reserved participant selector; null keeps requested filtering pending.
  */
 class LotteryDetailViewModel(
     private val accountId: String,
@@ -37,9 +42,51 @@ class LotteryDetailViewModel(
     private val clock: Clock,
     private val bookings: BookingRepository,
     val context: LotteryContext,
+    accounts: AccountRepository,
+    private val savedState: SavedStateHandle = SavedStateHandle(),
+    filterParticipants: ((List<LotteryEntry>, EntryState?) -> List<LotteryEntry>)? = null,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<LotteryDetailUiState>(LotteryDetailUiState.Loading)
     val state = mutableState.asStateFlow()
+
+    private val participantReader =
+        LotteryParticipantsController(
+            accountId,
+            lotteryId,
+            lotteries,
+            accounts,
+            clock,
+            viewModelScope,
+            savedState.get<String>("participantState")?.let { value ->
+                EntryState.entries.firstOrNull { it.name == value }
+            },
+            filterParticipants,
+        )
+    val participants = participantReader.state
+    val selectedParticipantState = participantReader.selectedState
+
+    /** Changes only the actual owner child lifetime.
+     * @param visible Whether the participant child is composed.
+     */
+    fun setParticipantsVisible(visible: Boolean) {
+        participantReader.setVisible(visible && context == LotteryContext.OWNER)
+    }
+
+    /** Selects and persists a safe participant filter.
+     * @param state Requested exact stored state, or null for All.
+     */
+    fun selectParticipantState(state: EntryState?) {
+        participantReader.selectState(state)
+        savedState["participantState"] = participantReader.selectedState.value?.name
+    }
+
+    /** Retries only a failed child entry source. */
+    fun retryParticipants() =
+        participantReader.retryEntries()
+
+    /** Retries only failed participant labels. */
+    fun retryParticipantNames() =
+        participantReader.retryNames()
 
     private var recordJob: Job? = null
     private var offerJob: Job? = null
@@ -149,6 +196,7 @@ class LotteryDetailViewModel(
     private fun observeRecord() {
         val version = ++recordVersion
         recordJob?.cancel()
+        participantReader.updateParent(null)
         stopOffers()
         stopTime()
         stopMembership()
@@ -170,6 +218,7 @@ class LotteryDetailViewModel(
                             stopTime()
                             stopMembership()
                             stopMembershipAction()
+                            participantReader.updateParent(null)
                             mutableState.value = LotteryDetailUiState.Unavailable
                         } else {
                             checkNotNull(record)
@@ -201,6 +250,7 @@ class LotteryDetailViewModel(
                         stopTime()
                         stopMembership()
                         stopMembershipAction()
+                        participantReader.updateParent(null)
                         mutableState.value = LotteryDetailUiState.Failure
                     }
                 }
@@ -437,14 +487,30 @@ class LotteryDetailViewModel(
     /** Recalculates public sections from current source facts without exposing raw draw entries. */
     private fun refreshSections() {
         val current = state.value as? LotteryDetailUiState.Content ?: return
+        participantReader.updateParent(current.lottery.takeIf { context == LotteryContext.OWNER })
+        savedState["participantState"] = participantReader.selectedState.value?.name
+        participantReader.refreshTime()
         settleMembershipAction()
         if (pendingMembershipAction == null && !canLeave(current.lottery)) confirmingLeave = false
         val membership =
             when {
-                context == LotteryContext.OWNER -> LotteryMembershipRead.NotApplicable
-                membershipFailed -> LotteryMembershipRead.Failure
-                !membershipLoaded -> LotteryMembershipRead.Loading
-                else -> LotteryMembershipRead.Content(membershipStatus(current.lottery))
+                context == LotteryContext.OWNER -> {
+                    LotteryMembershipRead.NotApplicable
+                }
+
+                membershipFailed -> {
+                    LotteryMembershipRead.Failure
+                }
+
+                !membershipLoaded -> {
+                    LotteryMembershipRead.Loading
+                }
+
+                else -> {
+                    LotteryMembershipRead.Content(
+                        lotteryMembershipStatus(current.lottery, ownEntry, clock.instant()),
+                    )
+                }
             }
         mutableState.value =
             current.copy(
@@ -458,48 +524,6 @@ class LotteryDetailViewModel(
                 membershipError = membershipError,
             )
         scheduleTime()
-    }
-
-    /** Derives displayable membership while completed-parent and entry reads can arrive separately.
-     * @param lottery Current saved parent whose completion gates outcomes.
-     */
-    private fun membershipStatus(lottery: Lottery): LotteryMembershipStatus {
-        val entry = ownEntry ?: return LotteryMembershipStatus.NOT_JOINED
-        return when (entry.state) {
-            EntryState.WITHDRAWN -> {
-                LotteryMembershipStatus.WITHDRAWN
-            }
-
-            EntryState.DECLINED -> {
-                LotteryMembershipStatus.DECLINED
-            }
-
-            else -> {
-                when {
-                    lottery.drawnAt == null -> {
-                        if (entry.state == EntryState.WAITING &&
-                            clock.instant() < lottery.configuration.registrationClosesAt
-                        ) {
-                            LotteryMembershipStatus.WAITING
-                        } else {
-                            LotteryMembershipStatus.RESULTS_PENDING
-                        }
-                    }
-
-                    entry.state == EntryState.OFFERED -> {
-                        LotteryMembershipStatus.WON
-                    }
-
-                    entry.state == EntryState.LOST -> {
-                        LotteryMembershipStatus.LOST
-                    }
-
-                    else -> {
-                        LotteryMembershipStatus.RESULTS_PENDING
-                    }
-                }
-            }
-        }
     }
 
     /** Invalidates late own-entry callbacks and their dependent consumption lane. */
@@ -598,6 +622,7 @@ class LotteryDetailViewModel(
 
     /** Releases this saved graph's subscriptions and rejects late callbacks. */
     override fun onCleared() {
+        participantReader.close()
         recordVersion++
         recordJob?.cancel()
         stopOffers()

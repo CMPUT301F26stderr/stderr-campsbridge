@@ -5,6 +5,7 @@ import android.view.KeyEvent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -71,12 +72,30 @@ class OfflineDemoTest {
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Onboarding previews").performClick()
             compose.onNodeWithText("Preferences").performClick()
+            awaitPreview("What kind of camping do you enjoy?")
             compose.onNodeWithText("What kind of camping do you enjoy?").assertIsDisplayed()
             assertTrue(FirebaseApp.getApps(context).isEmpty())
             InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
             compose.waitUntil(5_000) { scenario.state == Lifecycle.State.RESUMED }
             compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Alex Chen").assertIsDisplayed()
+        }
+    }
+
+    /** Waits for the target content across an asynchronous Android Activity/window handoff.
+     * @param text Visible destination text still asserted by the caller after this bounded wait.
+     */
+    private fun awaitPreview(text: String) {
+        compose.waitUntil(timeoutMillis = 10_000) {
+            try {
+                compose.onNodeWithText(text).isDisplayed()
+            } catch (notReady: IllegalStateException) {
+                if (notReady.message?.startsWith("No compose hierarchies found") == true) {
+                    false
+                } else {
+                    throw notReady
+                }
+            }
         }
     }
 }

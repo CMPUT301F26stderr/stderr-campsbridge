@@ -26,6 +26,7 @@ class FakeAccountRepository(
     val account = MutableStateFlow(initial)
     val streamFailure = MutableStateFlow<Exception?>(null)
     var readFailure: Exception? = null
+    var getHandler: (suspend (String) -> Account?)? = null
     val readIds = mutableListOf<String>()
     var observations = 0
     var activeObservers = 0
@@ -54,6 +55,8 @@ class FakeAccountRepository(
      */
     override suspend fun get(id: String): Account? {
         readIds.add(id)
+        val handler = getHandler
+        if (handler != null) return handler(id)
         readFailure?.let { throw it }
         return account.value
     }

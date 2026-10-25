@@ -91,6 +91,9 @@ fun lotteryDetailViewModelFactory(
                 services.clock,
                 services.repositories.bookings,
                 context,
+                services.repositories.accounts,
+                createSavedStateHandle(),
+                filterParticipants = null,
             )
         }
     }
