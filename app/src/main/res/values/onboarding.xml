@@ -2,7 +2,6 @@
     <string name="onboarding_purpose">Find your next campsite through a fair lottery.</string>
     <string name="onboarding_get_started">Get started</string>
     <string name="onboarding_guidelines">Guidelines</string>
-    <string name="onboarding_guidelines_body">Browse campsites and join a lottery for a chance to reserve. Winning gives you an opportunity to choose available dates. Review the campsite rules before confirming a reservation.</string>
     <string name="onboarding_close">Close</string>
     <string name="onboarding_step">Step %1$d of %2$d</string>
     <string name="onboarding_intent_label">Starting intent</string>

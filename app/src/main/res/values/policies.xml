@@ -1,0 +1,15 @@
+<resources>
+    <string name="policies_title">Policies</string>
+    <string name="guidelines_title">App guidelines</string>
+    <string name="refund_policy_title">Reservation &amp; refund policy</string>
+    <string name="policy_unavailable_title">Policy unavailable</string>
+    <string name="policy_unavailable_body">This policy version is not included in this build.</string>
+    <string name="guidelines_etiquette_title">Campsite etiquette</string>
+    <string name="guidelines_etiquette_body">Respect campsites and follow the owner’s rules.</string>
+    <string name="guidelines_lottery_title">Lottery and selection</string>
+    <string name="guidelines_lottery_body">Join a lottery for a chance to book. Winners share available dates first-come.</string>
+    <string name="policy_simulation_title">Simulated payments and refunds</string>
+    <string name="policy_simulation_body">Payments are simulated. Cancelling or rejecting a reservation returns the full simulated payment.</string>
+    <string name="policy_win_title">One reservation per win</string>
+    <string name="policy_win_body">Each win allows one reservation, even after cancellation.</string>
+</resources>
