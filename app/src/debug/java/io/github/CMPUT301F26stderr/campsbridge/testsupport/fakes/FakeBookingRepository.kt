@@ -16,6 +16,8 @@ class FakeBookingRepository(
     initial: List<Reservation> = emptyList(),
 ) : BookingRepository {
     val records = MutableStateFlow(initial)
+    val getRequests = mutableListOf<String>()
+    var getHandler: (suspend (String) -> Reservation?)? = null
     val entrantFailure = MutableStateFlow<Exception?>(null)
     val entrantRequests = mutableListOf<String>()
     val opportunityRequests = mutableListOf<Pair<String, String>>()
@@ -44,11 +46,14 @@ class FakeBookingRepository(
             }
         }
 
-    /** Rejects unconfigured single-record reads.
+    /** Reads controlled complete saved facts, including confirmed absence.
      * @param id Requested target.
      */
-    override suspend fun get(id: String): Reservation? =
-        unsupported()
+    override suspend fun get(id: String): Reservation? {
+        getRequests.add(id)
+        val handler = getHandler
+        return if (handler != null) handler(id) else records.value.firstOrNull { it.id == id }
+    }
 
     /** Reads exact controlled opportunity facts without deriving a persistence key in UI.
      * @param lotteryId Requested lottery.
