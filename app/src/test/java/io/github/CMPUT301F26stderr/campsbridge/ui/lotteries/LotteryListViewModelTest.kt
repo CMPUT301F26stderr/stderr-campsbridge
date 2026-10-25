@@ -124,7 +124,7 @@ class LotteryListViewModelTest {
             it.selectCategory(LotteryListCategory.HISTORY)
             assertEquals(LotteryListCategory.DRAFTS, it.category.value)
         }
-        withModel(context = LotteryListContext.ENTRANT, saved = saved) {
+        withModel(context = LotteryContext.ENTRANT, saved = saved) {
             assertEquals(LotteryListCategory.WAITING, it.category.value)
             assertEquals(null, it.campsiteId.value)
         }
@@ -132,7 +132,7 @@ class LotteryListViewModelTest {
 
     /** Each entrant category follows the agreed precedence, including partial draw outcomes. */
     @Test fun entrantCategoryPrecedenceUsesConfirmedDrawAndConsumedWins() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             val cancelled = Cancellation(now, "account-1", null)
             val rows =
                 listOf(
@@ -196,7 +196,7 @@ class LotteryListViewModelTest {
 
     /** Cancelling a reservation never turns its consumed win into another actionable win. */
     @Test fun cancelledReservationRemainsConsumedHistory() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value = listOf(base.copy(drawnAt = now))
             lotteries.entries.value = listOf(entry("draw", EntryState.OFFERED))
             bookings.records.value =
@@ -221,7 +221,7 @@ class LotteryListViewModelTest {
 
     /** A winning-but-prebooking entry is actionable until the exact exclusive booking close. */
     @Test fun deadlineMovesUnusedWinToHistoryWithoutWrites() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value = listOf(base.copy(drawnAt = now))
             lotteries.entries.value = listOf(entry("draw", EntryState.OFFERED))
             runCurrent()
@@ -240,7 +240,7 @@ class LotteryListViewModelTest {
 
     /** Foreground re-evaluation uses current time without waiting for a stale scheduled delay. */
     @Test fun foregroundRefreshUsesCurrentClock() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value = listOf(base.copy(drawnAt = now))
             lotteries.entries.value = listOf(entry("draw", EntryState.OFFERED))
             runCurrent()
@@ -253,7 +253,7 @@ class LotteryListViewModelTest {
 
     /** Stable newest-join ordering has an exact ID tie-breaker and excludes other accounts. */
     @Test fun entrantRowsOrderByJoiningThenExactIdentity() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value =
                 listOf(
                     base.copy(id = "Z"),
@@ -275,7 +275,7 @@ class LotteryListViewModelTest {
 
     /** Missing or failed linked parents remain visible in every selected category until retry. */
     @Test fun missingAndFailedReferencesAreNotSilentlyOmitted() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.entries.value = listOf(entry("draw"))
             runCurrent()
             assertEquals(
@@ -301,7 +301,7 @@ class LotteryListViewModelTest {
 
     /** Required bookings failure cannot label potentially used wins as available to act on. */
     @Test fun bookingsFailureIsExplicitAndRetryDoesNotRestartMemberships() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value = listOf(base.copy(drawnAt = now))
             lotteries.entries.value = listOf(entry("draw", EntryState.OFFERED))
             bookings.entrantFailure.value = IOException("bookings offline")
@@ -319,7 +319,7 @@ class LotteryListViewModelTest {
 
     /** Removing an entry retires only its parent listener and retains the one bookings stream. */
     @Test fun changedMembershipsRetireOnlyObsoleteReaders() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value = listOf(base, base.copy(id = "second"))
             lotteries.entries.value = listOf(entry("draw"), entry("second"))
             runCurrent()
@@ -334,7 +334,7 @@ class LotteryListViewModelTest {
 
     /** Membership failure retires stale references; retry retains the bookings aggregate. */
     @Test fun membershipFailureRetiresRowsAndRetriesOnlyThatSource() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value = listOf(base)
             lotteries.entries.value = listOf(entry("draw"))
             runCurrent()
@@ -354,7 +354,7 @@ class LotteryListViewModelTest {
 
     /** A live saved reservation moves the used win without adding a per-row lookup/subscription. */
     @Test fun observedReservationConsumesTheWinImmediately() =
-        withModel(LotteryListContext.ENTRANT) {
+        withModel(LotteryContext.ENTRANT) {
             lotteries.records.value = listOf(base.copy(drawnAt = now))
             lotteries.entries.value = listOf(entry("draw", EntryState.OFFERED))
             runCurrent()
@@ -375,7 +375,7 @@ class LotteryListViewModelTest {
      * @param block Observable behavior assertions.
      */
     private fun withModel(
-        context: LotteryListContext = LotteryListContext.OWNER,
+        context: LotteryContext = LotteryContext.OWNER,
         saved: SavedStateHandle = SavedStateHandle(),
         block: suspend TestScope.(LotteryListViewModel) -> Unit,
     ) =

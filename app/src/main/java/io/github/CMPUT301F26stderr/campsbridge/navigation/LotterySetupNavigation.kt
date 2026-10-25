@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -10,20 +11,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocationRoute
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 
 /** Registers one local setup parent shared by six steps and its working-allocation child.
  * @param controller Current account's navigation host.
  * @param factory Explicit owner/source/clock/validator dependencies keyed by optional saved ID.
- * @param detailFactory Actual saved-reader dependencies keyed by saved ID.
  */
 internal fun NavGraphBuilder.lotterySetupGraph(
     controller: NavHostController,
     factory: (String?) -> ViewModelProvider.Factory,
-    detailFactory: (String) -> ViewModelProvider.Factory,
 ) {
     for (graph in listOf(AppDestination.LOTTERY_SETUP, AppDestination.LOTTERY_SETUP_SAVED)) {
         val arguments =
@@ -60,10 +57,20 @@ internal fun NavGraphBuilder.lotterySetupGraph(
                     },
                     { id ->
                         controller.popBackStack(graph, inclusive = true)
-                        if (controller.currentBackStackEntry?.arguments?.getString("lotteryId") !=
-                            id ||
-                            controller.currentDestination?.route != AppDestination.LOTTERY_DETAIL
-                        ) {
+                        val showingOwnerDetail =
+                            controller.currentDestination?.hierarchy?.any {
+                                it.route == AppDestination.LOTTERY_DETAIL
+                            } == true
+                        val shownId =
+                            if (showingOwnerDetail) {
+                                controller
+                                    .getBackStackEntry(AppDestination.LOTTERY_DETAIL)
+                                    .arguments
+                                    ?.getString("lotteryId")
+                            } else {
+                                null
+                            }
+                        if (shownId != id) {
                             controller.navigate(AppDestination.lotteryDetail(id)) {
                                 launchSingleTop =
                                     true
@@ -82,21 +89,5 @@ internal fun NavGraphBuilder.lotterySetupGraph(
                 LotteryAllocationRoute(model) { controller.popBackStack() }
             }
         }
-    }
-    composable(
-        AppDestination.LOTTERY_DETAIL,
-        arguments =
-            listOf(
-                navArgument("lotteryId") {
-                    type =
-                        NavType.StringType
-                },
-            ),
-    ) { entry ->
-        val id = requireNotNull(entry.arguments?.getString("lotteryId"))
-        val model: LotteryDetailViewModel = viewModel(factory = detailFactory(id))
-        LotteryDetailRoute(model, { controller.popBackStack() }, {
-            controller.navigate(AppDestination.lotterySetupGraph(id)) { launchSingleTop = true }
-        })
     }
 }

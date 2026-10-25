@@ -130,18 +130,26 @@ class OfflineDemoActivity : ComponentActivity() {
                                         lotterySetupViewModelFactory(session.services, ownerId, id)
                                     },
                                     {
-                                        ownerId,
+                                        accountId,
                                         id,
+                                        context,
                                         ->
-                                        lotteryDetailViewModelFactory(session.services, ownerId, id)
+                                        lotteryDetailViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            id,
+                                            context,
+                                        )
                                     },
                                     {
-                                        ownerId,
+                                        accountId,
+                                        context,
                                         campsiteId,
                                         ->
                                         lotteryListViewModelFactory(
                                             session.services,
-                                            ownerId,
+                                            accountId,
+                                            context,
                                             campsiteId,
                                         )
                                     },

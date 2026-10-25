@@ -12,28 +12,30 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
-/** Constructs the owner-scoped list and optional management allocation filter.
+/** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
- * @param ownerId Ready owner identity.
+ * @param accountId Ready account identity.
+ * @param context Requested owner or entrant presentation.
  * @param campsiteId Optional saved listing association.
  */
 fun lotteryListViewModelFactory(
     services: AppServices,
-    ownerId: String,
+    accountId: String,
+    context: LotteryContext,
     campsiteId: String? = null,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
             LotteryListViewModel(
-                ownerId,
-                LotteryListContext.OWNER,
+                accountId,
+                context,
                 services.repositories.lotteries,
                 services.repositories.bookings,
                 services.clock,
@@ -67,24 +69,28 @@ fun lotterySetupViewModelFactory(
         }
     }
 
-/** Constructs the actual saved owner reader independently of setup's local state.
+/** Constructs the saved context-qualified reader independently of setup's local state.
  * @param services Current host's repository dependencies.
- * @param ownerId Current owner identity.
+ * @param accountId Ready account identity.
  * @param lotteryId Actual saved target carried by navigation.
+ * @param context Explicit owner management or entrant presentation.
  */
 fun lotteryDetailViewModelFactory(
     services: AppServices,
-    ownerId: String,
+    accountId: String,
     lotteryId: String,
+    context: LotteryContext,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
             LotteryDetailViewModel(
-                ownerId,
+                accountId,
                 lotteryId,
                 services.repositories.lotteries,
                 services.repositories.campsites,
                 services.clock,
+                services.repositories.bookings,
+                context,
             )
         }
     }

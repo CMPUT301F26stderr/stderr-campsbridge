@@ -62,12 +62,19 @@ class MainActivity : ComponentActivity() {
                 { accountId, id -> availabilityViewModelFactory(services, accountId, id) },
                 { exploreViewModelFactory(services) },
                 { ownerId, id -> lotterySetupViewModelFactory(services, ownerId, id) },
-                { ownerId, id -> lotteryDetailViewModelFactory(services, ownerId, id) },
                 {
-                    ownerId,
+                    accountId,
+                    id,
+                    context,
+                    ->
+                    lotteryDetailViewModelFactory(services, accountId, id, context)
+                },
+                {
+                    accountId,
+                    context,
                     campsiteId,
                     ->
-                    lotteryListViewModelFactory(services, ownerId, campsiteId)
+                    lotteryListViewModelFactory(services, accountId, context, campsiteId)
                 },
             )
         }

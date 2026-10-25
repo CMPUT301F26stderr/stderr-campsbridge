@@ -38,7 +38,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** Connects the saved owner reader to its caller and same-ID continuation route.
+/** Connects the context-qualified saved reader to its caller and source retries.
  * @param model Actual saved-record owner.
  * @param onBack Returns to the retained caller.
  * @param onContinue Opens setup for this saved identity.
@@ -55,17 +55,26 @@ fun LotteryDetailRoute(
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.State.RESUMED) model.refreshTime()
     }
-    LotteryDetailScreen(state, onBack, model::retry, model::retryOffers, onContinue)
+    LotteryDetailScreen(
+        state,
+        onBack,
+        model::retry,
+        model::retryOffers,
+        onContinue,
+        model::retryMembership,
+        model::retryOpportunity,
+    )
 }
 
 /**
- * Minimal owner overview of confirmed saved facts; participation actions arrive with their
- * consumers.
- * @param state Saved record and independent allocation source outcome.
+ * Shared owner/entrant overview of confirmed saved facts and independent participation reads.
+ * @param state Saved record and independent allocation, membership and reservation outcomes.
  * @param onBack Returns to the actual caller.
  * @param onRetry Retries the parent observation.
  * @param onRetryOffers Retries allocations and referenced site labels.
  * @param onContinue Reopens this active unpublished draft by ID.
+ * @param onRetryMembership Retries the independent own-entry source.
+ * @param onRetryOpportunity Reconciles unknown reservation consumption.
  * @param modifier Caller layout.
  */
 @Composable
@@ -75,6 +84,8 @@ fun LotteryDetailScreen(
     onRetry: () -> Unit,
     onRetryOffers: () -> Unit,
     onContinue: () -> Unit,
+    onRetryMembership: () -> Unit,
+    onRetryOpportunity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppScreen(stringResource(R.string.lottery_detail_title), modifier, onBack = onBack) {
@@ -107,12 +118,79 @@ fun LotteryDetailScreen(
                             },
                         ),
                     )
+                    val duplicatePending =
+                        state.lifecycle == LotteryLifecycle.DRAW_PENDING &&
+                            (state.membership as? LotteryMembershipRead.Content)?.status ==
+                            LotteryMembershipStatus.RESULTS_PENDING
                     if (state.lifecycle != LotteryLifecycle.DRAFT &&
-                        state.lifecycle != LotteryLifecycle.CANCELLED
+                        state.lifecycle != LotteryLifecycle.CANCELLED && !duplicatePending
                     ) {
                         Text(lotteryLifecycleLabel(state.lifecycle))
                     }
                     if (record.description.isNotEmpty()) Text(record.description)
+                    when (val membership = state.membership) {
+                        LotteryMembershipRead.NotApplicable -> {
+                            Unit
+                        }
+
+                        LotteryMembershipRead.Loading -> {
+                            Text(
+                                stringResource(R.string.lottery_membership_loading),
+                            )
+                        }
+
+                        LotteryMembershipRead.Failure -> {
+                            FailureContent(
+                                stringResource(R.string.lottery_membership_failed),
+                                onRetryMembership,
+                            )
+                        }
+
+                        is LotteryMembershipRead.Content -> {
+                            Text(
+                                lotteryMembershipLabel(membership.status),
+                            )
+                        }
+                    }
+                    when (val opportunity = state.opportunity) {
+                        LotteryOpportunityRead.NotApplicable -> {
+                            Unit
+                        }
+
+                        LotteryOpportunityRead.Loading -> {
+                            Text(stringResource(R.string.lottery_opportunity_loading))
+                        }
+
+                        LotteryOpportunityRead.Failure -> {
+                            FailureContent(
+                                stringResource(R.string.lottery_opportunity_failed),
+                                onRetryOpportunity,
+                            )
+                        }
+
+                        LotteryOpportunityRead.Unused -> {
+                            Text(stringResource(R.string.lottery_opportunity_unused))
+                        }
+
+                        is LotteryOpportunityRead.Reserved -> {
+                            Text(
+                                stringResource(
+                                    R.string.lottery_saved_reservation,
+                                    opportunity.reservation.id,
+                                ),
+                            )
+                        }
+
+                        is LotteryOpportunityRead.Unavailable -> {
+                            Text(stringResource(R.string.lottery_saved_reservation_unavailable))
+                            Text(
+                                stringResource(
+                                    R.string.lottery_saved_reservation,
+                                    opportunity.reservationId,
+                                ),
+                            )
+                        }
+                    }
                     if (state.canContinue) {
                         AppActionButton(
                             stringResource(R.string.lottery_continue_setup),
@@ -199,6 +277,23 @@ fun LotteryDetailScreen(
     }
 }
 
+/** Localizes only confirmed or explicitly pending own participation facts.
+ * @param status Display-safe status supplied by the controller.
+ */
+@Composable
+private fun lotteryMembershipLabel(status: LotteryMembershipStatus): String =
+    stringResource(
+        when (status) {
+            LotteryMembershipStatus.NOT_JOINED -> R.string.lottery_not_joined
+            LotteryMembershipStatus.WAITING -> R.string.lottery_membership_waiting
+            LotteryMembershipStatus.WITHDRAWN -> R.string.lottery_membership_withdrawn
+            LotteryMembershipStatus.RESULTS_PENDING -> R.string.lottery_draw_pending
+            LotteryMembershipStatus.WON -> R.string.lottery_membership_won
+            LotteryMembershipStatus.LOST -> R.string.lottery_membership_lost
+            LotteryMembershipStatus.DECLINED -> R.string.lottery_membership_declined
+        },
+    )
+
 /** Localizes derived lifecycle facts for shared list/detail presentation.
  * @param lifecycle Explicit controller-derived phase.
  */
@@ -266,6 +361,43 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
                     canContinue = false,
                     lifecycle = LotteryLifecycle.UPCOMING,
                 ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.DRAW_PENDING,
+                    membership =
+                        LotteryMembershipRead.Content(
+                            LotteryMembershipStatus.RESULTS_PENDING,
+                        ),
+                ),
+                content.copy(
+                    lottery =
+                        record.copy(
+                            publishedAt = record.createdAt,
+                            drawnAt = record.createdAt,
+                        ),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.BOOKING_OPEN,
+                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WON),
+                    opportunity = LotteryOpportunityRead.Unused,
+                ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
+                    membership = LotteryMembershipRead.Failure,
+                ),
+                content.copy(
+                    lottery =
+                        record.copy(
+                            publishedAt = record.createdAt,
+                            drawnAt = record.createdAt,
+                        ),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.BOOKING_OPEN,
+                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WON),
+                    opportunity = LotteryOpportunityRead.Failure,
+                ),
                 content.copy(offers = LotteryOffersState.Content(emptyList())),
                 content.copy(offers = LotteryOffersState.Failure),
                 LotteryDetailUiState.Loading,
@@ -284,5 +416,5 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
 private fun LotteryDetailPreview(
     @PreviewParameter(LotteryDetailPreviewProvider::class) state: LotteryDetailUiState,
 ) {
-    CampsbridgeTheme { LotteryDetailScreen(state, {}, {}, {}, {}) }
+    CampsbridgeTheme { LotteryDetailScreen(state, {}, {}, {}, {}, {}, {}) }
 }

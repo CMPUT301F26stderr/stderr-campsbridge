@@ -18,6 +18,12 @@ class FakeBookingRepository(
     val records = MutableStateFlow(initial)
     val entrantFailure = MutableStateFlow<Exception?>(null)
     val entrantRequests = mutableListOf<String>()
+    val opportunityRequests = mutableListOf<Pair<String, String>>()
+    var opportunityHandler: (suspend (String, String) -> Reservation?)? = null
+    val recordFailure = MutableStateFlow<Exception?>(null)
+    val observedRecordIds = mutableListOf<String>()
+    var activeRecordObservers = 0
+        private set
     var activeEntrantObservers = 0
         private set
 
@@ -44,11 +50,39 @@ class FakeBookingRepository(
     override suspend fun get(id: String): Reservation? =
         unsupported()
 
-    /** Rejects unconfigured single-record observations.
+    /** Reads exact controlled opportunity facts without deriving a persistence key in UI.
+     * @param lotteryId Requested lottery.
+     * @param entrantId Requested entrant.
+     */
+    override suspend fun getForOpportunity(
+        lotteryId: String,
+        entrantId: String,
+    ): Reservation? {
+        opportunityRequests.add(lotteryId to entrantId)
+        val handler = opportunityHandler
+        return if (handler != null) {
+            handler(lotteryId, entrantId)
+        } else {
+            records.value.firstOrNull { it.lotteryId == lotteryId && it.entrantId == entrantId }
+        }
+    }
+
+    /** Observes one complete controlled aggregate, with explicit failure and cleanup.
      * @param id Requested target.
      */
     override fun observe(id: String): Flow<Reservation?> =
-        unsupported()
+        flow {
+            observedRecordIds.add(id)
+            activeRecordObservers++
+            try {
+                combine(records, recordFailure) { rows, failure ->
+                    failure?.let { throw it }
+                    rows.firstOrNull { it.id == id }
+                }.collect { emit(it) }
+            } finally {
+                activeRecordObservers--
+            }
+        }
 
     /** Rejects unconfigured campsite aggregates.
      * @param campsiteId Requested listing.

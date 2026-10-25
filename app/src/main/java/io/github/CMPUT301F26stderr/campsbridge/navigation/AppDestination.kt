@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 import android.net.Uri
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import java.util.Locale
 
@@ -18,6 +19,8 @@ object AppDestination {
     const val LOTTERY_SETUP_SAVED = "owner/lottery-setup/saved/{lotteryId}"
     const val LOTTERY_DETAIL = "owner/lotteries/{lotteryId}/detail"
     const val OWNER_LOTTERIES = "owner/lotteries"
+    const val ENTRANT_LOTTERIES = "entrant/lotteries"
+    const val ENTRANT_LOTTERY_DETAIL = "entrant/lotteries/{lotteryId}/detail"
     const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
 
     /** Addresses the owner's allocation-filtered list from actual campsite management.
@@ -38,11 +41,24 @@ object AppDestination {
             "owner/lottery-setup/saved/${Uri.encode(lotteryId)}"
         }
 
-    /** Addresses the actual saved owner overview.
-     * @param lotteryId Saved identity returned by persistence or an owner list.
+    /** Selects one registered saved-reader parent per workspace context.
+     * @param context Explicit owner management or own entrant presentation.
      */
-    fun lotteryDetail(lotteryId: String): String =
-        "owner/lotteries/${Uri.encode(lotteryId)}/detail"
+    fun lotteryDetailPattern(context: LotteryContext): String =
+        when (context) {
+            LotteryContext.OWNER -> LOTTERY_DETAIL
+            LotteryContext.ENTRANT -> ENTRANT_LOTTERY_DETAIL
+        }
+
+    /** Addresses an actual saved overview in its caller's context.
+     * @param lotteryId Saved identity returned by persistence or an owner list.
+     * @param context Explicit presentation; the repository still owns authorization.
+     */
+    fun lotteryDetail(
+        lotteryId: String,
+        context: LotteryContext = LotteryContext.OWNER,
+    ): String =
+        lotteryDetailPattern(context).replace("{lotteryId}", Uri.encode(lotteryId))
 
     /** Addresses a distinct local/new or saved-ID setup parent.
      * @param campsiteId Existing unpublished target, or null for a new form.

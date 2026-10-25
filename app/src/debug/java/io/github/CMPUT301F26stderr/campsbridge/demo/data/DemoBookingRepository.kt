@@ -15,6 +15,16 @@ class DemoBookingRepository : BookingRepository {
     override suspend fun get(id: String): Reservation? =
         null
 
+    /** Returns absence from the intentionally empty offline dataset, without a Firebase call.
+     * @param lotteryId Requested lottery.
+     * @param entrantId Requested entrant.
+     */
+    override suspend fun getForOpportunity(
+        lotteryId: String,
+        entrantId: String,
+    ): Reservation? =
+        null
+
     /** Emits confirmed absence in the empty local demo.
      * @param id Requested identity.
      */

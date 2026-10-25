@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
@@ -264,6 +265,13 @@ class LotteryDetailViewModelTest {
 
     /** Creates the actual saved-ID reader with controlled source boundaries. */
     private fun model(): LotteryDetailViewModel =
-        LotteryDetailViewModel("account-1", "saved", lotteries, sites, clock)
-            .also { store.put("detail", it) }
+        LotteryDetailViewModel(
+            "account-1",
+            "saved",
+            lotteries,
+            sites,
+            clock,
+            FakeBookingRepository(),
+            LotteryContext.OWNER,
+        ).also { store.put("detail", it) }
 }

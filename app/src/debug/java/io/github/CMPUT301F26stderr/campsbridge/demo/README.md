@@ -1,6 +1,6 @@
 # Offline debug demo
 
-Select the `debug` variant in Android Studio and run `app`. The launcher opens an existing entrant in Explore; Profile is available as a tab. It uses the real root, profile, image and navigation code with local repository implementations. Firebase auto-initialization is removed from the debug manifest; the host never accesses Firebase application services.
+Select the `debug` variant in Android Studio and run `app`. The launcher opens an existing entrant in Explore; Lotteries and Profile are available as tabs. It uses the real root, profile, image and navigation code with local repository implementations. Firebase auto-initialization is removed from the debug manifest; the host never accesses Firebase application services.
 
 **Demo tools** offers existing entrant, existing owner, new account, reset scenario, onboarding previews and the component gallery. Reset recreates the selected scenario. Scenario switching clears its ViewModel store and subscriptions before showing the next graph. Activity recreation retains the graph; finishing the host or restarting the process discards its in-memory state. Photo bytes are private cache files and can be evicted by Android; they are never uploaded.
 
@@ -8,7 +8,7 @@ Implemented local interactions include profile observation, capability-limited w
 
 `AppRepositories` is the feature dependency boundary. `DemoAccountRepository`, `DemoAppPreferences`, `DemoImageRepository`, `DemoCampsiteRepository` and `DemoReviewRepository` provide local behavior without unit-test failure hooks. Add demo behavior alongside the first real consumer. Keep shared business rules in their existing owner and never implement reserved teammate functions as a demo fallback.
 
-The owner workspace includes the shared Published/Drafts lottery list and campsite-management allocation filter. Published campsite management also opens the shared six-step local lottery setup. Its campsite choice, allocation and native schedule inputs use the existing demo reads; no lottery is saved or published. Review labels the pending schedule validation, with both submission actions disabled. The demo lottery and booking repositories supply empty read-only results and explicitly reject distributed writes.
+The owner workspace includes the shared Published/Drafts lottery list and campsite-management allocation filter. Entrants have the shared Waiting/Action needed/History list, with an explicitly empty local dataset. Published campsite management also opens the shared six-step local lottery setup. Its campsite choice, allocation and native schedule inputs use the existing demo reads; no lottery is saved or published. Review labels the pending schedule validation, with both submission actions disabled. The demo lottery and booking repositories supply empty read-only results and explicitly reject distributed writes.
 
 Select `firebaseDebug` to run the real Firebase-backed app, or build `release` for delivery. These variants use `MainActivity` and exclude the demo launcher, menu and local repositories. The existing `firebaseEmulatorHost` Gradle property selects emulator endpoints only for Firebase-enabled hosts; see the [Firebase guide](../../../../../../../../../firebase/README.md).
 

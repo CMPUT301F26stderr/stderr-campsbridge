@@ -22,6 +22,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import java.util.Locale
 
 /**
@@ -50,8 +51,8 @@ fun AppNavigation(
     availabilityFactory: (String) -> ViewModelProvider.Factory,
     exploreFactory: ViewModelProvider.Factory,
     lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
-    lotteryDetailFactory: (String) -> ViewModelProvider.Factory,
-    lotteryListFactory: (String?) -> ViewModelProvider.Factory,
+    lotteryDetailFactory: (String, LotteryContext) -> ViewModelProvider.Factory,
+    lotteryListFactory: (LotteryContext, String?) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -81,6 +82,11 @@ fun AppNavigation(
                 AppDestination.EXPLORE,
                 stringResource(R.string.discovery_title),
                 Icons.Default.Home,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.ENTRANT_LOTTERIES,
+                stringResource(R.string.lotteries),
+                Icons.Default.DateRange,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.ENTRANT),
@@ -128,12 +134,14 @@ fun AppNavigation(
         }
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
-        lotterySetupGraph(controller, lotterySetupFactory, lotteryDetailFactory)
+        lotterySetupGraph(controller, lotterySetupFactory)
+        lotteryDetailGraph(controller, lotteryDetailFactory)
         lotteryListGraph(
             controller,
             state,
             onSelectWorkspace,
             ownerItems,
+            entrantItems,
             selectPrimary,
             lotteryListFactory,
         )

@@ -32,7 +32,7 @@ import java.time.Clock
  */
 class LotteryListViewModel(
     private val accountId: String,
-    val context: LotteryListContext,
+    val context: LotteryContext,
     private val lotteries: LotteryRepository,
     private val bookings: BookingRepository,
     private val clock: Clock,
@@ -41,14 +41,14 @@ class LotteryListViewModel(
 ) : ViewModel() {
     val categories =
         when (context) {
-            LotteryListContext.OWNER -> {
+            LotteryContext.OWNER -> {
                 listOf(
                     LotteryListCategory.PUBLISHED,
                     LotteryListCategory.DRAFTS,
                 )
             }
 
-            LotteryListContext.ENTRANT -> {
+            LotteryContext.ENTRANT -> {
                 listOf(
                     LotteryListCategory.ACTION_NEEDED,
                     LotteryListCategory.WAITING,
@@ -62,7 +62,7 @@ class LotteryListViewModel(
         MutableStateFlow(
             categories.firstOrNull { it.name == savedState.get<String>("lotteryCategory") }
                 ?: if (context ==
-                    LotteryListContext.OWNER
+                    LotteryContext.OWNER
                 ) {
                     LotteryListCategory.PUBLISHED
                 } else {
@@ -72,7 +72,7 @@ class LotteryListViewModel(
     val category = mutableCategory.asStateFlow()
     private val mutableCampsite =
         MutableStateFlow(
-            if (context == LotteryListContext.ENTRANT) {
+            if (context == LotteryContext.ENTRANT) {
                 null
             } else if (savedState.contains("lotteryCampsite")) {
                 savedState.get<String>("lotteryCampsite")
@@ -99,7 +99,7 @@ class LotteryListViewModel(
     private val offerIssues = mutableMapOf<String, LotteryReferenceIssue>()
 
     init {
-        if (context == LotteryListContext.OWNER) {
+        if (context == LotteryContext.OWNER) {
             observeOwner()
         } else {
             observeMemberships()
@@ -121,7 +121,7 @@ class LotteryListViewModel(
      * @param campsiteId Actual campsite ID, or null for all owned lotteries.
      */
     fun selectCampsite(campsiteId: String?) {
-        if (context != LotteryListContext.OWNER || campsiteId == this.campsiteId.value) return
+        if (context != LotteryContext.OWNER || campsiteId == this.campsiteId.value) return
         mutableCampsite.value = campsiteId
         savedState["lotteryCampsite"] = campsiteId
         reconcileOffers()
@@ -334,16 +334,16 @@ class LotteryListViewModel(
                     LotteryListUiState.Failure
                 }
 
-                context == LotteryListContext.OWNER && ownerRecords == null -> {
+                context == LotteryContext.OWNER && ownerRecords == null -> {
                     LotteryListUiState.Loading
                 }
 
-                context == LotteryListContext.ENTRANT &&
+                context == LotteryContext.ENTRANT &&
                     (ownEntries == null || ownReservations == null) -> {
                     LotteryListUiState.Loading
                 }
 
-                context == LotteryListContext.OWNER -> {
+                context == LotteryContext.OWNER -> {
                     ownerContent()
                 }
 
@@ -354,7 +354,7 @@ class LotteryListViewModel(
         if (state.value !is LotteryListUiState.Content) return
         val parents =
             if (context ==
-                LotteryListContext.OWNER
+                LotteryContext.OWNER
             ) {
                 ownerRecords.orEmpty()
             } else {

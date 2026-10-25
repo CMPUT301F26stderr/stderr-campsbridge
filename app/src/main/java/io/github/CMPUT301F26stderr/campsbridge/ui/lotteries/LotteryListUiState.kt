@@ -4,7 +4,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 
 /** Explicit query/presentation scope; administration has its own read-only browser. */
-enum class LotteryListContext { OWNER, ENTRANT }
+enum class LotteryContext { OWNER, ENTRANT }
 
 /** Derived list categories; these are never stored on lottery or membership documents. */
 enum class LotteryListCategory { PUBLISHED, DRAFTS, ACTION_NEEDED, WAITING, HISTORY }

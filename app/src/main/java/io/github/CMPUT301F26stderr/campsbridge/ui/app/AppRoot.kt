@@ -15,6 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.navigation.AppNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.OnboardingNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.SessionNavigationOwner
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
 /**
@@ -42,8 +43,8 @@ fun AppRoot(
     availabilityFactory: (String, String) -> ViewModelProvider.Factory,
     exploreFactory: () -> ViewModelProvider.Factory,
     lotterySetupFactory: (String, String?) -> ViewModelProvider.Factory,
-    lotteryDetailFactory: (String, String) -> ViewModelProvider.Factory,
-    lotteryListFactory: (String, String?) -> ViewModelProvider.Factory,
+    lotteryDetailFactory: (String, String, LotteryContext) -> ViewModelProvider.Factory,
+    lotteryListFactory: (String, LotteryContext, String?) -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -108,9 +109,14 @@ fun AppRoot(
                                 { id -> availabilityFactory(session.account.id, id) },
                                 exploreFactory(),
                                 { id -> lotterySetupFactory(session.account.id, id) },
-                                { id -> lotteryDetailFactory(session.account.id, id) },
-                                { campsiteId ->
-                                    lotteryListFactory(session.account.id, campsiteId)
+                                {
+                                    id,
+                                    context,
+                                    ->
+                                    lotteryDetailFactory(session.account.id, id, context)
+                                },
+                                { context, campsiteId ->
+                                    lotteryListFactory(session.account.id, context, campsiteId)
                                 },
                             )
                         }
