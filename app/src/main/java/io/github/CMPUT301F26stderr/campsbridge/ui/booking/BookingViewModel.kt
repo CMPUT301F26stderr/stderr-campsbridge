@@ -398,6 +398,31 @@ class BookingViewModel(
         reconcile()
     }
 
+    /** Applies only a currently selectable displayed cell as arrival or excluded checkout.
+     * @param date Local date actually tapped in the visible calendar.
+     */
+    fun selectDate(date: LocalDate) {
+        if (!canEdit(BookingStep.DATES)) return
+        val current = state.value as BookingUiState.Content
+        val displayed = bookingCalendarState(current)
+        if (!displayed.selectionEnabled || displayed.days[date]?.isSelectable != true) return
+        val start = draft.checkIn
+        if (start == null || draft.checkOut != null || start < current.today || date <= start) {
+            if (date == start) selectCheckOut(null) else selectCheckIn(date)
+        } else {
+            selectCheckOut(date)
+        }
+    }
+
+    /** Clears a partial/complete/invalid selection only from its owning dates step. */
+    fun clearDates() {
+        if (!canEdit(BookingStep.DATES)) return
+        draft = draft.copy(checkIn = null, checkOut = null, reviewedTotalCents = null)
+        error = null
+        saveDraft()
+        reconcile()
+    }
+
     /** Keeps raw guest text rather than silently coercing incomplete input.
      * @param text Editable count text.
      */
@@ -715,6 +740,14 @@ class BookingViewModel(
                     (read.visible as? CalendarInventoryRead.Content)?.let { inventory ->
                         availableNights?.invoke(offered, inventory.nights)
                     }
+                val selected =
+                    (read.selected as? CalendarInventoryRead.Content)?.let { inventory ->
+                        if (inventory == read.visible) {
+                            visible
+                        } else {
+                            availableNights?.invoke(offered, inventory.nights)
+                        }
+                    }
                 val start = draft.checkIn
                 val end = draft.checkOut
                 val preliminary = validateStaySelection(start, end, emptySet(), outcome.today)
@@ -722,10 +755,8 @@ class BookingViewModel(
                     if (preliminary != StaySelectionInput.UNAVAILABLE_NIGHTS) {
                         preliminary
                     } else {
-                        (read.selected as? CalendarInventoryRead.Content)?.let { inventory ->
-                            availableNights?.invoke(offered, inventory.nights)?.let { eligible ->
-                                validateStaySelection(start, end, eligible, outcome.today)
-                            }
+                        selected?.let { eligible ->
+                            validateStaySelection(start, end, eligible, outcome.today)
                         }
                     }
                 val quote =
@@ -738,6 +769,7 @@ class BookingViewModel(
                     calendar = read,
                     eligibilityPending = availableNights == null,
                     visibleEligibleNights = visible,
+                    selectedEligibleNights = selected,
                     stayValidation = validation,
                     quote = quote,
                     error = error,

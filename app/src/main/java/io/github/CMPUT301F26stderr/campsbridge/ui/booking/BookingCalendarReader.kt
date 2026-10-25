@@ -16,14 +16,14 @@ import java.time.YearMonth
 
 /** Independent displayed-month and selected-stay outcomes; null means that scope is not requested.
  * @param visible Actual displayed month's source, or null while the dates page is hidden.
- * @param selected Actual occupied selection, reusing visible when its range contains the stay.
+ * @param selected Stay or pending departure's preceding night; shares a covering month.
  */
 data class BookingCalendarReadState(
     val visible: CalendarInventoryRead? = null,
     val selected: CalendarInventoryRead? = null,
 )
 
-/** Reads at most a visible month and one exact selected range; owns no draft or eligibility rule.
+/** Reads a visible month and one stay range or supporting night; owns no draft or eligibility.
  * The parent invokes actions on its state dispatcher and closes this reader with its lifetime.
  * @param campsiteId Fixed actual saved campsite identity.
  * @param campsites Half-open inventory observations.
@@ -44,7 +44,7 @@ internal class BookingCalendarReader(
     /** Reconciles display and selection scopes without restarting identical readers.
      * @param visibleMonth Visible month, or null when its calendar is not displayed.
      * @param checkIn Inclusive selected arrival, or null for no selection.
-     * @param checkOut Exclusive departure; null observes only the first selected night.
+     * @param checkOut Exclusive departure; null reads arrival or a later month's preceding night.
      */
     fun update(
         visibleMonth: YearMonth?,
@@ -55,10 +55,25 @@ internal class BookingCalendarReader(
         val visibleRange = visibleMonth?.let { DateRange(it.atDay(1), it.plusMonths(1).atDay(1)) }
         val selectedRange =
             when {
-                checkIn == null -> null
-                checkOut != null -> if (checkOut > checkIn) DateRange(checkIn, checkOut) else null
-                checkIn < LocalDate.MAX -> DateRange(checkIn, checkIn.plusDays(1))
-                else -> null
+                checkIn == null -> {
+                    null
+                }
+
+                checkOut != null -> {
+                    if (checkOut > checkIn) DateRange(checkIn, checkOut) else null
+                }
+
+                checkIn < LocalDate.MAX -> {
+                    if (visibleRange != null && checkIn < visibleRange.start) {
+                        DateRange(visibleRange.start.minusDays(1), visibleRange.start)
+                    } else {
+                        DateRange(checkIn, checkIn.plusDays(1))
+                    }
+                }
+
+                else -> {
+                    null
+                }
             }
         selectionUsesVisible = selectedRange != null && visibleRange != null &&
             selectedRange.start >= visibleRange.start &&

@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
 import java.time.LocalDate
@@ -123,6 +124,48 @@ class BookingCalendarReaderTest {
                 reader.state.value.selected,
             )
             assertEquals(listOf(Triple("site", start, start.plusDays(1))), sites.observedCalendars)
+        }
+
+    /** A later visible month confirms only its preceding night for a pending checkout. */
+    @Test fun unfinishedCrossMonthStayConfirmsOnlyTheVisibleBoundaryNight() =
+        runTest {
+            val reader = reader(backgroundScope)
+            val nextMonth = month.plusMonths(1)
+            reader.update(nextMonth, inside)
+            runCurrent()
+            assertEquals(
+                CalendarInventoryRead.Content(listOf(CalendarNight(start, true))),
+                reader.state.value.selected,
+            )
+            assertTrue(sites.observedCalendars.contains(Triple("site", start, nextMonth.atDay(1))))
+            assertEquals(2, sites.activeCalendarObservers)
+            reader.update(null, inside)
+            runCurrent()
+            assertEquals(
+                CalendarInventoryRead.Content(listOf(CalendarNight(inside, true))),
+                reader.state.value.selected,
+            )
+            assertEquals(1, sites.activeCalendarObservers)
+        }
+
+    /** Browsing ahead reads one supporting night before checkout is selected. */
+    @Test fun partialSelectionReadsOnlyOneBoundaryNightWhenBrowsingFarAhead() =
+        runTest {
+            val reader = reader(backgroundScope)
+            val distant = month.plusYears(3)
+            reader.update(distant, inside)
+            runCurrent()
+            assertTrue(
+                sites.observedCalendars.contains(
+                    Triple(
+                        "site",
+                        distant.atDay(1).minusDays(1),
+                        distant.atDay(1),
+                    ),
+                ),
+            )
+            assertEquals(CalendarInventoryRead.Content(emptyList()), reader.state.value.selected)
+            assertEquals(2, sites.activeCalendarObservers)
         }
 
     /** Leaving the dates page keeps a complete selected range live without its unused month. */
