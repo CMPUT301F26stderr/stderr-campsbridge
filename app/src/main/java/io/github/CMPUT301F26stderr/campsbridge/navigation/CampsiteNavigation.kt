@@ -19,6 +19,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteLocationRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
@@ -127,7 +128,17 @@ internal fun NavGraphBuilder.campsiteGraph(
                     onOpenPolicy = {
                         controller.navigate(AppDestination.campsiteSetupGraph(id) + "/refund")
                     },
+                    onChooseLocation = {
+                        controller.navigate(AppDestination.campsiteSetupGraph(id) + "/location")
+                    },
                 )
+            }
+            composable("$pattern/location") { entry ->
+                val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                val id = parent.arguments?.getString("campsiteId")
+                val model: CampsiteSetupViewModel =
+                    viewModel(viewModelStoreOwner = parent, factory = setupFactory(id))
+                CampsiteLocationRoute(model) { controller.popBackStack() }
             }
             composable("$pattern/refund") {
                 PolicyReaderScreen(policyContent(PolicyId.REFUND), { controller.popBackStack() })

@@ -58,7 +58,7 @@ import java.time.YearMonth
  * @param onRetryCalendar Retries the visible month.
  * @param onOpenPolicy Opens packaged refund reader.
  * @param modifier Caller layout.
- * @param onChooseLocation Real map child action, supplied when its integration exists.
+ * @param onChooseLocation Registered map child action; isolated content can omit it.
  */
 @Composable
 fun CampsiteSetupScreen(
@@ -309,6 +309,7 @@ private fun SetupPreviewContent(state: CampsiteSetupUiState) {
             {},
             {},
             {},
+            onChooseLocation = {},
         )
     }
 }

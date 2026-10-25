@@ -43,9 +43,15 @@ nix develop .#ui --command bash scripts/check-android-ui.sh
 
 This uses a disposable API 35 emulator and requires usable KVM on Linux. See [CONTRIBUTING.md](CONTRIBUTING.md#test-boundaries) for existing-device and coverage commands.
 
-The default `debug` build uses local sample accounts and private cached photos. Profile display, workspace switching and photo selection/save/removal work locally. The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name submission remains blocked until the reserved teammate validator is integrated; name/contact editing and other feature screens remain pending.
+The default `debug` build uses local sample accounts and private cached photos. Profile display, workspace switching and photo selection/save/removal work locally. Owner campsite lists and the local eight-step setup are available; campsite saving/publication remain pending. The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name/contact fields are editable, while their submission remains blocked until the reserved teammate validators are integrated.
 
 Select `firebaseDebug` in Android Studio for real account identity, Firestore and Storage, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.
+
+## Maps configuration
+
+For the campsite pin picker, enable [Maps SDK for Android](https://developers.google.com/maps/documentation/android-sdk/start) for your Google Cloud project and add `mapsApiKey=YOUR_ANDROID_MAPS_KEY` to your local Gradle user properties (`~/.gradle/gradle.properties`). Sync and rebuild the selected app variant. The key is supplied to the Android manifest; keep its value out of tracked project files.
+
+An unconfigured build still starts normally. Opening the picker shows unavailable-map feedback and retains the current draft. Choosing a pin does not request device location or guess the label/timezone; it changes the draft only after **Use this location**. A stored campsite coordinate can also be displayed through the same map adapter.
 
 ## Repository layout
 

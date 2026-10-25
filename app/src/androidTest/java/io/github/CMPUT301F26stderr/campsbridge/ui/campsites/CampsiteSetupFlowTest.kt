@@ -160,6 +160,27 @@ class CampsiteSetupFlowTest {
         compose.runOnIdle { assertEquals(listOf(draft.id, draft.id), host.campsites.readIds) }
     }
 
+    /** The actual location child returns to one draft owner without changing label or zone. */
+    @Test fun locationChildReturnsToSameSavedDraft() {
+        start()
+        resumeDraft()
+        repeat(2) { compose.onNodeWithText("Next").performClick() }
+        compose
+            .onNodeWithText(
+                "Location label (optional)",
+            ).performTextReplacement("Keep this label")
+        compose.onNodeWithText("Choose location").performScrollTo().performClick()
+        compose.onNodeWithText("Choose campsite location").assertIsDisplayed()
+        compose.onNodeWithText("Use this location").performClick()
+        compose.onNodeWithText("Step 3 of 8").assertIsDisplayed()
+        compose.onNodeWithText("Keep this label").assertIsDisplayed()
+        compose.onNodeWithText("America/Edmonton").assertIsDisplayed()
+        compose.onNodeWithText("Choose location").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Step 3 of 8").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(1, host.campsiteSetupCreations) }
+    }
+
     /** Starts the real owner graph with controlled repositories.
      * @param picker Optional native picker result fixture.
      */

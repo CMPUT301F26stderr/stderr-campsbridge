@@ -1,5 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -8,12 +10,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.PhotoContentReader
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.rememberPhotoContentReader
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.rememberPhotoPicker
+import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocationPicker
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
@@ -25,7 +33,7 @@ import kotlinx.coroutines.launch
  * @param onExit Removes this parent after explicit exit.
  * @param onSaved Opens the actual saved identity after removing setup.
  * @param onOpenPolicy Opens the packaged refund child.
- * @param onChooseLocation Registered map child action, absent until its implementation lands.
+ * @param onChooseLocation Registered map child action; standalone content tests can omit it.
  * @param photoReader Native content adapter, controllable for interrupted-read tests.
  */
 @Composable
@@ -132,4 +140,47 @@ fun CampsiteSetupRoute(
         onOpenPolicy,
         onChooseLocation = onChooseLocation,
     )
+}
+
+/** Binds the restored setup parent to its location child without creating another draft owner.
+ * @param model Actual graph-owned setup model.
+ * @param onBack Returns to the setup steps without abandoning their draft.
+ */
+@Composable
+fun CampsiteLocationRoute(
+    model: CampsiteSetupViewModel,
+    onBack: () -> Unit,
+) {
+    val input by model.state.collectAsStateWithLifecycle()
+    val content = input as? CampsiteSetupUiState.Content
+    if (content != null) {
+        LocationPicker(
+            content.draft.location,
+            onApply = {
+                model.selectLocation(it)
+                onBack()
+            },
+            onCancel = onBack,
+        )
+    } else {
+        BackHandler(onBack = onBack)
+        AppScreen(stringResource(R.string.location_picker_title), onBack = onBack) {
+            when (input) {
+                CampsiteSetupUiState.Loading -> {
+                    LoadingContent()
+                }
+
+                CampsiteSetupUiState.Failure -> {
+                    FailureContent(
+                        stringResource(R.string.campsite_detail_failure),
+                        model::retry,
+                    )
+                }
+
+                else -> {
+                    Text(stringResource(R.string.campsite_unavailable))
+                }
+            }
+        }
+    }
 }

@@ -14,7 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
  * @param errors Current explicit validation feedback.
  * @param onLabel Local label edit.
  * @param onZone Local IANA zone edit.
- * @param onChoose Opens a registered map child, absent until its SDK integration lands.
+ * @param onChoose Opens a registered map child; isolated content can omit this action.
  */
 @Composable
 fun CampsiteLocationStep(
