@@ -228,6 +228,95 @@ class CampsiteDraftSaveFlowTest {
         }
     }
 
+    /** Publish owns the primary action and leaves no completed wizard in Back history. */
+    @Test fun publishWaitsForAcknowledgementAndOpensPublishedManagement() {
+        val gate = CompletableDeferred<Unit>()
+        host.campsites.publishHandler = { _, _ ->
+            gate.await()
+            host.campsites.records.value =
+                listOf(site.copy(publishedAt = Instant.parse("2027-05-01T12:00:00Z")))
+        }
+        start()
+        review()
+        compose.onNodeWithText("Publish").assertIsEnabled().performClick()
+        compose.onNodeWithText("Publish").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Publish").assertIsDisplayed()
+        compose.onNodeWithText("Save draft").assertIsNotEnabled()
+        compose.onNodeWithText("Cancel").assertIsNotEnabled()
+        compose.runOnIdle {
+            assertEquals(1, host.campsites.publishRequests.size)
+            gate.complete(Unit)
+        }
+        compose.onNodeWithText("Manage campsite").assertIsDisplayed()
+        compose.onNodeWithText("Published").assertIsDisplayed()
+        compose.onNodeWithText("Continue setup").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("My campsites").assertIsDisplayed()
+        compose.onNodeWithText("Step 8 of 8").assertDoesNotExist()
+    }
+
+    /** Unknown publication keeps the primary retry reachable and blocks all conflicting controls. */
+    @Test fun uncertainPublishKeepsRecoveryReachableWithoutDraftOrExitActions() {
+        host.campsites.publishHandler = { _, _ ->
+            host.campsites.readFailure = IOException("confirmation unavailable")
+            throw IOException("publish acknowledgement lost")
+        }
+        start()
+        review()
+        compose.onNodeWithText("Publish").performClick()
+        compose
+            .onNodeWithText("Publication is not confirmed. Retry before editing or leaving.")
+            .performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("Retry publish").assertIsEnabled()
+        compose.onNodeWithText("Save draft").assertIsNotEnabled()
+        compose.onNodeWithText("Cancel").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
+        compose
+            .onNodeWithText(
+                "Edit Introduce your campsite",
+            ).performScrollTo()
+            .assertIsNotEnabled()
+        compose.runOnIdle {
+            host.campsites.readFailure = null
+            host.campsites.records.value =
+                listOf(site.copy(publishedAt = Instant.parse("2027-05-01T12:00:00Z")))
+        }
+        compose.onNodeWithText("Retry publish").performClick()
+        compose.onNodeWithText("Manage campsite").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(1, host.campsites.publishRequests.size) }
+    }
+
+    /** A known draft failure allows editing with ordinary Next, then retries the Publish outcome. */
+    @Test fun failedPublicationCanEditAndRetryWithOrdinaryStepLabels() {
+        host.campsites.publishHandler = { _, _ -> throw IOException("not committed") }
+        start()
+        review()
+        compose.onNodeWithText("Publish").performClick()
+        compose.onNodeWithText("Retry publish").assertIsEnabled()
+        compose.onNodeWithText("Edit Introduce your campsite").performScrollTo().performClick()
+        compose.onNodeWithText("Next").assertIsDisplayed()
+        compose.onNodeWithText("Retry publish").assertDoesNotExist()
+        compose.onNodeWithText("Campsite name").performTextReplacement("Reviewed River")
+        compose.onNodeWithText("Next").performClick()
+        compose.runOnIdle {
+            host.campsites.updateHandler = { id, _, details ->
+                host.campsites.records.value = listOf(site.copy(id = id, details = details))
+            }
+            host.campsites.publishHandler = { _, _ ->
+                host.campsites.records.value =
+                    host.campsites.records.value.map {
+                        it.copy(publishedAt = Instant.parse("2027-05-01T12:00:00Z"))
+                    }
+            }
+        }
+        compose.onNodeWithText("Retry publish").performClick()
+        compose.onNodeWithText("Manage campsite").assertIsDisplayed()
+        compose.onNodeWithText("Reviewed River").assertIsDisplayed()
+        compose.onNodeWithText("Published").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(2, host.campsites.publishRequests.size) }
+    }
+
     /** Starts the real saved-draft parent with optional native selection fixture.
      * @param picker Controlled Activity Result owner for the native photo adapter.
      */

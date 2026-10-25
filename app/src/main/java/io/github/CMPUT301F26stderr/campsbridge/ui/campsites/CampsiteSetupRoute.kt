@@ -141,6 +141,7 @@ fun CampsiteSetupRoute(
         onChooseLocation = onChooseLocation,
         onSaveDraft = model::saveDraft,
         onRetrySave = model::retrySave,
+        onPublish = model::publish,
     )
 }
 

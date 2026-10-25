@@ -79,17 +79,32 @@ class CampsiteSetupViewModel(
         beginSave(retrying = false)
     }
 
+    /** Publishes valid reviewed input only after all requested details/photo/night stages succeed. */
+    fun publish() {
+        beginSave(retrying = false, action = CampsiteSaveAction.PUBLISH)
+    }
+
     /** Reconciles the same target before retrying an explicitly failed save. */
     fun retrySave() {
-        if (content()?.saveFailure != null) beginSave(retrying = true)
+        content()?.takeIf { it.saveFailure != null }?.let {
+            beginSave(retrying = true, action = it.saveAction)
+        }
     }
 
     /** Freezes valid review input and its identity before starting the named save stages.
      * @param retrying Whether the action is reconciling an earlier failed attempt.
+     * @param action Requested draft or published outcome, retained through explicit retry.
      */
-    private fun beginSave(retrying: Boolean) {
+    private fun beginSave(
+        retrying: Boolean,
+        action: CampsiteSaveAction = CampsiteSaveAction.DRAFT,
+    ) {
         val current = content()?.takeIf { it.savePhase == CampsiteSavePhase.IDLE } ?: return
-        if (current.draft.step != CampsiteStep.REVIEW || current.discardPrompt) return
+        if (current.draft.step != CampsiteStep.REVIEW || current.discardPrompt ||
+            (current.publicationPending && !retrying)
+        ) {
+            return
+        }
         val validated = validateCampsiteDetails(current.draft)
         if (validated is CampsiteDetailsInput.Errors) {
             publish(current.copy(errors = validated))
@@ -111,7 +126,7 @@ class CampsiteSetupViewModel(
                 }
             }
         if (blocked != null) {
-            publish(current.copy(saveFailure = blocked))
+            publish(current.copy(saveFailure = blocked, saveAction = action))
             return
         }
         val details = (validated as CampsiteDetailsInput.Value).details
@@ -127,25 +142,36 @@ class CampsiteSetupViewModel(
                         CampsiteSavePhase.SAVING_DETAILS
                     },
                 saveFailure = null,
+                saveAction = action,
             ),
         )
-        viewModelScope.launch { saveDraftStages(id, details, current.photoIntent) }
+        viewModelScope.launch { saveDraftStages(id, details, current.photoIntent, action) }
     }
 
     /** Reconciles the same server target, saves details/photo, then applies requested inventory work.
      * @param id Retained identity, allocated before any suspension.
      * @param details Frozen valid listing values.
      * @param photo Frozen local attachment intent.
+     * @param action Requested final draft or published outcome.
      */
     private suspend fun saveDraftStages(
         id: String,
         details: CampsiteDetails,
         photo: CampsitePhotoIntent,
+        action: CampsiteSaveAction,
     ) {
         var failedStage = CampsiteSaveFailure.RECOVERY
         try {
             val existing = campsites.get(id)
             currentCoroutineContext().ensureActive()
+            if (content()?.publicationPending == true && (
+                    existing == null ||
+                        existing.id != id || existing.ownerId != ownerId || existing.removal != null
+                )
+            ) {
+                publicationUnavailable()
+                return
+            }
             check(existing != null || (campsiteId == null && confirmedSite == null)) {
                 "Saved target no longer exists"
             }
@@ -159,6 +185,9 @@ class CampsiteSetupViewModel(
             if (saved.isPublished) {
                 completeSave(saved.id)
                 return
+            }
+            content()?.takeIf { it.publicationPending }?.let {
+                publish(it.copy(publicationPending = false))
             }
             confirmedSite = saved
             if (saved.details != details) {
@@ -188,18 +217,78 @@ class CampsiteSetupViewModel(
                 check(calendar.save()) { "Requested inventory needs explicit retry" }
                 reflectAvailability(calendar.state.value)
             }
+            if (action == CampsiteSaveAction.PUBLISH) {
+                failedStage = CampsiteSaveFailure.PUBLICATION
+                content()?.let {
+                    publish(
+                        it.copy(
+                            savePhase = CampsiteSavePhase.PUBLISHING,
+                            publicationPending = true,
+                        ),
+                    )
+                }
+                campsites.publish(id, ownerId)
+            }
             currentCoroutineContext().ensureActive()
             completeSave(id)
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
             currentCoroutineContext().ensureActive()
+            if (failedStage == CampsiteSaveFailure.PUBLICATION) {
+                recoverPublication(id)
+            } else {
+                content()?.let {
+                    publish(it.copy(savePhase = CampsiteSavePhase.IDLE, saveFailure = failedStage))
+                }
+            }
+        }
+    }
+
+    /** Resolves an uncertain publish from the server before allowing edits or reporting completion.
+     * @param id Same saved target whose publication acknowledgement was lost.
+     */
+    private suspend fun recoverPublication(id: String) {
+        content()?.let { publish(it.copy(savePhase = CampsiteSavePhase.RECOVERING)) }
+        try {
+            val confirmed = campsites.get(id)
+            currentCoroutineContext().ensureActive()
+            if (confirmed == null || confirmed.ownerId != ownerId ||
+                confirmed.id != id || confirmed.removal != null
+            ) {
+                publicationUnavailable()
+                return
+            }
+            if (confirmed.isPublished) {
+                completeSave(id)
+            } else {
+                publish(
+                    checkNotNull(content()).copy(
+                        savePhase = CampsiteSavePhase.IDLE,
+                        saveFailure = CampsiteSaveFailure.PUBLICATION,
+                        publicationPending = false,
+                    ),
+                )
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            currentCoroutineContext().ensureActive()
             content()?.let {
                 publish(
-                    it.copy(savePhase = CampsiteSavePhase.IDLE, saveFailure = failedStage),
+                    it.copy(
+                        savePhase = CampsiteSavePhase.IDLE,
+                        saveFailure = CampsiteSaveFailure.RECOVERY,
+                    ),
                 )
             }
         }
+    }
+
+    /** Releases only publication uncertainty after the server confirms an unavailable target. */
+    private fun publicationUnavailable() {
+        savedState["${SETUP_KEY}publishing"] = false
+        mutableState.value = CampsiteSetupUiState.Unavailable
     }
 
     /** Uses the shared slot owner for explicit publication/removal and its recovery state.
@@ -250,7 +339,15 @@ class CampsiteSetupViewModel(
      */
     private fun completeSave(id: String) {
         savedState.remove<Boolean>("${SETUP_KEY}attempt")
-        content()?.let { publish(it.copy(savePhase = CampsiteSavePhase.IDLE, saveFailure = null)) }
+        content()?.let {
+            publish(
+                it.copy(
+                    savePhase = CampsiteSavePhase.IDLE,
+                    saveFailure = null,
+                    publicationPending = false,
+                ),
+            )
+        }
         savedState["${SETUP_KEY}completion"] = id
         mutableCompletion.value = id
     }
@@ -403,8 +500,10 @@ class CampsiteSetupViewModel(
 
     /** Requests exit, asking before abandoning changed input or staged photo intent. */
     fun requestExit() {
+        if (savedState.get<Boolean>("${SETUP_KEY}publishing") == true) return
         if ((state.value as? CampsiteSetupUiState.Content)?.let {
-                it.savePhase != CampsiteSavePhase.IDLE || it.photoNeedsRecovery
+                it.savePhase != CampsiteSavePhase.IDLE || it.photoNeedsRecovery ||
+                    it.publicationPending
             } == true
         ) {
             return
@@ -517,7 +616,11 @@ class CampsiteSetupViewModel(
 
     /** Retries only a failed existing-target lookup. */
     fun retry() {
-        if (state.value == CampsiteSetupUiState.Failure) load()
+        if (state.value == CampsiteSetupUiState.Failure ||
+            state.value == CampsiteSetupUiState.PublicationRecovery(isLoading = false)
+        ) {
+            load()
+        }
     }
 
     /** Retries only failed visible-month inventory, retaining form input. */
@@ -555,7 +658,10 @@ class CampsiteSetupViewModel(
 
     /** Returns editable input only while no navigation result is awaiting consumption. */
     private fun editable(): CampsiteSetupUiState.Content? =
-        content()?.takeIf { it.savePhase == CampsiteSavePhase.IDLE && !it.photoNeedsRecovery }
+        content()?.takeIf {
+            it.savePhase == CampsiteSavePhase.IDLE && !it.photoNeedsRecovery &&
+                !it.publicationPending
+        }
 
     /** Returns displayable content, including a guarded in-flight operation. */
     private fun content(): CampsiteSetupUiState.Content? =
@@ -579,7 +685,12 @@ class CampsiteSetupViewModel(
         availabilityObservation?.cancel()
         availability?.close()
         availability = null
-        mutableState.value = CampsiteSetupUiState.Loading
+        mutableState.value =
+            if (savedState.get<Boolean>("${SETUP_KEY}publishing") == true) {
+                CampsiteSetupUiState.PublicationRecovery(isLoading = true)
+            } else {
+                CampsiteSetupUiState.Loading
+            }
         readJob?.cancel()
         readJob =
             viewModelScope.launch {
@@ -597,7 +708,7 @@ class CampsiteSetupViewModel(
                             )
                         )
                     ) {
-                        mutableState.value = CampsiteSetupUiState.Unavailable
+                        publicationUnavailable()
                         return@launch
                     }
                     if (site?.isPublished == true) {
@@ -646,6 +757,12 @@ class CampsiteSetupViewModel(
                             month = calendar.month,
                             inventory = calendar.inventory,
                             availabilityComparisonPending = calendar.pendingEdits == null,
+                            saveAction =
+                                CampsiteSaveAction.entries.find {
+                                    it.name == savedState.get<String>("${SETUP_KEY}action")
+                                } ?: CampsiteSaveAction.DRAFT,
+                            publicationPending =
+                                savedState.get<Boolean>("${SETUP_KEY}publishing") == true,
                             photoIntent =
                                 if (photo ==
                                     "remove"
@@ -672,7 +789,12 @@ class CampsiteSetupViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
-                    mutableState.value = CampsiteSetupUiState.Failure
+                    mutableState.value =
+                        if (savedState.get<Boolean>("${SETUP_KEY}publishing") == true) {
+                            CampsiteSetupUiState.PublicationRecovery(isLoading = false)
+                        } else {
+                            CampsiteSetupUiState.Failure
+                        }
                 }
             }
     }
@@ -746,6 +868,8 @@ class CampsiteSetupViewModel(
      */
     private fun publish(content: CampsiteSetupUiState.Content) {
         val draft = content.draft
+        savedState["${SETUP_KEY}action"] = content.saveAction.name
+        savedState["${SETUP_KEY}publishing"] = content.publicationPending
         savedState["${SETUP_KEY}present"] = true
         savedState["${SETUP_KEY}changed"] = hasChanges(content)
         savedState["${SETUP_KEY}id"] = draft.id

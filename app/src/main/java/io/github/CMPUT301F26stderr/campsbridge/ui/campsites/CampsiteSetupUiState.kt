@@ -38,8 +38,18 @@ sealed interface CampsitePhotoIntent {
     ) : CampsitePhotoIntent
 }
 
-/** Explicit lead-owned save stages; inventory/publication arrive with their real consumers. */
-enum class CampsiteSavePhase { IDLE, RECOVERING, SAVING_DETAILS, SAVING_PHOTO, SAVING_AVAILABILITY }
+/** Explicit save stages retain progress and block conflicting input until the outcome is known. */
+enum class CampsiteSavePhase {
+    IDLE,
+    RECOVERING,
+    SAVING_DETAILS,
+    SAVING_PHOTO,
+    SAVING_AVAILABILITY,
+    PUBLISHING,
+}
+
+/** Identifies the requested outcome and the footer action that owns progress/retry. */
+enum class CampsiteSaveAction { DRAFT, PUBLISH }
 
 /** Recoverable action feedback, distinct from initial saved-target loading. */
 enum class CampsiteSaveFailure {
@@ -49,10 +59,18 @@ enum class CampsiteSaveFailure {
     PHOTO_RESELECTION,
     AVAILABILITY_PENDING,
     AVAILABILITY,
+    PUBLICATION,
 }
 
 /** Saved-target loading, editable input and explicit save outcomes. */
 sealed interface CampsiteSetupUiState {
+    /** Restores a possibly published target before permitting ordinary editing or abandonment.
+     * @param isLoading Whether the authoritative target read is active rather than failed.
+     */
+    data class PublicationRecovery(
+        val isLoading: Boolean,
+    ) : CampsiteSetupUiState
+
     /** Protects restored dirty input while its initial authoritative read is unresolved.
      * @param previous Loading/failure state restored when the confirmation is dismissed.
      */
@@ -83,6 +101,8 @@ sealed interface CampsiteSetupUiState {
      * @param saveFailure Last failed/pending stage, retaining the raw draft and confirmed work.
      * @param photoRemovalPending Whether an attempted removal still needs acknowledgement.
      * @param availabilityComparisonPending Whether requested date differences await F08 integration.
+     * @param saveAction Frozen requested outcome, retained for an explicit retry.
+     * @param publicationPending Whether server confirmation is required before editing or leaving.
      */
     data class Content(
         val draft: CampsiteDraft,
@@ -98,6 +118,8 @@ sealed interface CampsiteSetupUiState {
         val saveFailure: CampsiteSaveFailure? = null,
         val photoRemovalPending: Boolean = false,
         val availabilityComparisonPending: Boolean = true,
+        val saveAction: CampsiteSaveAction = CampsiteSaveAction.DRAFT,
+        val publicationPending: Boolean = false,
     ) : CampsiteSetupUiState {
         /** An unresolved attachment mutation must be retried before changing input or leaving. */
         val photoNeedsRecovery: Boolean

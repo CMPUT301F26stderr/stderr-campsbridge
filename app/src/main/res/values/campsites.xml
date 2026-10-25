@@ -60,9 +60,12 @@
     <string name="campsite_saved_availability">Existing availability is retained. Review the calendar for each month.</string>
     <string name="campsite_no_optional_value">None</string>
     <string name="campsite_review_incomplete">Some required fields need attention.</string>
-    <string name="campsite_publish_pending">Publishing is pending in this build.</string>
     <string name="campsite_date_save_pending">Saving date changes is pending in this build. Your date choices are retained.</string>
     <string name="campsite_retry_save">Retry save</string>
+    <string name="campsite_retry_publish">Retry publish</string>
+    <string name="campsite_publishing">Publishing campsite…</string>
+    <string name="campsite_publication_failure">Could not publish the campsite. Your saved draft is retained.</string>
+    <string name="campsite_publication_recovery">Publication is not confirmed. Retry before editing or leaving.</string>
     <string name="campsite_checking_save">Checking the previous save…</string>
     <string name="campsite_saving_details">Saving campsite details…</string>
     <string name="campsite_saving_photo">Saving the photo…</string>

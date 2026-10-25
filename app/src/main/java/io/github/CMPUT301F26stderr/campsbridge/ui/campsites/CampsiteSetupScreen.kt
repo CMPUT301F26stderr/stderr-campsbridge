@@ -65,6 +65,7 @@ import java.time.YearMonth
  * @param onChooseLocation Registered map child action; isolated content can omit it.
  * @param onSaveDraft Explicit valid-review save; absent integrations keep the action disabled.
  * @param onRetrySave Explicit retry of the retained target after a failed save.
+ * @param onPublish Explicit publication after all requested stages; absent consumers disable it.
  */
 @Composable
 fun CampsiteSetupScreen(
@@ -97,12 +98,34 @@ fun CampsiteSetupScreen(
     onChooseLocation: (() -> Unit)? = null,
     onSaveDraft: (() -> Unit)? = null,
     onRetrySave: (() -> Unit)? = null,
+    onPublish: (() -> Unit)? = null,
 ) {
-    BackHandler { if (state is CampsiteSetupUiState.Content) onBack() else onCancel() }
+    BackHandler {
+        if (state !is CampsiteSetupUiState.PublicationRecovery) {
+            if (state is CampsiteSetupUiState.Content) onBack() else onCancel()
+        }
+    }
     if (state !is CampsiteSetupUiState.Content) {
         val visible = (state as? CampsiteSetupUiState.ConfirmDiscard)?.previous ?: state
-        AppScreen(stringResource(R.string.campsite_setup_title), modifier, onBack = onCancel) {
+        AppScreen(
+            stringResource(R.string.campsite_setup_title),
+            modifier,
+            onBack = onCancel,
+            backEnabled = visible !is CampsiteSetupUiState.PublicationRecovery,
+        ) {
             when (visible) {
+                is CampsiteSetupUiState.PublicationRecovery -> {
+                    Text(stringResource(R.string.campsite_publication_recovery))
+                    if (visible.isLoading) {
+                        LoadingContent()
+                    } else {
+                        FailureContent(
+                            stringResource(R.string.campsite_save_recovery_failure),
+                            onRetry,
+                        )
+                    }
+                }
+
                 CampsiteSetupUiState.Loading -> {
                     LoadingContent()
                 }
@@ -133,9 +156,12 @@ fun CampsiteSetupScreen(
     val draft = state.draft
     val review = draft.step == CampsiteStep.REVIEW
     val submitting = state.savePhase != CampsiteSavePhase.IDLE
-    val canEdit = !submitting && !state.photoNeedsRecovery
+    val canEdit = !submitting && !state.photoNeedsRecovery && !state.publicationPending
     val retrying = state.saveFailure != null
-    val saveAction = if (retrying) onRetrySave else onSaveDraft
+    val retryPublication = review && retrying && state.saveAction == CampsiteSaveAction.PUBLISH
+    val retryDraft = review && retrying && state.saveAction == CampsiteSaveAction.DRAFT
+    val saveAction = if (retryDraft) onRetrySave else onSaveDraft
+    val publishAction = if (retryPublication) onRetrySave else onPublish
     val canSave =
         validateCampsiteDetails(draft) is CampsiteDetailsInput.Value &&
             !state.photoReselectionRequired &&
@@ -144,25 +170,39 @@ fun CampsiteSetupScreen(
         title = stringResource(R.string.campsite_setup_title),
         progress = stringResource(R.string.campsite_setup_step, draft.step.ordinal + 1, 8),
         onBack = onBack,
-        onNext = onNext,
+        onNext = { if (review) publishAction?.invoke() else onNext() },
         modifier = modifier,
-        nextEnabled = !review && canEdit,
+        nextEnabled = if (review) canSave && publishAction != null else canEdit,
         isSubmitting = submitting,
-        exitEnabled = !state.photoNeedsRecovery,
-        nextLabel = stringResource(if (review) R.string.publish else R.string.next),
+        exitEnabled = !state.photoNeedsRecovery && !state.publicationPending,
+        nextLabel =
+            stringResource(
+                when {
+                    retryPublication -> R.string.campsite_retry_publish
+                    review -> R.string.publish
+                    else -> R.string.next
+                },
+            ),
         steps = StepProgress(draft.step.ordinal + 1, 8),
         onCancel = onCancel,
         secondaryLabel =
             if (review) {
                 stringResource(
-                    if (retrying) R.string.campsite_retry_save else R.string.save_draft,
+                    if (retryDraft) R.string.campsite_retry_save else R.string.save_draft,
                 )
             } else {
                 null
             },
         onSecondaryAction = if (review) ({ saveAction?.invoke() }) else null,
-        secondaryEnabled = canSave && saveAction != null,
-        submittingAction = StepAction.SECONDARY,
+        secondaryEnabled =
+            canSave && saveAction != null && !state.publicationPending &&
+                !(state.photoNeedsRecovery && state.saveAction == CampsiteSaveAction.PUBLISH),
+        submittingAction =
+            if (state.saveAction == CampsiteSaveAction.PUBLISH) {
+                StepAction.PRIMARY
+            } else {
+                StepAction.SECONDARY
+            },
         onSkip =
             if (draft.step == CampsiteStep.PHOTO) {
                 (
@@ -235,6 +275,10 @@ fun CampsiteSetupScreen(
                     Text(
                         stringResource(
                             when (state.savePhase) {
+                                CampsiteSavePhase.PUBLISHING -> {
+                                    R.string.campsite_publishing
+                                }
+
                                 CampsiteSavePhase.RECOVERING -> {
                                     R.string.campsite_checking_save
                                 }
@@ -257,7 +301,9 @@ fun CampsiteSetupScreen(
                     InlineNotice(
                         stringResource(R.string.campsite_save_failure_title),
                         stringResource(
-                            if (state.photoNeedsRecovery) {
+                            if (state.publicationPending) {
+                                R.string.campsite_publication_recovery
+                            } else if (state.photoNeedsRecovery) {
                                 R.string.campsite_photo_recovery
                             } else {
                                 when (state.saveFailure) {
@@ -281,6 +327,10 @@ fun CampsiteSetupScreen(
                                         R.string.campsite_availability_save_failure
                                     }
 
+                                    CampsiteSaveFailure.PUBLICATION -> {
+                                        R.string.campsite_publication_failure
+                                    }
+
                                     CampsiteSaveFailure.AVAILABILITY_PENDING -> {
                                         R.string.campsite_date_save_pending
                                     }
@@ -302,7 +352,6 @@ fun CampsiteSetupScreen(
                     Text(stringResource(R.string.campsite_date_save_pending))
                 }
                 CampsiteReviewStep(draft, state.photoIntent, onEdit, editingEnabled = canEdit)
-                Text(stringResource(R.string.campsite_publish_pending))
             }
         }
     }
@@ -377,6 +426,19 @@ internal class CampsiteSetupPreviewStates : PreviewParameterProvider<CampsiteSet
             sequenceOf(
                 steps.last().copy(savePhase = CampsiteSavePhase.SAVING_DETAILS),
                 steps.last().copy(savePhase = CampsiteSavePhase.SAVING_PHOTO),
+                steps.last().copy(
+                    saveAction = CampsiteSaveAction.PUBLISH,
+                    savePhase = CampsiteSavePhase.PUBLISHING,
+                ),
+                steps.last().copy(
+                    saveAction = CampsiteSaveAction.PUBLISH,
+                    saveFailure = CampsiteSaveFailure.PUBLICATION,
+                ),
+                steps.last().copy(
+                    saveAction = CampsiteSaveAction.PUBLISH,
+                    saveFailure = CampsiteSaveFailure.RECOVERY,
+                    publicationPending = true,
+                ),
                 steps.last().copy(saveFailure = CampsiteSaveFailure.DETAILS),
                 steps.last().copy(photoReselectionRequired = true),
                 steps.last().copy(
@@ -428,6 +490,7 @@ private fun SetupPreviewContent(state: CampsiteSetupUiState) {
             onChooseLocation = {},
             onSaveDraft = {},
             onRetrySave = {},
+            onPublish = {},
         )
     }
 }
@@ -475,4 +538,11 @@ private fun InvalidSetupPreview() {
             month = YearMonth.of(2027, 5),
         ),
     )
+}
+
+/** Failed restored publication keeps recovery reachable without ordinary abandonment. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Composable
+private fun PublicationRecoveryPreview() {
+    SetupPreviewContent(CampsiteSetupUiState.PublicationRecovery(isLoading = false))
 }

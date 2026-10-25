@@ -33,6 +33,8 @@ class FakeCampsiteRepository(
     val createRequests = mutableListOf<Triple<String, String, CampsiteDetails>>()
     val updateRequests = mutableListOf<Triple<String, String, CampsiteDetails>>()
     var offerHandler: (suspend (String, String, Set<LocalDate>, Boolean) -> Unit)? = null
+    var publishHandler: (suspend (String, String) -> Unit)? = null
+    val publishRequests = mutableListOf<Pair<String, String>>()
     val offerRequests = mutableListOf<OfferRequest>()
     val calendarNights = MutableStateFlow<List<CalendarNight>>(emptyList())
     val calendarFailure = MutableStateFlow<Exception?>(null)
@@ -161,7 +163,11 @@ class FakeCampsiteRepository(
         ownerId: String,
     ) {
         writeCalls++
-        error("Configure a write outcome before testing publication")
+        publishRequests.add(id to ownerId)
+        checkNotNull(publishHandler) { "Configure a write outcome before testing publication" }(
+            id,
+            ownerId,
+        )
     }
 
     /** Rejects unconfigured inventory changes.
