@@ -14,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -24,6 +25,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
@@ -41,8 +43,14 @@ class TestAppHost : AutoCloseable {
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
     val campsites = FakeCampsiteRepository()
+    val lotteries = FakeLotteryRepository()
     val reviews = FakeReviewRepository()
     val campsiteOwners = FakeAccountRepository(sampleAccount())
+    var newLotteryId: () -> String = {
+        java.util.UUID
+            .randomUUID()
+            .toString()
+    }
     var lotterySetupCreations = 0
     var validateLotteryWindows: LotteryWindowValidator? = null
     var exploreCreations = 0
@@ -176,16 +184,30 @@ class TestAppHost : AutoCloseable {
                         )
                     }
                 }
-            }, { id ->
+            }, { ownerId, id ->
                 viewModelFactory {
                     initializer {
                         lotterySetupCreations++
                         LotterySetupViewModel(
-                            id,
+                            ownerId,
                             campsites,
+                            lotteries,
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                             createSavedStateHandle(),
                             validateLotteryWindows,
+                            lotteryId = id,
+                            newId = newLotteryId,
+                        )
+                    }
+                }
+            }, { ownerId, id ->
+                viewModelFactory {
+                    initializer {
+                        LotteryDetailViewModel(
+                            ownerId,
+                            id,
+                            lotteries,
+                            campsites,
                         )
                     }
                 }

@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.resolveDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
@@ -14,6 +17,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowI
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -26,9 +31,12 @@ import java.time.ZoneId
 
 private const val SETUP_KEY = "lotterySetup."
 
-/** Owns local six-step input and the single-site allocation child.
+/** Owns six-step input, its allocation child and explicit same-ID save/recovery operations.
  * @param ownerId Confirmed owner identity used to scope campsite choices.
  * @param campsites Existing published-choice and inventory source.
+ * @param lotteries Server reads and explicit lottery mutations.
+ * @param lotteryId Existing target, or null for a new local form.
+ * @param newId Stable identity allocator used only by a valid explicit save.
  * @param clock Initial month in the selected site's zone.
  * @param savedState Primitive input retained across graph recreation.
  * @param validateWindows Reserved F13 contract; null keeps configuration validation pending.
@@ -36,14 +44,70 @@ private const val SETUP_KEY = "lotterySetup."
 class LotterySetupViewModel(
     private val ownerId: String,
     private val campsites: CampsiteRepository,
+    private val lotteries: LotteryRepository,
     private val clock: Clock,
     private val savedState: SavedStateHandle,
     private val validateWindows: LotteryWindowValidator? = null,
+    private val lotteryId: String? = null,
+    private val newId: () -> String = {
+        java.util.UUID
+            .randomUUID()
+            .toString()
+    },
 ) : ViewModel() {
+    private val retainedInput = savedState.contains("${SETUP_KEY}title")
+    private val writer = LotteryDraftWriter(lotteries)
+    private var baseline = LotteryDraft()
+    private var pendingConfiguration: LotteryConfiguration? = null
+    private var readJob: Job? = null
     private val mutableState = MutableStateFlow(restoredState())
     val state = mutableState.asStateFlow()
     private val mutableExit = MutableStateFlow(savedState.get<Boolean>("${SETUP_KEY}exit") == true)
     val exitRequested = mutableExit.asStateFlow()
+
+    private val mutableCompletion =
+        MutableStateFlow(savedState.get<String>("${SETUP_KEY}completion"))
+    val completion = mutableCompletion.asStateFlow()
+
+    /** Consumes a successful navigation handoff after its graph has been removed. */
+    fun acknowledgeCompletion() {
+        if (completion.value == null) return
+        savedState["${SETUP_KEY}finished"] = true
+        savedState.remove<String>("${SETUP_KEY}completion")
+        mutableCompletion.value = null
+    }
+
+    /** Starts an explicit reviewed draft save. */
+    fun saveDraft() =
+        beginSave(LotterySaveAction.DRAFT)
+
+    /** Starts an explicit reviewed publication after its future-opening check. */
+    fun publishLottery() =
+        beginSave(LotterySaveAction.PUBLISH)
+
+    /** Retries the retained action or resolves an uncertain publication without extra writes. */
+    fun retrySave() {
+        if (isBusy() || completion.value != null || exitRequested.value ||
+            savedState.get<Boolean>("${SETUP_KEY}finished") == true
+        ) {
+            return
+        }
+        val current = state.value
+        if (current.publicationPending) {
+            recoverPublication()
+        } else if (current.saveFailure != null) {
+            current.saveAction?.let(::beginSave)
+        }
+    }
+
+    /** Retries a failed saved-target read without replacing retained local input. */
+    fun retryLoad() {
+        if (state.value.targetLoad == LotteryTargetLoad.FAILURE && !isBusy() &&
+            !state.value.publicationPending && completion.value == null && !exitRequested.value
+        ) {
+            loadTarget()
+        }
+    }
 
     /** Supplies the selected site's clock month for a native schedule picker with no prior date. */
     fun currentScheduleMonth(): YearMonth? =
@@ -56,7 +120,11 @@ class LotterySetupViewModel(
     private var calendarRange: Triple<String, LocalDate, LocalDate>? = null
 
     init {
-        if (!exitRequested.value) observeChoices()
+        if (!exitRequested.value && completion.value == null &&
+            savedState.get<Boolean>("${SETUP_KEY}finished") != true
+        ) {
+            if (state.value.draft.id == null) observeChoices() else loadTarget()
+        }
     }
 
     /** Updates only local title spelling.
@@ -77,7 +145,16 @@ class LotterySetupViewModel(
     fun chooseCampsite(id: String) {
         if (!canEdit() || state.value.draft.step != LotteryStep.SITE) return
         if (choices().none { it.id == id } || state.value.draft.campsiteId == id) return
-        editDraft { it.copy(campsiteId = id, nights = emptySet()) }
+        val pending = pendingConfiguration
+        editDraft {
+            val changed = it.copy(campsiteId = id, nights = emptySet())
+            if (pending != null && it.schedule.isEmpty()) {
+                withSchedule(changed, pending, choices().first { site -> site.id == id })
+            } else {
+                changed
+            }
+        }
+        pendingConfiguration = null
     }
 
     /** Updates one explicit local date.
@@ -202,6 +279,11 @@ class LotterySetupViewModel(
         val current = state.value
         if (current.allocation != null) {
             cancelAllocation()
+            return
+        }
+        if (isLocked()) return
+        if (current.targetLoad != LotteryTargetLoad.READY) {
+            requestExit()
             return
         }
         if (!canEdit()) return
@@ -330,7 +412,7 @@ class LotterySetupViewModel(
 
     /** Retries failed owner-choice observation without replacing raw form input. */
     fun retryChoices() {
-        if (!exitRequested.value &&
+        if (!isLocked() &&
             state.value.choices == LotteryCampsiteChoices.Failure
         ) {
             observeChoices()
@@ -347,22 +429,21 @@ class LotterySetupViewModel(
 
     /** Requests exit, confirming abandonment only when local input changed. */
     fun requestExit() {
-        if (exitRequested.value) return
-        val draft = state.value.draft
-        val changed =
-            draft.title.isNotEmpty() || draft.description.isNotEmpty() ||
-                draft.campsiteId != null || draft.schedule.isNotEmpty() ||
-                draft.maximumWinnersText.isNotEmpty()
+        if (isLocked()) return
+        val changed = normalized(state.value.draft) != normalized(baseline)
         if (changed) publish(state.value.copy(discardPrompt = true)) else confirmDiscard()
     }
 
     /** Keeps local input after declining abandonment. */
     fun dismissDiscard() {
+        if (isLocked()) return
         publish(state.value.copy(discardPrompt = false))
     }
 
     /** Discards this local draft and signals its registered caller to return. */
     fun confirmDiscard() {
+        if (isLocked()) return
+        readJob?.cancel()
         choiceVersion++
         choiceJob?.cancel()
         stopCalendar()
@@ -377,6 +458,249 @@ class LotterySetupViewModel(
         mutableExit.value = true
         mutableState.value = LotterySetupUiState()
     }
+
+    /** Freezes valid reviewed input and retains its identity/action before launching any work.
+     * @param action Requested draft save or publication; retry preserves the previous choice.
+     */
+    private fun beginSave(action: LotterySaveAction) {
+        if (!canEdit() || state.value.draft.step != LotteryStep.REVIEW) return
+        val current = reviewed(state.value)
+        val configuration = current.configuration
+        if (configuration == null) {
+            publish(current)
+            return
+        }
+        if (action == LotterySaveAction.PUBLISH &&
+            configuration.registrationOpensAt <= clock.instant()
+        ) {
+            publish(current.copy(publicationTooLate = true))
+            return
+        }
+        val id = current.draft.id ?: newId().also { savedState["${SETUP_KEY}allowCreate"] = true }
+        val draft = current.draft.copy(id = id)
+        val request =
+            LotterySaveRequest(
+                id,
+                ownerId,
+                draft.title,
+                draft.description,
+                configuration,
+                LotteryOffer(checkNotNull(draft.campsiteId), draft.nights.sorted()),
+                allowCreate = savedState.get<Boolean>("${SETUP_KEY}allowCreate") == true,
+                action = action,
+            )
+        publish(
+            current.copy(
+                draft = draft,
+                savePhase = LotterySavePhase.RECOVERING,
+                saveFailure = null,
+                saveAction = action,
+                publicationTooLate = false,
+            ),
+        )
+        viewModelScope.launch { finishSave(writer.save(request, ::savePhase)) }
+    }
+
+    /** Retains the publication marker before the writer calls its potentially unacknowledged write.
+     * @param phase Actual writer stage.
+     */
+    private fun savePhase(phase: LotterySavePhase) {
+        if (phase == LotterySavePhase.SAVING_OFFER) savedState["${SETUP_KEY}allowCreate"] = false
+        publish(
+            state.value.copy(
+                savePhase = phase,
+                publicationPending =
+                    state.value.publicationPending || phase == LotterySavePhase.PUBLISHING,
+            ),
+        )
+    }
+
+    /**
+     * Resolves only the previous publication using identity, without reconstructing validated
+     * input.
+     */
+    private fun recoverPublication() {
+        val id = state.value.draft.id ?: return
+        publish(state.value.copy(savePhase = LotterySavePhase.RECOVERING, saveFailure = null))
+        viewModelScope.launch {
+            val result = writer.recoverPublication(id, ownerId, ::savePhase)
+            finishSave(result)
+            if (result is LotterySaveResult.Failed && !result.publicationUncertain) {
+                publish(reviewed(state.value.copy(targetLoad = LotteryTargetLoad.READY)))
+                if (choiceJob == null) observeChoices()
+            }
+        }
+    }
+
+    /**
+     * Applies an acknowledged result without losing input or confusing source failures with save
+     * failures.
+     * @param result Actual writer or read-only publication-recovery outcome.
+     */
+    private fun finishSave(result: LotterySaveResult) {
+        when (result) {
+            is LotterySaveResult.Saved -> {
+                complete(result.id)
+            }
+
+            is LotterySaveResult.Published -> {
+                complete(result.id)
+            }
+
+            is LotterySaveResult.Failed -> {
+                publish(
+                    state.value.copy(
+                        savePhase = LotterySavePhase.IDLE,
+                        saveFailure = result,
+                        publicationPending = result.publicationUncertain,
+                    ),
+                )
+            }
+
+            LotterySaveResult.Unavailable -> {
+                publish(
+                    state.value.copy(
+                        savePhase = LotterySavePhase.IDLE,
+                        saveFailure = null,
+                        publicationPending = false,
+                        targetLoad = LotteryTargetLoad.UNAVAILABLE,
+                    ),
+                )
+            }
+        }
+    }
+
+    /** Retains navigation independently of loaded records, then retires all source observations.
+     * @param id Actual saved or already-published target.
+     */
+    private fun complete(id: String) {
+        savedState["${SETUP_KEY}completion"] = id
+        mutableCompletion.value = id
+        choiceVersion++
+        choiceJob?.cancel()
+        choiceJob = null
+        stopCalendar()
+        publish(state.value.copy(savePhase = LotterySavePhase.IDLE, publicationPending = false))
+    }
+
+    /** Server-reads an existing or interrupted target; restoration never repeats a mutation. */
+    private fun loadTarget() {
+        val id = state.value.draft.id ?: return
+        readJob?.cancel()
+        if (state.value.publicationPending) {
+            recoverPublication()
+            return
+        }
+        publish(state.value.copy(targetLoad = LotteryTargetLoad.LOADING))
+        readJob =
+            viewModelScope.launch {
+                when (val result = writer.read(id, ownerId)) {
+                    is LotteryDraftRead.Content -> {
+                        restoreContent(result)
+                    }
+
+                    is LotteryDraftRead.Published -> {
+                        complete(result.id)
+                    }
+
+                    LotteryDraftRead.Failed -> {
+                        publish(state.value.copy(targetLoad = LotteryTargetLoad.FAILURE))
+                    }
+
+                    LotteryDraftRead.Unavailable -> {
+                        publish(state.value.copy(targetLoad = LotteryTargetLoad.UNAVAILABLE))
+                    }
+
+                    LotteryDraftRead.Missing -> {
+                        val retryable =
+                            lotteryId == null &&
+                                savedState.get<Boolean>("${SETUP_KEY}allowCreate") == true
+                        publish(
+                            state.value.copy(
+                                targetLoad =
+                                    if (retryable) {
+                                        LotteryTargetLoad.READY
+                                    } else {
+                                        LotteryTargetLoad.UNAVAILABLE
+                                    },
+                            ),
+                        )
+                        if (retryable) observeChoices()
+                    }
+                }
+            }
+    }
+
+    /** Hydrates fresh server input or validates the identity behind retained edits.
+     * @param content Owned draft and every authoritative allocation.
+     */
+    private suspend fun restoreContent(content: LotteryDraftRead.Content) {
+        try {
+            val offer = content.offers.singleOrNull()
+            val site = offer?.let { campsites.get(it.campsiteId) }
+            currentCoroutineContext().ensureActive()
+            val record = content.lottery
+            var fresh =
+                LotteryDraft(
+                    id = record.id,
+                    step = LotteryStep.SITE,
+                    title = record.title,
+                    description = record.description,
+                    campsiteId = offer?.campsiteId,
+                    nights = offer?.nights?.toSet().orEmpty(),
+                    maximumWinnersText = record.configuration.winnerCount.toString(),
+                )
+            if (site != null && site.ownerId == ownerId) {
+                fresh =
+                    withSchedule(fresh, record.configuration, site).copy(step = LotteryStep.REVIEW)
+            }
+            baseline = fresh
+            val draft = if (retainedInput) state.value.draft else fresh
+            if (draft.schedule.isEmpty()) pendingConfiguration = record.configuration
+            savedState["${SETUP_KEY}allowCreate"] = false
+            publish(state.value.copy(draft = draft, targetLoad = LotteryTargetLoad.READY))
+            observeChoices()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            currentCoroutineContext().ensureActive()
+            publish(state.value.copy(targetLoad = LotteryTargetLoad.FAILURE))
+        }
+    }
+
+    /** Converts stored windows only in a real site's zone; no device-zone default is used.
+     * @param draft Input whose schedule has not yet been populated.
+     * @param configuration Confirmed stored windows and count.
+     * @param site Actual selected record providing the zone.
+     */
+    private fun withSchedule(
+        draft: LotteryDraft,
+        configuration: LotteryConfiguration,
+        site: Campsite,
+    ): LotteryDraft {
+        val instants =
+            listOf(
+                configuration.registrationOpensAt,
+                configuration.registrationClosesAt,
+                configuration.bookingOpensAt,
+                configuration.bookingClosesAt,
+            )
+        val zone = ZoneId.of(site.details.timeZone)
+        return draft.copy(
+            scheduleZone = site.details.timeZone,
+            schedule =
+                LotterySchedulePoint.entries.zip(instants).associate { (point, instant) ->
+                    val local = instant.atZone(zone)
+                    point to LotteryLocalDateTime(local.toLocalDate(), local.toLocalTime())
+                },
+        )
+    }
+
+    /** Compares editable facts without treating navigation or allocated identity as unsaved input.
+     * @param draft Current or server-baseline form.
+     */
+    private fun normalized(draft: LotteryDraft): LotteryDraft =
+        draft.copy(id = null, step = LotteryStep.BASICS, returnToReview = false)
 
     /**
      * Updates local input only when its parent form is active, invalidating any prior
@@ -421,8 +745,18 @@ class LotterySetupViewModel(
      * prompt.
      */
     private fun canEdit(): Boolean =
-        !exitRequested.value && !state.value.discardPrompt &&
-            state.value.allocation == null
+        !isLocked() && state.value.targetLoad == LotteryTargetLoad.READY &&
+            !state.value.discardPrompt && state.value.allocation == null
+
+    /** Returns whether an operation owns the form, including unresolved publication. */
+    private fun isLocked(): Boolean =
+        isBusy() || state.value.publicationPending || exitRequested.value ||
+            completion.value != null ||
+            savedState.get<Boolean>("${SETUP_KEY}finished") == true
+
+    /** Separates active progress from a failed operation that can be retried. */
+    private fun isBusy(): Boolean =
+        state.value.savePhase != LotterySavePhase.IDLE
 
     /** Returns only confirmed current choices; failure/loading is never an empty-source claim. */
     private fun choices(): List<Campsite> =
@@ -454,7 +788,11 @@ class LotterySetupViewModel(
             viewModelScope.launch {
                 try {
                     campsites.observeForOwner(ownerId).collect { records ->
-                        if (version != choiceVersion || exitRequested.value) return@collect
+                        if (version != choiceVersion || exitRequested.value ||
+                            completion.value != null
+                        ) {
+                            return@collect
+                        }
                         val eligible = records.filter { it.ownerId == ownerId && it.isPublished }
                         publish(
                             reviewed(
@@ -468,7 +806,11 @@ class LotterySetupViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
-                    if (version != choiceVersion || exitRequested.value) return@launch
+                    if (version != choiceVersion || exitRequested.value ||
+                        completion.value != null
+                    ) {
+                        return@launch
+                    }
                     stopCalendar()
                     publish(
                         state.value.copy(
@@ -683,6 +1025,9 @@ class LotterySetupViewModel(
     private fun publish(current: LotterySetupUiState) {
         mutableState.value = current
         val draft = current.draft
+        savedState["${SETUP_KEY}id"] = draft.id
+        savedState["${SETUP_KEY}saveAction"] = current.saveAction?.name
+        savedState["${SETUP_KEY}publicationPending"] = current.publicationPending
         savedState["${SETUP_KEY}step"] = draft.step.name
         savedState["${SETUP_KEY}title"] = draft.title
         savedState["${SETUP_KEY}description"] = draft.description
@@ -725,6 +1070,7 @@ class LotterySetupViewModel(
             }
         val draft =
             LotteryDraft(
+                id = savedState["${SETUP_KEY}id"] ?: lotteryId,
                 step =
                     LotteryStep.valueOf(
                         savedState["${SETUP_KEY}step"] ?: LotteryStep.BASICS.name,
@@ -747,7 +1093,26 @@ class LotterySetupViewModel(
             } else {
                 null
             }
-        return LotterySetupUiState(draft = draft, allocation = allocation)
+        val action =
+            savedState
+                .get<String>(
+                    "${SETUP_KEY}saveAction",
+                )?.let(LotterySaveAction::valueOf)
+        return LotterySetupUiState(
+            draft = draft,
+            allocation = allocation,
+            saveAction = action,
+            saveFailure = action?.let { LotterySaveResult.Failed(LotterySavePhase.RECOVERING) },
+            publicationPending = savedState["${SETUP_KEY}publicationPending"] ?: false,
+            targetLoad =
+                if (draft.id ==
+                    null
+                ) {
+                    LotteryTargetLoad.READY
+                } else {
+                    LotteryTargetLoad.LOADING
+                },
+        )
     }
 
     /** Decodes a saved primitive date set owned by this form.
@@ -770,6 +1135,7 @@ class LotterySetupViewModel(
         calendarVersion++
         choiceJob?.cancel()
         calendarJob?.cancel()
+        readJob?.cancel()
         super.onCleared()
     }
 }

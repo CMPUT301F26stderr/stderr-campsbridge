@@ -33,7 +33,8 @@ import java.util.Locale
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Local editor dependencies for a new/saved draft.
  * @param exploreFactory Discovery/filter dependencies for the current account.
- * @param lotterySetupFactory Local lottery-setup dependencies for the current owner.
+ * @param lotterySetupFactory New/saved lottery-setup dependencies for the current owner.
+ * @param lotteryDetailFactory Saved owner-reader dependencies.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -46,7 +47,8 @@ fun AppNavigation(
     campsiteSetupFactory: (String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String) -> ViewModelProvider.Factory,
     exploreFactory: ViewModelProvider.Factory,
-    lotterySetupFactory: ViewModelProvider.Factory,
+    lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
+    lotteryDetailFactory: (String) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -118,7 +120,7 @@ fun AppNavigation(
         }
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
-        lotterySetupGraph(controller, lotterySetupFactory)
+        lotterySetupGraph(controller, lotterySetupFactory, lotteryDetailFactory)
         for (workspace in Role.entries) {
             profileGraph(
                 controller,

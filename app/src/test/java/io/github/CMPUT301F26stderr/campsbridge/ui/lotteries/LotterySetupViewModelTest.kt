@@ -7,6 +7,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepositor
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
@@ -70,8 +71,13 @@ class LotterySetupViewModelTest {
         runTest {
             val boundary = Clock.fixed(Instant.parse("2027-05-01T00:30:00Z"), ZoneOffset.UTC)
             val model =
-                LotterySetupViewModel("account-1", sites, boundary, SavedStateHandle())
-                    .also { store.put("lottery", it) }
+                LotterySetupViewModel(
+                    "account-1",
+                    sites,
+                    FakeLotteryRepository(),
+                    boundary,
+                    SavedStateHandle(),
+                ).also { store.put("lottery", it) }
             runCurrent()
             assertNull(model.currentScheduleMonth())
             toSite(model)
@@ -682,6 +688,12 @@ class LotterySetupViewModelTest {
         validator: LotteryWindowValidator? = { _, _, _, _ -> LotteryWindowInput.Valid },
         repository: CampsiteRepository = sites,
     ): LotterySetupViewModel =
-        LotterySetupViewModel("account-1", repository, clock, saved, validator)
-            .also { store.put("lottery", it) }
+        LotterySetupViewModel(
+            "account-1",
+            repository,
+            FakeLotteryRepository(),
+            clock,
+            saved,
+            validator,
+        ).also { store.put("lottery", it) }
 }

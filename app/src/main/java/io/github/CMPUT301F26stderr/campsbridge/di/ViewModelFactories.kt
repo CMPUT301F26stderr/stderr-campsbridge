@@ -12,26 +12,52 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
-/** Constructs the local lottery form; F13 and persistence remain explicitly pending.
+/** Constructs the saved/new lottery form; reserved F13 remains explicitly pending.
  * @param services Current host's repository interfaces and clock.
  * @param ownerId Current account identity whose published sites are eligible.
+ * @param lotteryId Existing draft target, or null for a new local form.
  */
 fun lotterySetupViewModelFactory(
     services: AppServices,
     ownerId: String,
+    lotteryId: String? = null,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
             LotterySetupViewModel(
                 ownerId,
                 services.repositories.campsites,
+                services.repositories.lotteries,
                 services.clock,
                 createSavedStateHandle(),
                 validateWindows = null,
+                lotteryId = lotteryId,
+            )
+        }
+    }
+
+/** Constructs the actual saved owner reader independently of setup's local state.
+ * @param services Current host's repository dependencies.
+ * @param ownerId Current owner identity.
+ * @param lotteryId Actual saved target carried by navigation.
+ */
+fun lotteryDetailViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    lotteryId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotteryDetailViewModel(
+                ownerId,
+                lotteryId,
+                services.repositories.lotteries,
+                services.repositories.campsites,
             )
         }
     }

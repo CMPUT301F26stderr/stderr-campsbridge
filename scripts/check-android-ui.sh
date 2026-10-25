@@ -7,6 +7,10 @@ cd "$repo_root"
 ui_work=""
 ui_pid=""
 cleanup() {
+    local ui_status=$?
+    if [[ "$ui_status" -ne 0 && -n "$ui_work" && -f "$ui_work/emulator.log" ]]; then
+        tail -n 80 "$ui_work/emulator.log" >&2
+    fi
     if [[ -n "$ui_pid" ]]; then
         kill "$ui_pid" 2>/dev/null || true
         wait "$ui_pid" 2>/dev/null || true
@@ -25,6 +29,8 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
         echo 'A disposable Android test device requires readable/writable /dev/kvm.' >&2
         exit 1
     fi
+    # Compile before first boot so package/setup work does not contend with Kotlin and dexing.
+    bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
     ui_work="$(mktemp -d -t campsbridge-ui.XXXXXXXX)"
     export ANDROID_AVD_HOME="$ui_work/avd"
     mkdir -p "$ANDROID_AVD_HOME"
@@ -101,20 +107,35 @@ adb -s "$ANDROID_SERIAL" shell input keyevent 82
 if [[ -n "$ui_pid" ]]; then
     # Boot completion precedes SystemUI readiness. Do not test behind its lock screen.
     ui_focused=false
+    ui_stable_samples=0
+    ui_launcher_restarted=false
     for ((attempt = 0; attempt < 60; attempt++)); do
         adb -s "$ANDROID_SERIAL" shell wm dismiss-keyguard
         adb -s "$ANDROID_SERIAL" shell input keyevent KEYCODE_HOME
-        if adb -s "$ANDROID_SERIAL" shell dumpsys window | python3 -c '
+        ui_window_state="$(adb -s "$ANDROID_SERIAL" shell dumpsys window)"
+        # A launcher ANR title also contains its package name; it is not a focused home activity.
+        if [[ "$ui_launcher_restarted" == false && "$ui_window_state" == *'Application Not Responding: com.google.android.apps.nexuslauncher'* ]]; then
+            echo 'Restarting the disposable launcher after its first-boot ANR.'
+            adb -s "$ANDROID_SERIAL" shell am force-stop com.google.android.apps.nexuslauncher
+            adb -s "$ANDROID_SERIAL" shell input keyevent KEYCODE_HOME
+            ui_launcher_restarted=true
+        fi
+        if python3 -c '
 import sys
 state = sys.stdin.read()
 focused_home = any(
-    "mCurrentFocus=Window{" in line and "com.google.android.apps.nexuslauncher" in line
+    "mCurrentFocus=Window{" in line and "com.google.android.apps.nexuslauncher/" in line
     for line in state.splitlines()
 )
 sys.exit(0 if focused_home and "isKeyguardShowing=false" in state else 1)
-'; then
-            ui_focused=true
-            break
+' <<< "$ui_window_state"; then
+            ui_stable_samples=$((ui_stable_samples + 1))
+            if ((ui_stable_samples >= 5)); then
+                ui_focused=true
+                break
+            fi
+        else
+            ui_stable_samples=0
         fi
         sleep 2
     done

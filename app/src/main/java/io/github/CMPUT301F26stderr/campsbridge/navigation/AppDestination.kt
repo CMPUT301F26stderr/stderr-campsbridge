@@ -15,6 +15,26 @@ object AppDestination {
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
     const val CAMPSITE_SETUP_SAVED = "owner/campsite-setup/saved/{campsiteId}"
     const val LOTTERY_SETUP = "owner/lottery-setup/new"
+    const val LOTTERY_SETUP_SAVED = "owner/lottery-setup/saved/{lotteryId}"
+    const val LOTTERY_DETAIL = "owner/lotteries/{lotteryId}/detail"
+
+    /** Addresses one new form or an existing draft without copying record state.
+     * @param lotteryId Actual saved target, or null for a new form.
+     */
+    fun lotterySetupGraph(lotteryId: String? = null): String =
+        if (lotteryId ==
+            null
+        ) {
+            LOTTERY_SETUP
+        } else {
+            "owner/lottery-setup/saved/${Uri.encode(lotteryId)}"
+        }
+
+    /** Addresses the actual saved owner overview.
+     * @param lotteryId Saved identity returned by persistence or an owner list.
+     */
+    fun lotteryDetail(lotteryId: String): String =
+        "owner/lotteries/${Uri.encode(lotteryId)}/detail"
 
     /** Addresses a distinct local/new or saved-ID setup parent.
      * @param campsiteId Existing unpublished target, or null for a new form.

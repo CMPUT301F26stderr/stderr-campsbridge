@@ -19,15 +19,19 @@ import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.pressBack
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
+import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
+import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -252,6 +256,193 @@ class LotterySetupFlowTest {
             .assertIsDisplayed()
         compose.onNodeWithText("Registration closing time").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Next").assertIsDisplayed()
+    }
+
+    /**
+     * A held Save disables exit, opens the saved record and resumes the same draft without
+     * duplicates.
+     */
+    @Test fun saveOpensTheSavedIdentityAndContinueSetupReturnsToIt() {
+        val gate = CompletableDeferred<Unit>()
+        configureSaves()
+        host.lotteries.createHandler = { input ->
+            gate.await()
+            Lottery(
+                input.id,
+                input.ownerId,
+                input.title,
+                input.description,
+                input.configuration,
+                0,
+                Instant.parse("2027-05-01T12:00:00Z"),
+            ).also {
+                host.lotteries.records.value =
+                    listOf(it)
+            }
+        }
+        val restoration = StateRestorationTester(compose)
+        start(restoration)
+        completeReview()
+        compose.onNodeWithText("Save draft").performClick()
+        compose.onNodeWithText("Cancel").assertIsNotEnabled()
+        compose.onNodeWithText("Publish lottery").assertIsNotEnabled()
+        compose.onNodeWithText("Save draft").assertIsNotEnabled()
+        pressBack()
+        compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
+        compose.runOnIdle { gate.complete(Unit) }
+        compose.onNodeWithText("May 14, 2027").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Continue setup").performScrollTo().assertIsDisplayed()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Continue setup").performScrollTo().performClick()
+        compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
+        compose.onNodeWithText("Save draft").performClick()
+        compose.onNodeWithText("Continue setup").performScrollTo().assertIsDisplayed()
+        pressBack()
+        compose.onNodeWithText("Manage campsite").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(1, host.lotteries.events.count { it == "create:lottery/new" })
+            assertEquals(1, host.lotteries.offerRequests.size)
+            assertEquals(2, host.lotterySetupCreations)
+        }
+    }
+
+    /**
+     * Failed draft writes retain review input and an explicit retry completes the same actual
+     * record.
+     */
+    @Test fun failedSaveRetriesTheSameTargetAndKeepsTheForm() {
+        configureSaves()
+        val successful = host.lotteries.createHandler!!
+        host.lotteries.createHandler = { throw IOException("offline") }
+        start()
+        completeReview()
+        compose.onNodeWithText("Save draft").performClick()
+        compose
+            .onNodeWithText(
+                "This save did not finish. Your input is retained; retry the requested action.",
+            ).performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("May weekends").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle { host.lotteries.createHandler = successful }
+        compose.onNodeWithText("Retry").performScrollTo().performClick()
+        compose.onNodeWithText("Continue setup").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(2, host.lotteries.events.count { it == "create:lottery/new" })
+            assertEquals(1, host.lotteries.records.value.size)
+        }
+    }
+
+    /**
+     * Unknown publication blocks Back, survives recreation and recovers without repeating
+     * Publish.
+     */
+    @Test fun publicationRecoveryOpensTheSavedPublishedRecordExactlyOnce() {
+        configureSaves()
+        host.lotteries.publishHandler = { id, _ ->
+            host.lotteries.records.value =
+                host.lotteries.records.value.map {
+                    if (it.id == id) {
+                        it.copy(publishedAt = Instant.parse("2027-05-01T12:00:00Z"))
+                    } else {
+                        it
+                    }
+                }
+            host.lotteries.getHandler = { throw IOException("lost read") }
+            throw IOException("lost publish acknowledgement")
+        }
+        val restoration = StateRestorationTester(compose)
+        start(restoration)
+        completeReview()
+        compose.onNodeWithText("Publish lottery").performClick()
+        compose
+            .onNodeWithText(
+                "Publication could not be confirmed. Retry the check.",
+            ).assertIsDisplayed()
+        pressBack()
+        compose
+            .onNodeWithText(
+                "Publication could not be confirmed. Retry the check.",
+            ).assertIsDisplayed()
+        restoration.emulateSavedInstanceStateRestore()
+        compose
+            .onNodeWithText(
+                "Publication could not be confirmed. Retry the check.",
+            ).assertIsDisplayed()
+        compose.runOnIdle { host.lotteries.getHandler = null }
+        compose.onNodeWithText("Retry").performClick()
+        compose.onNodeWithText("Published").assertIsDisplayed()
+        compose.onNodeWithText("Continue setup").assertDoesNotExist()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Published").assertIsDisplayed()
+        pressBack()
+        compose.onNodeWithText("Manage campsite").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(
+                1,
+                host.lotteries.events.count {
+                    it ==
+                        "publish:lottery/new"
+                },
+            )
+        }
+    }
+
+    /**
+     * Supplies fixed F13 feedback and explicit acknowledgements without implementing the
+     * reserved rule.
+     */
+    private fun configureSaves() {
+        host.validateLotteryWindows = { _, _, _, _ -> LotteryWindowInput.Valid }
+        host.newLotteryId = { "lottery/new" }
+        host.lotteries.createHandler = { input ->
+            Lottery(
+                input.id,
+                input.ownerId,
+                input.title,
+                input.description,
+                input.configuration,
+                0,
+                Instant.parse("2027-05-01T12:00:00Z"),
+            ).also {
+                host.lotteries.records.value =
+                    listOf(it)
+            }
+        }
+        host.lotteries.setOfferHandler = { id, _, offer ->
+            host.lotteries.serverOffers[id] = listOf(offer)
+            host.lotteries.liveOffers.value = mapOf(id to listOf(offer))
+        }
+        host.lotteries.publishHandler = { id, _ ->
+            host.lotteries.records.value =
+                host.lotteries.records.value.map {
+                    if (it.id == id) {
+                        it.copy(publishedAt = Instant.parse("2027-05-01T12:00:00Z"))
+                    } else {
+                        it
+                    }
+                }
+        }
+    }
+
+    /**
+     * Uses the complete native six-step form to reach valid review for persistence interactions.
+     */
+    private fun completeReview() {
+        toSite()
+        compose.onNodeWithText(site.details.name).performClick()
+        allocate(day)
+        compose.onNodeWithText("Next").performClick()
+        schedule("Registration opening", 5)
+        schedule("Registration closing", 6)
+        compose.onNodeWithText("Next").performClick()
+        schedule("Booking opening", 7)
+        schedule("Booking closing", 8)
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Maximum winners").performTextInput("2")
+        closeSoftKeyboard()
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
+        compose.onNodeWithText("May 14, 2027").performScrollTo().assertIsDisplayed()
     }
 
     /** Enters the real local setup graph through an actually published owned campsite.

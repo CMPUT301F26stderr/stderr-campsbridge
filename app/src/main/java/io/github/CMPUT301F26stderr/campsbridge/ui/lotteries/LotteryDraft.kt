@@ -24,6 +24,7 @@ data class LotteryLocalDateTime(
 )
 
 /** Local single-site form; changes require an explicit later save operation.
+ * @param id Stable saved target, allocated only when saving or supplied for reopening.
  * @param step Current position in the six-step flow.
  * @param title Exact editable title spelling.
  * @param description Optional multiline description.
@@ -35,6 +36,7 @@ data class LotteryLocalDateTime(
  * @param returnToReview Whether a valid edit returns directly to the review.
  */
 data class LotteryDraft(
+    val id: String? = null,
     val step: LotteryStep = LotteryStep.BASICS,
     val title: String = "",
     val description: String = "",

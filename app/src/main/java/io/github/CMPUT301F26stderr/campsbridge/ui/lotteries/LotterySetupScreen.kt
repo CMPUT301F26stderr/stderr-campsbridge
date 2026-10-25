@@ -12,6 +12,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps.LotteryBasicsStep
@@ -23,7 +27,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 
-/** Six ordinary step contents in the shared form frame; persistence is connected in M3a.2.
+/** Six step contents with explicit save progress, retry and authoritative target restoration.
  * @param state Local parent input and read outcomes.
  * @param initialMonth Site-clock month for an unselected native date.
  * @param onBack Moves within this parent or requests abandonment.
@@ -41,6 +45,10 @@ import java.time.YearMonth
  * @param onWinners Changes raw positive winner-count input.
  * @param onEdit Returns to the requested step from review.
  * @param onConfirmZone Accepts displayed local times in the selected site's current zone.
+ * @param onSaveDraft Saves valid reviewed input under its retained identity.
+ * @param onPublish Publishes valid reviewed input after the current-clock check.
+ * @param onRetrySave Retries retained intent or resolves uncertain publication.
+ * @param onRetryLoad Retries only a failed authoritative target read.
  * @param modifier Caller layout.
  */
 @Composable
@@ -63,25 +71,101 @@ fun LotterySetupScreen(
     onEdit: (LotteryStep) -> Unit,
     onConfirmZone: () -> Unit,
     modifier: Modifier = Modifier,
+    onSaveDraft: () -> Unit = {},
+    onPublish: () -> Unit = {},
+    onRetrySave: () -> Unit = {},
+    onRetryLoad: () -> Unit = {},
 ) {
     BackHandler(onBack = onBack)
+    val submitting = state.savePhase != LotterySavePhase.IDLE
+    if (state.targetLoad != LotteryTargetLoad.READY || state.publicationPending) {
+        AppScreen(
+            stringResource(R.string.lottery_create),
+            modifier,
+            onBack = onBack,
+            backEnabled = !submitting && !state.publicationPending,
+        ) {
+            when {
+                state.publicationPending -> {
+                    Text(stringResource(R.string.lottery_publication_recovery))
+                    if (submitting) {
+                        LoadingContent()
+                    } else {
+                        FailureContent(
+                            stringResource(R.string.lottery_recovery_failed),
+                            onRetrySave,
+                        )
+                    }
+                }
+
+                state.targetLoad == LotteryTargetLoad.LOADING -> {
+                    LoadingContent()
+                }
+
+                state.targetLoad == LotteryTargetLoad.FAILURE -> {
+                    FailureContent(stringResource(R.string.lottery_load_failed), onRetryLoad)
+                }
+
+                else -> {
+                    Text(stringResource(R.string.lottery_unavailable))
+                }
+            }
+        }
+        if (state.discardPrompt) LotteryDiscardDialog(onConfirmDiscard, onDismissDiscard)
+        return
+    }
+    val canEdit = !submitting && !state.discardPrompt
     val step = state.draft.step
     val review = step == LotteryStep.REVIEW
     StepScaffold(
         stringResource(R.string.lottery_create),
         stringResource(R.string.onboarding_step, step.ordinal + 1, LotteryStep.entries.size),
         onBack,
-        onNext,
+        { if (review) onPublish() else onNext() },
         modifier,
-        nextEnabled = !review && !state.discardPrompt,
+        nextEnabled = canEdit && (!review || state.configuration != null),
+        isSubmitting = submitting,
         nextLabel = stringResource(if (review) R.string.lottery_publish else R.string.next),
         steps = StepProgress(step.ordinal + 1, LotteryStep.entries.size),
         onCancel = onCancel,
         secondaryLabel = if (review) stringResource(R.string.save_draft) else null,
-        onSecondaryAction = if (review) ({}) else null,
-        secondaryEnabled = false,
+        onSecondaryAction = if (review) onSaveDraft else null,
+        secondaryEnabled = canEdit && state.configuration != null,
+        submittingAction =
+            if (state.saveAction == LotterySaveAction.DRAFT && review) {
+                StepAction.SECONDARY
+            } else {
+                StepAction.PRIMARY
+            },
     ) {
         Text(lotteryStepTitle(step), style = MaterialTheme.typography.headlineSmall)
+        if (submitting) {
+            Text(
+                stringResource(
+                    when (state.savePhase) {
+                        LotterySavePhase.SAVING_DETAILS -> R.string.lottery_saving_details
+                        LotterySavePhase.SAVING_OFFER -> R.string.lottery_saving_offer
+                        LotterySavePhase.PUBLISHING -> R.string.lottery_publishing
+                        else -> R.string.lottery_recovering
+                    },
+                ),
+            )
+        }
+        if (state.saveFailure != null) {
+            FailureContent(
+                stringResource(R.string.lottery_save_failed),
+                onRetrySave,
+                retryEnabled = !submitting && state.configuration != null,
+            )
+        }
+        if (state.publicationTooLate) Text(stringResource(R.string.lottery_publication_too_late))
+        if (review && state.choices == LotteryCampsiteChoices.Failure) {
+            FailureContent(
+                stringResource(R.string.lottery_site_failure),
+                onRetryChoices,
+                !submitting,
+            )
+        }
         when (step) {
             LotteryStep.BASICS -> {
                 LotteryBasicsStep(
@@ -123,20 +207,30 @@ fun LotterySetupScreen(
             }
 
             LotteryStep.REVIEW -> {
-                LotteryReviewStep(state, onEdit, onConfirmZone)
+                LotteryReviewStep(state, onEdit, onConfirmZone, enabled = canEdit)
             }
         }
     }
-    if (state.discardPrompt) {
-        ConfirmationDialog(
-            stringResource(R.string.lottery_discard_title),
-            stringResource(R.string.lottery_discard_body),
-            onConfirmDiscard,
-            onDismissDiscard,
-            onDismissDiscard,
-            confirmLabel = stringResource(R.string.lottery_discard_confirm),
-        )
-    }
+    if (state.discardPrompt) LotteryDiscardDialog(onConfirmDiscard, onDismissDiscard)
+}
+
+/** Confirms local abandonment independently of loading and source failures.
+ * @param onConfirm Explicit abandonment action.
+ * @param onDismiss Retains input and closes this prompt.
+ */
+@Composable
+private fun LotteryDiscardDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ConfirmationDialog(
+        stringResource(R.string.lottery_discard_title),
+        stringResource(R.string.lottery_discard_body),
+        onConfirm,
+        onDismiss,
+        onDismiss,
+        confirmLabel = stringResource(R.string.lottery_discard_confirm),
+    )
 }
 
 /** Resolves one step's title without copying wizard position into another navigation destination.

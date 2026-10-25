@@ -73,12 +73,21 @@ data class LotteryAllocationUiState(
         }
 }
 
+/** Authoritative saved-target read, independent of campsite choices and local form input. */
+enum class LotteryTargetLoad { READY, LOADING, FAILURE, UNAVAILABLE }
+
 /** One local setup owner; incomplete inputs never create a persisted lottery.
  * @param draft Raw local form input.
  * @param choices Independent current published/owned source outcome.
  * @param allocation Working child state when allocation is open.
  * @param errors Explicit validation feedback.
  * @param configuration Validated no-cap configuration, absent until every requirement is satisfied.
+ * @param targetLoad Authoritative target restoration result.
+ * @param savePhase Current save progress; non-idle blocks conflicting actions.
+ * @param saveFailure Last explicit failure, retained separately from source reads.
+ * @param saveAction Requested operation retained for retry.
+ * @param publicationPending Publication must be reconciled before editing or leaving.
+ * @param publicationTooLate Registration opening is no longer strictly in the future.
  * @param discardPrompt Whether an explicit exit needs abandonment confirmation.
  */
 data class LotterySetupUiState(
@@ -88,4 +97,10 @@ data class LotterySetupUiState(
     val errors: LotterySetupErrors = LotterySetupErrors(),
     val configuration: LotteryConfiguration? = null,
     val discardPrompt: Boolean = false,
+    val targetLoad: LotteryTargetLoad = LotteryTargetLoad.READY,
+    val savePhase: LotterySavePhase = LotterySavePhase.IDLE,
+    val saveFailure: LotterySaveResult.Failed? = null,
+    val saveAction: LotterySaveAction? = null,
+    val publicationPending: Boolean = false,
+    val publicationTooLate: Boolean = false,
 )

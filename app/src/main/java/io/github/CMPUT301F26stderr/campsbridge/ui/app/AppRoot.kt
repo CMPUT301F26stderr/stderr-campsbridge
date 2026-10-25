@@ -27,7 +27,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Factory for a local setup parent.
  * @param exploreFactory Factory for this account's discovery/filter graph.
- * @param lotterySetupFactory Factory for this owner's local lottery setup graph.
+ * @param lotterySetupFactory Factory for this owner's new/saved lottery setup graph.
+ * @param lotteryDetailFactory Factory for this owner's saved lottery overview.
  */
 @Composable
 fun AppRoot(
@@ -39,7 +40,8 @@ fun AppRoot(
     campsiteSetupFactory: (String, String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String, String) -> ViewModelProvider.Factory,
     exploreFactory: () -> ViewModelProvider.Factory,
-    lotterySetupFactory: (String) -> ViewModelProvider.Factory,
+    lotterySetupFactory: (String, String?) -> ViewModelProvider.Factory,
+    lotteryDetailFactory: (String, String) -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -103,7 +105,8 @@ fun AppRoot(
                                 { id -> campsiteSetupFactory(session.account.id, id) },
                                 { id -> availabilityFactory(session.account.id, id) },
                                 exploreFactory(),
-                                lotterySetupFactory(session.account.id),
+                                { id -> lotterySetupFactory(session.account.id, id) },
+                                { id -> lotteryDetailFactory(session.account.id, id) },
                             )
                         }
                     }

@@ -23,6 +23,7 @@ import java.time.format.FormatStyle
 /** Reviews the single allocation, actual local windows and their explicitly chosen zone.
  * @param state Current raw input, derived configuration and validation outcomes.
  * @param onEdit Returns to a named step within this parent.
+ * @param enabled Whether input may change while a save owns the parent.
  * @param onConfirmZone Accepts all displayed local times in a changed campsite zone.
  */
 @Composable
@@ -30,6 +31,7 @@ fun LotteryReviewStep(
     state: LotterySetupUiState,
     onEdit: (LotteryStep) -> Unit,
     onConfirmZone: () -> Unit,
+    enabled: Boolean = true,
 ) {
     val draft = state.draft
     val site =
@@ -39,12 +41,14 @@ fun LotteryReviewStep(
     DetailRow(stringResource(R.string.lottery_title), draft.title)
     if (state.errors.titleRequired) Text(stringResource(R.string.lottery_title_required))
     if (draft.description.isNotEmpty()) Text(draft.description)
-    EditLotteryStep(LotteryStep.BASICS, R.string.lottery_basics, onEdit)
+    EditLotteryStep(LotteryStep.BASICS, R.string.lottery_basics, onEdit, enabled)
     Text(site?.details?.name ?: stringResource(R.string.lottery_site_required))
+    val locale = LocalConfiguration.current.locales[0]
+    for (night in draft.nights.sorted()) Text(formatDate(night, locale))
     val count = draft.nights.size
     Text(pluralStringResource(R.plurals.lottery_allocated_nights, count, count))
     if (state.errors.allocationRequired) Text(stringResource(R.string.lottery_allocation_required))
-    EditLotteryStep(LotteryStep.SITE, R.string.lottery_site_step, onEdit)
+    EditLotteryStep(LotteryStep.SITE, R.string.lottery_site_step, onEdit, enabled)
     if (site != null) Text(site.details.timeZone)
     for (point in LotterySchedulePoint.entries) {
         DetailRow(lotteryScheduleLabel(point), localScheduleLabel(draft.schedule[point]))
@@ -57,18 +61,23 @@ fun LotteryReviewStep(
             }
         if (scheduleError != null) Text(stringResource(scheduleError))
         if (point == LotterySchedulePoint.REGISTRATION_CLOSE) {
-            EditLotteryStep(LotteryStep.REGISTRATION, R.string.lottery_registration_step, onEdit)
+            EditLotteryStep(
+                LotteryStep.REGISTRATION,
+                R.string.lottery_registration_step,
+                onEdit,
+                enabled,
+            )
         } else if (point == LotterySchedulePoint.BOOKING_CLOSE) {
-            EditLotteryStep(LotteryStep.BOOKING, R.string.lottery_booking_step, onEdit)
+            EditLotteryStep(LotteryStep.BOOKING, R.string.lottery_booking_step, onEdit, enabled)
         }
     }
     DetailRow(stringResource(R.string.lottery_winners_step), draft.maximumWinnersText)
     if (state.errors.winnerCount != null) Text(stringResource(R.string.lottery_winners_invalid))
     Text(stringResource(R.string.lottery_unlimited))
-    EditLotteryStep(LotteryStep.WINNERS, R.string.lottery_winners_step, onEdit)
+    EditLotteryStep(LotteryStep.WINNERS, R.string.lottery_winners_step, onEdit, enabled)
     if (state.errors.zoneConfirmationRequired && site != null) {
         Text(stringResource(R.string.lottery_zone_review, site.details.timeZone))
-        TextButton(onConfirmZone) {
+        TextButton(onConfirmZone, enabled = enabled) {
             Text(stringResource(R.string.lottery_confirm_zone, site.details.timeZone))
         }
     }
@@ -92,21 +101,22 @@ fun LotteryReviewStep(
             }
         }
     if (windowError != null) Text(stringResource(windowError))
-    Text(stringResource(R.string.lottery_save_pending))
 }
 
 /** Labels review edits by their destination instead of repeated ambiguous Edit buttons.
  * @param step Target step in the same parent.
  * @param title Localized section label resource.
  * @param onEdit Opens the requested local step.
+ * @param enabled Whether this parent permits editing.
  */
 @Composable
 private fun EditLotteryStep(
     step: LotteryStep,
     @StringRes title: Int,
     onEdit: (LotteryStep) -> Unit,
+    enabled: Boolean,
 ) {
-    TextButton({ onEdit(step) }) {
+    TextButton({ onEdit(step) }, enabled = enabled) {
         Text(stringResource(R.string.lottery_edit_section, stringResource(title)))
     }
 }

@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 /** Connects local parent input to ordinary content and one explicit allocation child.
  * @param model Graph-owned setup model.
  * @param onExit Removes this abandoned parent and returns to its actual caller.
+ * @param onSaved Removes this setup parent and opens the actual saved target.
  * @param onOpenAllocation Opens the registered child after working state is initialized.
  */
 @Composable
@@ -18,13 +19,22 @@ fun LotterySetupRoute(
     model: LotterySetupViewModel,
     onExit: () -> Unit,
     onOpenAllocation: () -> Unit,
+    onSaved: (String) -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
+    val completion by model.completion.collectAsStateWithLifecycle()
     val exit by model.exitRequested.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
         .collectAsStateWithLifecycle()
-    LaunchedEffect(exit, lifecycle) {
-        if (exit && lifecycle == Lifecycle.State.RESUMED) onExit()
+    LaunchedEffect(exit, completion, lifecycle) {
+        if (lifecycle == Lifecycle.State.RESUMED) {
+            if (completion != null) {
+                onSaved(checkNotNull(completion))
+                model.acknowledgeCompletion()
+            } else if (exit) {
+                onExit()
+            }
+        }
     }
     LotterySetupScreen(
         state,
@@ -44,6 +54,10 @@ fun LotterySetupRoute(
         model::editWinnerCount,
         model::editStep,
         model::confirmScheduleZone,
+        onSaveDraft = model::saveDraft,
+        onPublish = model::publishLottery,
+        onRetrySave = model::retrySave,
+        onRetryLoad = model::retryLoad,
     )
 }
 
