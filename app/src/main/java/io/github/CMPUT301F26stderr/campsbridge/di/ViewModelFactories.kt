@@ -5,6 +5,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
@@ -116,11 +117,13 @@ fun campsiteDetailViewModelFactory(
  * @param services Selected host's dependencies and clock.
  * @param ownerId Confirmed owner identity.
  * @param campsiteId Actual saved draft identity, or null for a new local form.
+ * @param remainingAvailabilityEdits Reserved F08 integration; null keeps requested dates pending.
  */
 fun campsiteSetupViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String?,
+    remainingAvailabilityEdits: AvailabilityDifference? = null,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
@@ -131,6 +134,7 @@ fun campsiteSetupViewModelFactory(
                 services.repositories.images,
                 services.clock,
                 createSavedStateHandle(),
+                remainingAvailabilityEdits = remainingAvailabilityEdits,
             )
         }
     }

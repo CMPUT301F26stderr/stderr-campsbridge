@@ -138,7 +138,8 @@ fun CampsiteSetupScreen(
     val saveAction = if (retrying) onRetrySave else onSaveDraft
     val canSave =
         validateCampsiteDetails(draft) is CampsiteDetailsInput.Value &&
-            !state.photoReselectionRequired && draft.requestedAvailability.isEmpty()
+            !state.photoReselectionRequired &&
+            (draft.requestedAvailability.isEmpty() || !state.availabilityComparisonPending)
     StepScaffold(
         title = stringResource(R.string.campsite_setup_title),
         progress = stringResource(R.string.campsite_setup_step, draft.step.ordinal + 1, 8),
@@ -234,9 +235,21 @@ fun CampsiteSetupScreen(
                     Text(
                         stringResource(
                             when (state.savePhase) {
-                                CampsiteSavePhase.RECOVERING -> R.string.campsite_checking_save
-                                CampsiteSavePhase.SAVING_PHOTO -> R.string.campsite_saving_photo
-                                else -> R.string.campsite_saving_details
+                                CampsiteSavePhase.RECOVERING -> {
+                                    R.string.campsite_checking_save
+                                }
+
+                                CampsiteSavePhase.SAVING_PHOTO -> {
+                                    R.string.campsite_saving_photo
+                                }
+
+                                CampsiteSavePhase.SAVING_AVAILABILITY -> {
+                                    R.string.campsite_saving_availability
+                                }
+
+                                else -> {
+                                    R.string.campsite_saving_details
+                                }
                             },
                         ),
                     )
@@ -264,6 +277,10 @@ fun CampsiteSetupScreen(
                                         R.string.campsite_photo_reselect
                                     }
 
+                                    CampsiteSaveFailure.AVAILABILITY -> {
+                                        R.string.campsite_availability_save_failure
+                                    }
+
                                     CampsiteSaveFailure.AVAILABILITY_PENDING -> {
                                         R.string.campsite_date_save_pending
                                     }
@@ -278,7 +295,8 @@ fun CampsiteSetupScreen(
                 ) {
                     Text(stringResource(R.string.campsite_photo_reselect))
                 }
-                if (draft.requestedAvailability.isNotEmpty() &&
+                if (state.availabilityComparisonPending &&
+                    draft.requestedAvailability.isNotEmpty() &&
                     state.saveFailure != CampsiteSaveFailure.AVAILABILITY_PENDING
                 ) {
                     Text(stringResource(R.string.campsite_date_save_pending))

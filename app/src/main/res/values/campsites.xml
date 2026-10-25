@@ -66,6 +66,8 @@
     <string name="campsite_checking_save">Checking the previous save…</string>
     <string name="campsite_saving_details">Saving campsite details…</string>
     <string name="campsite_saving_photo">Saving the photo…</string>
+    <string name="campsite_saving_availability">Saving offered nights…</string>
+    <string name="campsite_availability_save_failure">Could not save all date changes. Confirmed changes are kept. Retry to finish the remaining dates.</string>
     <string name="campsite_save_failure_title">Campsite save needs attention</string>
     <string name="campsite_details_save_failure">Could not save campsite details.</string>
     <string name="campsite_photo_save_failure">Could not finish saving the photo. Saved campsite details are retained.</string>

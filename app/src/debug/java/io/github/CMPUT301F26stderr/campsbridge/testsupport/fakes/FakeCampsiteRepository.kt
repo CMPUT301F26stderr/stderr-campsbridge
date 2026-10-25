@@ -32,10 +32,25 @@ class FakeCampsiteRepository(
     var updateHandler: (suspend (String, String, CampsiteDetails) -> Unit)? = null
     val createRequests = mutableListOf<Triple<String, String, CampsiteDetails>>()
     val updateRequests = mutableListOf<Triple<String, String, CampsiteDetails>>()
+    var offerHandler: (suspend (String, String, Set<LocalDate>, Boolean) -> Unit)? = null
+    val offerRequests = mutableListOf<OfferRequest>()
     val calendarNights = MutableStateFlow<List<CalendarNight>>(emptyList())
     val calendarFailure = MutableStateFlow<Exception?>(null)
     val observedCalendars = mutableListOf<Triple<String, LocalDate, LocalDate>>()
     var activeCalendarObservers = 0
+
+    /** Captures one explicit inventory operation without simulating its transaction.
+     * @param id Actual saved campsite identity.
+     * @param ownerId Requesting owner.
+     * @param dates Requested local nights.
+     * @param offered Desired offered value.
+     */
+    data class OfferRequest(
+        val id: String,
+        val ownerId: String,
+        val dates: Set<LocalDate>,
+        val offered: Boolean,
+    )
 
     /** Returns current controlled server state.
      * @param id Requested listing identity.
@@ -162,7 +177,13 @@ class FakeCampsiteRepository(
         offered: Boolean,
     ) {
         writeCalls++
-        error("Configure a write outcome before testing inventory changes")
+        offerRequests.add(OfferRequest(id, ownerId, dates, offered))
+        checkNotNull(offerHandler) { "Configure a write outcome before testing inventory changes" }(
+            id,
+            ownerId,
+            dates,
+            offered,
+        )
     }
 
     /** Emits controlled source data/failure and counts subscribed readers.

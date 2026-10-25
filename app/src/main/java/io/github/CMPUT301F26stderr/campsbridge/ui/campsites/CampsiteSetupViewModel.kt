@@ -34,7 +34,7 @@ import java.util.UUID
 
 private const val SETUP_KEY = "campsiteSetup."
 
-/** Owns setup input, saved-parent readers and explicit details/photo draft saves.
+/** Owns setup input, saved-parent readers and explicit details/photo/inventory draft saves.
  * @param ownerId Active owner identity.
  * @param campsiteId Existing unpublished target, or null for a new local form.
  * @param campsites Saved-target, details and inventory operations.
@@ -42,6 +42,7 @@ private const val SETUP_KEY = "campsiteSetup."
  * @param clock Deterministic initial calendar month.
  * @param savedState Small editable restoration state.
  * @param newId Allocates one stable identity only after the first valid save action.
+ * @param remainingAvailabilityEdits Reserved F08 comparison; null blocks requested inventory saves.
  */
 class CampsiteSetupViewModel(
     private val ownerId: String,
@@ -51,6 +52,7 @@ class CampsiteSetupViewModel(
     private val clock: Clock,
     private val savedState: SavedStateHandle,
     private val newId: () -> String = { UUID.randomUUID().toString() },
+    private val remainingAvailabilityEdits: AvailabilityDifference? = null,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<CampsiteSetupUiState>(CampsiteSetupUiState.Loading)
     val state = mutableState.asStateFlow()
@@ -61,7 +63,8 @@ class CampsiteSetupViewModel(
     val exitRequested = mutableExit.asStateFlow()
     private var baseline = CampsiteDraft()
     private var readJob: Job? = null
-    private var calendarJob: Job? = null
+    private var availability: CampsiteAvailabilityController? = null
+    private var availabilityObservation: Job? = null
     private var photoController: ImageSlotController? = null
     private var photoObservation: Job? = null
     private var confirmedSite: Campsite? = null
@@ -98,7 +101,8 @@ class CampsiteSetupViewModel(
                     CampsiteSaveFailure.PHOTO_RESELECTION
                 }
 
-                current.draft.requestedAvailability.isNotEmpty() -> {
+                current.draft.requestedAvailability.isNotEmpty() &&
+                    current.availabilityComparisonPending -> {
                     CampsiteSaveFailure.AVAILABILITY_PENDING
                 }
 
@@ -125,15 +129,15 @@ class CampsiteSetupViewModel(
                 saveFailure = null,
             ),
         )
-        viewModelScope.launch { saveDetailsAndPhoto(id, details, current.photoIntent) }
+        viewModelScope.launch { saveDraftStages(id, details, current.photoIntent) }
     }
 
-    /** Reconciles the same server target, saves requested facts, then applies staged photo work.
+    /** Reconciles the same server target, saves details/photo, then applies requested inventory work.
      * @param id Retained identity, allocated before any suspension.
      * @param details Frozen valid listing values.
      * @param photo Frozen local attachment intent.
      */
-    private suspend fun saveDetailsAndPhoto(
+    private suspend fun saveDraftStages(
         id: String,
         details: CampsiteDetails,
         photo: CampsitePhotoIntent,
@@ -162,6 +166,7 @@ class CampsiteSetupViewModel(
                 currentCoroutineContext().ensureActive()
                 confirmedSite = saved.copy(details = details)
             }
+            availability?.bindSavedTarget(id)
             if (photoController == null) observePhoto(id)
             failedStage = CampsiteSaveFailure.PHOTO
             if (photo != CampsitePhotoIntent.Keep ||
@@ -169,6 +174,19 @@ class CampsiteSetupViewModel(
             ) {
                 content()?.let { publish(it.copy(savePhase = CampsiteSavePhase.SAVING_PHOTO)) }
                 savePhoto(photo)
+            }
+            val calendar = checkNotNull(availability)
+            if (calendar.state.value.requested
+                    .isNotEmpty()
+            ) {
+                failedStage = CampsiteSaveFailure.AVAILABILITY
+                content()?.let {
+                    publish(
+                        it.copy(savePhase = CampsiteSavePhase.SAVING_AVAILABILITY),
+                    )
+                }
+                check(calendar.save()) { "Requested inventory needs explicit retry" }
+                reflectAvailability(calendar.state.value)
             }
             currentCoroutineContext().ensureActive()
             completeSave(id)
@@ -430,23 +448,22 @@ class CampsiteSetupViewModel(
      * @param month Requested month.
      */
     fun changeMonth(month: YearMonth) {
-        val current = editable() ?: return
-        if (month == current.month) return
-        publish(current.copy(month = month))
-        observeCalendar()
+        if (editable() == null) return
+        availability?.let {
+            it.changeMonth(month)
+            reflectAvailability(it.state.value)
+        }
     }
 
-    /** Toggles a known unoccupied date's desired offered state without writing it.
+    /** Toggles a known unoccupied date's desired value through the shared availability owner.
      * @param date Date the owner edited.
      */
     fun toggleDate(date: LocalDate) {
-        val current = editable() ?: return
-        val inventory = current.inventory as? CampsiteInventoryUiState.Content ?: return
-        if (current.draft.id != null && YearMonth.from(date) != current.month) return
-        val night = inventory.nights.find { it.date == date }
-        if (night?.reservationId != null) return
-        val offered = current.draft.requestedAvailability[date] ?: night?.isOffered ?: false
-        edit { it.copy(requestedAvailability = it.requestedAvailability + (date to !offered)) }
+        if (editable() == null) return
+        availability?.let {
+            it.toggleDate(date)
+            reflectAvailability(it.state.value)
+        }
     }
 
     /** Stages replacement; picker cancellation retains the previous choice.
@@ -505,7 +522,11 @@ class CampsiteSetupViewModel(
 
     /** Retries only failed visible-month inventory, retaining form input. */
     fun retryCalendar() {
-        if (editable()?.inventory == CampsiteInventoryUiState.Failure) observeCalendar()
+        if (editable() == null) return
+        availability?.let {
+            it.retryCalendar()
+            reflectAvailability(it.state.value)
+        }
     }
 
     /** Retries saved attachment display without uploading staged content. */
@@ -527,6 +548,7 @@ class CampsiteSetupViewModel(
 
     /** Cancels readers when the graph is retired. */
     override fun onCleared() {
+        availability?.close()
         photoController?.close()
         super.onCleared()
     }
@@ -554,6 +576,9 @@ class CampsiteSetupViewModel(
 
     /** Loads a saved target before restoring edits; a new local form needs no parent read. */
     private fun load() {
+        availabilityObservation?.cancel()
+        availability?.close()
+        availability = null
         mutableState.value = CampsiteSetupUiState.Loading
         readJob?.cancel()
         readJob =
@@ -583,15 +608,26 @@ class CampsiteSetupViewModel(
                     }
                     confirmedSite = site
                     baseline = site?.let(::draftFor) ?: CampsiteDraft(id = targetId)
-                    val draft = restoreDraft(baseline)
+                    val restoredDraft = restoreDraft(baseline)
                     val zone =
-                        draft.timeZone
+                        restoredDraft.timeZone
                             .trim()
                             .takeIf { it in ZoneId.getAvailableZoneIds() }
                             ?.let(ZoneId::of) ?: clock.zone
-                    val month =
-                        savedState.get<String>("${SETUP_KEY}month")?.let(YearMonth::parse)
-                            ?: YearMonth.now(clock.withZone(zone))
+                    val controller =
+                        CampsiteAvailabilityController(
+                            ownerId,
+                            site?.id,
+                            campsites,
+                            YearMonth.now(clock.withZone(zone)),
+                            savedState,
+                            "${SETUP_KEY}availability.",
+                            viewModelScope,
+                            remainingAvailabilityEdits,
+                        )
+                    availability = controller
+                    val calendar = controller.state.value
+                    val draft = restoredDraft.copy(requestedAvailability = calendar.requested)
                     val photo = savedState.get<String>("${SETUP_KEY}photo")
                     publish(
                         CampsiteSetupUiState.Content(
@@ -607,7 +643,9 @@ class CampsiteSetupViewModel(
                                             ImageLoadState.LOADING
                                         },
                                 ),
-                            month = month,
+                            month = calendar.month,
+                            inventory = calendar.inventory,
+                            availabilityComparisonPending = calendar.pendingEdits == null,
                             photoIntent =
                                 if (photo ==
                                     "remove"
@@ -630,7 +668,7 @@ class CampsiteSetupViewModel(
                         ),
                     )
                     if (site != null) observePhoto(site.id)
-                    observeCalendar()
+                    observeAvailability(controller)
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
@@ -676,40 +714,31 @@ class CampsiteSetupViewModel(
             }
     }
 
-    /** Replaces one range reader; only successfully loaded absence means unoffered inventory. */
-    private fun observeCalendar() {
-        val current = editable() ?: return
-        calendarJob?.cancel()
-        if (confirmedSite == null) {
-            mutableState.value =
-                current.copy(inventory = CampsiteInventoryUiState.Content(emptyList()))
-            return
-        }
-        val month = current.month
-        mutableState.value = current.copy(inventory = CampsiteInventoryUiState.Loading)
-        calendarJob =
+    /** Observes the shared range/edit owner without introducing another repository listener.
+     * @param controller This setup graph's availability owner.
+     */
+    private fun observeAvailability(controller: CampsiteAvailabilityController) {
+        availabilityObservation?.cancel()
+        availabilityObservation =
             viewModelScope.launch {
-                try {
-                    campsites
-                        .observeCalendar(
-                            checkNotNull(current.draft.id),
-                            month.atDay(1),
-                            month.plusMonths(1).atDay(1),
-                        ).collect { nights ->
-                            currentCoroutineContext().ensureActive()
-                            editable()?.takeIf { it.month == month }?.let {
-                                mutableState.value =
-                                    it.copy(inventory = CampsiteInventoryUiState.Content(nights))
-                            }
-                        }
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    editable()?.takeIf { it.month == month }?.let {
-                        mutableState.value = it.copy(inventory = CampsiteInventoryUiState.Failure)
-                    }
-                }
+                controller.state.collect { reflectAvailability(it) }
             }
+    }
+
+    /** Projects date state into the draft for display, retaining one authoritative persistence owner.
+     * @param value Current availability state, including confirmed progress during a held save.
+     */
+    private fun reflectAvailability(value: CampsiteAvailabilityState) {
+        content()?.let {
+            publish(
+                it.copy(
+                    draft = it.draft.copy(requestedAvailability = value.requested),
+                    month = value.month,
+                    inventory = value.inventory,
+                    availabilityComparisonPending = value.pendingEdits == null,
+                ),
+            )
+        }
     }
 
     /** Saves primitive inputs; selected bytes/controllers and confirmed records stay transient.
@@ -732,11 +761,7 @@ class CampsiteSetupViewModel(
         savedState["${SETUP_KEY}amenities"] = ArrayList(draft.amenities)
         savedState["${SETUP_KEY}tags"] = ArrayList(draft.tags)
         savedState["${SETUP_KEY}rules"] = draft.rules
-        savedState["${SETUP_KEY}dates"] =
-            ArrayList(draft.requestedAvailability.keys.map(LocalDate::toString))
-        savedState["${SETUP_KEY}offered"] = draft.requestedAvailability.values.toBooleanArray()
         savedState["${SETUP_KEY}review"] = draft.returnToReview
-        savedState["${SETUP_KEY}month"] = content.month.toString()
         savedState["${SETUP_KEY}removingPhoto"] = content.photoRemovalPending
         savedState["${SETUP_KEY}photo"] =
             when {
@@ -764,8 +789,6 @@ class CampsiteSetupViewModel(
         if (savedState.get<Boolean>("${SETUP_KEY}present") != true) return initial
         val latitude = savedState.get<Double>("${SETUP_KEY}latitude")
         val longitude = savedState.get<Double>("${SETUP_KEY}longitude")
-        val dates = savedState.get<ArrayList<String>>("${SETUP_KEY}dates").orEmpty()
-        val offered = savedState.get<BooleanArray>("${SETUP_KEY}offered") ?: booleanArrayOf()
         return initial.copy(
             step =
                 CampsiteStep.entries.find { it.name == savedState.get<String>("${SETUP_KEY}step") }
@@ -792,11 +815,6 @@ class CampsiteSetupViewModel(
                     .toSet(),
             tags = savedState.get<ArrayList<String>>("${SETUP_KEY}tags").orEmpty().toSet(),
             rules = savedState.get<String>("${SETUP_KEY}rules").orEmpty(),
-            requestedAvailability =
-                dates.zip(offered.toList()).associate { (date, value) ->
-                    LocalDate.parse(date) to
-                        value
-                },
             returnToReview = savedState.get<Boolean>("${SETUP_KEY}review") == true,
         )
     }
@@ -806,6 +824,8 @@ class CampsiteSetupViewModel(
      */
     private fun exit() {
         readJob?.cancel()
+        availabilityObservation?.cancel()
+        availability?.close()
         savedState
             .keys()
             .filter {

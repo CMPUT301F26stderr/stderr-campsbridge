@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImagePublicationException
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
@@ -511,18 +512,116 @@ class CampsiteDraftSaveTest {
             assertNull(model.completion.value)
         }
 
+    /** Details and selected photo must finish before any explicit offered-night write. */
+    @Test fun inventoryWaitsForConfirmedDetailsAndPhoto() =
+        runTest {
+            val order = mutableListOf<String>()
+            sites.createHandler = { id, owner, details ->
+                order.add("details")
+                site.copy(id = id, ownerId = owner, details = details)
+            }
+            images.uploadGate = CompletableDeferred()
+            sites.offerHandler = { id, owner, dates, offered ->
+                order.add("night")
+                assertEquals("draft-new", id)
+                assertEquals(site.ownerId, owner)
+                assertEquals(setOf(java.time.LocalDate.of(2027, 5, 14)), dates)
+                assertTrue(offered)
+                assertEquals(1, images.replaceCalls)
+            }
+            val model = model(difference = { requested, _ -> requested })
+            runCurrent()
+            review(model, photo)
+            model.editStep(CampsiteStep.AVAILABILITY)
+            model.toggleDate(java.time.LocalDate.of(2027, 5, 14))
+            model.next()
+            model.saveDraft()
+            runCurrent()
+            assertEquals(listOf("details"), order)
+            assertEquals(CampsiteSavePhase.SAVING_PHOTO, content(model).savePhase)
+            images.uploadGate!!.complete(Unit)
+            runCurrent()
+            assertEquals(listOf("details", "night"), order)
+            assertEquals("draft-new", model.completion.value)
+            assertTrue(content(model).draft.requestedAvailability.isEmpty())
+        }
+
+    /** Failed later nights retain only unresolved requests and do not repeat an acknowledged photo. */
+    @Test fun inventoryRetryRetainsPhotoAndConfirmedDates() =
+        runTest {
+            val first = java.time.LocalDate.of(2027, 5, 14)
+            val second = first.plusDays(1)
+            sites.offerHandler = { _, _, dates, _ ->
+                if (dates.single() == second) throw IOException("second night failed")
+            }
+            val model = model(site.id, difference = { requested, _ -> requested })
+            runCurrent()
+            review(model, photo)
+            model.editStep(CampsiteStep.AVAILABILITY)
+            model.toggleDate(second)
+            model.toggleDate(first)
+            model.next()
+            model.saveDraft()
+            runCurrent()
+            assertEquals(CampsiteSaveFailure.AVAILABILITY, content(model).saveFailure)
+            assertEquals(mapOf(second to true), content(model).draft.requestedAvailability)
+            assertEquals(1, images.replaceCalls)
+            assertNull(model.completion.value)
+            sites.offerHandler = { _, _, _, _ -> }
+            model.retrySave()
+            runCurrent()
+            assertEquals(
+                listOf(first, second, second),
+                sites.offerRequests.map { it.dates.single() },
+            )
+            assertEquals(1, images.replaceCalls)
+            assertEquals(site.id, model.completion.value)
+        }
+
+    /** An inventory failure recreates with the same pending withdrawal, never an implicit replay. */
+    @Test fun restoredInventoryFailureRequiresExplicitRetry() =
+        runTest {
+            val date = java.time.LocalDate.of(2027, 5, 14)
+            val saved = SavedStateHandle()
+            sites.calendarNights.value = listOf(CalendarNight(date, true))
+            sites.offerHandler = { _, _, _, _ -> throw IOException("acknowledgement lost") }
+            val first = model(site.id, saved, difference = { requested, _ -> requested })
+            runCurrent()
+            review(first)
+            first.editStep(CampsiteStep.AVAILABILITY)
+            first.toggleDate(date)
+            first.next()
+            first.saveDraft()
+            runCurrent()
+            val snapshot = copy(saved)
+            store.clear()
+            sites.calendarFailure.value = IOException("unknown month")
+            val restored = model(site.id, snapshot, difference = { requested, _ -> requested })
+            runCurrent()
+            assertEquals(mapOf(date to false), content(restored).draft.requestedAvailability)
+            assertEquals(1, sites.offerRequests.size)
+            assertNull(restored.completion.value)
+            sites.offerHandler = { _, _, _, offered -> assertFalse(offered) }
+            restored.retrySave()
+            runCurrent()
+            assertEquals(2, sites.offerRequests.size)
+            assertEquals(site.id, restored.completion.value)
+        }
+
     /** Constructs one graph-owned editor with a counted deterministic identity source.
      * @param id Saved target or null for a new form.
      * @param saved Small state from this or a previous process.
+     * @param difference Fixed comparison outcome for these lead-owned orchestration tests.
      */
     private fun model(
         id: String? = null,
         saved: SavedStateHandle = SavedStateHandle(),
+        difference: AvailabilityDifference? = null,
     ): CampsiteSetupViewModel =
         CampsiteSetupViewModel(site.ownerId, id, sites, images, clock, saved, newId = {
             allocations++
             "draft-new"
-        }).also { store.put("save-${models++}", it) }
+        }, remainingAvailabilityEdits = difference).also { store.put("save-${models++}", it) }
 
     /** Walks real advancement with valid details and an optional local photo selection.
      * @param model Actual controller under test.

@@ -31,6 +31,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 import java.time.Instant
+import java.time.LocalDate
 
 /** Real setup/navigation contracts for acknowledged details and attachment saves. */
 class CampsiteDraftSaveFlowTest {
@@ -182,6 +183,49 @@ class CampsiteDraftSaveFlowTest {
             ).performScrollTo()
             .assertIsDisplayed()
         compose.runOnIdle { assertEquals(0, host.campsites.writeCalls) }
+    }
+
+    /** The real review keeps partial progress and retries only the failed requested date. */
+    @Test fun partialDateSaveRetainsOnlyTheFailedDateAndRetriesIt() {
+        val first = LocalDate.of(2027, 5, 14)
+        val second = first.plusDays(1)
+        var failSecond = true
+        host.remainingAvailabilityEdits = { requested, _ -> requested }
+        host.campsites.offerHandler = { _, _, dates, _ ->
+            if (dates.single() == second && failSecond) throw IOException("second date failed")
+        }
+        start()
+        repeat(6) { compose.onNodeWithText("Next").performClick() }
+        compose.onNodeWithTag("calendar-date-$second").performScrollTo().performClick()
+        compose.onNodeWithTag("calendar-date-$first").performScrollTo().performClick()
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Save draft").assertIsEnabled().performClick()
+        compose
+            .onNodeWithText(
+                "Could not save all date changes. Confirmed changes are kept. Retry to finish the remaining dates.",
+            ).performScrollTo()
+            .assertIsDisplayed()
+        compose
+            .onNodeWithText(
+                "Date choices: 1 offered; 0 not offered",
+            ).performScrollTo()
+            .assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(
+                listOf(first, second),
+                host.campsites.offerRequests.map { it.dates.single() },
+            )
+            failSecond = false
+        }
+        compose.onNodeWithText("Retry save").performClick()
+        compose.onNodeWithText("Manage campsite").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(
+                listOf(first, second, second),
+                host.campsites.offerRequests.map { it.dates.single() },
+            )
+            assertEquals(0, host.images.replaceCalls)
+        }
     }
 
     /** Starts the real saved-draft parent with optional native selection fixture.
