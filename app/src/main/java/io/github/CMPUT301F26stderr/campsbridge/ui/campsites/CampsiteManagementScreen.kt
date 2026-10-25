@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -40,6 +41,7 @@ import java.time.Instant
  * @param onRetry Retries the listing read.
  * @param onRetryPhoto Retries an attachment/display reference read.
  * @param modifier Caller layout.
+ * @param onResume Opens existing draft setup; never used for a published listing.
  */
 @Composable
 fun CampsiteManagementScreen(
@@ -49,6 +51,7 @@ fun CampsiteManagementScreen(
     onRetry: () -> Unit,
     onRetryPhoto: () -> Unit,
     modifier: Modifier = Modifier,
+    onResume: (() -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.manage_campsite), modifier, onBack = onBack) {
         when (state) {
@@ -112,6 +115,9 @@ fun CampsiteManagementScreen(
                         ),
                     )
                     DetailRow(stringResource(R.string.campsite_reference), site.id)
+                    if (!site.isPublished && onResume != null) {
+                        TextButton(onResume) { Text(stringResource(R.string.campsite_resume)) }
+                    }
                 }
             }
         }

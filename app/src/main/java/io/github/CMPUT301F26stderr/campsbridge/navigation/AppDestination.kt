@@ -10,6 +10,18 @@ import java.util.Locale
 object AppDestination {
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
+    const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
+    const val CAMPSITE_SETUP_SAVED = "owner/campsite-setup/saved/{campsiteId}"
+
+    /** Addresses a distinct local/new or saved-ID setup parent.
+     * @param campsiteId Existing unpublished target, or null for a new form.
+     */
+    fun campsiteSetupGraph(campsiteId: String? = null): String =
+        if (campsiteId == null) {
+            CAMPSITE_SETUP_NEW
+        } else {
+            "owner/campsite-setup/saved/${Uri.encode(campsiteId)}"
+        }
 
     /** Addresses the registered owner inventory primary. */
     fun ownerCampsites(): String =

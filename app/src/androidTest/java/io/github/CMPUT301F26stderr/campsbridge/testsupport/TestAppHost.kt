@@ -18,10 +18,14 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 /** Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime. */
 class TestAppHost : AutoCloseable {
@@ -30,6 +34,7 @@ class TestAppHost : AutoCloseable {
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
     val campsites = FakeCampsiteRepository()
+    var campsiteSetupCreations = 0
     var campsiteListCreations = 0
     var campsiteDetailCreations = 0
     var profileCreations = 0
@@ -95,6 +100,20 @@ class TestAppHost : AutoCloseable {
                     initializer {
                         campsiteDetailCreations++
                         CampsiteDetailViewModel(accountId, id, context, campsites, images)
+                    }
+                }
+            }, { accountId, id ->
+                viewModelFactory {
+                    initializer {
+                        campsiteSetupCreations++
+                        CampsiteSetupViewModel(
+                            accountId,
+                            id,
+                            campsites,
+                            images,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            createSavedStateHandle(),
+                        )
                     }
                 }
             })

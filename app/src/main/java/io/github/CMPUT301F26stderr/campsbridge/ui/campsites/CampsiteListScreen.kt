@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,6 +30,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param onRetry Retries the source.
  * @param listState Saveable scroll context supplied by the route.
  * @param modifier Caller layout.
+ * @param onCreate Starts a real registered setup flow when supplied.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +42,12 @@ fun CampsiteListScreen(
     onRetry: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
     modifier: Modifier = Modifier,
+    onCreate: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxSize()) {
+        onCreate?.let { action ->
+            TextButton(action) { Text(stringResource(R.string.campsite_create)) }
+        }
         PrimaryTabRow(selectedTabIndex = tab.ordinal) {
             for (item in CampsiteListTab.entries) {
                 Tab(

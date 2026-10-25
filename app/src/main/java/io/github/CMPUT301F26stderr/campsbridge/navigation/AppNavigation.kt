@@ -30,6 +30,7 @@ import java.util.Locale
  * @param onSelectWorkspace Root-owned capability-limited selection.
  * @param campsiteListFactory Owner inventory dependencies.
  * @param campsiteDetailFactory Saved reader dependencies keyed by identity/context.
+ * @param campsiteSetupFactory Local editor dependencies for a new/saved draft.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -39,6 +40,7 @@ fun AppNavigation(
     onSelectWorkspace: (Role) -> Unit,
     campsiteListFactory: ViewModelProvider.Factory,
     campsiteDetailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
+    campsiteSetupFactory: (String?) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -91,6 +93,7 @@ fun AppNavigation(
             selectPrimary,
             campsiteListFactory,
             campsiteDetailFactory,
+            campsiteSetupFactory,
         )
     }
     LaunchedEffect(state.workspace) {

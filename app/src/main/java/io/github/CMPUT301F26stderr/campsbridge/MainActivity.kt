@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
@@ -52,6 +53,7 @@ class MainActivity : ComponentActivity() {
                     ->
                     campsiteDetailViewModelFactory(services, accountId, id, context)
                 },
+                { accountId, id -> campsiteSetupViewModelFactory(services, accountId, id) },
             )
         }
     }

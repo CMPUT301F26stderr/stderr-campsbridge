@@ -8,6 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
@@ -107,6 +108,29 @@ fun campsiteDetailViewModelFactory(
                 context,
                 services.repositories.campsites,
                 services.repositories.images,
+            )
+        }
+    }
+
+/** Constructs one local setup owner, without introducing persistence actions or helper fallbacks.
+ * @param services Selected host's dependencies and clock.
+ * @param ownerId Confirmed owner identity.
+ * @param campsiteId Actual saved draft identity, or null for a new local form.
+ */
+fun campsiteSetupViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    campsiteId: String?,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            CampsiteSetupViewModel(
+                ownerId,
+                campsiteId,
+                services.repositories.campsites,
+                services.repositories.images,
+                services.clock,
+                createSavedStateHandle(),
             )
         }
     }

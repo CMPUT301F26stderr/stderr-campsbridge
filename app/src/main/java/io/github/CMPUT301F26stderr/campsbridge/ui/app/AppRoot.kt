@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param profileFactory Factory for the established account; no entity snapshots in routes.
  * @param campsiteListFactory Factory for the owner's primary inventory.
  * @param campsiteDetailFactory Factory for a saved identity/context reader.
+ * @param campsiteSetupFactory Factory for a local setup parent.
  */
 @Composable
 fun AppRoot(
@@ -32,6 +33,7 @@ fun AppRoot(
     profileFactory: (String) -> ViewModelProvider.Factory,
     campsiteListFactory: (String) -> ViewModelProvider.Factory,
     campsiteDetailFactory: (String, String, CampsiteDetailContext) -> ViewModelProvider.Factory,
+    campsiteSetupFactory: (String, String?) -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -92,6 +94,7 @@ fun AppRoot(
                                     ->
                                     campsiteDetailFactory(session.account.id, id, context)
                                 },
+                                { id -> campsiteSetupFactory(session.account.id, id) },
                             )
                         }
                     }

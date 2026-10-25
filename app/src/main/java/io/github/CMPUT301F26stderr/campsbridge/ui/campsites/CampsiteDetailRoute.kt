@@ -6,14 +6,23 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /** Connects the current saved summary to its own graph-scoped read owner.
  * @param model Management graph owner, never borrowed from another context.
+ * @param onResume Opens the registered setup parent for an unpublished draft.
  * @param onBack Returns to the caller's retained primary destination.
  */
 @Composable
 fun CampsiteDetailRoute(
     model: CampsiteDetailViewModel,
+    onResume: (() -> Unit)? = null,
     onBack: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val photo by model.photoState.collectAsStateWithLifecycle()
-    CampsiteManagementScreen(state, photo, onBack, model::retry, model::retryPhoto)
+    CampsiteManagementScreen(
+        state,
+        photo,
+        onBack,
+        model::retry,
+        model::retryPhoto,
+        onResume = onResume,
+    )
 }

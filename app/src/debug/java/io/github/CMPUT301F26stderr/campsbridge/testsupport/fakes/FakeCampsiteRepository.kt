@@ -4,12 +4,12 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import java.time.LocalDate
 
 /** Controlled read boundary; writes are deliberately unsupported until a test needs them.
@@ -24,12 +24,24 @@ class FakeCampsiteRepository(
     val observedIds = mutableListOf<String>()
     var activeObservers = 0
     var allObservations = 0
+    var readFailure: Exception? = null
+    var readGate: CompletableDeferred<Unit>? = null
+    val readIds = mutableListOf<String>()
+    var writeCalls = 0
+    val calendarNights = MutableStateFlow<List<CalendarNight>>(emptyList())
+    val calendarFailure = MutableStateFlow<Exception?>(null)
+    val observedCalendars = mutableListOf<Triple<String, LocalDate, LocalDate>>()
+    var activeCalendarObservers = 0
 
     /** Returns current controlled server state.
      * @param id Requested listing identity.
      */
-    override suspend fun get(id: String): Campsite? =
-        records.value.find { it.id == id }
+    override suspend fun get(id: String): Campsite? {
+        readIds.add(id)
+        readGate?.await()
+        readFailure?.let { throw it }
+        return records.value.find { it.id == id }
+    }
 
     /** Observes one controlled record and tracks its lifetime.
      * @param id Requested listing identity.
@@ -60,7 +72,7 @@ class FakeCampsiteRepository(
             emitAll(controlled { it })
         }
 
-    /** Provides no inventory in this read-only fixture.
+    /** Emits the controlled range without inventing inventory writes.
      * @param id Requested listing.
      * @param start Inclusive first date.
      * @param endExclusive Exclusive last date.
@@ -70,7 +82,20 @@ class FakeCampsiteRepository(
         start: LocalDate,
         endExclusive: LocalDate,
     ): Flow<List<CalendarNight>> =
-        flowOf(emptyList())
+        flow {
+            observedCalendars.add(Triple(id, start, endExclusive))
+            activeCalendarObservers++
+            try {
+                emitAll(
+                    combine(calendarNights, calendarFailure) { nights, failure ->
+                        failure?.let { throw it }
+                        nights.filter { it.date >= start && it.date < endExclusive }
+                    },
+                )
+            } finally {
+                activeCalendarObservers--
+            }
+        }
 
     /** Rejects unconfigured creation instead of simulating success.
      * @param id Requested identity.
@@ -81,8 +106,10 @@ class FakeCampsiteRepository(
         id: String,
         ownerId: String,
         details: CampsiteDetails,
-    ): Campsite =
+    ): Campsite {
+        writeCalls++
         error("Configure a write outcome before testing draft creation")
+    }
 
     /** Rejects unconfigured edits.
      * @param id Requested identity.
@@ -94,6 +121,7 @@ class FakeCampsiteRepository(
         ownerId: String,
         details: CampsiteDetails,
     ) {
+        writeCalls++
         error("Configure a write outcome before testing updates")
     }
 
@@ -105,6 +133,7 @@ class FakeCampsiteRepository(
         id: String,
         ownerId: String,
     ) {
+        writeCalls++
         error("Configure a write outcome before testing publication")
     }
 
@@ -120,6 +149,7 @@ class FakeCampsiteRepository(
         dates: Set<LocalDate>,
         offered: Boolean,
     ) {
+        writeCalls++
         error("Configure a write outcome before testing inventory changes")
     }
 

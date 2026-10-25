@@ -19,6 +19,11 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 
 /** Registers implemented inventory and saved management routes; future editors add their own entries.
  * @param controller Account-owned navigation host.
@@ -28,6 +33,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
  * @param onSelectDestination Primary tab selection.
  * @param listFactory Inventory constructor dependencies.
  * @param detailFactory Saved reader dependencies for an ID/context.
+ * @param setupFactory Local editor dependencies for a new or existing draft.
  */
 internal fun NavGraphBuilder.campsiteGraph(
     controller: NavHostController,
@@ -37,6 +43,7 @@ internal fun NavGraphBuilder.campsiteGraph(
     onSelectDestination: (String) -> Unit,
     listFactory: ViewModelProvider.Factory,
     detailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
+    setupFactory: (String?) -> ViewModelProvider.Factory,
 ) {
     composable(AppDestination.ownerCampsites()) {
         val model: CampsiteListViewModel = viewModel(factory = listFactory)
@@ -48,7 +55,9 @@ internal fun NavGraphBuilder.campsiteGraph(
             selectedDestination = AppDestination.ownerCampsites(),
             onSelectDestination = onSelectDestination,
         ) {
-            CampsiteListRoute(model) { id ->
+            CampsiteListRoute(model, onCreate = {
+                controller.navigate(AppDestination.campsiteSetupGraph()) { launchSingleTop = true }
+            }) { id ->
                 controller.navigate(
                     AppDestination.campsiteGraph(
                         Role.OWNER,
@@ -74,7 +83,55 @@ internal fun NavGraphBuilder.campsiteGraph(
                     viewModelStoreOwner = parent,
                     factory = detailFactory(id, context),
                 )
-            CampsiteDetailRoute(model) { controller.popBackStack() }
+            CampsiteDetailRoute(model, onResume = {
+                controller.navigate(
+                    AppDestination.campsiteSetupGraph(id),
+                ) { launchSingleTop = true }
+            }) { controller.popBackStack() }
+        }
+    }
+    for (pattern in listOf(
+        AppDestination.CAMPSITE_SETUP_NEW,
+        AppDestination.CAMPSITE_SETUP_SAVED,
+    )) {
+        navigation(
+            startDestination = "$pattern/steps",
+            route = pattern,
+            arguments =
+                if (pattern == AppDestination.CAMPSITE_SETUP_SAVED) {
+                    listOf(navArgument("campsiteId") {})
+                } else {
+                    emptyList()
+                },
+        ) {
+            composable("$pattern/steps") { entry ->
+                val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                val id = parent.arguments?.getString("campsiteId")
+                val model: CampsiteSetupViewModel =
+                    viewModel(viewModelStoreOwner = parent, factory = setupFactory(id))
+                CampsiteSetupRoute(
+                    model,
+                    onExit = { controller.popBackStack(pattern, inclusive = true) },
+                    onSaved = { savedId ->
+                        controller.navigate(
+                            AppDestination.campsiteGraph(
+                                Role.OWNER,
+                                savedId,
+                                CampsiteDetailContext.MANAGE,
+                            ),
+                        ) {
+                            popUpTo(pattern) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onOpenPolicy = {
+                        controller.navigate(AppDestination.campsiteSetupGraph(id) + "/refund")
+                    },
+                )
+            }
+            composable("$pattern/refund") {
+                PolicyReaderScreen(policyContent(PolicyId.REFUND), { controller.popBackStack() })
+            }
         }
     }
 }
