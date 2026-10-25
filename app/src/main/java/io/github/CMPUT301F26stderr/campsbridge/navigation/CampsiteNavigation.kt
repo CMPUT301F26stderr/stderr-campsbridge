@@ -88,7 +88,15 @@ internal fun NavGraphBuilder.campsiteGraph(
                     viewModelStoreOwner = parent,
                     factory = detailFactory(id, context),
                 )
-            CampsiteDetailRoute(model, onAvailability = {
+            CampsiteDetailRoute(model, onPreview = {
+                controller.navigate(
+                    AppDestination.campsiteGraph(
+                        Role.OWNER,
+                        id,
+                        CampsiteDetailContext.PREVIEW,
+                    ),
+                ) { launchSingleTop = true }
+            }, onAvailability = {
                 controller.navigate(
                     AppDestination.availabilityEditor(id),
                 ) { launchSingleTop = true }
@@ -99,6 +107,7 @@ internal fun NavGraphBuilder.campsiteGraph(
             }) { controller.popBackStack() }
         }
     }
+    campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.PREVIEW, detailFactory)
     composable(
         AppDestination.AVAILABILITY_EDITOR,
         arguments =

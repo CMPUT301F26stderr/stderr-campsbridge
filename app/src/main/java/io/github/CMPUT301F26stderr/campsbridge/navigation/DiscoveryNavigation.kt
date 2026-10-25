@@ -8,15 +8,12 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailRoute
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.SearchFiltersRoute
@@ -76,19 +73,5 @@ internal fun NavGraphBuilder.discoveryGraph(
             SearchFiltersRoute(model) { controller.popBackStack() }
         }
     }
-    val context = CampsiteDetailContext.VIEW
-    val pattern = AppDestination.campsitePattern(Role.ENTRANT, context)
-    navigation(
-        startDestination = "$pattern/overview",
-        route = pattern,
-        arguments = listOf(navArgument("campsiteId") {}),
-    ) {
-        composable("$pattern/overview") { entry ->
-            val parent = remember(entry) { controller.getBackStackEntry(pattern) }
-            val id = checkNotNull(parent.arguments?.getString("campsiteId"))
-            val model: CampsiteDetailViewModel =
-                viewModel(viewModelStoreOwner = parent, factory = detailFactory(id, context))
-            CampsiteDetailRoute(model) { controller.popBackStack() }
-        }
-    }
+    campsiteReadGraph(controller, Role.ENTRANT, CampsiteDetailContext.VIEW, detailFactory)
 }

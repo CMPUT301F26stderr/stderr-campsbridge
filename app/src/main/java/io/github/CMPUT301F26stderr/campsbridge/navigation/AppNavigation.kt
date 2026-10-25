@@ -132,6 +132,12 @@ fun AppNavigation(
                 { openWorkspace(Role.OWNER) },
             )
         }
+        campsiteReadGraph(
+            controller,
+            Role.ADMIN,
+            CampsiteDetailContext.INSPECT,
+            campsiteDetailFactory,
+        )
         discoveryGraph(
             controller,
             state,
@@ -170,10 +176,8 @@ fun AppNavigation(
  * @param workspace Confirmed selected workspace.
  */
 private fun defaultPrimary(workspace: Role): String =
-    if (workspace ==
-        Role.OWNER
-    ) {
-        AppDestination.ownerCampsites()
-    } else {
-        AppDestination.profileGraph(workspace)
+    when (workspace) {
+        Role.OWNER -> AppDestination.ownerCampsites()
+        Role.ENTRANT -> AppDestination.EXPLORE
+        Role.ADMIN -> AppDestination.profileGraph(workspace)
     }

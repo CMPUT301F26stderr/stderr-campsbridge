@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.RatingState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.CampsiteCard
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.ratingLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
@@ -29,7 +30,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.components.DiscoveryToolbar
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.text.NumberFormat
 
 /** Primary discovery content; navigation owns its workspace frame.
  * @param state Editable criteria and independent result outcome.
@@ -179,37 +179,6 @@ private fun AppliedFilterSummary(filters: DiscoveryFilters) {
     }
     filters.requestedGuests?.let { Text(stringResource(R.string.discovery_guests_summary, it)) }
 }
-
-/** Formats optional rating facts without confusing empty reviews with a failed source.
- * @param state Current rating outcome.
- */
-@Composable
-internal fun ratingLabel(state: RatingState): String =
-    when (state) {
-        RatingState.Loading -> {
-            stringResource(R.string.discovery_rating_loading)
-        }
-
-        RatingState.Failure -> {
-            stringResource(R.string.discovery_rating_failure)
-        }
-
-        is RatingState.Ready -> {
-            val mean = state.summary.mean
-            if (mean == null) {
-                stringResource(R.string.discovery_no_ratings)
-            } else {
-                val number =
-                    NumberFormat
-                        .getNumberInstance(LocalConfiguration.current.locales[0])
-                        .apply {
-                            minimumFractionDigits = 1
-                            maximumFractionDigits = 1
-                        }.format(mean)
-                stringResource(R.string.discovery_rating_summary, number, state.summary.count)
-            }
-        }
-    }
 
 /** Shows a realistic read-only listing using supplied content. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)

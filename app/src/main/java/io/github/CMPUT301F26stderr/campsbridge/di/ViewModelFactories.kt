@@ -111,6 +111,10 @@ fun campsiteDetailViewModelFactory(
                 context,
                 services.repositories.campsites,
                 services.repositories.images,
+                services.repositories.accounts,
+                services.repositories.reviews,
+                createSavedStateHandle(),
+                services.clock,
             )
         }
     }

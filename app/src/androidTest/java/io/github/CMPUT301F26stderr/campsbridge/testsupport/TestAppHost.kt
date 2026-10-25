@@ -40,6 +40,7 @@ class TestAppHost : AutoCloseable {
     val images = FakeImageRepository()
     val campsites = FakeCampsiteRepository()
     val reviews = FakeReviewRepository()
+    val campsiteOwners = FakeAccountRepository(sampleAccount())
     var exploreCreations = 0
     var matchesText: ((Campsite, String) -> Boolean)? = null
     var matchesCapacity: ((Long, Long?) -> Boolean)? = null
@@ -110,7 +111,17 @@ class TestAppHost : AutoCloseable {
                 viewModelFactory {
                     initializer {
                         campsiteDetailCreations++
-                        CampsiteDetailViewModel(accountId, id, context, campsites, images)
+                        CampsiteDetailViewModel(
+                            accountId,
+                            id,
+                            context,
+                            campsites,
+                            images,
+                            campsiteOwners,
+                            reviews,
+                            createSavedStateHandle(),
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                        )
                     }
                 }
             }, { accountId, id ->

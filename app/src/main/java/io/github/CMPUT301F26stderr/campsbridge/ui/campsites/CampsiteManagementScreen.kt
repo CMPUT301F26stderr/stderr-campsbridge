@@ -43,6 +43,7 @@ import java.time.Instant
  * @param modifier Caller layout.
  * @param onAvailability Opens the registered independent offer editor.
  * @param onResume Opens existing draft setup; never used for a published listing.
+ * @param onPreview Opens the separate read-only owner preview graph.
  */
 @Composable
 fun CampsiteManagementScreen(
@@ -54,6 +55,7 @@ fun CampsiteManagementScreen(
     modifier: Modifier = Modifier,
     onResume: (() -> Unit)? = null,
     onAvailability: (() -> Unit)? = null,
+    onPreview: (() -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.manage_campsite), modifier, onBack = onBack) {
         when (state) {
@@ -117,6 +119,9 @@ fun CampsiteManagementScreen(
                         ),
                     )
                     DetailRow(stringResource(R.string.campsite_reference), site.id)
+                    if (onPreview != null) {
+                        TextButton(onPreview) { Text(stringResource(R.string.campsite_preview)) }
+                    }
                     if (onAvailability != null) {
                         TextButton(
                             onAvailability,

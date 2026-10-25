@@ -37,6 +37,7 @@ class ProfileEditingTest {
     /** Primary and editor share one model but each owns exactly one visible frame. */
     @Test fun menuAndEditorsHaveOneFrameAndActualBack() {
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onAllNodes(hasText("Profile") and !hasClickAction()).assertCountEquals(1)
         compose.onAllNodesWithContentDescription("Back").assertCountEquals(0)
         compose.onNodeWithText("Personal details").performClick()
@@ -62,6 +63,7 @@ class ProfileEditingTest {
         host.accounts.profileFailure = IOException("offline")
         host.parseName = { DisplayNameInput.Valid("Taylor") }
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Name").performTextReplacement(" Taylor ")
         compose.onNodeWithText("Save name").performClick()
@@ -86,6 +88,7 @@ class ProfileEditingTest {
         host.accounts.profileGate = CompletableDeferred()
         host.parseName = { DisplayNameInput.Valid("Taylor") }
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Save name").performClick()
         compose.onNodeWithText("Save name").assertIsNotEnabled()
@@ -104,6 +107,7 @@ class ProfileEditingTest {
         host.parseEmail = { OptionalContactInput.Valid(null) }
         host.parsePhone = { OptionalContactInput.Valid("123") }
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Contact details").performClick()
         compose.onNodeWithText("Email").performTextReplacement("")
         compose.onNodeWithText("Phone").performTextReplacement("123")
@@ -132,6 +136,7 @@ class ProfileEditingTest {
         host.parseEmail = null
         host.parsePhone = null
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Name").performTextReplacement("Pending")
         compose.onNodeWithText("Save name").assertIsNotEnabled()
@@ -146,6 +151,7 @@ class ProfileEditingTest {
     /** Live account data refreshes the menu without rebuilding the parent graph model. */
     @Test fun dirtyEditorSurvivesAccountRefresh() {
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Name").performTextReplacement("Unsaved")
         compose.runOnIdle {
