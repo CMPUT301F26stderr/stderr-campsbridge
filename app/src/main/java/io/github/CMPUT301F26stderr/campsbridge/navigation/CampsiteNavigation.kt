@@ -28,7 +28,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 
-/** Registers implemented inventory and saved management routes; future editors add their own entries.
+/**
+ * Registers implemented inventory and saved management routes; future editors add their own
+ * entries.
  * @param controller Account-owned navigation host.
  * @param state Confirmed session.
  * @param onSelectWorkspace Root-owned capability-limited selection.
@@ -88,7 +90,9 @@ internal fun NavGraphBuilder.campsiteGraph(
                     viewModelStoreOwner = parent,
                     factory = detailFactory(id, context),
                 )
-            CampsiteDetailRoute(model, onPreview = {
+            CampsiteDetailRoute(model, onCreateLottery = {
+                controller.navigate(AppDestination.LOTTERY_SETUP) { launchSingleTop = true }
+            }, onPreview = {
                 controller.navigate(
                     AppDestination.campsiteGraph(
                         Role.OWNER,

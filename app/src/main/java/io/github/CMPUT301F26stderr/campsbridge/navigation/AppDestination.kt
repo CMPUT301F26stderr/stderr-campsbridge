@@ -14,6 +14,7 @@ object AppDestination {
     const val PROFILE = "profile"
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
     const val CAMPSITE_SETUP_SAVED = "owner/campsite-setup/saved/{campsiteId}"
+    const val LOTTERY_SETUP = "owner/lottery-setup/new"
 
     /** Addresses a distinct local/new or saved-ID setup parent.
      * @param campsiteId Existing unpublished target, or null for a new form.

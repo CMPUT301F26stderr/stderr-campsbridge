@@ -12,8 +12,29 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+
+/** Constructs the local lottery form; F13 and persistence remain explicitly pending.
+ * @param services Current host's repository interfaces and clock.
+ * @param ownerId Current account identity whose published sites are eligible.
+ */
+fun lotterySetupViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotterySetupViewModel(
+                ownerId,
+                services.repositories.campsites,
+                services.clock,
+                createSavedStateHandle(),
+                validateWindows = null,
+            )
+        }
+    }
 
 /**
  * Supplies explicit root dependencies; the ViewModel never receives a concrete container.

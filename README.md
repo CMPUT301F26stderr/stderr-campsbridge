@@ -49,6 +49,8 @@ Owner campsite lists and the eight-step setup are available; the offline demo do
 
 The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name/contact fields are editable, while their submission remains blocked until the reserved teammate validators are integrated.
 
+Published campsite management opens a six-step lottery setup with one campsite, a working allocation calendar, native schedule inputs and unlimited registration. Input survives route recreation; allocation Back/Cancel leaves applied dates unchanged. This flow currently keeps input local. Save draft and Publish remain disabled until persistence is connected and the reserved schedule validator is integrated.
+
 Select `firebaseDebug` in Android Studio for real account identity, Firestore and Storage, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.
 
 ## Maps configuration

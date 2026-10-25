@@ -76,6 +76,16 @@ PY
         echo 'Android test device failed to boot.' >&2
         exit 1
     fi
+
+    # First-run SDK setup can retain focus or show an ANR over the test app.
+    # Provision only this disposable AVD; leave supplied devices unchanged.
+    adb -s "$ANDROID_SERIAL" shell settings put global device_provisioned 1
+    adb -s "$ANDROID_SERIAL" shell settings put secure user_setup_complete 1
+    if [[ "$(adb -s "$ANDROID_SERIAL" shell pm path com.google.android.googlesdksetup)" == package:* ]]; then
+        adb -s "$ANDROID_SERIAL" shell pm disable-user --user 0 com.google.android.googlesdksetup
+    fi
+    adb -s "$ANDROID_SERIAL" shell locksettings set-disabled true
+    adb -s "$ANDROID_SERIAL" shell input keyevent KEYCODE_HOME
 fi
 
 adb -s "$ANDROID_SERIAL" get-state
@@ -87,6 +97,33 @@ adb -s "$ANDROID_SERIAL" shell settings put global transition_animation_scale 0
 adb -s "$ANDROID_SERIAL" shell settings put global animator_duration_scale 0
 adb -s "$ANDROID_SERIAL" shell settings put secure show_ime_with_hard_keyboard 1
 adb -s "$ANDROID_SERIAL" shell input keyevent 82
+
+if [[ -n "$ui_pid" ]]; then
+    # Boot completion precedes SystemUI readiness. Do not test behind its lock screen.
+    ui_focused=false
+    for ((attempt = 0; attempt < 60; attempt++)); do
+        adb -s "$ANDROID_SERIAL" shell wm dismiss-keyguard
+        adb -s "$ANDROID_SERIAL" shell input keyevent KEYCODE_HOME
+        if adb -s "$ANDROID_SERIAL" shell dumpsys window | python3 -c '
+import sys
+state = sys.stdin.read()
+focused_home = any(
+    "mCurrentFocus=Window{" in line and "com.google.android.apps.nexuslauncher" in line
+    for line in state.splitlines()
+)
+sys.exit(0 if focused_home and "isKeyguardShowing=false" in state else 1)
+'; then
+            ui_focused=true
+            break
+        fi
+        sleep 2
+    done
+    if [[ "$ui_focused" != true ]]; then
+        adb -s "$ANDROID_SERIAL" shell dumpsys window >&2
+        echo 'Disposable Android device did not reach its unlocked launcher.' >&2
+        exit 1
+    fi
+fi
 
 # Remove only generated results so a stale report cannot satisfy this run.
 results=app/build/outputs/androidTest-results/connected

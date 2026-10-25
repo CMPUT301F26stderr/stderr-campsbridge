@@ -24,6 +24,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
@@ -41,6 +43,8 @@ class TestAppHost : AutoCloseable {
     val campsites = FakeCampsiteRepository()
     val reviews = FakeReviewRepository()
     val campsiteOwners = FakeAccountRepository(sampleAccount())
+    var lotterySetupCreations = 0
+    var validateLotteryWindows: LotteryWindowValidator? = null
     var exploreCreations = 0
     var matchesText: ((Campsite, String) -> Boolean)? = null
     var matchesCapacity: ((Long, Long?) -> Boolean)? = null
@@ -169,6 +173,19 @@ class TestAppHost : AutoCloseable {
                                     Instant.parse("2027-05-01T12:00:00Z"),
                                     ZoneOffset.UTC,
                                 ),
+                        )
+                    }
+                }
+            }, { id ->
+                viewModelFactory {
+                    initializer {
+                        lotterySetupCreations++
+                        LotterySetupViewModel(
+                            id,
+                            campsites,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            createSavedStateHandle(),
+                            validateLotteryWindows,
                         )
                     }
                 }
