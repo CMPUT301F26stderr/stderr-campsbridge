@@ -18,6 +18,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -269,6 +271,29 @@ fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
                 matchesCapacity = null,
                 sortCampsites = null,
                 clock = services.clock,
+            )
+        }
+    }
+
+/** Constructs one saved aggregate reader shared by overview, payment and exact accepted terms.
+ * @param services Current host's repository interfaces.
+ * @param accountId Ready actor identity.
+ * @param reservationId Actual saved target.
+ * @param context Explicit caller presentation.
+ */
+fun reservationDetailViewModelFactory(
+    services: AppServices,
+    accountId: String,
+    reservationId: String,
+    context: ReservationContext,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            ReservationDetailViewModel(
+                accountId,
+                reservationId,
+                context,
+                services.repositories.bookings,
             )
         }
     }

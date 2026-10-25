@@ -5,6 +5,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import java.util.Locale
 
 /** Registered destinations only; add feature routes when their implementations exist. */
@@ -22,6 +23,22 @@ object AppDestination {
     const val ENTRANT_LOTTERIES = "entrant/lotteries"
     const val ENTRANT_LOTTERY_DETAIL = "entrant/lotteries/{lotteryId}/detail"
     const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
+
+    /** Registers one saved reservation parent per caller presentation.
+     * @param context Explicit entrant or owner context.
+     */
+    fun reservationPattern(context: ReservationContext): String =
+        "${context.name.lowercase(Locale.ROOT)}/reservations/{reservationId}/detail"
+
+    /** Addresses only the saved identity, without copying booked facts into navigation.
+     * @param reservationId Actual ID from a saved reservation, Inbox or opportunity lookup.
+     * @param context Presentation belonging to the actual caller.
+     */
+    fun reservationDetail(
+        reservationId: String,
+        context: ReservationContext,
+    ): String =
+        reservationPattern(context).replace("{reservationId}", Uri.encode(reservationId))
 
     /** Addresses the owner's allocation-filtered list from actual campsite management.
      * @param campsiteId Saved listing identity; punctuation is encoded as one argument.

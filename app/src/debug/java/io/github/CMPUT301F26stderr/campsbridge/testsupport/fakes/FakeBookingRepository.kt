@@ -22,6 +22,7 @@ class FakeBookingRepository(
     val entrantRequests = mutableListOf<String>()
     val opportunityRequests = mutableListOf<Pair<String, String>>()
     var opportunityHandler: (suspend (String, String) -> Reservation?)? = null
+    var observeHandler: ((String) -> Flow<Reservation?>)? = null
     val recordFailure = MutableStateFlow<Exception?>(null)
     val observedRecordIds = mutableListOf<String>()
     var activeRecordObservers = 0
@@ -80,6 +81,11 @@ class FakeBookingRepository(
             observedRecordIds.add(id)
             activeRecordObservers++
             try {
+                val handler = observeHandler
+                if (handler != null) {
+                    handler(id).collect { emit(it) }
+                    return@flow
+                }
                 combine(records, recordFailure) { rows, failure ->
                     failure?.let { throw it }
                     rows.firstOrNull { it.id == id }

@@ -41,6 +41,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -59,6 +60,7 @@ class TestAppHost : AutoCloseable {
     val lotteryAccounts = FakeAccountRepository()
     val lotteries = FakeLotteryRepository()
     val bookings = FakeBookingRepository()
+    var reservationDetailCreations = 0
     var lotteryListCreations = 0
     var lotteryDetailCreations = 0
     val reviews = FakeReviewRepository()
@@ -252,6 +254,13 @@ class TestAppHost : AutoCloseable {
                             createSavedStateHandle(),
                             campsiteId,
                         )
+                    }
+                }
+            }, { accountId, id, context ->
+                viewModelFactory {
+                    initializer {
+                        reservationDetailCreations++
+                        ReservationDetailViewModel(accountId, id, context, bookings)
                     }
                 }
             })

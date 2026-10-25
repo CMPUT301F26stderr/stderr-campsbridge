@@ -19,6 +19,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
@@ -75,6 +76,13 @@ class MainActivity : ComponentActivity() {
                     campsiteId,
                     ->
                     lotteryListViewModelFactory(services, accountId, context, campsiteId)
+                },
+                {
+                    accountId,
+                    id,
+                    context,
+                    ->
+                    reservationDetailViewModelFactory(services, accountId, id, context)
                 },
             )
         }

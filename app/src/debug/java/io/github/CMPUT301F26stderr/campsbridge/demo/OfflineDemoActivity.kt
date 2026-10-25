@@ -48,6 +48,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -151,6 +152,18 @@ class OfflineDemoActivity : ComponentActivity() {
                                             accountId,
                                             context,
                                             campsiteId,
+                                        )
+                                    },
+                                    {
+                                        accountId,
+                                        id,
+                                        context,
+                                        ->
+                                        reservationDetailViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            id,
+                                            context,
                                         )
                                     },
                                 )

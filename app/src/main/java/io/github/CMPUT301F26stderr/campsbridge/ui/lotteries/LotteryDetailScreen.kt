@@ -43,6 +43,7 @@ import java.time.format.FormatStyle
  * @param onBack Returns to the retained caller.
  * @param onContinue Opens setup for this saved identity.
  * @param onParticipants Registered owner participant destination, absent for entrants.
+ * @param onReservation Registered saved-record destination, absent until its graph is supplied.
  */
 @Composable
 fun LotteryDetailRoute(
@@ -50,6 +51,7 @@ fun LotteryDetailRoute(
     onBack: () -> Unit,
     onContinue: () -> Unit,
     onParticipants: (() -> Unit)? = null,
+    onReservation: ((String) -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
@@ -71,6 +73,7 @@ fun LotteryDetailRoute(
         model::confirmLeave,
         model::draw,
         onParticipants = onParticipants,
+        onReservation = onReservation,
     )
 }
 
@@ -90,6 +93,7 @@ fun LotteryDetailRoute(
  * @param onDraw Invokes the eligible owner fallback or explicit retry.
  * @param modifier Caller layout.
  * @param onParticipants Registered owner-only child; no action is shown for drafts.
+ * @param onReservation Opens an actual consuming saved record; no booking success is fabricated.
  */
 @Composable
 fun LotteryDetailScreen(
@@ -107,6 +111,7 @@ fun LotteryDetailScreen(
     onDraw: () -> Unit,
     modifier: Modifier = Modifier,
     onParticipants: (() -> Unit)? = null,
+    onReservation: ((String) -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.lottery_detail_title), modifier, onBack = onBack) {
         when (state) {
@@ -176,6 +181,11 @@ fun LotteryDetailScreen(
                                     opportunity.reservation.id,
                                 ),
                             )
+                            if (onReservation != null) {
+                                AppActionButton(stringResource(R.string.reservation_view), {
+                                    onReservation(opportunity.reservation.id)
+                                })
+                            }
                         }
 
                         is LotteryOpportunityRead.Unavailable -> {

@@ -23,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import java.util.Locale
 
 /**
@@ -38,6 +39,7 @@ import java.util.Locale
  * @param lotterySetupFactory New/saved lottery-setup dependencies for the current owner.
  * @param lotteryDetailFactory Saved owner-reader dependencies.
  * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
+ * @param reservationDetailFactory Saved aggregate dependencies keyed by ID/context.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -53,6 +55,7 @@ fun AppNavigation(
     lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
     lotteryDetailFactory: (String, LotteryContext) -> ViewModelProvider.Factory,
     lotteryListFactory: (LotteryContext, String?) -> ViewModelProvider.Factory,
+    reservationDetailFactory: (String, ReservationContext) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -135,7 +138,13 @@ fun AppNavigation(
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
         lotterySetupGraph(controller, lotterySetupFactory)
-        lotteryDetailGraph(controller, lotteryDetailFactory)
+        reservationGraph(controller, reservationDetailFactory)
+        lotteryDetailGraph(controller, lotteryDetailFactory) { id ->
+            controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
+                launchSingleTop =
+                    true
+            }
+        }
         lotteryListGraph(
             controller,
             state,
