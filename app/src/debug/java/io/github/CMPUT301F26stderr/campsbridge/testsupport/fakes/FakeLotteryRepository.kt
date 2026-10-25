@@ -45,6 +45,8 @@ class FakeLotteryRepository(
     var setOfferHandler: (suspend (String, String, LotteryOffer) -> Unit)? = null
     var removeOfferHandler: (suspend (String, String, String) -> Unit)? = null
     var publishHandler: (suspend (String, String) -> Unit)? = null
+    var joinHandler: (suspend (String, String) -> Unit)? = null
+    var withdrawHandler: (suspend (String, String) -> Unit)? = null
 
     /** Captures the exact arguments supplied to create/update without simulating a transaction.
      * @param id Retained target identity.
@@ -242,25 +244,29 @@ class FakeLotteryRepository(
         checkNotNull(publishHandler) { "Configure publication" }(id, ownerId)
     }
 
-    /** Rejects unconfigured membership mutations.
+    /** Captures joining and requires an explicitly supplied outcome.
      * @param id Requested lottery.
      * @param accountId Requesting account.
      */
     override suspend fun join(
         id: String,
         accountId: String,
-    ): Unit =
-        unsupported()
+    ) {
+        events.add("join:$id:$accountId")
+        checkNotNull(joinHandler) { "Configure joining" }(id, accountId)
+    }
 
-    /** Rejects unconfigured withdrawal.
+    /** Captures withdrawal and requires an explicitly supplied outcome.
      * @param id Requested lottery.
      * @param accountId Requesting account.
      */
     override suspend fun withdraw(
         id: String,
         accountId: String,
-    ): Unit =
-        unsupported()
+    ) {
+        events.add("withdraw:$id:$accountId")
+        checkNotNull(withdrawHandler) { "Configure withdrawal" }(id, accountId)
+    }
 
     /** Rejects unconfigured decline.
      * @param id Requested lottery.

@@ -8,6 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -56,9 +57,53 @@ class LotteryDetailViewModel(
     private var lookupInFlight = false
     private var knownReservationId: String? = null
     private var opportunity: LotteryOpportunityRead = LotteryOpportunityRead.NotApplicable
+    private var membershipActionJob: Job? = null
+    private var membershipActionVersion = 0L
+    private var pendingMembershipAction: LotteryMembershipAction? = null
+    private var membershipAcknowledged = false
+    private var membershipObserved = false
+    private var confirmingLeave = false
+    private var membershipError: LotteryMembershipActionError? = null
 
     init {
         observeRecord()
+    }
+
+    /** Requests one eligible join/rejoin without locally manufacturing a membership. */
+    fun join() {
+        val current = state.value as? LotteryDetailUiState.Content ?: return
+        if (pendingMembershipAction != null || confirmingLeave) return
+        refreshSections()
+        if (canJoin(current.lottery)) startMembershipAction(LotteryMembershipAction.JOIN)
+    }
+
+    /** Opens withdrawal confirmation only while current facts allow leaving. */
+    fun requestLeave() {
+        val current = state.value as? LotteryDetailUiState.Content ?: return
+        if (pendingMembershipAction != null) return
+        refreshSections()
+        if (canLeave(current.lottery)) {
+            confirmingLeave = true
+            membershipError = null
+            refreshSections()
+        }
+    }
+
+    /** Dismisses an unsubmitted confirmation without writing. */
+    fun dismissLeave() {
+        if (pendingMembershipAction != null) return
+        confirmingLeave = false
+        refreshSections()
+    }
+
+    /** Rechecks live eligibility and submits one explicitly confirmed withdrawal. */
+    fun confirmLeave() {
+        val current = state.value as? LotteryDetailUiState.Content ?: return
+        if (!confirmingLeave || pendingMembershipAction != null) return
+        refreshSections()
+        if (confirmingLeave && canLeave(current.lottery)) {
+            startMembershipAction(LotteryMembershipAction.LEAVE)
+        }
     }
 
     /** Retries only the failed own-entry source. */
@@ -107,6 +152,7 @@ class LotteryDetailViewModel(
         stopOffers()
         stopTime()
         stopMembership()
+        stopMembershipAction()
         mutableState.value = LotteryDetailUiState.Loading
         recordJob =
             viewModelScope.launch {
@@ -123,6 +169,7 @@ class LotteryDetailViewModel(
                             stopOffers()
                             stopTime()
                             stopMembership()
+                            stopMembershipAction()
                             mutableState.value = LotteryDetailUiState.Unavailable
                         } else {
                             checkNotNull(record)
@@ -153,6 +200,7 @@ class LotteryDetailViewModel(
                         stopOffers()
                         stopTime()
                         stopMembership()
+                        stopMembershipAction()
                         mutableState.value = LotteryDetailUiState.Failure
                     }
                 }
@@ -273,9 +321,124 @@ class LotteryDetailViewModel(
         pending.start()
     }
 
+    /** Checks the shared window and successful own-entry source before allowing a mutation.
+     * @param lottery Current confirmed parent.
+     */
+    private fun registrationReady(lottery: Lottery): Boolean =
+        context == LotteryContext.ENTRANT && membershipLoaded && !membershipFailed &&
+            lottery.registrationIsOpen(clock.instant())
+
+    /** Allows joining only from confirmed absence or a withdrawn entry.
+     * @param lottery Current confirmed parent.
+     */
+    private fun canJoin(lottery: Lottery): Boolean =
+        registrationReady(lottery) &&
+            (ownEntry == null || ownEntry?.state == EntryState.WITHDRAWN)
+
+    /** Allows leaving only a confirmed waiting entry during registration.
+     * @param lottery Current confirmed parent.
+     */
+    private fun canLeave(lottery: Lottery): Boolean =
+        registrationReady(lottery) &&
+            ownEntry?.state == EntryState.WAITING
+
+    /** Claims a command before suspension and waits for acknowledgement plus observed membership.
+     * @param action Explicit eligible mutation requested by the user.
+     */
+    private fun startMembershipAction(action: LotteryMembershipAction) {
+        val version = ++membershipActionVersion
+        pendingMembershipAction = action
+        membershipAcknowledged = false
+        membershipObserved = false
+        membershipError = null
+        refreshSections()
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                try {
+                    when (action) {
+                        LotteryMembershipAction.JOIN -> lotteries.join(lotteryId, accountId)
+                        LotteryMembershipAction.LEAVE -> lotteries.withdraw(lotteryId, accountId)
+                    }
+                    currentCoroutineContext().ensureActive()
+                    if (version != membershipActionVersion) return@launch
+                    membershipAcknowledged = true
+                    refreshSections()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    currentCoroutineContext().ensureActive()
+                    if (version == membershipActionVersion) {
+                        pendingMembershipAction = null
+                        membershipAcknowledged = false
+                        membershipObserved = false
+                        confirmingLeave = false
+                        membershipError =
+                            when ((failure as? PersistenceFailure)?.reason) {
+                                PersistenceFailure.Reason.CAPACITY_REACHED -> {
+                                    LotteryMembershipActionError.FULL
+                                }
+
+                                PersistenceFailure.Reason.WINDOW_CLOSED -> {
+                                    LotteryMembershipActionError.CLOSED
+                                }
+
+                                else -> {
+                                    LotteryMembershipActionError.FAILED
+                                }
+                            }
+                        refreshSections()
+                    }
+                } finally {
+                    if (version == membershipActionVersion) membershipActionJob = null
+                }
+            }
+        membershipActionJob = pending
+        pending.start()
+    }
+
+    /** Retains observed effects until acknowledgement, including superseding reads. */
+    private fun settleMembershipAction() {
+        val action = pendingMembershipAction ?: return
+        if (membershipLoaded && !membershipFailed) {
+            val matched =
+                when (action) {
+                    // A quick draw can replace WAITING before this observer receives it.
+                    LotteryMembershipAction.JOIN -> {
+                        ownEntry != null && ownEntry?.state != EntryState.WITHDRAWN
+                    }
+
+                    LotteryMembershipAction.LEAVE -> {
+                        ownEntry?.state == EntryState.WITHDRAWN
+                    }
+                }
+            if (matched) membershipObserved = true
+        }
+        if (membershipAcknowledged && membershipObserved) {
+            pendingMembershipAction = null
+            membershipAcknowledged = false
+            membershipObserved = false
+            confirmingLeave = false
+            membershipError = null
+        }
+    }
+
+    /** Retires command presentation and rejects late results without replaying a write. */
+    private fun stopMembershipAction() {
+        membershipActionVersion++
+        membershipActionJob?.cancel()
+        membershipActionJob = null
+        pendingMembershipAction = null
+        membershipAcknowledged = false
+        membershipObserved = false
+        confirmingLeave = false
+        membershipError = null
+    }
+
     /** Recalculates public sections from current source facts without exposing raw draw entries. */
     private fun refreshSections() {
         val current = state.value as? LotteryDetailUiState.Content ?: return
+        settleMembershipAction()
+        if (pendingMembershipAction == null && !canLeave(current.lottery)) confirmingLeave = false
         val membership =
             when {
                 context == LotteryContext.OWNER -> LotteryMembershipRead.NotApplicable
@@ -288,6 +451,11 @@ class LotteryDetailViewModel(
                 lifecycle = lotteryLifecycle(current.lottery, clock.instant()),
                 membership = membership,
                 opportunity = opportunity,
+                canJoin = canJoin(current.lottery),
+                canLeave = canLeave(current.lottery),
+                isConfirmingLeave = confirmingLeave,
+                membershipAction = pendingMembershipAction,
+                membershipError = membershipError,
             )
         scheduleTime()
     }
@@ -435,6 +603,7 @@ class LotteryDetailViewModel(
         stopOffers()
         stopTime()
         stopMembership()
+        stopMembershipAction()
         super.onCleared()
     }
 }

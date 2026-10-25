@@ -15,6 +15,12 @@ enum class LotteryMembershipStatus {
     DECLINED,
 }
 
+/** The one explicit membership mutation awaiting acknowledgement or observed confirmation. */
+enum class LotteryMembershipAction { JOIN, LEAVE }
+
+/** Membership-command feedback without raw repository or transport details. */
+enum class LotteryMembershipActionError { FULL, CLOSED, FAILED }
+
 /** Independent own-entry source; owner management does not query this lane. */
 sealed interface LotteryMembershipRead {
     /** This presentation does not require entrant membership. */
@@ -108,6 +114,11 @@ sealed interface LotteryDetailUiState {
      * @param canContinue Whether the current owner may reopen the unpublished active draft.
      * @param membership Independent own participation, hidden for owner management.
      * @param opportunity Server-confirmed consumption and live saved history.
+     * @param canJoin Current parent/window/own-entry facts permit joining or rejoining.
+     * @param canLeave Current parent/window/own-entry facts permit withdrawal.
+     * @param isConfirmingLeave Whether the explicit withdrawal confirmation is open.
+     * @param membershipAction One pending write or its awaited observed confirmation.
+     * @param membershipError Last membership-command failure, independent of read failures.
      */
     data class Content(
         val lottery: Lottery,
@@ -116,5 +127,10 @@ sealed interface LotteryDetailUiState {
         val lifecycle: LotteryLifecycle,
         val membership: LotteryMembershipRead = LotteryMembershipRead.NotApplicable,
         val opportunity: LotteryOpportunityRead = LotteryOpportunityRead.NotApplicable,
+        val canJoin: Boolean = false,
+        val canLeave: Boolean = false,
+        val isConfirmingLeave: Boolean = false,
+        val membershipAction: LotteryMembershipAction? = null,
+        val membershipError: LotteryMembershipActionError? = null,
     ) : LotteryDetailUiState
 }

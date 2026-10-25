@@ -63,6 +63,10 @@ fun LotteryDetailRoute(
         onContinue,
         model::retryMembership,
         model::retryOpportunity,
+        model::join,
+        model::requestLeave,
+        model::dismissLeave,
+        model::confirmLeave,
     )
 }
 
@@ -75,6 +79,10 @@ fun LotteryDetailRoute(
  * @param onContinue Reopens this active unpublished draft by ID.
  * @param onRetryMembership Retries the independent own-entry source.
  * @param onRetryOpportunity Reconciles unknown reservation consumption.
+ * @param onJoin Joins or rejoins an eligible waitlist.
+ * @param onRequestLeave Opens withdrawal confirmation.
+ * @param onDismissLeave Dismisses an unsubmitted withdrawal.
+ * @param onConfirmLeave Submits an explicitly confirmed withdrawal.
  * @param modifier Caller layout.
  */
 @Composable
@@ -86,6 +94,10 @@ fun LotteryDetailScreen(
     onContinue: () -> Unit,
     onRetryMembership: () -> Unit,
     onRetryOpportunity: () -> Unit,
+    onJoin: () -> Unit,
+    onRequestLeave: () -> Unit,
+    onDismissLeave: () -> Unit,
+    onConfirmLeave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppScreen(stringResource(R.string.lottery_detail_title), modifier, onBack = onBack) {
@@ -191,6 +203,13 @@ fun LotteryDetailScreen(
                             )
                         }
                     }
+                    LotteryMembershipActions(
+                        state,
+                        onJoin,
+                        onRequestLeave,
+                        onDismissLeave,
+                        onConfirmLeave,
+                    )
                     if (state.canContinue) {
                         AppActionButton(
                             stringResource(R.string.lottery_continue_setup),
@@ -398,6 +417,37 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
                     membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WON),
                     opportunity = LotteryOpportunityRead.Failure,
                 ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
+                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.NOT_JOINED),
+                    canJoin = true,
+                ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
+                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WITHDRAWN),
+                    canJoin = true,
+                    membershipAction = LotteryMembershipAction.JOIN,
+                ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
+                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WAITING),
+                    canLeave = true,
+                    isConfirmingLeave = true,
+                ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
+                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WITHDRAWN),
+                    canJoin = true,
+                    membershipError = LotteryMembershipActionError.FAILED,
+                ),
                 content.copy(offers = LotteryOffersState.Content(emptyList())),
                 content.copy(offers = LotteryOffersState.Failure),
                 LotteryDetailUiState.Loading,
@@ -416,5 +466,5 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
 private fun LotteryDetailPreview(
     @PreviewParameter(LotteryDetailPreviewProvider::class) state: LotteryDetailUiState,
 ) {
-    CampsbridgeTheme { LotteryDetailScreen(state, {}, {}, {}, {}, {}, {}) }
+    CampsbridgeTheme { LotteryDetailScreen(state, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
 }
