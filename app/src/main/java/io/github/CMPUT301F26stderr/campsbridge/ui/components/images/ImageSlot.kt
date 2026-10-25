@@ -60,6 +60,7 @@ import java.time.Instant
  * @param modifier Caller layout.
  * @param imageShape Shape shared with the parent feature's image convention.
  * @param imageModifier Optional parent geometry, such as a full-width campsite photo.
+ * @param enabled Whether the parent permits image actions alongside its own operation.
  */
 @Composable
 fun ImageSlot(
@@ -74,6 +75,7 @@ fun ImageSlot(
     modifier: Modifier = Modifier,
     imageShape: Shape = MaterialTheme.shapes.medium,
     imageModifier: Modifier? = null,
+    enabled: Boolean = true,
 ) {
     var confirmingRemoval by remember { mutableStateOf(false) }
     val imageSize = 128.dp * LocalControlScale.current
@@ -119,6 +121,7 @@ fun ImageSlot(
                 FailureContent(
                     stringResource(R.string.photo_unconfirmed),
                     onRetry,
+                    retryEnabled = enabled,
                 )
             }
 
@@ -126,6 +129,7 @@ fun ImageSlot(
                 FailureContent(
                     stringResource(R.string.photo_load_failure),
                     onRetry,
+                    retryEnabled = enabled,
                 )
             }
 
@@ -133,6 +137,7 @@ fun ImageSlot(
                 FailureContent(
                     stringResource(R.string.photo_save_failure),
                     onRetry,
+                    retryEnabled = enabled,
                 )
             }
 
@@ -140,6 +145,7 @@ fun ImageSlot(
                 FailureContent(
                     stringResource(R.string.photo_remove_failure),
                     onRetry,
+                    retryEnabled = enabled,
                 )
             }
 
@@ -147,6 +153,7 @@ fun ImageSlot(
                 FailureContent(
                     stringResource(R.string.photo_selection_failure),
                     onChoosePhoto,
+                    retryEnabled = enabled,
                 )
             }
 
@@ -154,6 +161,7 @@ fun ImageSlot(
                 FailureContent(
                     stringResource(R.string.photo_display_failure),
                     onRetry,
+                    retryEnabled = enabled,
                 )
             }
         }
@@ -167,25 +175,25 @@ fun ImageSlot(
         ) {
             LoadingContent(stringResource(R.string.photo_checking))
         }
-        OutlinedButton(onClick = onChoosePhoto, enabled = state.canChoose) {
+        OutlinedButton(onClick = onChoosePhoto, enabled = enabled && state.canChoose) {
             Text(stringResource(R.string.photo_choose))
         }
         if (state.candidate != null) {
             AppActionButton(
                 stringResource(R.string.photo_save),
                 onSave,
-                enabled = state.canSave,
+                enabled = enabled && state.canSave,
                 isSubmitting = state.operation == ImageOperation.SAVING,
                 progressDescription = stringResource(R.string.photo_saving),
             )
-            TextButton(onClick = onDiscard, enabled = state.canChoose) {
+            TextButton(onClick = onDiscard, enabled = enabled && state.canChoose) {
                 Text(stringResource(R.string.photo_discard))
             }
         }
         if (state.attachment != null && state.candidate == null) {
             TextButton(
                 onClick = { confirmingRemoval = true },
-                enabled = state.canRemove,
+                enabled = enabled && state.canRemove,
                 colors =
                     ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error,
@@ -193,7 +201,7 @@ fun ImageSlot(
             ) { Text(stringResource(R.string.photo_remove)) }
         }
     }
-    if (confirmingRemoval && state.canRemove) {
+    if (confirmingRemoval && enabled && state.canRemove) {
         ConfirmationDialog(
             stringResource(R.string.photo_remove_title),
             stringResource(R.string.photo_remove_body),

@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImagePublicationException
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.ControlledPhotoPicker
@@ -51,6 +52,7 @@ class ProfileImageTest {
                 LocalActivityResultRegistryOwner provides picker,
             ) { host.Content() }
         }
+        compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Choose photo").performScrollTo().performClick()
         waitForText("Save photo")
         compose.onNodeWithContentDescription("Selected photo preview").assertIsDisplayed()
@@ -79,6 +81,7 @@ class ProfileImageTest {
                 LocalActivityResultRegistryOwner provides picker,
             ) { host.Content() }
         }
+        compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Choose photo").performScrollTo().performClick()
         waitForText("Save photo")
         compose.onNodeWithText("Save photo").performClick()
@@ -104,6 +107,7 @@ class ProfileImageTest {
                 LocalActivityResultRegistryOwner provides picker,
             ) { host.Content() }
         }
+        compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Choose photo").performScrollTo().performClick()
         waitForText("Save photo")
         compose.onNodeWithText("Save photo").performClick()
@@ -133,6 +137,7 @@ class ProfileImageTest {
             )
         host.images.urlResults["existing"] = uri.toString()
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Remove photo").performScrollTo().performClick()
         compose.onNodeWithText("Cancel").performClick()
         compose.runOnIdle { assertEquals(0, host.images.deleteCalls) }
@@ -140,5 +145,30 @@ class ProfileImageTest {
         compose.onNodeWithText("Remove").performClick()
         waitForText("No photo yet")
         compose.runOnIdle { assertEquals(1, host.images.deleteCalls) }
+    }
+
+    /** Unresolved image publication stays retryable without trapping independent profile navigation. */
+    @Test fun ambiguousPhotoCanBeLeftWithoutLosingRecovery() {
+        val picker = ControlledPhotoPicker(fixturePhotoUri())
+        host.images.replaceFailure =
+            ImagePublicationException(
+                ImageTarget(ImageTargetType.ACCOUNT, "account-1"),
+                "uploaded",
+                IOException("ack lost"),
+            )
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalActivityResultRegistryOwner provides picker,
+            ) { host.Content() }
+        }
+        compose.onNodeWithText("Personal details").performClick()
+        compose.onNodeWithText("Choose photo").performScrollTo().performClick()
+        waitForText("Save photo")
+        compose.onNodeWithText("Save photo").performClick()
+        waitForText("The photo change is unconfirmed. Check again before making another change.")
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Personal details").performClick()
+        compose.onNodeWithText("Choose photo").performScrollTo().assertIsNotEnabled()
+        compose.runOnIdle { assertEquals(1, host.images.replaceCalls) }
     }
 }

@@ -18,6 +18,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 
 /** Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime. */
 class TestAppHost : AutoCloseable {
@@ -26,6 +27,8 @@ class TestAppHost : AutoCloseable {
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
     var profileCreations = 0
+    var parseEmail: ((String) -> OptionalContactInput)? = null
+    var parsePhone: ((String) -> OptionalContactInput)? = null
     var parseName: ((String) -> DisplayNameInput)? = { input ->
         when (input) {
             "Alex" -> DisplayNameInput.Valid("Alex")
@@ -63,7 +66,15 @@ class TestAppHost : AutoCloseable {
                 viewModelFactory {
                     initializer {
                         profileCreations++
-                        ProfileViewModel(id, accounts, images)
+                        ProfileViewModel(
+                            id,
+                            accounts,
+                            images,
+                            createSavedStateHandle(),
+                            parseName,
+                            parseEmail,
+                            parsePhone,
+                        )
                     }
                 }
             }

@@ -91,7 +91,9 @@ adb -s "$ANDROID_SERIAL" shell input keyevent 82
 # Remove only generated results so a stale report cannot satisfy this run.
 results=app/build/outputs/androidTest-results/connected
 rm -rf -- "$results"
-bash ./gradlew --no-daemon :app:connectedDebugAndroidTest "$@"
+# AGP can retain a prior instrumentation class filter in its configuration cache.
+# Device verification must use this invocation's actual runner arguments.
+bash ./gradlew --no-daemon --no-configuration-cache :app:connectedDebugAndroidTest "$@"
 python3 - "$results" <<'PY'
 import pathlib
 import sys

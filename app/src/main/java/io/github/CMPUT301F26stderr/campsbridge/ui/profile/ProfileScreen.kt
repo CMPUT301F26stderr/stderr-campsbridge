@@ -2,12 +2,20 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -16,31 +24,91 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AccountAvatar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
 
 /**
- * Shows read-only account fields beneath the workspace's shared frame.
+ * Shows the profile menu beneath the workspace's shared frame.
  * @param state Observed presentation state.
  * @param onRetry Explicit observation retry.
  * @param modifier Parent layout.
- * @param photoContent Shared photo controls supplied by the route; absent in read-only fixtures.
+ * @param onPersonalDetails Opens the independent name/photo editor.
+ * @param onContactDetails Opens optional contacts.
+ * @param onSettings Opens settings when that destination is registered.
+ * @param photoReference Last confirmed image display reference, never an unsaved candidate.
+ * @param workspaceContent Shared workspace picker supplied by navigation.
  */
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    photoContent: @Composable () -> Unit = {},
+    onPersonalDetails: () -> Unit = {},
+    onContactDetails: () -> Unit = {},
+    onSettings: (() -> Unit)? = null,
+    photoReference: String? = null,
+    workspaceContent: @Composable () -> Unit = {},
+) {
+    ProfileStateContent(state, onRetry, modifier) { content ->
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            AccountAvatar(photoReference, stringResource(R.string.profile_photo))
+            Text(content.account.name, style = MaterialTheme.typography.headlineMedium)
+        }
+        NavigationRow(
+            stringResource(R.string.personal_details),
+            onPersonalDetails,
+            supportingText = stringResource(R.string.personal_details_summary),
+            icon = Icons.Default.Person,
+        )
+        NavigationRow(
+            stringResource(R.string.contact_details),
+            onContactDetails,
+            supportingText = stringResource(R.string.contact_details_summary),
+            icon = Icons.Default.Email,
+        )
+        workspaceContent()
+        if (onSettings !=
+            null
+        ) {
+            NavigationRow(
+                stringResource(R.string.settings_title),
+                onSettings,
+                icon = Icons.Default.Settings,
+            )
+        }
+    }
+}
+
+/** Shares profile read outcomes without adding a frame or acquiring a controller.
+ * @param state Current account/editor read outcome.
+ * @param onRetry Explicit account observation retry.
+ * @param modifier Parent layout.
+ * @param content Loaded profile content.
+ */
+@Composable
+internal fun ProfileStateContent(
+    state: ProfileUiState,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.(ProfileUiState.Content) -> Unit,
 ) {
     Column(
-        modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        modifier
+            .fillMaxSize()
+            .verticalScroll(
+                rememberScrollState(),
+            ).padding(vertical = Spacing.medium),
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
         when (state) {
@@ -57,34 +125,9 @@ fun ProfileScreen(
             }
 
             is ProfileUiState.Content -> {
-                val account = state.account
-                Text(account.name, style = MaterialTheme.typography.headlineMedium)
-                photoContent()
-                ProfileField(stringResource(R.string.email), account.email)
-                ProfileField(stringResource(R.string.phone), account.phone)
-                Text(
-                    stringResource(R.string.account_roles),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                for (role in account.roles) Text(roleLabel(role))
+                content(state)
             }
         }
-    }
-}
-
-/**
- * Keeps a field label distinct from optional contact data.
- * @param label Localized field label.
- * @param value Exact stored contact, or null.
- */
-@Composable
-private fun ProfileField(
-    label: String,
-    value: String?,
-) {
-    Column {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        Text(value ?: stringResource(R.string.not_provided))
     }
 }
 
@@ -142,7 +185,7 @@ private fun EnlargedProfilePreview() {
 }
 
 /** Supplies ordinary sample values without depending on debug repositories or test fixtures. */
-private fun profilePreviewAccount(): Account =
+internal fun profilePreviewAccount(): Account =
     Account(
         "account-1",
         "Alex Chen",

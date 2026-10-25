@@ -33,6 +33,9 @@ class FakeAccountRepository(
     var createCalls = 0
     val createdIds = mutableListOf<String>()
     var profileWrites = 0
+    val profileUpdates = mutableListOf<ProfileUpdate>()
+    var profileGate: CompletableDeferred<Unit>? = null
+    var profileFailure: Exception? = null
     var preferenceWrites = 0
     var ownerWrites = 0
     var createGate: CompletableDeferred<Unit>? = null
@@ -117,6 +120,9 @@ class FakeAccountRepository(
         if (!allowWrites) unexpectedWrite()
         writes++
         profileWrites++
+        profileUpdates += profile
+        profileGate?.await()
+        profileFailure?.let { throw it }
         val current = checkNotNull(account.value)
         check(current.isActive)
         account.value =
