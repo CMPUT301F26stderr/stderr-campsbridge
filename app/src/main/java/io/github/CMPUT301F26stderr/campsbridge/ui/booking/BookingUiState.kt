@@ -5,6 +5,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -23,7 +24,36 @@ enum class BookingUnavailableReason {
     BOOKING_CLOSED,
 }
 
-/** Winner/date read outcomes; this packet has no submission or synthetic success state. */
+/** Feedback for an explicit advancement, preserving the entered input. */
+sealed interface BookingStepError {
+    /** Ordered endpoint/range/nonpast/occupied-night feedback.
+     * @param reason Actual failing stay rule; VALID is never an error.
+     */
+    data class Dates(
+        val reason: StaySelectionInput,
+    ) : BookingStepError
+
+    /** Existing count parser feedback using current site capacity.
+     * @param reason Actual required/invalid/excessive count outcome.
+     */
+    data class Guests(
+        val reason: PositiveCountInput.Error,
+    ) : BookingStepError
+
+    /** The reserved eligibility function is unavailable. */
+    data object EligibilityPending : BookingStepError
+
+    /** Required selected inventory is loading or failed, rather than known unavailable. */
+    data object InventoryUnknown : BookingStepError
+
+    /** Current displayed rules and policy still require explicit acknowledgement. */
+    data object AgreementRequired : BookingStepError
+
+    /** Exact current price cannot be represented in supported integer cents. */
+    data object QuoteOverflow : BookingStepError
+}
+
+/** Source-backed winner wizard outcomes, independent of submission and saved confirmation. */
 sealed interface BookingUiState {
     /** Required source or server consumption confirmation has not resolved. */
     data object Loading : BookingUiState
@@ -61,6 +91,7 @@ sealed interface BookingUiState {
      * @param visibleEligibleNights F15 result for known visible inventory, or null while unknown.
      * @param stayValidation Ordered date feedback; null when required inventory/F15 is unknown.
      * @param quote Checked current amount for positive date ranges, or null before a range exists.
+     * @param error Feedback from the latest explicit step/approval action.
      */
     data class Content(
         val lottery: Lottery,
@@ -74,5 +105,6 @@ sealed interface BookingUiState {
         val visibleEligibleNights: Set<LocalDate>? = null,
         val stayValidation: StaySelectionInput? = null,
         val quote: BookingQuote? = null,
+        val error: BookingStepError? = null,
     ) : BookingUiState
 }

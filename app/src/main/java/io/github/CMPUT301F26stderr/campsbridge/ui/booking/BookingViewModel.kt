@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
@@ -12,10 +13,13 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.bookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.validateStaySelection
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -32,7 +36,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 
-/** Owns one winner's current reads and unsubmitted date/guest draft; performs no writes.
+/** Owns one winner's source-backed wizard draft and explicit terms/quote approvals; no writes.
  * @param entrantId Actual account whose own win is required.
  * @param lotteryId Saved lottery identity from navigation.
  * @param campsiteId Saved offered campsite identity from navigation.
@@ -59,7 +63,21 @@ class BookingViewModel(
             checkIn = restoredDate("bookingCheckIn"),
             checkOut = restoredDate("bookingCheckOut"),
             guestInput = savedState.get<String>("bookingGuests") ?: "1",
+            step =
+                BookingStep.entries.firstOrNull { it.name == savedState.get<String>("bookingStep") }
+                    ?: BookingStep.DATES,
+            returnToReview = savedState.get<Boolean>("bookingReviewEdit") ?: false,
+            agreement = restoredAgreement(),
+            reviewedTotalCents = savedState.get<Long>("bookingReviewedTotal")?.takeIf { it >= 0 },
         )
+
+    // Distinguishes first presentation from returning after a date/price invalidated approval.
+    private var hasReviewed =
+        savedState.get<Boolean>("bookingHasReviewed")
+            ?: (
+                draft.step == BookingStep.REVIEW || draft.returnToReview ||
+                    draft.reviewedTotalCents != null
+            )
     private var month =
         savedState.get<String>("bookingMonth")?.let {
             runCatching { YearMonth.parse(it) }.getOrNull()
@@ -86,9 +104,15 @@ class BookingViewModel(
     private var opportunityFailed = false
     private var timeJob: Job? = null
     private var timeDeadline: Instant? = null
+    private var error: BookingStepError? = null
     private val calendar = BookingCalendarReader(campsiteId, campsites, viewModelScope)
     private val mutableState = MutableStateFlow<BookingUiState>(BookingUiState.Loading)
     val state = mutableState.asStateFlow()
+    private val mutableDiscardPrompt = MutableStateFlow(false)
+    val discardPrompt = mutableDiscardPrompt.asStateFlow()
+    private val mutableExitRequested = MutableStateFlow(false)
+    val exitRequested = mutableExitRequested.asStateFlow()
+
     private val calendarJob =
         viewModelScope.launch(start = CoroutineStart.LAZY) {
             calendar.state.collect { render() }
@@ -121,6 +145,218 @@ class BookingViewModel(
         }
     }
 
+    /** Validates the current step and enters the next step or returns to review. */
+    fun next() {
+        if (!canEdit()) return
+        reconcile()
+        val current = state.value as? BookingUiState.Content ?: return
+        if (draft.step == BookingStep.REVIEW) return
+        val invalid = stepError(current, draft.step)
+        if (invalid != null) {
+            error = invalid
+            render()
+            return
+        }
+        error = null
+        if (draft.returnToReview || draft.step == BookingStep.TERMS) {
+            enterReview(current)
+        } else {
+            draft = draft.copy(step = BookingStep.entries[draft.step.ordinal + 1])
+            saveDraft()
+            reconcile()
+        }
+    }
+
+    /** Moves within this wizard or requests explicit abandonment from its first step. */
+    fun back() {
+        if (closed || mutableDiscardPrompt.value || mutableExitRequested.value) return
+        if (state.value !is BookingUiState.Content || draft.step == BookingStep.DATES) {
+            requestExit()
+            return
+        }
+        draft =
+            draft.copy(
+                step =
+                    if (draft.returnToReview) {
+                        BookingStep.REVIEW
+                    } else {
+                        BookingStep.entries[draft.step.ordinal - 1]
+                    },
+                returnToReview = false,
+            )
+        error = null
+        saveDraft()
+        reconcile()
+    }
+
+    /** Opens one review edit without constructing a second working draft.
+     * @param step Actual editable step to revisit.
+     */
+    fun editStep(step: BookingStep) {
+        if (!canEdit() || draft.step != BookingStep.REVIEW || step == BookingStep.REVIEW) return
+        draft = draft.copy(step = step, returnToReview = true)
+        error = null
+        saveDraft()
+        reconcile()
+    }
+
+    /** Accepts only the exact displayed terms; stale callbacks cannot acknowledge newer rules.
+     * @param accepted Whether the checkbox was checked or cleared.
+     * @param rules Rules actually displayed by the caller.
+     * @param policyVersion Policy version actually displayed by the caller.
+     */
+    fun acceptTerms(
+        accepted: Boolean,
+        rules: String,
+        policyVersion: String,
+    ) {
+        if (!canEdit() || draft.step != BookingStep.TERMS) return
+        val current = state.value as BookingUiState.Content
+        if (accepted &&
+            (rules != current.campsite.details.rules || policyVersion != BookingPolicy.VERSION)
+        ) {
+            error = BookingStepError.AgreementRequired
+            render()
+            return
+        }
+        draft =
+            draft.copy(agreement = if (accepted) BookingAgreement(rules, policyVersion) else null)
+        error = null
+        saveDraft()
+        render()
+    }
+
+    /** Approves only a currently displayed exact amount after a quote change.
+     * @param totalCents Amount actually displayed by the caller.
+     */
+    fun acknowledgeQuote(totalCents: Long) {
+        if (!canEdit() || draft.step != BookingStep.REVIEW) return
+        val quote = (state.value as BookingUiState.Content).quote as? BookingQuote.Value ?: return
+        if (quote.totalCents != totalCents) return
+        draft = draft.copy(reviewedTotalCents = totalCents)
+        error = null
+        saveDraft()
+        render()
+    }
+
+    /** Requests abandonment independently of current source success or failure. */
+    fun requestExit() {
+        if (closed || mutableExitRequested.value || mutableDiscardPrompt.value) return
+        val dirty =
+            draft.checkIn != null || draft.checkOut != null ||
+                draft.guestInput != "1" || draft.agreement != null
+        if (dirty) mutableDiscardPrompt.value = true else mutableExitRequested.value = true
+    }
+
+    /** Closes an unsubmitted discard prompt and preserves all input. */
+    fun dismissDiscard() {
+        if (!closed && !mutableExitRequested.value) mutableDiscardPrompt.value = false
+    }
+
+    /** Requests route navigation after explicit abandonment; performs no persistence write. */
+    fun confirmDiscard() {
+        if (closed || !mutableDiscardPrompt.value) return
+        mutableDiscardPrompt.value = false
+        mutableExitRequested.value = true
+    }
+
+    /** Consumes an exit only after the active route actually navigates. */
+    fun acknowledgeExit() {
+        if (!closed) mutableExitRequested.value = false
+    }
+
+    /** Rejects stale callbacks from another step or while prompt/navigation owns control.
+     * @param step Optional field-owning step; null checks shared wizard actions.
+     */
+    private fun canEdit(step: BookingStep? = null): Boolean =
+        !closed && !mutableDiscardPrompt.value &&
+            !mutableExitRequested.value && state.value is BookingUiState.Content &&
+            (step == null || draft.step == step)
+
+    /** Validates the requested step using current source-backed facts and existing parsers.
+     * @param current Confirmed editable opportunity at this action boundary.
+     * @param step Step whose explicit Next was requested.
+     */
+    private fun stepError(
+        current: BookingUiState.Content,
+        step: BookingStep,
+    ): BookingStepError? =
+        when (step) {
+            BookingStep.DATES -> {
+                when {
+                    current.stayValidation != null &&
+                        current.stayValidation != StaySelectionInput.VALID -> {
+                        BookingStepError.Dates(current.stayValidation)
+                    }
+
+                    current.eligibilityPending -> {
+                        BookingStepError.EligibilityPending
+                    }
+
+                    current.stayValidation == null -> {
+                        BookingStepError.InventoryUnknown
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
+            }
+
+            BookingStep.GUESTS -> {
+                (
+                    parsePositiveCount(
+                        draft.guestInput,
+                        current.campsite.details.maxGuests,
+                    ) as? PositiveCountInput.Error
+                )?.let { BookingStepError.Guests(it) }
+            }
+
+            BookingStep.TERMS -> {
+                if (draft.agreement ==
+                    BookingAgreement(current.campsite.details.rules, BookingPolicy.VERSION)
+                ) {
+                    null
+                } else {
+                    BookingStepError.AgreementRequired
+                }
+            }
+
+            BookingStep.REVIEW -> {
+                null
+            }
+        }
+
+    /** Rechecks all form facts before retaining the amount about to be displayed on review.
+     * @param current Current confirmed opportunity, inventory and checked quote.
+     */
+    private fun enterReview(current: BookingUiState.Content) {
+        for (step in listOf(BookingStep.DATES, BookingStep.GUESTS, BookingStep.TERMS)) {
+            val invalid = stepError(current, step) ?: continue
+            draft = draft.copy(step = step)
+            error = invalid
+            saveDraft()
+            reconcile()
+            return
+        }
+        val quote = current.quote as? BookingQuote.Value
+        if (quote == null) {
+            error = BookingStepError.QuoteOverflow
+            render()
+            return
+        }
+        draft =
+            draft.copy(
+                step = BookingStep.REVIEW,
+                returnToReview = false,
+                reviewedTotalCents =
+                    if (hasReviewed) draft.reviewedTotalCents else quote.totalCents,
+            )
+        hasReviewed = true
+        saveDraft()
+        reconcile()
+    }
+
     /** Records only whether the real dates page is visible.
      * @param visible Whether its monthly calendar is displayed.
      */
@@ -134,7 +370,7 @@ class BookingViewModel(
      * @param month Requested displayed month.
      */
     fun changeMonth(month: YearMonth) {
-        if (closed || state.value !is BookingUiState.Content) return
+        if (!canEdit(BookingStep.DATES)) return
         this.month = month
         savedState["bookingMonth"] = month.toString()
         reconcile()
@@ -144,8 +380,9 @@ class BookingViewModel(
      * @param date Inclusive selected arrival, or null to clear dates.
      */
     fun selectCheckIn(date: LocalDate?) {
-        if (closed || state.value !is BookingUiState.Content || date == draft.checkIn) return
-        draft = draft.copy(checkIn = date, checkOut = null)
+        if (!canEdit(BookingStep.DATES) || date == draft.checkIn) return
+        draft = draft.copy(checkIn = date, checkOut = null, reviewedTotalCents = null)
+        error = null
         saveDraft()
         reconcile()
     }
@@ -154,8 +391,9 @@ class BookingViewModel(
      * @param date Exclusive selected departure, or null to clear it.
      */
     fun selectCheckOut(date: LocalDate?) {
-        if (closed || state.value !is BookingUiState.Content) return
-        draft = draft.copy(checkOut = date)
+        if (!canEdit(BookingStep.DATES)) return
+        draft = draft.copy(checkOut = date, reviewedTotalCents = null)
+        error = null
         saveDraft()
         reconcile()
     }
@@ -164,8 +402,9 @@ class BookingViewModel(
      * @param text Editable count text.
      */
     fun editGuests(text: String) {
-        if (closed || state.value !is BookingUiState.Content) return
+        if (!canEdit(BookingStep.GUESTS)) return
         draft = draft.copy(guestInput = text)
+        error = null
         saveDraft()
         render()
     }
@@ -303,11 +542,36 @@ class BookingViewModel(
                 loadOpportunity()
             }
         }
+        reconcileApproval()
         syncCalendar()
         render()
     }
 
-    /** Server-confirms retained history before permitting edits; UI never derives the stored key. */
+    /** Invalidates accepted/reviewed snapshots only against confirmed current site facts. */
+    private fun reconcileApproval() {
+        val site =
+            campsite?.takeIf { BookingReadSource.CAMPSITE in loaded && it.id == campsiteId }
+                ?: return
+        val agreement =
+            draft.agreement?.takeIf {
+                it.rules == site.details.rules && it.policyVersion == BookingPolicy.VERSION
+            }
+        val start = draft.checkIn
+        val end = draft.checkOut
+        val quote =
+            if (start != null && end != null && end > start) {
+                bookingQuote(start, end, site.details.nightlyPriceCents) as? BookingQuote.Value
+            } else {
+                null
+            }
+        val reviewed = draft.reviewedTotalCents?.takeIf { it == quote?.totalCents }
+        if (agreement != draft.agreement || reviewed != draft.reviewedTotalCents) {
+            draft = draft.copy(agreement = agreement, reviewedTotalCents = reviewed)
+            saveDraft()
+        }
+    }
+
+    /** Server-confirms consuming history before edits; UI never derives the stored key. */
     private fun loadOpportunity() {
         if (closed || opportunityInFlight || knownReservationId != null || !hasOwnDrawnWin()) return
         val version = ++opportunityVersion
@@ -373,7 +637,11 @@ class BookingViewModel(
         if (editable == null) {
             calendar.stop()
         } else {
-            calendar.update(month.takeIf { datesVisible }, draft.checkIn, draft.checkOut)
+            calendar.update(
+                month.takeIf { datesVisible && draft.step == BookingStep.DATES },
+                draft.checkIn,
+                draft.checkOut,
+            )
         }
     }
 
@@ -472,6 +740,7 @@ class BookingViewModel(
                     visibleEligibleNights = visible,
                     stayValidation = validation,
                     quote = quote,
+                    error = error,
                 )
             } else {
                 outcome
@@ -524,6 +793,19 @@ class BookingViewModel(
         savedState["bookingCheckIn"] = draft.checkIn?.toString()
         savedState["bookingCheckOut"] = draft.checkOut?.toString()
         savedState["bookingGuests"] = draft.guestInput
+        savedState["bookingStep"] = draft.step.name
+        savedState["bookingReviewEdit"] = draft.returnToReview
+        savedState["bookingRules"] = draft.agreement?.rules
+        savedState["bookingPolicy"] = draft.agreement?.policyVersion
+        savedState["bookingReviewedTotal"] = draft.reviewedTotalCents
+        savedState["bookingHasReviewed"] = hasReviewed
+    }
+
+    /** Restores an exact pair without accepting a partial saved agreement. */
+    private fun restoredAgreement(): BookingAgreement? {
+        val rules = savedState.get<String>("bookingRules") ?: return null
+        val policy = savedState.get<String>("bookingPolicy") ?: return null
+        return BookingAgreement(rules, policy)
     }
 
     /** Parses a primitive restoration value safely; malformed input does not reach a query.
