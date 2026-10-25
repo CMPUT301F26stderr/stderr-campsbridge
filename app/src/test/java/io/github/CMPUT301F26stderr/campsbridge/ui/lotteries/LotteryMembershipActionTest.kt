@@ -510,6 +510,32 @@ class LotteryMembershipActionTest {
     private fun membership(model: LotteryDetailViewModel): LotteryMembershipStatus =
         (content(model).membership as LotteryMembershipRead.Content).status
 
+    /** A submitted withdrawal cannot trap failed-source Retry behind a pending dialog. */
+    @Test fun acknowledgedWithdrawalRetainsItsGuardWhileSourceRetryStaysReachable() =
+        withModel { model, _ ->
+            runCurrent()
+            lotteries.entries.value = listOf(entry(EntryState.WAITING))
+            runCurrent()
+            lotteries.withdrawHandler = { _, _ -> }
+            model.requestLeave()
+            model.confirmLeave()
+            runCurrent()
+            assertTrue(content(model).participation.isConfirmingLeave)
+            lotteries.entrantFailure.value = IOException("entry offline")
+            runCurrent()
+            assertEquals(LotteryMembershipRead.Failure, content(model).membership)
+            assertFalse(content(model).participation.isConfirmingLeave)
+            assertEquals(LotteryMembershipAction.LEAVE, content(model).participation.action)
+            model.confirmLeave()
+            lotteries.entrantFailure.value = null
+            lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
+            model.retryMembership()
+            runCurrent()
+            assertNull(content(model).participation.action)
+            assertEquals(LotteryMembershipStatus.WITHDRAWN, membership(model))
+            assertEquals(listOf("withdraw:draw:entrant"), lotteries.events)
+        }
+
     /** Cancelled repository work releases the real parent action without a failed-save notice. */
     @Test fun cancelledRequestDoesNotLeaveTheParentSubmitting() =
         withModel { model, _ ->

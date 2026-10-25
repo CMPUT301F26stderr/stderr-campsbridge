@@ -177,7 +177,8 @@ internal class LotteryMembershipController(
     private fun publish() {
         if (closed) return
         settle()
-        if (action == null && !canLeave()) confirming = false
+        // Keep source recovery reachable while retaining the separate pending-command guard.
+        if (!known || (action == null && !canLeave())) confirming = false
         val next = LotteryMembershipUiState(canJoin(), canLeave(), confirming, action, error)
         if (next != mutableState.value) {
             mutableState.value = next
