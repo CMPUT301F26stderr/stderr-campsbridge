@@ -112,7 +112,7 @@ fun campsiteDetailViewModelFactory(
         }
     }
 
-/** Constructs one local setup owner, without introducing persistence actions or helper fallbacks.
+/** Constructs one setup owner with explicit repository operations and stable draft-ID allocation.
  * @param services Selected host's dependencies and clock.
  * @param ownerId Confirmed owner identity.
  * @param campsiteId Actual saved draft identity, or null for a new local form.

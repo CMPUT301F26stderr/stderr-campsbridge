@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -90,7 +91,7 @@ class CampsiteSetupFlowTest {
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Step 8 of 8").assertIsDisplayed()
         compose.onNodeWithText("Publish").assertIsNotEnabled()
-        compose.onNodeWithText("Save draft").assertIsNotEnabled()
+        compose.onNodeWithText("Save draft").assertIsEnabled()
         compose.onNodeWithText("Edit Introduce your campsite").performScrollTo().performClick()
         compose.onNodeWithText("Campsite name").performTextReplacement("Edited River")
         compose.onNodeWithText("Next").performClick()

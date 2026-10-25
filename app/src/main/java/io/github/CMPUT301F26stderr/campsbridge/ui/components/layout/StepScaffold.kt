@@ -48,6 +48,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onSecondaryAction Explicit alternative to the primary action, such as saving a draft.
  * @param secondaryEnabled Whether the secondary action's own prerequisites permit submission.
  * @param submittingAction Action whose progress is shown while the shared submitting guard is set.
+ * @param exitEnabled Whether leaving the step is safe while an idle action awaits recovery.
  * @throws IllegalArgumentException If actions are incomplete, incompatible or unavailable.
  */
 @Composable
@@ -67,6 +68,7 @@ fun StepScaffold(
     onSecondaryAction: (() -> Unit)? = null,
     secondaryEnabled: Boolean = true,
     submittingAction: StepAction = StepAction.PRIMARY,
+    exitEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     require((secondaryLabel == null) == (onSecondaryAction == null)) {
@@ -80,15 +82,15 @@ fun StepScaffold(
     ) {
         "Secondary submission needs a secondary action"
     }
-    BackHandler(enabled = isSubmitting) {}
+    BackHandler(enabled = isSubmitting || !exitEnabled) {}
     AppScreen(
         title = title,
         modifier = modifier,
         onBack = onBack,
-        backEnabled = !isSubmitting,
+        backEnabled = !isSubmitting && exitEnabled,
         actions = {
             if (onCancel != null) {
-                TextButton(onClick = onCancel, enabled = !isSubmitting) {
+                TextButton(onClick = onCancel, enabled = !isSubmitting && exitEnabled) {
                     Text(stringResource(R.string.cancel))
                 }
             }

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
@@ -13,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.images.SelectedPhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.validateCampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageOperation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import kotlinx.coroutines.CancellationException
@@ -21,22 +23,25 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import java.util.UUID
 
 private const val SETUP_KEY = "campsiteSetup."
 
-/** Owns local setup input and saved-parent readers; explicit persistence stages are pending.
+/** Owns setup input, saved-parent readers and explicit details/photo draft saves.
  * @param ownerId Active owner identity.
  * @param campsiteId Existing unpublished target, or null for a new local form.
- * @param campsites Saved-target and inventory reader.
- * @param images Saved attachment reader.
+ * @param campsites Saved-target, details and inventory operations.
+ * @param images Saved attachment display and explicit publication/removal.
  * @param clock Deterministic initial calendar month.
  * @param savedState Small editable restoration state.
+ * @param newId Allocates one stable identity only after the first valid save action.
  */
 class CampsiteSetupViewModel(
     private val ownerId: String,
@@ -45,6 +50,7 @@ class CampsiteSetupViewModel(
     private val images: ImageRepository,
     private val clock: Clock,
     private val savedState: SavedStateHandle,
+    private val newId: () -> String = { UUID.randomUUID().toString() },
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<CampsiteSetupUiState>(CampsiteSetupUiState.Loading)
     val state = mutableState.asStateFlow()
@@ -57,9 +63,178 @@ class CampsiteSetupViewModel(
     private var readJob: Job? = null
     private var calendarJob: Job? = null
     private var photoController: ImageSlotController? = null
+    private var photoObservation: Job? = null
+    private var confirmedSite: Campsite? = null
+    private var attemptedPhoto: CampsitePhotoIntent? = null
 
     init {
         if (completion.value == null && !exitRequested.value) load()
+    }
+
+    /** Saves a valid review using the retained identity; no write occurs from composition. */
+    fun saveDraft() {
+        beginSave(retrying = false)
+    }
+
+    /** Reconciles the same target before retrying an explicitly failed save. */
+    fun retrySave() {
+        if (content()?.saveFailure != null) beginSave(retrying = true)
+    }
+
+    /** Freezes valid review input and its identity before starting the named save stages.
+     * @param retrying Whether the action is reconciling an earlier failed attempt.
+     */
+    private fun beginSave(retrying: Boolean) {
+        val current = content()?.takeIf { it.savePhase == CampsiteSavePhase.IDLE } ?: return
+        if (current.draft.step != CampsiteStep.REVIEW || current.discardPrompt) return
+        val validated = validateCampsiteDetails(current.draft)
+        if (validated is CampsiteDetailsInput.Errors) {
+            publish(current.copy(errors = validated))
+            return
+        }
+        val blocked =
+            when {
+                current.photoReselectionRequired -> {
+                    CampsiteSaveFailure.PHOTO_RESELECTION
+                }
+
+                current.draft.requestedAvailability.isNotEmpty() -> {
+                    CampsiteSaveFailure.AVAILABILITY_PENDING
+                }
+
+                else -> {
+                    null
+                }
+            }
+        if (blocked != null) {
+            publish(current.copy(saveFailure = blocked))
+            return
+        }
+        val details = (validated as CampsiteDetailsInput.Value).details
+        val id = current.draft.id ?: newId()
+        savedState["${SETUP_KEY}attempt"] = true
+        publish(
+            current.copy(
+                draft = current.draft.copy(id = id),
+                savePhase =
+                    if (retrying) {
+                        CampsiteSavePhase.RECOVERING
+                    } else {
+                        CampsiteSavePhase.SAVING_DETAILS
+                    },
+                saveFailure = null,
+            ),
+        )
+        viewModelScope.launch { saveDetailsAndPhoto(id, details, current.photoIntent) }
+    }
+
+    /** Reconciles the same server target, saves requested facts, then applies staged photo work.
+     * @param id Retained identity, allocated before any suspension.
+     * @param details Frozen valid listing values.
+     * @param photo Frozen local attachment intent.
+     */
+    private suspend fun saveDetailsAndPhoto(
+        id: String,
+        details: CampsiteDetails,
+        photo: CampsitePhotoIntent,
+    ) {
+        var failedStage = CampsiteSaveFailure.RECOVERY
+        try {
+            val existing = campsites.get(id)
+            currentCoroutineContext().ensureActive()
+            check(existing != null || (campsiteId == null && confirmedSite == null)) {
+                "Saved target no longer exists"
+            }
+            failedStage = CampsiteSaveFailure.DETAILS
+            content()?.let { publish(it.copy(savePhase = CampsiteSavePhase.SAVING_DETAILS)) }
+            val saved = existing ?: campsites.createDraft(id, ownerId, details)
+            currentCoroutineContext().ensureActive()
+            check(saved.id == id && saved.ownerId == ownerId && saved.removal == null) {
+                "Target is unavailable for this owner"
+            }
+            if (saved.isPublished) {
+                completeSave(saved.id)
+                return
+            }
+            confirmedSite = saved
+            if (saved.details != details) {
+                campsites.update(id, ownerId, details)
+                currentCoroutineContext().ensureActive()
+                confirmedSite = saved.copy(details = details)
+            }
+            if (photoController == null) observePhoto(id)
+            failedStage = CampsiteSaveFailure.PHOTO
+            if (photo != CampsitePhotoIntent.Keep ||
+                photoController?.state?.value?.unconfirmedBlobId != null
+            ) {
+                content()?.let { publish(it.copy(savePhase = CampsiteSavePhase.SAVING_PHOTO)) }
+                savePhoto(photo)
+            }
+            currentCoroutineContext().ensureActive()
+            completeSave(id)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            currentCoroutineContext().ensureActive()
+            content()?.let {
+                publish(
+                    it.copy(savePhase = CampsiteSavePhase.IDLE, saveFailure = failedStage),
+                )
+            }
+        }
+    }
+
+    /** Uses the shared slot owner for explicit publication/removal and its recovery state.
+     * @param intent Frozen attachment choice; Keep can still require resolving a prior publication.
+     */
+    private suspend fun savePhoto(intent: CampsitePhotoIntent) {
+        val controller = checkNotNull(photoController)
+        if (controller.state.value.loadState == ImageLoadState.FAILED) controller.retryDisplay()
+        val ready = controller.state.first { it.loadState != ImageLoadState.LOADING }
+        check(ready.loadState == ImageLoadState.READY) { "Attachment read failed" }
+        if (ready.unconfirmedBlobId != null) {
+            controller.retry()
+        } else if (attemptedPhoto == intent && ready.candidate == null && ready.failure == null) {
+            return
+        } else {
+            when (intent) {
+                CampsitePhotoIntent.Keep -> {
+                    controller.discard()
+                }
+
+                CampsitePhotoIntent.Remove -> {
+                    controller.discard()
+                    attemptedPhoto = intent
+                    content()?.let { publish(it.copy(photoRemovalPending = true)) }
+                    controller.clearAttachment()
+                }
+
+                is CampsitePhotoIntent.Replace -> {
+                    if (attemptedPhoto != intent) controller.select(intent.photo)
+                    attemptedPhoto = intent
+                    controller.save()
+                }
+            }
+        }
+        val result = controller.state.first { it.operation == ImageOperation.IDLE }
+        check(
+            result.unconfirmedBlobId == null && result.failure == null && result.candidate == null,
+        ) {
+            "Attachment work requires explicit retry"
+        }
+        content()?.let {
+            publish(it.copy(photoIntent = CampsitePhotoIntent.Keep, photoRemovalPending = false))
+        }
+    }
+
+    /** Publishes only the confirmed saved identity, independently of later source failures.
+     * @param id Actual completed target.
+     */
+    private fun completeSave(id: String) {
+        savedState.remove<Boolean>("${SETUP_KEY}attempt")
+        content()?.let { publish(it.copy(savePhase = CampsiteSavePhase.IDLE, saveFailure = null)) }
+        savedState["${SETUP_KEY}completion"] = id
+        mutableCompletion.value = id
     }
 
     /** Changes local name input.
@@ -210,6 +385,12 @@ class CampsiteSetupViewModel(
 
     /** Requests exit, asking before abandoning changed input or staged photo intent. */
     fun requestExit() {
+        if ((state.value as? CampsiteSetupUiState.Content)?.let {
+                it.savePhase != CampsiteSavePhase.IDLE || it.photoNeedsRecovery
+            } == true
+        ) {
+            return
+        }
         if (completion.value != null || exitRequested.value) return
         if (state.value is CampsiteSetupUiState.ConfirmDiscard) return
         val current = editable()
@@ -329,7 +510,7 @@ class CampsiteSetupViewModel(
 
     /** Retries saved attachment display without uploading staged content. */
     fun retryPhoto() {
-        photoController?.retry()
+        photoController?.retryDisplay()
     }
 
     /** Consumes a saved-ID redirect after actual navigation. */
@@ -352,6 +533,10 @@ class CampsiteSetupViewModel(
 
     /** Returns editable input only while no navigation result is awaiting consumption. */
     private fun editable(): CampsiteSetupUiState.Content? =
+        content()?.takeIf { it.savePhase == CampsiteSavePhase.IDLE && !it.photoNeedsRecovery }
+
+    /** Returns displayable content, including a guarded in-flight operation. */
+    private fun content(): CampsiteSetupUiState.Content? =
         if (completion.value == null && !exitRequested.value) {
             state.value as? CampsiteSetupUiState.Content
         } else {
@@ -377,9 +562,14 @@ class CampsiteSetupViewModel(
                     val targetId = campsiteId ?: savedState.get<String>("${SETUP_KEY}id")
                     val site = targetId?.let { campsites.get(it) }
                     currentCoroutineContext().ensureActive()
-                    if (targetId != null && (
-                            site == null || site.id != targetId ||
-                                site.ownerId != ownerId || site.removal != null
+                    val unfinishedNew =
+                        campsiteId == null &&
+                            savedState.get<Boolean>("${SETUP_KEY}attempt") == true
+                    if ((targetId != null && site == null && !unfinishedNew) || (
+                            site != null && (
+                                site.id != targetId ||
+                                    site.ownerId != ownerId || site.removal != null
+                            )
                         )
                     ) {
                         mutableState.value = CampsiteSetupUiState.Unavailable
@@ -391,7 +581,8 @@ class CampsiteSetupViewModel(
                         mutableState.value = CampsiteSetupUiState.Unavailable
                         return@launch
                     }
-                    baseline = site?.let(::draftFor) ?: CampsiteDraft()
+                    confirmedSite = site
+                    baseline = site?.let(::draftFor) ?: CampsiteDraft(id = targetId)
                     val draft = restoreDraft(baseline)
                     val zone =
                         draft.timeZone
@@ -426,6 +617,16 @@ class CampsiteSetupViewModel(
                                     CampsitePhotoIntent.Keep
                                 },
                             photoReselectionRequired = photo == "replace",
+                            saveFailure =
+                                if (savedState.get<Boolean>("${SETUP_KEY}attempt") ==
+                                    true
+                                ) {
+                                    CampsiteSaveFailure.RECOVERY
+                                } else {
+                                    null
+                                },
+                            photoRemovalPending =
+                                savedState.get<Boolean>("${SETUP_KEY}removingPhoto") == true,
                         ),
                     )
                     if (site != null) observePhoto(site.id)
@@ -462,21 +663,24 @@ class CampsiteSetupViewModel(
      * @param id Saved parent identity.
      */
     private fun observePhoto(id: String) {
+        photoObservation?.cancel()
+        photoController?.close()
         val controller =
             ImageSlotController(images, ImageTarget(ImageTargetType.CAMPSITE, id), viewModelScope)
         photoController = controller
-        viewModelScope.launch {
-            controller.state.collect { photo ->
-                editable()?.let { mutableState.value = it.copy(savedPhoto = photo) }
+        photoObservation =
+            viewModelScope.launch {
+                controller.state.collect { photo ->
+                    content()?.let { mutableState.value = it.copy(savedPhoto = photo) }
+                }
             }
-        }
     }
 
     /** Replaces one range reader; only successfully loaded absence means unoffered inventory. */
     private fun observeCalendar() {
         val current = editable() ?: return
         calendarJob?.cancel()
-        if (current.draft.id == null) {
+        if (confirmedSite == null) {
             mutableState.value =
                 current.copy(inventory = CampsiteInventoryUiState.Content(emptyList()))
             return
@@ -488,7 +692,7 @@ class CampsiteSetupViewModel(
                 try {
                     campsites
                         .observeCalendar(
-                            current.draft.id,
+                            checkNotNull(current.draft.id),
                             month.atDay(1),
                             month.plusMonths(1).atDay(1),
                         ).collect { nights ->
@@ -508,7 +712,7 @@ class CampsiteSetupViewModel(
             }
     }
 
-    /** Saves small primitive inputs; selected bytes/controllers and confirmed records stay transient.
+    /** Saves primitive inputs; selected bytes/controllers and confirmed records stay transient.
      * @param content Latest local state.
      */
     private fun publish(content: CampsiteSetupUiState.Content) {
@@ -533,6 +737,7 @@ class CampsiteSetupViewModel(
         savedState["${SETUP_KEY}offered"] = draft.requestedAvailability.values.toBooleanArray()
         savedState["${SETUP_KEY}review"] = draft.returnToReview
         savedState["${SETUP_KEY}month"] = content.month.toString()
+        savedState["${SETUP_KEY}removingPhoto"] = content.photoRemovalPending
         savedState["${SETUP_KEY}photo"] =
             when {
                 content.photoIntent is CampsitePhotoIntent.Replace ||

@@ -38,7 +38,13 @@ sealed interface CampsitePhotoIntent {
     ) : CampsitePhotoIntent
 }
 
-/** Local editor outcomes, separate from the later persistence pipeline. */
+/** Explicit lead-owned save stages; inventory/publication arrive with their real consumers. */
+enum class CampsiteSavePhase { IDLE, RECOVERING, SAVING_DETAILS, SAVING_PHOTO }
+
+/** Recoverable action feedback, distinct from initial saved-target loading. */
+enum class CampsiteSaveFailure { DETAILS, PHOTO, RECOVERY, PHOTO_RESELECTION, AVAILABILITY_PENDING }
+
+/** Saved-target loading, editable input and explicit save outcomes. */
 sealed interface CampsiteSetupUiState {
     /** Protects restored dirty input while its initial authoritative read is unresolved.
      * @param previous Loading/failure state restored when the confirmation is dismissed.
@@ -56,7 +62,7 @@ sealed interface CampsiteSetupUiState {
     /** Target is absent, removed or belongs to another owner. */
     data object Unavailable : CampsiteSetupUiState
 
-    /** Editable state; saving remains explicitly pending until its integration lands.
+    /** Editable input and explicit draft-save outcomes.
      * @param draft Raw form input and step.
      * @param errors Feedback from the current explicit advancement.
      * @param photoIntent Unsaved attachment choice.
@@ -66,6 +72,9 @@ sealed interface CampsiteSetupUiState {
      * @param month Visible inventory month.
      * @param discardPrompt Whether explicit abandonment needs confirmation.
      * @param inventory Confirmed visible-month source outcome.
+     * @param savePhase Current explicit save operation; non-idle stages block conflicting input.
+     * @param saveFailure Last failed/pending stage, retaining the raw draft and confirmed work.
+     * @param photoRemovalPending Whether an attempted removal still needs acknowledgement.
      */
     data class Content(
         val draft: CampsiteDraft,
@@ -77,5 +86,12 @@ sealed interface CampsiteSetupUiState {
         val month: YearMonth,
         val discardPrompt: Boolean = false,
         val inventory: CampsiteInventoryUiState = CampsiteInventoryUiState.Loading,
-    ) : CampsiteSetupUiState
+        val savePhase: CampsiteSavePhase = CampsiteSavePhase.IDLE,
+        val saveFailure: CampsiteSaveFailure? = null,
+        val photoRemovalPending: Boolean = false,
+    ) : CampsiteSetupUiState {
+        /** An unresolved attachment mutation must be retried before changing input or leaving. */
+        val photoNeedsRecovery: Boolean
+            get() = photoRemovalPending || savedPhoto.unconfirmedBlobId != null
+    }
 }

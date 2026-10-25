@@ -28,6 +28,10 @@ class FakeCampsiteRepository(
     var readGate: CompletableDeferred<Unit>? = null
     val readIds = mutableListOf<String>()
     var writeCalls = 0
+    var createHandler: (suspend (String, String, CampsiteDetails) -> Campsite)? = null
+    var updateHandler: (suspend (String, String, CampsiteDetails) -> Unit)? = null
+    val createRequests = mutableListOf<Triple<String, String, CampsiteDetails>>()
+    val updateRequests = mutableListOf<Triple<String, String, CampsiteDetails>>()
     val calendarNights = MutableStateFlow<List<CalendarNight>>(emptyList())
     val calendarFailure = MutableStateFlow<Exception?>(null)
     val observedCalendars = mutableListOf<Triple<String, LocalDate, LocalDate>>()
@@ -108,7 +112,10 @@ class FakeCampsiteRepository(
         details: CampsiteDetails,
     ): Campsite {
         writeCalls++
-        error("Configure a write outcome before testing draft creation")
+        createRequests.add(Triple(id, ownerId, details))
+        return checkNotNull(createHandler) {
+            "Configure a write outcome before testing draft creation"
+        }(id, ownerId, details)
     }
 
     /** Rejects unconfigured edits.
@@ -122,7 +129,12 @@ class FakeCampsiteRepository(
         details: CampsiteDetails,
     ) {
         writeCalls++
-        error("Configure a write outcome before testing updates")
+        updateRequests.add(Triple(id, ownerId, details))
+        checkNotNull(updateHandler) { "Configure a write outcome before testing updates" }(
+            id,
+            ownerId,
+            details,
+        )
     }
 
     /** Rejects unconfigured publication.

@@ -139,6 +139,8 @@ fun CampsiteSetupRoute(
         model::retryCalendar,
         onOpenPolicy,
         onChooseLocation = onChooseLocation,
+        onSaveDraft = model::saveDraft,
+        onRetrySave = model::retrySave,
     )
 }
 

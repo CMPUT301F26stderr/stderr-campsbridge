@@ -31,6 +31,63 @@ import java.time.Instant
 class ImageSlotControllerTest {
     private val target = ImageTarget(ImageTargetType.ACCOUNT, "account-1")
 
+    /** Parent-owned removal intent requires a repository acknowledgement even for apparent absence. */
+    @Test fun explicitClearConfirmsAnApparentlyEmptySlot() =
+        runTest {
+            val images = FakeImageRepository()
+            val model = ImageSlotController(images, target, backgroundScope)
+            runCurrent()
+            assertFalse(model.state.value.canRemove)
+            model.clearAttachment()
+            runCurrent()
+            assertEquals(1, images.deleteCalls)
+            assertNull(model.state.value.failure)
+        }
+
+    /** Cached absence after a failed delete does not prevent the explicit idempotent retry. */
+    @Test fun observedAbsenceAfterFailureStillRetriesTheDelete() =
+        runTest {
+            val images =
+                FakeImageRepository().apply {
+                    attachment.value = attachment("old")
+                    deleteFailure = IOException("ack lost")
+                }
+            val model = ImageSlotController(images, target, backgroundScope)
+            runCurrent()
+            model.remove()
+            runCurrent()
+            images.attachment.value = null
+            images.deleteFailure = null
+            runCurrent()
+            model.retry()
+            runCurrent()
+            assertEquals(2, images.deleteCalls)
+            assertNull(model.state.value.failure)
+        }
+
+    /** Read-only display retry preserves operation failure while refreshing the actual URL. */
+    @Test fun displayRetryCannotRepeatAFailedMutation() =
+        runTest {
+            val images =
+                FakeImageRepository().apply {
+                    attachment.value = attachment("old")
+                    urlFailures["old"] = IOException("URL unavailable")
+                    deleteFailure = IOException("delete failed")
+                }
+            val model = ImageSlotController(images, target, backgroundScope)
+            runCurrent()
+            model.remove()
+            runCurrent()
+            images.urlFailures.clear()
+            model.retryDisplay()
+            runCurrent()
+            assertEquals(1, images.deleteCalls)
+            assertEquals(0, images.replaceCalls)
+            assertEquals(ImageFailure.REMOVE, model.state.value.failure)
+            assertFalse(model.state.value.displayFailed)
+            assertEquals("file:///missing-fixture/old", model.state.value.displayUrl)
+        }
+
     /** Creates known attachment facts without making time part of the assertion.
      * @param blob Immutable test blob ID.
      */

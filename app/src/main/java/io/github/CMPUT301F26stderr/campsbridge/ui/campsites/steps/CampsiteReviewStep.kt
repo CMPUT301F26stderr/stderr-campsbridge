@@ -19,12 +19,14 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
  * @param draft Current raw input.
  * @param photo Local keep/replace/remove choice.
  * @param onEdit Opens one section for return to review.
+ * @param editingEnabled Whether editing is safe during a save or uncertain photo result.
  */
 @Composable
 fun CampsiteReviewStep(
     draft: CampsiteDraft,
     photo: CampsitePhotoIntent,
     onEdit: (CampsiteStep) -> Unit,
+    editingEnabled: Boolean = true,
 ) {
     val valid = validateCampsiteDetails(draft) as? CampsiteDetailsInput.Value
     if (valid == null) Text(stringResource(R.string.campsite_review_incomplete))
@@ -35,7 +37,7 @@ fun CampsiteReviewStep(
             stringResource(R.string.campsite_no_optional_value)
         },
     )
-    ReviewEdit(CampsiteStep.BASICS, R.string.campsite_setup_basics, onEdit)
+    ReviewEdit(CampsiteStep.BASICS, R.string.campsite_setup_basics, onEdit, editingEnabled)
     Text(
         stringResource(
             when (photo) {
@@ -45,13 +47,13 @@ fun CampsiteReviewStep(
             },
         ),
     )
-    ReviewEdit(CampsiteStep.PHOTO, R.string.campsite_setup_photo, onEdit)
+    ReviewEdit(CampsiteStep.PHOTO, R.string.campsite_setup_photo, onEdit, editingEnabled)
     DetailRow(stringResource(R.string.campsite_location), draft.locationLabel)
     draft.location?.let {
         Text(stringResource(R.string.campsite_coordinates, it.latitude, it.longitude))
     }
     DetailRow(stringResource(R.string.campsite_time_zone), draft.timeZone)
-    ReviewEdit(CampsiteStep.LOCATION, R.string.campsite_location, onEdit)
+    ReviewEdit(CampsiteStep.LOCATION, R.string.campsite_location, onEdit, editingEnabled)
     DetailRow(stringResource(R.string.campsite_max_guests), draft.maxGuestsText)
     DetailRow(
         stringResource(R.string.campsite_nightly_price),
@@ -59,7 +61,12 @@ fun CampsiteReviewStep(
             formatCad(it.details.nightlyPriceCents, LocalConfiguration.current.locales[0])
         } ?: draft.priceText,
     )
-    ReviewEdit(CampsiteStep.CAPACITY_PRICE, R.string.campsite_setup_capacity, onEdit)
+    ReviewEdit(
+        CampsiteStep.CAPACITY_PRICE,
+        R.string.campsite_setup_capacity,
+        onEdit,
+        editingEnabled,
+    )
     val options = CampingOptions.amenities + CampingOptions.tags
     val labels = options.associate { it.id to stringResource(it.label) }
     DetailRow(
@@ -70,14 +77,14 @@ fun CampsiteReviewStep(
         },
     )
     DetailRow(stringResource(R.string.campsite_tags), draft.tags.joinToString { labels[it] ?: it })
-    ReviewEdit(CampsiteStep.OPTIONS, R.string.campsite_setup_options, onEdit)
+    ReviewEdit(CampsiteStep.OPTIONS, R.string.campsite_setup_options, onEdit, editingEnabled)
     DetailRow(
         stringResource(R.string.campsite_setup_rules),
         draft.rules.ifEmpty {
             stringResource(R.string.campsite_no_optional_value)
         },
     )
-    ReviewEdit(CampsiteStep.RULES, R.string.campsite_setup_rules, onEdit)
+    ReviewEdit(CampsiteStep.RULES, R.string.campsite_setup_rules, onEdit, editingEnabled)
     Text(
         stringResource(
             R.string.campsite_requested_nights,
@@ -86,21 +93,30 @@ fun CampsiteReviewStep(
         ),
     )
     if (draft.id != null) Text(stringResource(R.string.campsite_saved_availability))
-    ReviewEdit(CampsiteStep.AVAILABILITY, R.string.campsite_setup_availability, onEdit)
+    ReviewEdit(
+        CampsiteStep.AVAILABILITY,
+        R.string.campsite_setup_availability,
+        onEdit,
+        editingEnabled,
+    )
 }
 
 /** Reuses a text action for direct review editing.
  * @param step Target section.
  * @param title Section label resource.
  * @param onEdit Parent-owned step change.
+ * @param enabled Whether the parent permits editing.
  */
 @Composable
 private fun ReviewEdit(
     step: CampsiteStep,
     title: Int,
     onEdit: (CampsiteStep) -> Unit,
+    enabled: Boolean,
 ) {
     TextButton({
         onEdit(step)
-    }) { Text(stringResource(R.string.campsite_edit_section, stringResource(title))) }
+    }, enabled = enabled) {
+        Text(stringResource(R.string.campsite_edit_section, stringResource(title)))
+    }
 }

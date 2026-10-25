@@ -22,6 +22,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.test.espresso.Espresso.pressBack
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepAction
@@ -103,6 +104,36 @@ class StepScaffoldTest {
         compose.onNodeWithContentDescription("Publish").assertIsDisplayed()
         compose.onNodeWithContentDescription("Save draft").assertDoesNotExist()
         compose.runOnIdle { assertEquals(0, actions) }
+    }
+
+    /** An idle recovery can block abandonment without disabling its explicit retry action. */
+    @Test fun recoveryBlocksExitsButKeepsExplicitRetryAvailable() {
+        var saved = 0
+        var exits = 0
+        compose.setContent {
+            CampsbridgeTheme {
+                StepScaffold(
+                    "Review campsite",
+                    "Step 8 of 8",
+                    { exits++ },
+                    {},
+                    nextEnabled = false,
+                    nextLabel = "Publish",
+                    onCancel = { exits++ },
+                    secondaryLabel = "Retry save",
+                    onSecondaryAction = { saved++ },
+                    exitEnabled = false,
+                ) { Text("Confirm the photo result before leaving.") }
+            }
+        }
+        compose.onNodeWithText("Cancel").assertIsNotEnabled().performClick()
+        compose.onNodeWithContentDescription("Back").assertIsNotEnabled().performClick()
+        pressBack()
+        compose.onNodeWithText("Retry save").performClick()
+        compose.runOnIdle {
+            assertEquals(1, saved)
+            assertEquals(0, exits)
+        }
     }
 
     /** Saving a draft shows that action's progress while publication remains disabled and idle. */

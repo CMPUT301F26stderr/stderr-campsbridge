@@ -60,9 +60,19 @@
     <string name="campsite_saved_availability">Existing availability is retained. Review the calendar for each month.</string>
     <string name="campsite_no_optional_value">None</string>
     <string name="campsite_review_incomplete">Some required fields need attention.</string>
-    <string name="campsite_save_pending">Saving drafts and publishing are pending in this build. Changes here remain local.</string>
+    <string name="campsite_publish_pending">Publishing is pending in this build.</string>
+    <string name="campsite_date_save_pending">Saving date changes is pending in this build. Your date choices are retained.</string>
+    <string name="campsite_retry_save">Retry save</string>
+    <string name="campsite_checking_save">Checking the previous save…</string>
+    <string name="campsite_saving_details">Saving campsite details…</string>
+    <string name="campsite_saving_photo">Saving the photo…</string>
+    <string name="campsite_save_failure_title">Campsite save needs attention</string>
+    <string name="campsite_details_save_failure">Could not save campsite details.</string>
+    <string name="campsite_photo_save_failure">Could not finish saving the photo. Saved campsite details are retained.</string>
+    <string name="campsite_save_recovery_failure">Could not confirm the previous save. Retry to check the same campsite.</string>
+    <string name="campsite_photo_recovery">The photo result is not confirmed. Retry before changing it or leaving.</string>
     <string name="campsite_discard_title">Discard campsite changes?</string>
-    <string name="campsite_discard_body">Your unsaved input and selected photo will be discarded. The saved campsite will stay as it is.</string>
+    <string name="campsite_discard_body">Your unsaved input and selected photo will be discarded. Confirmed saves are retained.</string>
     <string name="campsite_discard_confirm">Discard changes</string>
     <string name="campsite_edit_section">Edit %1$s</string>
 </resources>

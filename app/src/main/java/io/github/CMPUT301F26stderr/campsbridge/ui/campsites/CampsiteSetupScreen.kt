@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.validateCampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteAvailabilityStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteBasicsStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteCapacityPriceStep
@@ -23,15 +24,18 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.NoticeTone
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import java.time.LocalDate
 import java.time.YearMonth
 
-/** Eight stateless step contents in one shared scaffold; explicit save integration remains pending.
+/** Eight stateless step contents and explicit draft-save feedback in one shared scaffold.
  * @param state Local input and confirmed-read outcomes.
  * @param onBack Returns within the same draft.
  * @param onNext Validates and advances.
@@ -59,6 +63,8 @@ import java.time.YearMonth
  * @param onOpenPolicy Opens packaged refund reader.
  * @param modifier Caller layout.
  * @param onChooseLocation Registered map child action; isolated content can omit it.
+ * @param onSaveDraft Explicit valid-review save; absent integrations keep the action disabled.
+ * @param onRetrySave Explicit retry of the retained target after a failed save.
  */
 @Composable
 fun CampsiteSetupScreen(
@@ -89,6 +95,8 @@ fun CampsiteSetupScreen(
     onOpenPolicy: () -> Unit,
     modifier: Modifier = Modifier,
     onChooseLocation: (() -> Unit)? = null,
+    onSaveDraft: (() -> Unit)? = null,
+    onRetrySave: (() -> Unit)? = null,
 ) {
     BackHandler { if (state is CampsiteSetupUiState.Content) onBack() else onCancel() }
     if (state !is CampsiteSetupUiState.Content) {
@@ -124,19 +132,36 @@ fun CampsiteSetupScreen(
     }
     val draft = state.draft
     val review = draft.step == CampsiteStep.REVIEW
+    val submitting = state.savePhase != CampsiteSavePhase.IDLE
+    val canEdit = !submitting && !state.photoNeedsRecovery
+    val retrying = state.saveFailure != null
+    val saveAction = if (retrying) onRetrySave else onSaveDraft
+    val canSave =
+        validateCampsiteDetails(draft) is CampsiteDetailsInput.Value &&
+            !state.photoReselectionRequired && draft.requestedAvailability.isEmpty()
     StepScaffold(
         title = stringResource(R.string.campsite_setup_title),
         progress = stringResource(R.string.campsite_setup_step, draft.step.ordinal + 1, 8),
         onBack = onBack,
         onNext = onNext,
         modifier = modifier,
-        nextEnabled = !review,
+        nextEnabled = !review && canEdit,
+        isSubmitting = submitting,
+        exitEnabled = !state.photoNeedsRecovery,
         nextLabel = stringResource(if (review) R.string.publish else R.string.next),
         steps = StepProgress(draft.step.ordinal + 1, 8),
         onCancel = onCancel,
-        secondaryLabel = if (review) stringResource(R.string.save_draft) else null,
-        onSecondaryAction = if (review) ({}) else null,
-        secondaryEnabled = false,
+        secondaryLabel =
+            if (review) {
+                stringResource(
+                    if (retrying) R.string.campsite_retry_save else R.string.save_draft,
+                )
+            } else {
+                null
+            },
+        onSecondaryAction = if (review) ({ saveAction?.invoke() }) else null,
+        secondaryEnabled = canSave && saveAction != null,
+        submittingAction = StepAction.SECONDARY,
         onSkip =
             if (draft.step == CampsiteStep.PHOTO) {
                 (
@@ -205,8 +230,61 @@ fun CampsiteSetupScreen(
             }
 
             CampsiteStep.REVIEW -> {
-                CampsiteReviewStep(draft, state.photoIntent, onEdit)
-                Text(stringResource(R.string.campsite_save_pending))
+                if (submitting) {
+                    Text(
+                        stringResource(
+                            when (state.savePhase) {
+                                CampsiteSavePhase.RECOVERING -> R.string.campsite_checking_save
+                                CampsiteSavePhase.SAVING_PHOTO -> R.string.campsite_saving_photo
+                                else -> R.string.campsite_saving_details
+                            },
+                        ),
+                    )
+                } else if (state.saveFailure != null) {
+                    InlineNotice(
+                        stringResource(R.string.campsite_save_failure_title),
+                        stringResource(
+                            if (state.photoNeedsRecovery) {
+                                R.string.campsite_photo_recovery
+                            } else {
+                                when (state.saveFailure) {
+                                    CampsiteSaveFailure.DETAILS -> {
+                                        R.string.campsite_details_save_failure
+                                    }
+
+                                    CampsiteSaveFailure.PHOTO -> {
+                                        R.string.campsite_photo_save_failure
+                                    }
+
+                                    CampsiteSaveFailure.RECOVERY -> {
+                                        R.string.campsite_save_recovery_failure
+                                    }
+
+                                    CampsiteSaveFailure.PHOTO_RESELECTION -> {
+                                        R.string.campsite_photo_reselect
+                                    }
+
+                                    CampsiteSaveFailure.AVAILABILITY_PENDING -> {
+                                        R.string.campsite_date_save_pending
+                                    }
+                                }
+                            },
+                        ),
+                        tone = NoticeTone.ERROR,
+                    )
+                }
+                if (state.photoReselectionRequired &&
+                    state.saveFailure != CampsiteSaveFailure.PHOTO_RESELECTION
+                ) {
+                    Text(stringResource(R.string.campsite_photo_reselect))
+                }
+                if (draft.requestedAvailability.isNotEmpty() &&
+                    state.saveFailure != CampsiteSaveFailure.AVAILABILITY_PENDING
+                ) {
+                    Text(stringResource(R.string.campsite_date_save_pending))
+                }
+                CampsiteReviewStep(draft, state.photoIntent, onEdit, editingEnabled = canEdit)
+                Text(stringResource(R.string.campsite_publish_pending))
             }
         }
     }
@@ -250,9 +328,9 @@ private fun campsiteStepTitle(step: CampsiteStep): Int =
         CampsiteStep.REVIEW -> R.string.campsite_setup_review
     }
 
-/** Supplies all eight realistic local content states to Android Studio's preview selector. */
+/** Supplies all eight steps and save/recovery variants to Android Studio's preview selector. */
 internal class CampsiteSetupPreviewStates : PreviewParameterProvider<CampsiteSetupUiState> {
-    override val values: Sequence<CampsiteSetupUiState> =
+    private val steps: Sequence<CampsiteSetupUiState.Content> =
         CampsiteStep.entries.asSequence().map { step ->
             val site = previewCampsite()
             CampsiteSetupUiState.Content(
@@ -275,6 +353,26 @@ internal class CampsiteSetupPreviewStates : PreviewParameterProvider<CampsiteSet
                 inventory = CampsiteInventoryUiState.Content(emptyList()),
             )
         }
+
+    override val values: Sequence<CampsiteSetupUiState> =
+        steps +
+            sequenceOf(
+                steps.last().copy(savePhase = CampsiteSavePhase.SAVING_DETAILS),
+                steps.last().copy(savePhase = CampsiteSavePhase.SAVING_PHOTO),
+                steps.last().copy(saveFailure = CampsiteSaveFailure.DETAILS),
+                steps.last().copy(photoReselectionRequired = true),
+                steps.last().copy(
+                    draft =
+                        steps.last().draft.copy(
+                            requestedAvailability = mapOf(LocalDate.of(2027, 5, 15) to true),
+                        ),
+                ),
+                steps.last().copy(
+                    photoIntent = CampsitePhotoIntent.Remove,
+                    photoRemovalPending = true,
+                    saveFailure = CampsiteSaveFailure.PHOTO,
+                ),
+            )
 }
 
 /** Invokes production content with passive preview callbacks, never simulated persistence.
@@ -310,6 +408,8 @@ private fun SetupPreviewContent(state: CampsiteSetupUiState) {
             {},
             {},
             onChooseLocation = {},
+            onSaveDraft = {},
+            onRetrySave = {},
         )
     }
 }
@@ -329,7 +429,7 @@ private fun CampsiteSetupPreview(
 @Preview(showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable
 private fun LargeSetupReviewPreview() {
-    SetupPreviewContent(CampsiteSetupPreviewStates().values.last())
+    SetupPreviewContent(CampsiteSetupPreviewStates().values.elementAt(CampsiteStep.REVIEW.ordinal))
 }
 
 /** Initial failure retains its title, Back and explicit retry. */
