@@ -51,6 +51,7 @@ class FakeLotteryRepository(
     var publishHandler: (suspend (String, String) -> Unit)? = null
     var joinHandler: (suspend (String, String) -> Unit)? = null
     var withdrawHandler: (suspend (String, String) -> Unit)? = null
+    var drawHandler: (suspend (String) -> DrawResult)? = null
 
     /** Captures the exact arguments supplied to create/update without simulating a transaction.
      * @param id Retained target identity.
@@ -293,11 +294,13 @@ class FakeLotteryRepository(
     ): Unit =
         unsupported()
 
-    /** Rejects unconfigured drawing.
+    /** Captures the saved identity and requires an explicit draw outcome.
      * @param id Requested lottery.
      */
-    override suspend fun draw(id: String): DrawResult =
-        unsupported()
+    override suspend fun draw(id: String): DrawResult {
+        events.add("draw:$id")
+        return checkNotNull(drawHandler) { "Configure drawing" }(id)
+    }
 
     /** Rejects unconfigured cancellation.
      * @param id Requested lottery.

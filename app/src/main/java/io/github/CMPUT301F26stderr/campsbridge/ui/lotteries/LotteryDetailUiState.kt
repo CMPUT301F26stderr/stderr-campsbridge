@@ -119,6 +119,9 @@ sealed interface LotteryDetailUiState {
      * @param isConfirmingLeave Whether the explicit withdrawal confirmation is open.
      * @param membershipAction One pending write or its awaited observed confirmation.
      * @param membershipError Last membership-command failure, independent of read failures.
+     * @param canDraw Current owner/lifecycle facts permit the manual fallback.
+     * @param isDrawing An actual manual repository call is pending acknowledgement.
+     * @param drawFailed The last manual call failed while the parent remains incomplete.
      */
     data class Content(
         val lottery: Lottery,
@@ -132,5 +135,8 @@ sealed interface LotteryDetailUiState {
         val isConfirmingLeave: Boolean = false,
         val membershipAction: LotteryMembershipAction? = null,
         val membershipError: LotteryMembershipActionError? = null,
+        val canDraw: Boolean = false,
+        val isDrawing: Boolean = false,
+        val drawFailed: Boolean = false,
     ) : LotteryDetailUiState
 }

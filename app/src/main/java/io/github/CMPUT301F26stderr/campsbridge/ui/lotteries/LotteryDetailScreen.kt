@@ -69,6 +69,7 @@ fun LotteryDetailRoute(
         model::requestLeave,
         model::dismissLeave,
         model::confirmLeave,
+        model::draw,
         onParticipants = onParticipants,
     )
 }
@@ -86,6 +87,7 @@ fun LotteryDetailRoute(
  * @param onRequestLeave Opens withdrawal confirmation.
  * @param onDismissLeave Dismisses an unsubmitted withdrawal.
  * @param onConfirmLeave Submits an explicitly confirmed withdrawal.
+ * @param onDraw Invokes the eligible owner fallback or explicit retry.
  * @param modifier Caller layout.
  * @param onParticipants Registered owner-only child; no action is shown for drafts.
  */
@@ -102,6 +104,7 @@ fun LotteryDetailScreen(
     onRequestLeave: () -> Unit,
     onDismissLeave: () -> Unit,
     onConfirmLeave: () -> Unit,
+    onDraw: () -> Unit,
     modifier: Modifier = Modifier,
     onParticipants: (() -> Unit)? = null,
 ) {
@@ -215,6 +218,7 @@ fun LotteryDetailScreen(
                         onDismissLeave,
                         onConfirmLeave,
                     )
+                    LotteryDrawActions(state, onDraw)
                     if (onParticipants != null && record.publishedAt != null) {
                         AppActionButton(
                             stringResource(R.string.lottery_participants),
@@ -461,6 +465,26 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
                 ),
                 content.copy(offers = LotteryOffersState.Content(emptyList())),
                 content.copy(offers = LotteryOffersState.Failure),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.DRAW_PENDING,
+                    canDraw = true,
+                ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.DRAW_PENDING,
+                    canDraw = true,
+                    isDrawing = true,
+                ),
+                content.copy(
+                    lottery = record.copy(publishedAt = record.createdAt),
+                    canContinue = false,
+                    lifecycle = LotteryLifecycle.DRAW_PENDING,
+                    canDraw = true,
+                    drawFailed = true,
+                ),
                 LotteryDetailUiState.Loading,
                 LotteryDetailUiState.Failure,
                 LotteryDetailUiState.Unavailable,
@@ -477,5 +501,5 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
 private fun LotteryDetailPreview(
     @PreviewParameter(LotteryDetailPreviewProvider::class) state: LotteryDetailUiState,
 ) {
-    CampsbridgeTheme { LotteryDetailScreen(state, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
+    CampsbridgeTheme { LotteryDetailScreen(state, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
 }

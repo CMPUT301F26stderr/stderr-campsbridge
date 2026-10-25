@@ -88,6 +88,10 @@ class LotteryDetailViewModel(
     fun retryParticipantNames() =
         participantReader.retryNames()
 
+    private var drawJob: Job? = null
+    private var drawVersion = 0L
+    private var drawing = false
+    private var drawFailed = false
     private var recordJob: Job? = null
     private var offerJob: Job? = null
     private var timeJob: Job? = null
@@ -114,6 +118,54 @@ class LotteryDetailViewModel(
 
     init {
         observeRecord()
+    }
+
+    /** Runs an eligible owner fallback against the existing resumable draw operation. */
+    fun draw() {
+        val current = state.value as? LotteryDetailUiState.Content ?: return
+        if (drawing || !canDraw(current.lottery)) return
+        val version = ++drawVersion
+        drawing = true
+        drawFailed = false
+        refreshSections()
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                try {
+                    lotteries.draw(lotteryId)
+                    currentCoroutineContext().ensureActive()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    currentCoroutineContext().ensureActive()
+                    if (version == drawVersion) {
+                        drawFailed = true
+                    }
+                } finally {
+                    if (version == drawVersion) {
+                        drawJob = null
+                        drawing = false
+                        refreshSections()
+                    }
+                }
+            }
+        drawJob = pending
+        pending.start()
+    }
+
+    /** Checks current owner context and the existing lifecycle at each action boundary.
+     * @param lottery Confirmed saved parent.
+     */
+    private fun canDraw(lottery: Lottery): Boolean =
+        context == LotteryContext.OWNER &&
+            lotteryLifecycle(lottery, clock.instant()) == LotteryLifecycle.DRAW_PENDING
+
+    /** Retires only manual-command presentation; the repository owns resumable draw progress. */
+    private fun stopDraw() {
+        drawVersion++
+        drawJob?.cancel()
+        drawJob = null
+        drawing = false
+        drawFailed = false
     }
 
     /** Requests one eligible join/rejoin without locally manufacturing a membership. */
@@ -201,6 +253,7 @@ class LotteryDetailViewModel(
         stopTime()
         stopMembership()
         stopMembershipAction()
+        stopDraw()
         mutableState.value = LotteryDetailUiState.Loading
         recordJob =
             viewModelScope.launch {
@@ -218,10 +271,12 @@ class LotteryDetailViewModel(
                             stopTime()
                             stopMembership()
                             stopMembershipAction()
+                            stopDraw()
                             participantReader.updateParent(null)
                             mutableState.value = LotteryDetailUiState.Unavailable
                         } else {
                             checkNotNull(record)
+                            if (record.cancellation != null) stopDraw()
                             val prior = state.value as? LotteryDetailUiState.Content
                             mutableState.value =
                                 LotteryDetailUiState.Content(
@@ -250,6 +305,7 @@ class LotteryDetailViewModel(
                         stopTime()
                         stopMembership()
                         stopMembershipAction()
+                        stopDraw()
                         participantReader.updateParent(null)
                         mutableState.value = LotteryDetailUiState.Failure
                     }
@@ -490,6 +546,11 @@ class LotteryDetailViewModel(
         participantReader.updateParent(current.lottery.takeIf { context == LotteryContext.OWNER })
         savedState["participantState"] = participantReader.selectedState.value?.name
         participantReader.refreshTime()
+        if (current.lottery.drawnAt != null ||
+            current.lottery.cancellation != null
+        ) {
+            drawFailed = false
+        }
         settleMembershipAction()
         if (pendingMembershipAction == null && !canLeave(current.lottery)) confirmingLeave = false
         val membership =
@@ -522,6 +583,9 @@ class LotteryDetailViewModel(
                 isConfirmingLeave = confirmingLeave,
                 membershipAction = pendingMembershipAction,
                 membershipError = membershipError,
+                canDraw = canDraw(current.lottery),
+                isDrawing = drawing,
+                drawFailed = drawFailed,
             )
         scheduleTime()
     }
@@ -629,6 +693,7 @@ class LotteryDetailViewModel(
         stopTime()
         stopMembership()
         stopMembershipAction()
+        stopDraw()
         super.onCleared()
     }
 }

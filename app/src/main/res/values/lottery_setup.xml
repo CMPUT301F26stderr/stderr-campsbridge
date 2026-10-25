@@ -73,4 +73,8 @@
     <string name="lottery_awaiting_booking">Awaiting booking</string>
     <string name="lottery_booking_open">Booking open</string>
     <string name="lottery_closed">Closed</string>
+    <string name="lottery_run_draw">Run draw</string>
+    <string name="lottery_drawing">Drawing lottery</string>
+    <string name="lottery_draw_failed">The draw could not be completed.</string>
+    <string name="lottery_draw_retry">Run the draw again to retry.</string>
 </resources>
