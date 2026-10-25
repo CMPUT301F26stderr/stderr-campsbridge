@@ -1,5 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
+import android.view.KeyEvent
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
@@ -17,6 +18,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.Density
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.pressBack
+import androidx.test.platform.app.InstrumentationRegistry
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
@@ -75,7 +77,7 @@ class LotterySetupFlowTest {
         compose.onNodeWithText("Maximum winners").assertIsDisplayed()
         compose.onNodeWithText("Unlimited registrations").assertIsDisplayed()
         compose.onNodeWithText("Maximum winners").performTextInput("2")
-        closeSoftKeyboard()
+        closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
         compose.onNodeWithText("Save draft").assertIsNotEnabled()
@@ -182,7 +184,10 @@ class LotterySetupFlowTest {
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("May weekends").assertIsDisplayed()
         compose.onNodeWithText("Cancel").performClick()
-        pressBack()
+        compose.onNodeWithText("Discard setup").assertIsDisplayed()
+        // Send system Back to the modal window without choosing the underlying activity root.
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+        compose.onNodeWithText("Discard setup").assertDoesNotExist()
         compose.onNodeWithText("May weekends").assertIsDisplayed()
         compose.onNodeWithText("Cancel").performClick()
         compose.onNodeWithText("Discard setup").performClick()
@@ -371,9 +376,11 @@ class LotterySetupFlowTest {
         compose.runOnIdle { host.lotteries.getHandler = null }
         compose.onNodeWithText("Retry").performClick()
         compose.onNodeWithText("Published").assertIsDisplayed()
+        compose.onNodeWithText("Upcoming").assertIsDisplayed()
         compose.onNodeWithText("Continue setup").assertDoesNotExist()
         restoration.emulateSavedInstanceStateRestore()
         compose.onNodeWithText("Published").assertIsDisplayed()
+        compose.onNodeWithText("Upcoming").assertIsDisplayed()
         pressBack()
         compose.onNodeWithText("Manage campsite").assertIsDisplayed()
         compose.runOnIdle {
@@ -439,7 +446,7 @@ class LotterySetupFlowTest {
         schedule("Booking closing", 8)
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Maximum winners").performTextInput("2")
-        closeSoftKeyboard()
+        closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
         compose.onNodeWithText("May 14, 2027").performScrollTo().assertIsDisplayed()
@@ -470,10 +477,17 @@ class LotterySetupFlowTest {
         compose.onNodeWithText("Step 1 of 6").assertIsDisplayed()
     }
 
+    /** Waits for real IME readiness before closing it, then confirms the app window is unobscured. */
+    private fun closeReadyKeyboard() {
+        compose.waitUntil(15_000) { host.keyboardVisible }
+        closeSoftKeyboard()
+        compose.waitUntil(15_000) { !host.keyboardVisible }
+    }
+
     /** Uses the actual title field and anchored Next action to reach campsite selection. */
     private fun toSite() {
         compose.onNodeWithText("Lottery title").performTextInput("May weekends")
-        closeSoftKeyboard()
+        closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
     }

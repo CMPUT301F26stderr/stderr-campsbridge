@@ -1,7 +1,11 @@
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.createSavedStateHandle
@@ -43,6 +47,9 @@ class TestAppHost : AutoCloseable {
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
     val campsites = FakeCampsiteRepository()
+
+    @Volatile var keyboardVisible = false
+        private set
     val lotteries = FakeLotteryRepository()
     val reviews = FakeReviewRepository()
     val campsiteOwners = FakeAccountRepository(sampleAccount())
@@ -82,8 +89,11 @@ class TestAppHost : AutoCloseable {
     }
 
     /** Composes production navigation without production bootstrap or network access. */
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     fun Content() {
+        val visible = WindowInsets.isImeVisible
+        SideEffect { keyboardVisible = visible }
         CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
             AppRoot(app, { id ->
                 viewModelFactory {
@@ -208,6 +218,7 @@ class TestAppHost : AutoCloseable {
                             id,
                             lotteries,
                             campsites,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                         )
                     }
                 }

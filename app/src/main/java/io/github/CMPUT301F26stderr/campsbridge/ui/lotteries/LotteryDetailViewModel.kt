@@ -4,18 +4,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.Clock
 
 /** Reads an actual saved owner target without inventing a completion snapshot.
  * @param ownerId Current owner allowed to read this management target.
  * @param lotteryId Actual saved identity carried by navigation.
  * @param lotteries Saved parent and live allocation source.
+ * @param clock Deterministic current time for derived display boundaries.
  * @param campsites Names and zones for referenced allocations.
  */
 class LotteryDetailViewModel(
@@ -23,17 +27,27 @@ class LotteryDetailViewModel(
     private val lotteryId: String,
     private val lotteries: LotteryRepository,
     private val campsites: CampsiteRepository,
+    private val clock: Clock,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<LotteryDetailUiState>(LotteryDetailUiState.Loading)
     val state = mutableState.asStateFlow()
 
     private var recordJob: Job? = null
     private var offerJob: Job? = null
+    private var timeJob: Job? = null
     private var recordVersion = 0L
     private var offerVersion = 0L
 
     init {
         observeRecord()
+    }
+
+    /** Recalculates read-only lifecycle after foreground or deadline changes. */
+    fun refreshTime() {
+        val current = state.value as? LotteryDetailUiState.Content ?: return
+        mutableState.value =
+            current.copy(lifecycle = lotteryLifecycle(current.lottery, clock.instant()))
+        scheduleTime()
     }
 
     /** Retries only the failed saved parent observation. */
@@ -56,6 +70,7 @@ class LotteryDetailViewModel(
         val version = ++recordVersion
         recordJob?.cancel()
         stopOffers()
+        stopTime()
         mutableState.value = LotteryDetailUiState.Loading
         recordJob =
             viewModelScope.launch {
@@ -64,6 +79,7 @@ class LotteryDetailViewModel(
                         if (version != recordVersion) return@collect
                         if (record == null || record.id != lotteryId || record.ownerId != ownerId) {
                             stopOffers()
+                            stopTime()
                             mutableState.value = LotteryDetailUiState.Unavailable
                         } else {
                             val prior = state.value as? LotteryDetailUiState.Content
@@ -73,7 +89,9 @@ class LotteryDetailViewModel(
                                     prior?.offers ?: LotteryOffersState.Loading,
                                     canContinue =
                                         record.publishedAt == null && record.cancellation == null,
+                                    lifecycle = lotteryLifecycle(record, clock.instant()),
                                 )
+                            scheduleTime()
                             if (prior == null) observeOffers()
                         }
                     }
@@ -83,6 +101,7 @@ class LotteryDetailViewModel(
                     currentCoroutineContext().ensureActive()
                     if (version == recordVersion) {
                         stopOffers()
+                        stopTime()
                         mutableState.value = LotteryDetailUiState.Failure
                     }
                 }
@@ -133,6 +152,36 @@ class LotteryDetailViewModel(
             }
     }
 
+    /**
+     * Waits only for the next relevant window; completed draws still come from repository facts.
+     */
+    private fun scheduleTime() {
+        stopTime()
+        val current = state.value as? LotteryDetailUiState.Content ?: return
+        val configuration = current.lottery.configuration
+        val deadline =
+            when (current.lifecycle) {
+                LotteryLifecycle.UPCOMING -> configuration.registrationOpensAt
+                LotteryLifecycle.REGISTRATION_OPEN -> configuration.registrationClosesAt
+                LotteryLifecycle.AWAITING_BOOKING -> configuration.bookingOpensAt
+                LotteryLifecycle.BOOKING_OPEN -> configuration.bookingClosesAt
+                else -> null
+            } ?: return
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                awaitDeadline(clock, deadline)
+                refreshTime()
+            }
+        timeJob = pending
+        pending.start()
+    }
+
+    /** Releases a deadline wait when its source or owner changes. */
+    private fun stopTime() {
+        timeJob?.cancel()
+        timeJob = null
+    }
+
     /** Invalidates retired child callbacks before releasing their listener. */
     private fun stopOffers() {
         offerVersion++
@@ -145,6 +194,7 @@ class LotteryDetailViewModel(
         recordVersion++
         recordJob?.cancel()
         stopOffers()
+        stopTime()
         super.onCleared()
     }
 }

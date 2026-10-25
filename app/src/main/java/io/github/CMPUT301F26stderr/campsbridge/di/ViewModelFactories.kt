@@ -58,6 +58,7 @@ fun lotteryDetailViewModelFactory(
                 lotteryId,
                 services.repositories.lotteries,
                 services.repositories.campsites,
+                services.clock,
             )
         }
     }

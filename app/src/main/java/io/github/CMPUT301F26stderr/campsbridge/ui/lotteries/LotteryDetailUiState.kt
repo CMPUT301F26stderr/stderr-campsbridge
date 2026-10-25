@@ -44,11 +44,13 @@ sealed interface LotteryDetailUiState {
     /** Actual saved facts with independently loaded allocations.
      * @param lottery Current parent record.
      * @param offers Independent allocation source outcome.
+     * @param lifecycle Current display phase evaluated by the owner with its injected clock.
      * @param canContinue Whether the current owner may reopen the unpublished active draft.
      */
     data class Content(
         val lottery: Lottery,
         val offers: LotteryOffersState = LotteryOffersState.Loading,
         val canContinue: Boolean = false,
+        val lifecycle: LotteryLifecycle,
     ) : LotteryDetailUiState
 }

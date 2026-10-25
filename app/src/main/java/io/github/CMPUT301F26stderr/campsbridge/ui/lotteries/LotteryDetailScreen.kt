@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -15,6 +16,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
@@ -47,6 +50,11 @@ fun LotteryDetailRoute(
     onContinue: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
+    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
+        .collectAsStateWithLifecycle()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.State.RESUMED) model.refreshTime()
+    }
     LotteryDetailScreen(state, onBack, model::retry, model::retryOffers, onContinue)
 }
 
@@ -99,6 +107,11 @@ fun LotteryDetailScreen(
                             },
                         ),
                     )
+                    if (state.lifecycle != LotteryLifecycle.DRAFT &&
+                        state.lifecycle != LotteryLifecycle.CANCELLED
+                    ) {
+                        Text(lotteryLifecycleLabel(state.lifecycle))
+                    }
                     if (record.description.isNotEmpty()) Text(record.description)
                     if (state.canContinue) {
                         AppActionButton(
@@ -186,6 +199,24 @@ fun LotteryDetailScreen(
     }
 }
 
+/** Localizes derived lifecycle facts for shared list/detail presentation.
+ * @param lifecycle Explicit controller-derived phase.
+ */
+@Composable
+internal fun lotteryLifecycleLabel(lifecycle: LotteryLifecycle): String =
+    stringResource(
+        when (lifecycle) {
+            LotteryLifecycle.DRAFT -> R.string.lottery_draft_status
+            LotteryLifecycle.UPCOMING -> R.string.lottery_upcoming
+            LotteryLifecycle.REGISTRATION_OPEN -> R.string.lottery_registration_open
+            LotteryLifecycle.DRAW_PENDING -> R.string.lottery_draw_pending
+            LotteryLifecycle.AWAITING_BOOKING -> R.string.lottery_awaiting_booking
+            LotteryLifecycle.BOOKING_OPEN -> R.string.lottery_booking_open
+            LotteryLifecycle.CLOSED -> R.string.lottery_closed
+            LotteryLifecycle.CANCELLED -> R.string.lottery_cancelled_status
+        },
+    )
+
 /** Supplies real-shaped saved content and read outcomes without constructing repositories. */
 class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiState> {
     override val values: Sequence<LotteryDetailUiState> =
@@ -226,12 +257,14 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
                         ),
                     ),
                     canContinue = true,
+                    lifecycle = lotteryLifecycle(record, record.createdAt),
                 )
             sequenceOf(
                 content,
                 content.copy(
                     lottery = record.copy(publishedAt = record.createdAt),
                     canContinue = false,
+                    lifecycle = LotteryLifecycle.UPCOMING,
                 ),
                 content.copy(offers = LotteryOffersState.Content(emptyList())),
                 content.copy(offers = LotteryOffersState.Failure),

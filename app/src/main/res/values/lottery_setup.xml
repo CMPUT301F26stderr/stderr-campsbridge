@@ -67,4 +67,10 @@
     <string name="lottery_no_offers">No campsite nights have been allocated yet.</string>
     <string name="lottery_missing_campsite">Unavailable campsite (%1$s)</string>
     <string name="lottery_window_range">%1$s to %2$s</string>
+    <string name="lottery_upcoming">Upcoming</string>
+    <string name="lottery_registration_open">Registration open</string>
+    <string name="lottery_draw_pending">Results pending</string>
+    <string name="lottery_awaiting_booking">Awaiting booking</string>
+    <string name="lottery_booking_open">Booking open</string>
+    <string name="lottery_closed">Closed</string>
 </resources>
