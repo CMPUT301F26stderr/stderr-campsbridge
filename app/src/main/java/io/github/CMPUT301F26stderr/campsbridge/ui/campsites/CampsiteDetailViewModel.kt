@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReviewRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import kotlinx.coroutines.CancellationException
@@ -59,7 +60,7 @@ class CampsiteDetailViewModel(
     private val mutableMonth = MutableStateFlow(restoredMonth())
     val month = mutableMonth.asStateFlow()
     private val mutableInventory =
-        MutableStateFlow<CampsiteInventoryUiState>(CampsiteInventoryUiState.Loading)
+        MutableStateFlow<CalendarInventoryRead>(CalendarInventoryRead.Loading)
     val inventory = mutableInventory.asStateFlow()
     private val campsiteLotteries =
         CampsiteLotteriesController(
@@ -188,7 +189,7 @@ class CampsiteDetailViewModel(
 
     /** Retries the current visible-month read. */
     fun retryInventory() {
-        if (inventory.value == CampsiteInventoryUiState.Failure) {
+        if (inventory.value == CalendarInventoryRead.Failure) {
             calendarMonth = null
             startCalendar()
         }
@@ -350,14 +351,14 @@ class CampsiteDetailViewModel(
                             month.plusMonths(1).atDay(1),
                         ).collect { nights ->
                             if (version == calendarVersion) {
-                                mutableInventory.value = CampsiteInventoryUiState.Content(nights)
+                                mutableInventory.value = CalendarInventoryRead.Content(nights)
                             }
                         }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
                     if (version == calendarVersion) {
-                        mutableInventory.value = CampsiteInventoryUiState.Failure
+                        mutableInventory.value = CalendarInventoryRead.Failure
                     }
                 }
             }
@@ -369,7 +370,7 @@ class CampsiteDetailViewModel(
         calendarJob?.cancel()
         calendarJob = null
         calendarMonth = null
-        mutableInventory.value = CampsiteInventoryUiState.Loading
+        mutableInventory.value = CalendarInventoryRead.Loading
     }
 
     /** Clears supplemental readers when the authoritative saved parent cannot be presented. */

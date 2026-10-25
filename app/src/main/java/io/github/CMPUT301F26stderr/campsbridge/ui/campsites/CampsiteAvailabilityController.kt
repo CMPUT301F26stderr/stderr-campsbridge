@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -35,7 +36,7 @@ enum class AvailabilitySaveFailure { COMPARISON_PENDING, WRITE }
  */
 data class CampsiteAvailabilityState(
     val month: YearMonth,
-    val inventory: CampsiteInventoryUiState = CampsiteInventoryUiState.Loading,
+    val inventory: CalendarInventoryRead = CalendarInventoryRead.Loading,
     val requested: Map<LocalDate, Boolean> = emptyMap(),
     val pendingEdits: Map<LocalDate, Boolean>? = null,
     val isSaving: Boolean = false,
@@ -132,7 +133,7 @@ class CampsiteAvailabilityController(
     fun toggleDate(date: LocalDate) {
         val current = state.value
         if (!canEdit(date)) return
-        val inventory = current.inventory as CampsiteInventoryUiState.Content
+        val inventory = current.inventory as CalendarInventoryRead.Content
         val night = inventory.nights.find { it.date == date }
         val offered = current.requested[date] ?: (night?.isOffered ?: false)
         setRequestedOffered(setOf(date), !offered)
@@ -144,7 +145,7 @@ class CampsiteAvailabilityController(
     fun canEdit(date: LocalDate): Boolean {
         val current = state.value
         if (!scope.isActive || current.isSaving) return false
-        val inventory = current.inventory as? CampsiteInventoryUiState.Content ?: return false
+        val inventory = current.inventory as? CalendarInventoryRead.Content ?: return false
         return (targetId == null || YearMonth.from(date) == current.month) &&
             inventory.nights.none { it.date == date && it.reservationId != null }
     }
@@ -160,7 +161,7 @@ class CampsiteAvailabilityController(
         val editable = dates.filter(::canEdit)
         if (editable.isEmpty()) return
         val current = state.value
-        val inventory = current.inventory as CampsiteInventoryUiState.Content
+        val inventory = current.inventory as CalendarInventoryRead.Content
         val nights = inventory.nights.associateBy { it.date }
         for (date in editable) {
             if (date !in known) known[date] = nights[date]?.isOffered ?: false
@@ -171,7 +172,7 @@ class CampsiteAvailabilityController(
     /** Retries the visible range without fetching or creating another parent. */
     fun retryCalendar() {
         if (scope.isActive && !state.value.isSaving &&
-            state.value.inventory == CampsiteInventoryUiState.Failure
+            state.value.inventory == CalendarInventoryRead.Failure
         ) {
             observeMonth()
         }
@@ -246,11 +247,11 @@ class CampsiteAvailabilityController(
         known.clear()
         val id = targetId
         if (id == null) {
-            publish(state.value.copy(inventory = CampsiteInventoryUiState.Content(emptyList())))
+            publish(state.value.copy(inventory = CalendarInventoryRead.Content(emptyList())))
             return
         }
         val month = state.value.month
-        publish(state.value.copy(inventory = CampsiteInventoryUiState.Loading))
+        publish(state.value.copy(inventory = CalendarInventoryRead.Loading))
         reader =
             scope.launch {
                 try {
@@ -267,7 +268,7 @@ class CampsiteAvailabilityController(
                             }
                             publish(
                                 state.value.copy(
-                                    inventory = CampsiteInventoryUiState.Content(nights),
+                                    inventory = CalendarInventoryRead.Content(nights),
                                 ),
                             )
                         }
@@ -277,7 +278,7 @@ class CampsiteAvailabilityController(
                     currentCoroutineContext().ensureActive()
                     if (targetId == id && state.value.month == month) {
                         known.clear()
-                        publish(state.value.copy(inventory = CampsiteInventoryUiState.Failure))
+                        publish(state.value.copy(inventory = CalendarInventoryRead.Failure))
                     }
                 }
             }

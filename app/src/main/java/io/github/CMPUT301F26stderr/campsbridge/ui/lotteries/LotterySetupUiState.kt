@@ -2,7 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import java.time.LocalDate
@@ -57,13 +57,13 @@ data class LotterySetupErrors(
 data class LotteryAllocationUiState(
     val month: YearMonth,
     val selected: Set<LocalDate>,
-    val inventory: CampsiteInventoryUiState = CampsiteInventoryUiState.Loading,
+    val inventory: CalendarInventoryRead = CalendarInventoryRead.Loading,
     val invalidSelection: Boolean = false,
 ) {
     /** Confirmed nonempty selection; failed/unknown inventory cannot enable the Apply action. */
     val canApply: Boolean
         get() {
-            val known = inventory as? CampsiteInventoryUiState.Content ?: return false
+            val known = inventory as? CalendarInventoryRead.Content ?: return false
             val eligible =
                 known.nights
                     .filter { it.isFree }

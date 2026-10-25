@@ -16,8 +16,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
@@ -87,18 +87,18 @@ fun LotteryAllocationScreen(
                     Text(site.details.timeZone)
                     Text(stringResource(R.string.lottery_allocation_hint))
                     when (allocation.inventory) {
-                        CampsiteInventoryUiState.Loading -> {
+                        CalendarInventoryRead.Loading -> {
                             LoadingContent()
                         }
 
-                        CampsiteInventoryUiState.Failure -> {
+                        CalendarInventoryRead.Failure -> {
                             FailureContent(
                                 stringResource(R.string.lottery_allocation_failure),
                                 onRetryInventory,
                             )
                         }
 
-                        is CampsiteInventoryUiState.Content -> {
+                        is CalendarInventoryRead.Content -> {
                             CampsiteCalendar(
                                 lotteryAllocationCalendarState(allocation),
                                 onMonth,
@@ -143,7 +143,7 @@ private fun LotteryAllocationPreview() {
                     LotteryAllocationUiState(
                         YearMonth.from(day),
                         setOf(day),
-                        CampsiteInventoryUiState.Content(
+                        CalendarInventoryRead.Content(
                             listOf(
                                 CalendarNight(day, true),
                                 CalendarNight(day.plusDays(1), true, "preview-booking"),
