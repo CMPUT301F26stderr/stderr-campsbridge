@@ -60,26 +60,26 @@ class BookingWizardViewModelTest {
         runBookingTest {
             val model = model()
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(
                 BookingStepError.Dates(StaySelectionInput.MISSING_CHECK_IN),
                 content(model).error,
             )
             model.selectCheckIn(start)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(
                 BookingStepError.Dates(StaySelectionInput.MISSING_CHECK_OUT),
                 content(model).error,
             )
             model.selectCheckOut(start)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(
                 BookingStepError.Dates(StaySelectionInput.INVALID_RANGE),
                 content(model).error,
             )
             model.selectCheckOut(end)
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.GUESTS, content(model).draft.step)
             assertEquals(null, content(model).error)
             assertTrue(lotteries.events.isEmpty())
@@ -90,7 +90,7 @@ class BookingWizardViewModelTest {
         runBookingTest {
             val model = model(useHelper = false)
             chooseDates(model)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.DATES, content(model).draft.step)
             assertEquals(BookingStepError.EligibilityPending, content(model).error)
         }
@@ -108,12 +108,12 @@ class BookingWizardViewModelTest {
                 }
             val model = model()
             chooseDates(model)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStepError.InventoryUnknown, content(model).error)
             assertEquals(start, content(model).draft.checkIn)
             gate.complete(Unit)
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.GUESTS, content(model).draft.step)
         }
 
@@ -122,7 +122,7 @@ class BookingWizardViewModelTest {
         runBookingTest {
             val model = model()
             chooseDates(model)
-            model.next()
+            model.next(content(model).draft.step)
             runCurrent()
             val invalid =
                 mapOf(
@@ -133,12 +133,12 @@ class BookingWizardViewModelTest {
                 )
             invalid.forEach { (text, expected) ->
                 model.editGuests(text)
-                model.next()
+                model.next(content(model).draft.step)
                 assertEquals(BookingStep.GUESTS, content(model).draft.step)
                 assertEquals(BookingStepError.Guests(expected), content(model).error)
             }
             model.editGuests(" 08 ")
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.TERMS, content(model).draft.step)
             assertEquals(" 08 ", content(model).draft.guestInput)
         }
@@ -156,7 +156,7 @@ class BookingWizardViewModelTest {
             )
             assertEquals(13000L, draft.reviewedTotalCents)
             assertEquals(BookingQuote.Value(13000), content(model).quote)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
             assertTrue(lotteries.events.isEmpty())
             assertTrue(bookings.observedRecordIds.isEmpty())
@@ -167,10 +167,10 @@ class BookingWizardViewModelTest {
         runBookingTest {
             val model = model()
             chooseDates(model)
-            model.next()
-            model.next()
+            model.next(content(model).draft.step)
+            model.next(content(model).draft.step)
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.TERMS, content(model).draft.step)
             assertEquals(BookingStepError.AgreementRequired, content(model).error)
             model.acceptTerms(true, site.details.rules, "unbundled-v0")
@@ -178,7 +178,7 @@ class BookingWizardViewModelTest {
             model.acceptTerms(true, "rules that were not displayed", BookingPolicy.VERSION)
             assertEquals(null, content(model).draft.agreement)
             model.acceptTerms(true, site.details.rules, BookingPolicy.VERSION)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
         }
 
@@ -196,7 +196,7 @@ class BookingWizardViewModelTest {
             assertEquals(null, content(model).draft.agreement)
             assertEquals(BookingStepError.AgreementRequired, content(model).error)
             model.acceptTerms(true, "New rules", BookingPolicy.VERSION)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
             assertEquals(
                 BookingAgreement("New rules", BookingPolicy.VERSION),
@@ -211,7 +211,7 @@ class BookingWizardViewModelTest {
             review(model)
             model.editStep(BookingStep.TERMS)
             model.acceptTerms(false, site.details.rules, BookingPolicy.VERSION)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.TERMS, content(model).draft.step)
             assertEquals(BookingStepError.AgreementRequired, content(model).error)
             assertEquals(start, content(model).draft.checkIn)
@@ -250,7 +250,7 @@ class BookingWizardViewModelTest {
             model.selectCheckOut(start.plusDays(1))
             assertEquals(null, content(model).draft.reviewedTotalCents)
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
             assertFalse(content(model).draft.returnToReview)
             assertEquals(null, content(model).draft.reviewedTotalCents)
@@ -269,7 +269,7 @@ class BookingWizardViewModelTest {
             review(model)
             model.editStep(BookingStep.GUESTS)
             model.editGuests("4")
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
             assertEquals("4", content(model).draft.guestInput)
             assertEquals(13000L, content(model).draft.reviewedTotalCents)
@@ -285,7 +285,7 @@ class BookingWizardViewModelTest {
             eligible = emptySet()
             sites.calendarNights.value = dates.sorted().map { CalendarNight(it, false) }
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.DATES, content(model).draft.step)
             assertTrue(content(model).draft.returnToReview)
             assertEquals(
@@ -297,7 +297,7 @@ class BookingWizardViewModelTest {
             model.selectCheckIn(start.plusDays(1))
             model.selectCheckOut(end)
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
             assertEquals("3", content(model).draft.guestInput)
             assertEquals(
@@ -333,7 +333,7 @@ class BookingWizardViewModelTest {
             model.setDatesVisible(true)
             chooseDates(model)
             assertTrue(content(model).calendar.visible != null)
-            model.next()
+            model.next(content(model).draft.step)
             runCurrent()
             assertEquals(BookingStep.GUESTS, content(model).draft.step)
             assertEquals(null, content(model).calendar.visible)
@@ -349,14 +349,14 @@ class BookingWizardViewModelTest {
         runBookingTest {
             val model = model()
             chooseDates(model)
-            model.next()
+            model.next(content(model).draft.step)
             model.editGuests("3")
-            model.next()
+            model.next(content(model).draft.step)
             runCurrent()
             model.acceptTerms(true, site.details.rules, BookingPolicy.VERSION)
             sites.records.value = listOf(site.copy(details = site.details.copy(maxGuests = 2)))
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.GUESTS, content(model).draft.step)
             assertEquals("3", content(model).draft.guestInput)
             assertEquals(
@@ -372,11 +372,11 @@ class BookingWizardViewModelTest {
                 listOf(site.copy(details = site.details.copy(nightlyPriceCents = Long.MAX_VALUE)))
             val model = model()
             chooseDates(model)
-            model.next()
-            model.next()
+            model.next(content(model).draft.step)
+            model.next(content(model).draft.step)
             runCurrent()
             model.acceptTerms(true, site.details.rules, BookingPolicy.VERSION)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.TERMS, content(model).draft.step)
             assertEquals(BookingStepError.QuoteOverflow, content(model).error)
             assertEquals(null, content(model).draft.reviewedTotalCents)
@@ -463,7 +463,7 @@ class BookingWizardViewModelTest {
         runBookingTest {
             val model = model()
             chooseDates(model)
-            model.next()
+            model.next(content(model).draft.step)
             model.editGuests("3")
             lotteries.recordFailure.value = IOException("offline")
             runCurrent()
@@ -491,7 +491,7 @@ class BookingWizardViewModelTest {
             model.editStep(BookingStep.DATES)
             model.selectCheckIn(start.plusDays(1))
             model.acceptTerms(false, site.details.rules, BookingPolicy.VERSION)
-            model.next()
+            model.next(content(model).draft.step)
             model.back()
             assertEquals(draft, content(model).draft)
             model.confirmDiscard()
@@ -556,11 +556,11 @@ class BookingWizardViewModelTest {
             runCurrent()
             model.editStep(BookingStep.GUESTS)
             model.editGuests("3")
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
             assertEquals(null, content(model).draft.reviewedTotalCents)
             model.editStep(BookingStep.TERMS)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.REVIEW, content(model).draft.step)
             assertEquals(null, content(model).draft.reviewedTotalCents)
             model.acknowledgeQuote(14000)
@@ -583,7 +583,7 @@ class BookingWizardViewModelTest {
             val restored = model(SavedStateHandle(values))
             runCurrent()
             assertEquals(BookingStep.GUESTS, content(restored).draft.step)
-            restored.next()
+            restored.next(content(restored).draft.step)
             assertEquals(BookingStep.REVIEW, content(restored).draft.step)
             assertEquals(null, content(restored).draft.reviewedTotalCents)
             restored.acknowledgeQuote(14000)
@@ -595,7 +595,7 @@ class BookingWizardViewModelTest {
         runBookingTest {
             val model = model()
             chooseDates(model)
-            model.next()
+            model.next(content(model).draft.step)
             runCurrent()
             val guestsDraft = content(model).draft
             val month = content(model).month
@@ -605,12 +605,12 @@ class BookingWizardViewModelTest {
             assertEquals(guestsDraft, content(model).draft)
             assertEquals(month, content(model).month)
             model.editGuests("3")
-            model.next()
+            model.next(content(model).draft.step)
             val termsDraft = content(model).draft
             model.editGuests("7")
             assertEquals(termsDraft, content(model).draft)
             model.acceptTerms(true, site.details.rules, BookingPolicy.VERSION)
-            model.next()
+            model.next(content(model).draft.step)
             val reviewed = content(model).draft
             model.editGuests("8")
             model.selectCheckIn(null)
@@ -625,11 +625,11 @@ class BookingWizardViewModelTest {
      */
     private fun TestScope.review(model: BookingViewModel) {
         chooseDates(model)
-        model.next()
+        model.next(content(model).draft.step)
         runCurrent()
-        model.next()
+        model.next(content(model).draft.step)
         model.acceptTerms(true, site.details.rules, BookingPolicy.VERSION)
-        model.next()
+        model.next(content(model).draft.step)
         runCurrent()
         assertEquals(BookingStep.REVIEW, content(model).draft.step)
     }

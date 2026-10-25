@@ -167,7 +167,7 @@ class BookingDateSelectionTest {
             runCurrent()
             assertEquals(month.atDay(22), content(model).draft.checkOut)
             assertEquals(StaySelectionInput.UNAVAILABLE_NIGHTS, content(model).stayValidation)
-            model.next()
+            model.next(content(model).draft.step)
             assertEquals(BookingStep.DATES, content(model).draft.step)
             assertEquals(
                 BookingStepError.Dates(StaySelectionInput.UNAVAILABLE_NIGHTS),
@@ -211,7 +211,7 @@ class BookingDateSelectionTest {
             val model = model(SavedStateHandle(mapOf("bookingCheckOut" to end.toString())))
             model.setDatesVisible(true)
             runCurrent()
-            model.next()
+            model.next(content(model).draft.step)
             model.clearDates()
             assertEquals(BookingDraft(), content(model).draft)
             assertEquals(null, content(model).error)
@@ -230,7 +230,7 @@ class BookingDateSelectionTest {
             runCurrent()
             model.selectDate(start)
             model.selectDate(end)
-            model.next()
+            model.next(content(model).draft.step)
             runCurrent()
             assertEquals(BookingStep.GUESTS, content(model).draft.step)
             val before = content(model).draft

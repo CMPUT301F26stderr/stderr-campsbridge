@@ -112,6 +112,11 @@ class BookingViewModel(
     val discardPrompt = mutableDiscardPrompt.asStateFlow()
     private val mutableExitRequested = MutableStateFlow(false)
     val exitRequested = mutableExitRequested.asStateFlow()
+    private val mutableCompletion =
+        MutableStateFlow(
+            savedState.get<String>("bookingCompletion")?.takeIf { it == knownReservationId },
+        )
+    val completion = mutableCompletion.asStateFlow()
 
     private val calendarJob =
         viewModelScope.launch(start = CoroutineStart.LAZY) {
@@ -145,9 +150,11 @@ class BookingViewModel(
         }
     }
 
-    /** Validates the current step and enters the next step or returns to review. */
-    fun next() {
-        if (!canEdit()) return
+    /** Validates the displayed step and enters the next step or returns to review.
+     * @param displayedStep Step whose footer was actually displayed; rejects queued old actions.
+     */
+    fun next(displayedStep: BookingStep) {
+        if (!canEdit() || displayedStep != draft.step) return
         reconcile()
         val current = state.value as? BookingUiState.Content ?: return
         if (draft.step == BookingStep.REVIEW) return
@@ -263,6 +270,28 @@ class BookingViewModel(
     /** Consumes an exit only after the active route actually navigates. */
     fun acknowledgeExit() {
         if (!closed) mutableExitRequested.value = false
+    }
+
+    /** Consumes a saved-target handoff only after the active route actually navigates. */
+    fun acknowledgeCompletion() {
+        if (closed) return
+        savedState.remove<String>("bookingCompletion")
+        mutableCompletion.value = null
+    }
+
+    /** Requests another explicit opening of already-known consuming history without writing. */
+    fun requestReservationOpen() {
+        if (closed || mutableExitRequested.value || mutableDiscardPrompt.value) return
+        knownReservationId?.let(::complete)
+    }
+
+    /** Retains one actual saved-target handoff independently of later source outcomes.
+     * @param id Known consuming reservation identity; never a synthetic success target.
+     */
+    private fun complete(id: String) {
+        if (closed) return
+        savedState["bookingCompletion"] = id
+        mutableCompletion.value = id
     }
 
     /** Rejects stale callbacks from another step or while prompt/navigation owns control.
@@ -625,6 +654,7 @@ class BookingViewModel(
                         savedState["bookingReservationId"] = reservation.id
                     }
                     reconcile()
+                    if (reservation != null) complete(reservation.id)
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
@@ -773,6 +803,11 @@ class BookingViewModel(
                     stayValidation = validation,
                     quote = quote,
                     error = error,
+                    guestCount =
+                        (
+                            parsePositiveCount(draft.guestInput, Long.MAX_VALUE)
+                                as? PositiveCountInput.Value
+                        )?.count,
                 )
             } else {
                 outcome

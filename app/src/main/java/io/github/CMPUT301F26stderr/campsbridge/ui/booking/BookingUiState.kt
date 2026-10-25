@@ -93,6 +93,7 @@ sealed interface BookingUiState {
      * @param stayValidation Ordered date feedback; null when required inventory/F15 is unknown.
      * @param quote Checked current amount for positive date ranges, or null before a range exists.
      * @param error Feedback from the latest explicit step/approval action.
+     * @param guestCount Positive parsed guest input for display, independent of capacity feedback.
      */
     data class Content(
         val lottery: Lottery,
@@ -108,5 +109,6 @@ sealed interface BookingUiState {
         val stayValidation: StaySelectionInput? = null,
         val quote: BookingQuote? = null,
         val error: BookingStepError? = null,
+        val guestCount: Long? = null,
     ) : BookingUiState
 }
