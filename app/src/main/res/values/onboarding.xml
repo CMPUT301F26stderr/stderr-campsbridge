@@ -28,9 +28,6 @@
     <string name="onboarding_host_label">Start hosting</string>
     <string name="onboarding_host_title">Ready to add your campsite?</string>
     <string name="onboarding_host_body">Create a listing when you are ready.</string>
-    <string name="onboarding_add_campsite">Add first campsite</string>
-    <string name="onboarding_campsite_pending">Campsite creation is not available in this build yet.</string>
-    <string name="onboarding_setup_later">Set up later</string>
     <string name="onboarding_finish">Finish setup</string>
     <string name="onboarding_load">Restoring setup</string>
     <string name="onboarding_load_failure">Could not restore setup</string>

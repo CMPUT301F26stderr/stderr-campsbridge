@@ -3,6 +3,9 @@
     <string name="increase_count">Increase %1$s</string>
     <string name="skip_for_now">Skip for now</string>
     <string name="edit">Edit</string>
+    <string name="review">Review</string>
+    <string name="publish">Publish</string>
+    <string name="save_draft">Save draft</string>
     <string name="campsite">Campsite</string>
     <string name="dates">Dates</string>
     <string name="stay">Stay</string>

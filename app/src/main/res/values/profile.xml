@@ -12,4 +12,9 @@
     <string name="email_invalid">Enter an email with one @ and no spaces, or leave it blank.</string>
     <string name="phone_invalid">Use digits, spaces, parentheses, hyphens and an optional leading +, or leave it blank.</string>
     <string name="contact_optional">Optional</string>
+    <string name="profile_retry_hosting">Retry activation</string>
+    <string name="profile_retry_owner_workspace">Retry workspace switch</string>
+    <string name="profile_enabling_owner">Enabling hosting</string>
+    <string name="profile_switching_owner">Opening owner workspace</string>
+    <string name="profile_hosting_failure">Could not confirm hosting. Your profile is retained. Retry to check the same account.</string>
 </resources>

@@ -83,6 +83,7 @@ fun CampsiteCard(
  * @param onClick Parent-owned detail action.
  * @param modifier Caller layout.
  * @param status Optional caller-derived state label.
+ * @param showPrice Whether this compact row includes the shared nightly price label.
  */
 @Composable
 fun CampsiteRow(
@@ -91,10 +92,26 @@ fun CampsiteRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     status: String? = null,
+    showPrice: Boolean = false,
 ) {
     ListItem(
         headlineContent = { Text(campsite.details.name) },
-        supportingContent = { Text(campsite.details.locationLabel) },
+        supportingContent = {
+            Column {
+                Text(campsite.details.locationLabel)
+                if (showPrice) {
+                    Text(
+                        stringResource(
+                            R.string.per_night,
+                            formatCad(
+                                campsite.details.nightlyPriceCents,
+                                LocalConfiguration.current.locales[0],
+                            ),
+                        ),
+                    )
+                }
+            }
+        },
         overlineContent = status?.let { { Text(it) } },
         leadingContent = {
             RemoteImage(
