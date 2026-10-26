@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +35,7 @@ class TaskExampleSession(
                 TaskExampleData.account.copy(id = "task-other-entrant", name = "Morgan Park"),
             ),
         )
+    private val campsites = TaskCampsiteRepository()
     private val images = DemoImageRepository(File(directory, UUID.randomUUID().toString()))
     var isClosed = false
         private set
@@ -48,6 +51,31 @@ class TaskExampleSession(
                 bindings.parseName,
                 bindings.parseEmail,
                 bindings.parsePhone,
+            )
+        }
+
+    /** Supplies the real owner inventory without requiring onboarding or publication. */
+    fun campsiteList(): CampsiteListViewModel =
+        model(CampsiteListViewModel::class.java) {
+            CampsiteListViewModel(
+                TaskExampleData.OWNER_ID,
+                campsites,
+                images,
+                SavedStateHandle(),
+                bindings.orderCampsites,
+            )
+        }
+
+    /** Supplies the real editor with local-only calendar writes and the assigned comparison. */
+    fun availability(): AvailabilityViewModel =
+        model(AvailabilityViewModel::class.java) {
+            AvailabilityViewModel(
+                TaskExampleData.OWNER_ID,
+                TaskExampleData.sites[0].id,
+                campsites,
+                TaskExampleData.clock,
+                SavedStateHandle(),
+                bindings.remainingEdits,
             )
         }
 

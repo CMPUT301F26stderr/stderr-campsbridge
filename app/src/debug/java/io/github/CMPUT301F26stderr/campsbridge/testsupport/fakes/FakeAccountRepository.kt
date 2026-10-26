@@ -26,6 +26,7 @@ class FakeAccountRepository(
     val account = MutableStateFlow(initial)
     val streamFailure = MutableStateFlow<Exception?>(null)
     var readFailure: Exception? = null
+    val readIds = mutableListOf<String>()
     var observations = 0
     var activeObservers = 0
     var writes = 0
@@ -44,12 +45,15 @@ class FakeAccountRepository(
     var preferenceFailure: Exception? = null
     var ownerFailure: Exception? = null
     var ownerGate: CompletableDeferred<Unit>? = null
+    var ownerHandler: (suspend (String) -> Unit)? = null
+    val ownerIds = mutableListOf<String>()
 
     /**
      * Returns controlled data without accessing Firebase.
      * @param id Requested account ID.
      */
     override suspend fun get(id: String): Account? {
+        readIds.add(id)
         readFailure?.let { throw it }
         return account.value
     }
@@ -162,8 +166,13 @@ class FakeAccountRepository(
         if (!allowWrites) unexpectedWrite()
         writes++
         ownerWrites++
+        ownerIds.add(id)
         ownerGate?.await()
         ownerFailure?.let { throw it }
+        ownerHandler?.let {
+            it(id)
+            return
+        }
         val current = checkNotNull(account.value)
         check(current.isActive)
         account.value = current.copy(roles = current.roles + Role.OWNER)

@@ -115,6 +115,24 @@ class CampsiteCalendarTest {
         compose.runOnIdle { assertEquals(listOf(first, first.plusDays(3)), calls) }
     }
 
+    /** A caller-owned operation disables both month navigation and selectable dates. */
+    @Test fun disabledCalendarRejectsMonthAndDateActions() {
+        var calls = 0
+        val state =
+            CalendarState(
+                month,
+                mapOf(first to CalendarDayState(CalendarDayStatus.AVAILABLE, true)),
+                selectionEnabled = true,
+            )
+        compose.setContent {
+            CampsbridgeTheme { CampsiteCalendar(state, { calls++ }, { calls++ }, enabled = false) }
+        }
+        compose.onNodeWithContentDescription("Previous month").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Next month").assertIsNotEnabled()
+        compose.onNodeWithTag("calendar-date-$first").assertIsNotEnabled()
+        compose.runOnIdle { assertEquals(0, calls) }
+    }
+
     /** Read-only stays highlight nights through the night before checkout without writes. */
     @Test fun readOnlyRangeExcludesCheckout() {
         var calls = 0

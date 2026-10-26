@@ -11,6 +11,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileUiState
@@ -25,8 +28,59 @@ internal fun TaskExampleFeature(
     onBack: () -> Unit,
 ) {
     when (session.example) {
-        TaskExample.DISPLAY_NAME, TaskExample.CONTACT -> ProfileTaskExample(session, onBack)
-        else -> Unit
+        TaskExample.DISPLAY_NAME, TaskExample.CONTACT -> {
+            ProfileTaskExample(session, onBack)
+        }
+
+        TaskExample.CAMPSITE_ORDER -> {
+            val model = session.campsiteList()
+            val state by model.state.collectAsStateWithLifecycle()
+            val tab by model.tab.collectAsStateWithLifecycle()
+            var selected by rememberSaveable { mutableStateOf<String?>(null) }
+            val id = selected
+            if (id == null) {
+                AppScreen(stringResource(R.string.task_site_order), onBack = onBack) {
+                    CampsiteListScreen(
+                        state,
+                        tab,
+                        model::selectTab,
+                        { selected = it },
+                        model::retry,
+                    )
+                }
+            } else {
+                val site = TaskExampleData.sites.first { it.id == id }
+                AppScreen(
+                    site.details.name,
+                    onBack = { selected = null },
+                ) { Text(site.details.description) }
+            }
+        }
+
+        TaskExample.AVAILABILITY -> {
+            val model = session.availability()
+            val state by model.state.collectAsStateWithLifecycle()
+            val discard by model.discardPrompt.collectAsStateWithLifecycle()
+            val exit by model.exitRequested.collectAsStateWithLifecycle()
+            LaunchedEffect(exit) { if (exit) onBack() }
+            AvailabilityScreen(
+                state,
+                model::requestExit,
+                model::retry,
+                model::changeMonth,
+                model::selectDates,
+                model::setRequestedOffered,
+                model::save,
+                model::retryCalendar,
+                model::dismissDiscard,
+                model::confirmDiscard,
+                discardPrompt = discard,
+            )
+        }
+
+        else -> {
+            Unit
+        }
     }
 }
 

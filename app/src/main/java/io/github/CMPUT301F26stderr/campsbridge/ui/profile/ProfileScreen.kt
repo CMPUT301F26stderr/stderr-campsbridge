@@ -44,6 +44,7 @@ import java.time.Instant
  * @param onSettings Opens settings when that destination is registered.
  * @param photoReference Last confirmed image display reference, never an unsaved candidate.
  * @param workspaceContent Shared workspace picker supplied by navigation.
+ * @param onStartHosting Opens the registered introduction only without owner capability.
  */
 @Composable
 fun ProfileScreen(
@@ -55,6 +56,7 @@ fun ProfileScreen(
     onSettings: (() -> Unit)? = null,
     photoReference: String? = null,
     workspaceContent: @Composable () -> Unit = {},
+    onStartHosting: (() -> Unit)? = null,
 ) {
     ProfileStateContent(state, onRetry, modifier) { content ->
         Column(
@@ -78,6 +80,9 @@ fun ProfileScreen(
             icon = Icons.Default.Email,
         )
         workspaceContent()
+        if (Role.OWNER !in content.account.roles && onStartHosting != null) {
+            NavigationRow(stringResource(R.string.onboarding_host_label), onStartHosting)
+        }
         if (onSettings !=
             null
         ) {

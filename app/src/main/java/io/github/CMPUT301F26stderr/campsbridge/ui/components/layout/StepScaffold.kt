@@ -22,9 +22,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**
@@ -41,6 +44,12 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param steps Optional segmented progress matching the flow's actual step count.
  * @param onSkip Optional explicit skip action for optional input.
  * @param onCancel Optional cancellation action in the app bar.
+ * @param secondaryLabel Optional review action text, supplied with onSecondaryAction.
+ * @param onSecondaryAction Explicit alternative to the primary action, such as saving a draft.
+ * @param secondaryEnabled Whether the secondary action's own prerequisites permit submission.
+ * @param submittingAction Action whose progress is shown while the shared submitting guard is set.
+ * @param exitEnabled Whether leaving the step is safe while an idle action awaits recovery.
+ * @throws IllegalArgumentException If actions are incomplete, incompatible or unavailable.
  */
 @Composable
 fun StepScaffold(
@@ -55,17 +64,33 @@ fun StepScaffold(
     steps: StepProgress? = null,
     onSkip: (() -> Unit)? = null,
     onCancel: (() -> Unit)? = null,
+    secondaryLabel: String? = null,
+    onSecondaryAction: (() -> Unit)? = null,
+    secondaryEnabled: Boolean = true,
+    submittingAction: StepAction = StepAction.PRIMARY,
+    exitEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    BackHandler(enabled = isSubmitting) {}
+    require((secondaryLabel == null) == (onSecondaryAction == null)) {
+        "A secondary action needs both a label and a callback"
+    }
+    require(onSecondaryAction == null || onSkip == null) {
+        "A step uses either Skip or a secondary review action"
+    }
+    require(
+        !isSubmitting || submittingAction != StepAction.SECONDARY || onSecondaryAction != null,
+    ) {
+        "Secondary submission needs a secondary action"
+    }
+    BackHandler(enabled = isSubmitting || !exitEnabled) {}
     AppScreen(
         title = title,
         modifier = modifier,
         onBack = onBack,
-        backEnabled = !isSubmitting,
+        backEnabled = !isSubmitting && exitEnabled,
         actions = {
             if (onCancel != null) {
-                TextButton(onClick = onCancel, enabled = !isSubmitting) {
+                TextButton(onClick = onCancel, enabled = !isSubmitting && exitEnabled) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -76,9 +101,20 @@ fun StepScaffold(
                     nextLabel,
                     onNext,
                     Modifier.fillMaxWidth(),
-                    nextEnabled,
-                    isSubmitting,
+                    enabled = nextEnabled && !isSubmitting,
+                    isSubmitting = isSubmitting && submittingAction == StepAction.PRIMARY,
                 )
+                if (secondaryLabel != null && onSecondaryAction != null) {
+                    Spacer(Modifier.height(Spacing.small))
+                    AppActionButton(
+                        secondaryLabel,
+                        onSecondaryAction,
+                        Modifier.fillMaxWidth(),
+                        enabled = secondaryEnabled && !isSubmitting,
+                        isSubmitting = isSubmitting && submittingAction == StepAction.SECONDARY,
+                        style = ActionStyle.SECONDARY,
+                    )
+                }
                 if (onSkip !=
                     null
                 ) {
@@ -100,6 +136,9 @@ fun StepScaffold(
         }
     }
 }
+
+/** Identifies the initiating footer action without creating independent concurrent operations. */
+enum class StepAction { PRIMARY, SECONDARY }
 
 /** Current wizard position, independent of feature navigation.
  * @param current One-based current step.
@@ -137,6 +176,33 @@ private fun StepIndicator(progress: StepProgress) {
                         MaterialTheme.colorScheme.surfaceContainerHighest
                     },
             ) {}
+        }
+    }
+}
+
+/** Shows the shared review hierarchy without a ViewModel, repository or simulated save. */
+@Preview(name = "Review", showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(
+    name = "Review large text",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 800,
+    fontScale = 2f,
+)
+@Composable
+private fun StepReviewPreview() {
+    CampsbridgeTheme {
+        StepScaffold(
+            stringResource(R.string.review),
+            stringResource(R.string.onboarding_step, 8, 8),
+            {},
+            {},
+            nextLabel = stringResource(R.string.publish),
+            steps = StepProgress(8, 8),
+            secondaryLabel = stringResource(R.string.save_draft),
+            onSecondaryAction = {},
+        ) {
+            Text(stringResource(R.string.campsite))
         }
     }
 }

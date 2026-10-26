@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.ProfileUpdate
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
@@ -16,12 +17,15 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Owns profile drafts and explicit field saves; the image controller owns photo persistence.
+ * Owns profile drafts, field saves and hosting activation; the image controller owns photo persistence.
  * @param accountId Established identity, never a placeholder ID.
  * @param accounts Account observation dependency.
  * @param images Image dependency shared with the profile-photo integration.
@@ -64,6 +68,73 @@ class ProfileViewModel(
             savedState.get<String>("profileCompletedEditor")?.let(ProfileEditor::valueOf),
         )
     val completion = mutableCompletion.asStateFlow()
+    private var ownerActivationPending = savedState["profileOwnerActivationPending"] ?: false
+    private var ownerActivationFailed = ownerActivationPending
+    private val mutableOwnerWorkspaceRequested =
+        MutableStateFlow(savedState["profileOwnerWorkspaceRequested"] ?: false)
+    val ownerWorkspaceRequested = mutableOwnerWorkspaceRequested.asStateFlow()
+
+    /** Reads the same account and adds hosting when needed, then waits for acknowledged/observed capability.
+     * Interrupted attempts reconcile by server read; this operation never creates another profile.
+     */
+    fun enableOwner() {
+        if (!canEdit() || photoState.value.operation != ImageOperation.IDLE) return
+        ownerActivationFailed = false
+        if (!ownerActivationPending && Role.OWNER in checkNotNull(account).roles) {
+            setOwnerWorkspaceRequested(true)
+            publish()
+            return
+        }
+        operation = ProfileOperation.ENABLING_OWNER
+        setOwnerActivationPending(true)
+        publish()
+        viewModelScope.launch {
+            try {
+                // A server read also reconciles a previous interrupted/lost acknowledgement.
+                val confirmed = accounts.get(accountId)
+                currentCoroutineContext().ensureActive()
+                check(confirmed?.id == accountId && confirmed.isActive)
+                if (Role.OWNER !in confirmed.roles) accounts.enableOwner(accountId)
+                val observed =
+                    state.first { value ->
+                        value == ProfileUiState.Failure || value == ProfileUiState.Unavailable ||
+                            (value is ProfileUiState.Content && Role.OWNER in value.account.roles)
+                    }
+                check(observed is ProfileUiState.Content)
+                setOwnerActivationPending(false)
+                setOwnerWorkspaceRequested(true)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                currentCoroutineContext().ensureActive()
+                ownerActivationFailed = true
+            }
+            operation = ProfileOperation.IDLE
+            publish()
+        }
+    }
+
+    /** Consumes the hosting request after navigation confirms the owner workspace. */
+    fun acknowledgeOwnerWorkspaceRequest() {
+        setOwnerWorkspaceRequested(false)
+        publish()
+    }
+
+    /** Leaves the introduction while idle, retaining any capability already confirmed.
+     * @return False while an account or image mutation is active; true after clearing local intent.
+     */
+    fun cancelOwnerActivation(): Boolean {
+        if (operation != ProfileOperation.IDLE ||
+            photoState.value.operation != ImageOperation.IDLE
+        ) {
+            return false
+        }
+        setOwnerWorkspaceRequested(false)
+        setOwnerActivationPending(false)
+        ownerActivationFailed = false
+        publish()
+        return true
+    }
 
     /** Starts name editing from confirmed values without resetting a dirty draft. */
     fun beginPersonalEdit() {
@@ -239,8 +310,18 @@ class ProfileViewModel(
         observation =
             viewModelScope.launch {
                 try {
-                    if (needsConfirmedRead) {
+                    if (needsConfirmedRead || ownerActivationPending) {
                         account = accounts.get(accountId)
+                        currentCoroutineContext().ensureActive()
+                        if (ownerActivationPending) {
+                            val confirmed = account
+                            val granted =
+                                confirmed?.id == accountId && confirmed.isActive &&
+                                    Role.OWNER in confirmed.roles
+                            setOwnerWorkspaceRequested(granted)
+                            ownerActivationFailed = !granted
+                            setOwnerActivationPending(false)
+                        }
                         needsConfirmedRead = false
                         savedState["profileWritePending"] = false
                     }
@@ -262,7 +343,24 @@ class ProfileViewModel(
     /** Checks synchronous guards before launching any user-triggered work. */
     private fun canEdit(): Boolean =
         state.value is ProfileUiState.Content &&
-            operation == ProfileOperation.IDLE && completion.value == null
+            operation == ProfileOperation.IDLE && completion.value == null &&
+            !ownerWorkspaceRequested.value
+
+    /** Retains only the small navigation request, independent of field-save completion.
+     * @param requested Whether a resumed introduction should select the owner workspace.
+     */
+    private fun setOwnerWorkspaceRequested(requested: Boolean) {
+        savedState["profileOwnerWorkspaceRequested"] = requested
+        mutableOwnerWorkspaceRequested.value = requested
+    }
+
+    /** Marks an uncertain capability attempt for a read-only check on recreation.
+     * @param pending Whether server reconciliation is required before treating activation as complete.
+     */
+    private fun setOwnerActivationPending(pending: Boolean) {
+        ownerActivationPending = pending
+        savedState["profileOwnerActivationPending"] = pending
+    }
 
     /** Saves one editor's fields with confirmed unrelated values, retaining input on failure.
      * @param editor Editor whose completion may navigate after acknowledgement.
@@ -348,6 +446,7 @@ class ProfileViewModel(
                         nameValidationPending = parseName == null,
                         contactValidationPending = parseEmail == null || parsePhone == null,
                         completedEditor = completion.value,
+                        ownerActivationFailed = ownerActivationFailed,
                     )
                 }
             }

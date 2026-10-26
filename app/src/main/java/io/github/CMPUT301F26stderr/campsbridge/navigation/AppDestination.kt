@@ -2,13 +2,61 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import android.net.Uri
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import java.util.Locale
 
 /** Registered destinations only; add feature routes when their implementations exist. */
 object AppDestination {
+    const val AVAILABILITY_EDITOR = "owner/campsites/{campsiteId}/availability/edit"
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
+    const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
+    const val CAMPSITE_SETUP_SAVED = "owner/campsite-setup/saved/{campsiteId}"
+
+    /** Addresses a distinct local/new or saved-ID setup parent.
+     * @param campsiteId Existing unpublished target, or null for a new form.
+     */
+    fun campsiteSetupGraph(campsiteId: String? = null): String =
+        if (campsiteId == null) {
+            CAMPSITE_SETUP_NEW
+        } else {
+            "owner/campsite-setup/saved/${Uri.encode(campsiteId)}"
+        }
+
+    /** Addresses the registered owner inventory primary. */
+    fun ownerCampsites(): String =
+        "owner/campsites"
+
+    /** Registers a context-qualified saved detail parent.
+     * @param workspace Owning workspace.
+     * @param context Fixed presentation registered by the caller.
+     */
+    fun campsitePattern(
+        workspace: Role,
+        context: CampsiteDetailContext,
+    ): String =
+        "${workspace.name.lowercase(Locale.ROOT)}/campsites/{campsiteId}/detail/${context.routeKey}"
+
+    /** Opens a saved identity without copying a record into navigation state.
+     * @param workspace Owning workspace.
+     * @param campsiteId Saved listing identity.
+     * @param context Fixed presentation permitted by the caller.
+     */
+    fun campsiteGraph(
+        workspace: Role,
+        campsiteId: String,
+        context: CampsiteDetailContext,
+    ): String =
+        "${workspace.name.lowercase(
+            Locale.ROOT,
+        )}/campsites/${Uri.encode(campsiteId)}/detail/${context.routeKey}"
+
+    /** Opens a separate inventory editor without sharing a read-only calendar route.
+     * @param campsiteId Actual saved listing identity.
+     */
+    fun availabilityEditor(campsiteId: String): String =
+        "owner/campsites/${Uri.encode(campsiteId)}/availability/edit"
 
     /** Separates profile graph state by workspace within the current account.
      * @param workspace Granted workspace selected by the root session.
@@ -33,6 +81,12 @@ object AppDestination {
      */
     fun contactDetails(workspace: Role): String =
         "${profileGraph(workspace)}/contact"
+
+    /** Addresses existing-account hosting without restarting onboarding.
+     * @param workspace Actual caller's retained profile graph.
+     */
+    fun ownerIntroduction(workspace: Role): String =
+        "${profileGraph(workspace)}/start-hosting"
 
     /** Addresses this workspace's implemented settings menu.
      * @param workspace Owning workspace.

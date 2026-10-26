@@ -18,8 +18,13 @@ dokka = "2.2.0"
 robolectric = "4.17"
 mockito = "5.20.0"
 coil = "3.3.0"
+# Matches this app's Kotlin 2.2 metadata; Maps 9.x requires a newer compiler.
+mapsCompose = "6.12.0"
+mapsSdk = "19.2.0"
 
 [libraries]
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+maps-sdk = { module = "com.google.android.gms:play-services-maps", version.ref = "mapsSdk" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }

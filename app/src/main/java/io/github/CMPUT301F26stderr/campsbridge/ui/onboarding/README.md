@@ -12,7 +12,7 @@ Display-name parsing is a reserved teammate function. Its result contract is `ui
 
 Tests supply a fixed lookup for known fixture names. That lookup exercises the controller contract; it does not implement or test the reserved parser. The separate parser task supplies its own initially failing input/output tests.
 
-The owner introduction disables campsite creation until that feature is registered. Set up later performs actual owner activation and completion. The implemented workspace currently opens Profile; Explore and Campsites will become its entry destinations when those features exist.
+The owner introduction shares informational content with the existing-account Profile > Start hosting route. Finish setup performs required onboarding writes, then the owner workspace opens Campsites with its real Create action. Existing accounts enable hosting through their profile without repeating name/identity setup. Entrants currently open Profile; Explore becomes their default when its feature is registered.
 
 ## Verification
 

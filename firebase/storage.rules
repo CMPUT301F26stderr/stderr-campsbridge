@@ -2,19 +2,23 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     function signed() { return request.auth != null; }
-    function admin() {
-      return signed() && firestore.get(/databases/(default)/documents/accounts/$(request.auth.uid)).data.removal == null
-        && 'ADMIN' in firestore.get(/databases/(default)/documents/accounts/$(request.auth.uid)).data.roles;
+    function activeAdmin() {
+      let actor = firestore.get(/databases/(default)/documents/accounts/$(request.auth.uid)).data;
+      return actor.removal == null && 'ADMIN' in actor.roles;
     }
+    function admin() { return signed() && activeAdmin(); }
     function ownTarget(id) {
       return signed() && (id == 'account_' + request.auth.uid || (id.matches('campsite_.+') && firestore.get(
         /databases/(default)/documents/campsites/$(id.replace('^campsite_', ''))).data.ownerId == request.auth.uid));
     }
+    function uploadCampsite(id) {
+      let s = firestore.get(/databases/(default)/documents/campsites/$(id.replace('^campsite_', ''))).data;
+      return s.ownerId == request.auth.uid && s.removal == null;
+    }
     function uploadTarget(id) {
       return signed() && ((id == 'account_' + request.auth.uid
           && firestore.get(/databases/(default)/documents/accounts/$(request.auth.uid)).data.removal == null)
-        || (id.matches('campsite_.+') && firestore.get(/databases/(default)/documents/campsites/$(id.replace('^campsite_', ''))).data.ownerId == request.auth.uid
-          && firestore.get(/databases/(default)/documents/campsites/$(id.replace('^campsite_', ''))).data.removal == null));
+        || (id.matches('campsite_.+') && uploadCampsite(id)));
     }
     function readableTarget(id) {
       return id.matches('account_.+') || admin() || ownTarget(id)
@@ -22,11 +26,15 @@ service firebase.storage {
           /databases/(default)/documents/campsites/$(id.replace('^campsite_', ''))).data.publishedAt != null);
     }
     match /images/{blob}/original {
-      function intent() { return firestore.get(/databases/(default)/documents/_imageUploads/$(blob)).data; }
+      // Object creation consumes an intent; attachment publication is a separate Firestore write.
+      function createObject() {
+        let intent = firestore.get(/databases/(default)/documents/_imageUploads/$(blob)).data;
+        return request.resource.contentType.matches('image/.*')
+          && request.resource.metadata.attachmentId == intent.attachmentId && intent.abandoned == false
+          && intent.expiresAt > request.time && uploadTarget(intent.attachmentId);
+      }
       allow read: if signed() && readableTarget(resource.metadata.attachmentId);
-      allow create: if signed() && request.resource.contentType.matches('image/.*')
-        && request.resource.metadata.attachmentId == intent().attachmentId && intent().abandoned == false
-        && intent().expiresAt > request.time && uploadTarget(intent().attachmentId);
+      allow create: if signed() && createObject();
       allow update: if false;
       allow delete: if admin() || ownTarget(resource.metadata.attachmentId);
     }

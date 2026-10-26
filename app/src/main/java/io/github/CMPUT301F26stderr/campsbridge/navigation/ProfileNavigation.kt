@@ -15,6 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceMenu
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
@@ -23,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.OwnerIntroductionRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
@@ -34,6 +36,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.SettingsScreen
  * @param state Confirmed session used by the primary frame and role picker.
  * @param onSelectWorkspace Root-owned workspace selection.
  * @param profileFactory Dependencies for the shared parent profile model.
+ * @param navigationItems Registered peer destinations only.
+ * @param onSelectDestination Parent-owned primary navigation.
+ * @param onOwnerWorkspaceReady Opens the selected owner primary after removing the introduction.
  */
 internal fun NavGraphBuilder.profileGraph(
     controller: NavHostController,
@@ -41,6 +46,9 @@ internal fun NavGraphBuilder.profileGraph(
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
     profileFactory: ViewModelProvider.Factory,
+    navigationItems: List<WorkspaceNavigationItem>,
+    onSelectDestination: (String) -> Unit,
+    onOwnerWorkspaceReady: () -> Unit,
 ) {
     navigation(
         AppDestination.profileMenu(workspace),
@@ -48,7 +56,13 @@ internal fun NavGraphBuilder.profileGraph(
     ) {
         composable(AppDestination.profileMenu(workspace)) { entry ->
             val model = profileGraphModel(controller, entry, workspace, profileFactory)
-            WorkspaceScaffold(state, onSelectWorkspace) {
+            WorkspaceScaffold(
+                state,
+                onSelectWorkspace,
+                navigationItems = navigationItems,
+                selectedDestination = AppDestination.profileGraph(workspace),
+                onSelectDestination = onSelectDestination,
+            ) {
                 ProfileRoute(
                     model,
                     onPersonalDetails = {
@@ -63,6 +77,12 @@ internal fun NavGraphBuilder.profileGraph(
                     },
                     onSettings = {
                         controller.navigate(AppDestination.settings(workspace)) {
+                            launchSingleTop =
+                                true
+                        }
+                    },
+                    onStartHosting = {
+                        controller.navigate(AppDestination.ownerIntroduction(workspace)) {
                             launchSingleTop =
                                 true
                         }
@@ -90,6 +110,18 @@ internal fun NavGraphBuilder.profileGraph(
             ) {
                 controller.popBackStack()
             }
+        }
+        composable(AppDestination.ownerIntroduction(workspace)) { entry ->
+            OwnerIntroductionRoute(
+                profileGraphModel(controller, entry, workspace, profileFactory),
+                state,
+                { onSelectWorkspace(Role.OWNER) },
+                {
+                    controller.popBackStack()
+                    onOwnerWorkspaceReady()
+                },
+                { controller.popBackStack() },
+            )
         }
         composable(AppDestination.contactDetails(workspace)) { entry ->
             ContactDetailsRoute(

@@ -105,6 +105,17 @@ class ImageSlotController(
     fun remove() {
         val current = state.value
         if (!scope.isActive || !current.canRemove) return
+        clearAttachment()
+    }
+
+    /** Applies a parent's explicit removal intent, confirming even a currently empty slot. */
+    fun clearAttachment() {
+        val current = state.value
+        if (!scope.isActive || !current.canChoose || current.loadState != ImageLoadState.READY ||
+            current.candidate != null
+        ) {
+            return
+        }
         mutableState.value = current.copy(operation = ImageOperation.REMOVING, failure = null)
         scope.launch {
             try {
@@ -126,6 +137,17 @@ class ImageSlotController(
         }
     }
 
+    /** Retries only attachment/URL reads and never repeats a failed mutation. */
+    fun retryDisplay() {
+        if (!scope.isActive || state.value.operation != ImageOperation.IDLE) return
+        if (state.value.loadState == ImageLoadState.FAILED) {
+            observeAttachment()
+        } else {
+            mutableState.value = state.value.copy(displayFailed = false)
+            resolveIfNeeded()
+        }
+    }
+
     /** Retries the failed stage; URL failures never cause reupload and ambiguity requires a read. */
     fun retry() {
         val current = state.value
@@ -144,7 +166,7 @@ class ImageSlotController(
             }
 
             current.failure == ImageFailure.REMOVE -> {
-                remove()
+                clearAttachment()
             }
 
             current.displayFailed -> {
