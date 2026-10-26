@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 
 /** Real B1 parser ports; each handoff connects only its own functions.
  * @param parseName F01 display-name implementation.
@@ -26,4 +27,4 @@ data class TaskExampleBindings(
 
 /** Connects reviewed task functions in isolated handoffs; shared defaults remain pending. */
 fun taskExampleBindings(): TaskExampleBindings =
-    TaskExampleBindings()
+    TaskExampleBindings(parseName = ::parseDisplayName)

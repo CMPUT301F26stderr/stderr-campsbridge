@@ -47,7 +47,7 @@ class TaskExamplesTest {
                 }.map { it.id }
                 .toSet(),
         )
-        TaskExample.entries.forEach { assertFalse(taskExampleBindings().isConnected(it)) }
+        TaskExample.entries.forEach { assertFalse(TaskExampleBindings().isConnected(it)) }
     }
 
     /** Missing name validation leaves the editor pending and the sample account unchanged. */

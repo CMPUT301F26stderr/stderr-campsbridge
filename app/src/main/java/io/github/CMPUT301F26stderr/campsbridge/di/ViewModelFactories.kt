@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 
 /**
  * Supplies explicit root dependencies; the ViewModel never receives a concrete container.
@@ -35,11 +36,11 @@ fun profileViewModelFactory(
                 services.repositories.accounts,
                 services.repositories.images,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
                 parseEmail = null,
                 parsePhone = null,
             )
-            // Connect reviewed F01/F02 functions here; keep dependent saves pending until then.
+            // F02 contacts remain independently pending.
         }
     }
 
@@ -58,8 +59,8 @@ fun onboardingViewModelFactory(
                 services.repositories.accounts,
                 services.preferences,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
             )
-            // Connect ::parseDisplayName here after the reserved task passes review.
+            // F01 handoff uses the same function as the personal-details editor.
         }
     }

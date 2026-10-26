@@ -3,7 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 import android.content.Context
 import android.view.KeyEvent
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -52,7 +52,7 @@ class TaskExamplesFlowTest {
         ActivityScenario.launch(TaskExamplesActivity::class.java).use { scenario ->
             compose.onNodeWithTag("H01").performClick()
             compose.onNodeWithText("Name").performTextReplacement("changed")
-            compose.onNodeWithText("Save name").assertIsNotEnabled()
+            compose.onNodeWithText("Save name").assertIsEnabled()
             scenario.recreate()
             compose.onNodeWithText("changed").assertIsDisplayed()
             compose.onNodeWithText("Reset example").performClick()
@@ -60,9 +60,7 @@ class TaskExamplesFlowTest {
             compose.onNodeWithText("Instructions and binding status").performClick()
             compose
                 .onNodeWithText(
-                    "Helper not connected. The lead connects the real function " +
-                        "in the task handoff. " +
-                        "This example does not supply its answer.",
+                    "Assigned function connected. This example calls the real handoff function; peer helpers may remain pending.",
                 ).assertIsDisplayed()
         }
     }
