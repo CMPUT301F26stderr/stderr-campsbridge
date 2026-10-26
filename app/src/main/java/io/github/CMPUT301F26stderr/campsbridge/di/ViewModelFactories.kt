@@ -7,6 +7,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
 
 /**
  * Supplies explicit root dependencies; the ViewModel never receives a concrete container.
@@ -36,10 +38,10 @@ fun profileViewModelFactory(
                 services.repositories.images,
                 createSavedStateHandle(),
                 parseName = null,
-                parseEmail = null,
-                parsePhone = null,
+                parseEmail = ::parseOptionalEmail,
+                parsePhone = ::parseOptionalPhone,
             )
-            // Connect reviewed F01/F02 functions here; keep dependent saves pending until then.
+            // F01 name validation remains independently pending.
         }
     }
 
