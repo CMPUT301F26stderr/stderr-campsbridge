@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
@@ -70,7 +71,7 @@ fun onboardingViewModelFactory(
         }
     }
 
-/** Constructs the inventory owner with F11 ordering explicitly pending.
+/** Constructs the inventory owner with the assigned F11 ordering function.
  * @param services Selected host's dependencies.
  * @param ownerId Confirmed owner identity.
  */
@@ -85,7 +86,7 @@ fun campsiteListViewModelFactory(
                 services.repositories.campsites,
                 services.repositories.images,
                 createSavedStateHandle(),
-                sortCampsites = null,
+                sortCampsites = ::sortCampsitesByName,
             )
         }
     }
