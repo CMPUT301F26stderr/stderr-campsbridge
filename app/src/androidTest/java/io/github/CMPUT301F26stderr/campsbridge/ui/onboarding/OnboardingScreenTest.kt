@@ -192,8 +192,8 @@ class OnboardingScreenTest {
         compose.runOnIdle { assertEquals(1, skips) }
     }
 
-    /** Owner completion works while the future campsite editor remains unavailable. */
-    @Test fun ownerSetupHasAnHonestFeatureBoundary() {
+    /** Hosting introduction exposes one real completion action before entering the owner workspace. */
+    @Test fun ownerSetupHasOneCompletionAction() {
         var completions = 0
         compose.setContent {
             CampsbridgeTheme {
@@ -209,8 +209,8 @@ class OnboardingScreenTest {
                 )
             }
         }
-        compose.onNodeWithText("Add first campsite").assertIsNotEnabled()
-        compose.onNodeWithText("Set up later").performClick()
+        compose.onNodeWithText("Add first campsite").assertDoesNotExist()
+        compose.onNodeWithText("Finish setup").performClick()
         compose.runOnIdle { assertEquals(1, completions) }
     }
 

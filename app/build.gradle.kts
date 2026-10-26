@@ -24,6 +24,14 @@ android {
             "FIREBASE_EMULATOR_HOST",
             groovy.json.JsonOutput.toJson(emulatorHost),
         )
+        val mapsApiKey =
+            providers
+                .gradleProperty("mapsApiKey")
+                .orElse("")
+                .get()
+                .trim()
+        manifestPlaceholders["mapsApiKey"] = mapsApiKey
+        buildConfigField("boolean", "MAPS_CONFIGURED", mapsApiKey.isNotEmpty().toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,6 +69,8 @@ dokka {
 }
 
 dependencies {
+    implementation(libs.maps.compose)
+    implementation(libs.maps.sdk)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(platform(libs.firebase.bom))

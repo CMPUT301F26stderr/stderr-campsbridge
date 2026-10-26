@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="camping_amenity_flush_toilets">Flush toilets</string>
+    <string name="camping_amenity_potable_water">Potable water</string>
+    <string name="camping_amenity_cookhouse">Cookhouse</string>
+    <string name="camping_amenity_fire_ring">Fire ring</string>
+    <string name="camping_amenity_picnic_table">Picnic table</string>
+</resources>

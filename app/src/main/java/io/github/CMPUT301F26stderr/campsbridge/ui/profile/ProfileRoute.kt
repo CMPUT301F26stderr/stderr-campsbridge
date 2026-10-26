@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
  * @param modifier Navigation host layout.
  * @param onSettings Opens registered settings, if available.
  * @param workspaceContent Shared capability-limited picker.
+ * @param onStartHosting Opens the existing-account hosting introduction.
  */
 @Composable
 fun ProfileRoute(
@@ -44,6 +45,7 @@ fun ProfileRoute(
     modifier: Modifier = Modifier,
     onSettings: (() -> Unit)? = null,
     workspaceContent: @Composable () -> Unit = {},
+    onStartHosting: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val photo by model.photoState.collectAsStateWithLifecycle()
@@ -56,6 +58,7 @@ fun ProfileRoute(
         onSettings,
         photo.displayUrl,
         workspaceContent,
+        onStartHosting,
     )
 }
 

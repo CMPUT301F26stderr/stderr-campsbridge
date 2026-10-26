@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirebaseClients
 import io.github.CMPUT301F26stderr.campsbridge.platform.identity.FirebaseIdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.DataStoreAppPreferences
+import java.time.Clock
 
 /**
  * Builds one consistent environment before exposing any repositories to controllers.
@@ -66,10 +67,12 @@ class AppContainerFactory(
                     "application",
                 )
             }
+        val clock = Clock.systemUTC()
         return AppServices(
-            AppContainer(clients),
+            AppContainer(clients, clock),
             FirebaseIdentityProvider(auth),
             DataStoreAppPreferences(store),
+            clock,
         )
     }
 }

@@ -19,8 +19,8 @@ enum class TaskExample(
 ) {
     DISPLAY_NAME("H01", R.string.task_name, "B1", true, R.string.task_name_steps),
     CONTACT("H02", R.string.task_contact, "B1", true, R.string.task_contact_steps),
-    AVAILABILITY("H03", R.string.task_availability, "B2", false, R.string.task_availability_steps),
-    CAMPSITE_ORDER("H04", R.string.task_site_order, "B2", false, R.string.task_site_order_steps),
+    AVAILABILITY("H03", R.string.task_availability, "B2", true, R.string.task_availability_steps),
+    CAMPSITE_ORDER("H04", R.string.task_site_order, "B2", true, R.string.task_site_order_steps),
     TEXT_MATCH("H05", R.string.task_search, "B3", false, R.string.task_search_steps),
     GUEST_MATCH("H06", R.string.task_guests, "B3", false, R.string.task_guests_steps),
     LOTTERY_WINDOWS("H07", R.string.task_windows, "B4", false, R.string.task_windows_steps),

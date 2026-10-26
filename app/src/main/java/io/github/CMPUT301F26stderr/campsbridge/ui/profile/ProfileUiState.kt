@@ -20,6 +20,7 @@ sealed interface ProfileUiState {
      * @param nameValidationPending Whether the reserved name parser is unavailable.
      * @param contactValidationPending Whether either reserved contact parser is unavailable.
      * @param completedEditor Confirmed save awaiting acknowledgement by its active route.
+     * @param ownerActivationFailed Whether hosting activation needs an explicit retry.
      */
     data class Content(
         val account: Account,
@@ -33,6 +34,7 @@ sealed interface ProfileUiState {
         val nameValidationPending: Boolean = false,
         val contactValidationPending: Boolean = false,
         val completedEditor: ProfileEditor? = null,
+        val ownerActivationFailed: Boolean = false,
     ) : ProfileUiState
 
     /** Account is absent or removed. */

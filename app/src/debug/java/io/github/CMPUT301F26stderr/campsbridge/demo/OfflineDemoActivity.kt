@@ -39,6 +39,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.demo.tasks.TaskExamplesActivity
+import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -94,6 +98,35 @@ class OfflineDemoActivity : ComponentActivity() {
                                     session.model,
                                     { id -> onboardingViewModelFactory(session.services, id) },
                                     { id -> profileViewModelFactory(session.services, id) },
+                                    { id -> campsiteListViewModelFactory(session.services, id) },
+                                    { accountId, id, context ->
+                                        campsiteDetailViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            id,
+                                            context,
+                                        )
+                                    },
+                                    {
+                                        accountId,
+                                        id,
+                                        ->
+                                        campsiteSetupViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            id,
+                                        )
+                                    },
+                                    {
+                                        accountId,
+                                        id,
+                                        ->
+                                        availabilityViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            id,
+                                        )
+                                    },
                                 )
                             }
                         }

@@ -40,7 +40,8 @@ class AppContainer(
     random: Random = Random.Default,
 ) : AppRepositories {
     override val accounts: AccountRepository = FirestoreAccountRepository(clients.firestore, clock)
-    val campsites: CampsiteRepository = FirestoreCampsiteRepository(clients.firestore, clock)
+    override val campsites: CampsiteRepository =
+        FirestoreCampsiteRepository(clients.firestore, clock)
     private val lotteryImplementation = FirestoreLotteryRepository(clients.firestore, clock, random)
     val lotteries: LotteryRepository = lotteryImplementation
     val bookings: BookingRepository = FirestoreBookingRepository(clients.firestore, clock)

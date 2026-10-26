@@ -1,0 +1,12 @@
+<resources>
+    <string name="location_picker_title">Choose campsite location</string>
+    <string name="location_picker_hint">Tap the map to place a pin, or drag the pin to adjust it.</string>
+    <string name="location_picker_no_pin">No location selected</string>
+    <string name="location_picker_apply">Use this location</string>
+    <string name="campsite_map_description">Campsite map</string>
+    <string name="campsite_map_pin">Campsite location</string>
+    <string name="campsite_map_configuration_missing">Maps is not configured in this build. You can return without changing this draft.</string>
+    <string name="campsite_map_services_unavailable">Maps requires available Google Play services on this device.</string>
+    <string name="campsite_map_loading">Loading map. If it does not load, check your connection and Maps configuration.</string>
+    <string name="campsite_map_preview">Map preview</string>
+</resources>
