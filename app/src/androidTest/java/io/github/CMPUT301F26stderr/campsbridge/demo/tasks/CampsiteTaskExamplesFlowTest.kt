@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -18,8 +19,8 @@ import org.junit.Test
 class CampsiteTaskExamplesFlowTest {
     @get:Rule val compose = createEmptyComposeRule()
 
-    /** The actual editor protects the booked fixture and retains a withdrawal until H03 is supplied. */
-    @Test fun availabilityExampleUsesKnownCalendarAndKeepsMissingHelperPending() {
+    /** The actual editor protects the booked fixture and makes its withdrawal saveable through the connected H03 helper. */
+    @Test fun availabilityExampleUsesKnownCalendarAndConnectedHelper() {
         ActivityScenario.launch(TaskExamplesActivity::class.java).use {
             compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H03"))
             compose.onNodeWithTag("H03").performClick()
@@ -27,12 +28,7 @@ class CampsiteTaskExamplesFlowTest {
             compose.onNodeWithTag("calendar-date-2027-05-13").performScrollTo().assertIsNotEnabled()
             compose.onNodeWithTag("calendar-date-2027-05-11").performScrollTo().performClick()
             compose.onNodeWithText("Withdraw nights").performScrollTo().performClick()
-            compose
-                .onNodeWithText(
-                    "Saving date changes is pending in this build. Your date choices are retained.",
-                ).performScrollTo()
-                .assertIsDisplayed()
-            compose.onNodeWithText("Save changes").assertIsNotEnabled()
+            compose.onNodeWithText("Save changes").assertIsEnabled()
         }
     }
 

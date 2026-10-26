@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
@@ -118,13 +119,13 @@ fun campsiteDetailViewModelFactory(
  * @param services Selected host's dependencies and clock.
  * @param ownerId Confirmed owner identity.
  * @param campsiteId Actual saved draft identity, or null for a new local form.
- * @param remainingAvailabilityEdits Reserved F08 integration; null keeps requested dates pending.
+ * @param remainingAvailabilityEdits F08 comparison supplied by this handoff; callers may explicitly pass null to show pending UI.
  */
 fun campsiteSetupViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String?,
-    remainingAvailabilityEdits: AvailabilityDifference? = null,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::remainingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
@@ -144,13 +145,13 @@ fun campsiteSetupViewModelFactory(
  * @param services Selected host's repository and clock.
  * @param ownerId Confirmed owner identity.
  * @param campsiteId Actual saved listing identity.
- * @param remainingAvailabilityEdits Reserved F08 integration; null keeps requested dates pending.
+ * @param remainingAvailabilityEdits F08 comparison supplied by this handoff; callers may explicitly pass null to show pending UI.
  */
 fun availabilityViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String,
-    remainingAvailabilityEdits: AvailabilityDifference? = null,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::remainingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
