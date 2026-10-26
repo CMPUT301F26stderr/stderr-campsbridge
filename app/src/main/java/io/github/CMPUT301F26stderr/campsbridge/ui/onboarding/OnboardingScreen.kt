@@ -1,12 +1,8 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +27,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.InterestsStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.NameStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.OwnerIntroductionStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.WelcomeStep
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
 /** Arranges short onboarding steps from supplied state, without persistence or navigation lookup.
@@ -57,6 +56,10 @@ fun OnboardingScreen(
     modifier: Modifier = Modifier,
 ) {
     var guidelines by rememberSaveable { mutableStateOf(false) }
+    if (guidelines && !state.unavailable) {
+        PolicyReaderScreen(policyContent(PolicyId.GUIDELINES), onBack = { guidelines = false })
+        return
+    }
     BackHandler(enabled = state.step != OnboardingStep.WELCOME && !state.unavailable) {
         if (!state.isSubmitting) onBack()
     }
@@ -182,23 +185,6 @@ fun OnboardingScreen(
                 }
             }
         }
-    }
-    if (guidelines) {
-        AlertDialog(
-            onDismissRequest = { guidelines = false },
-            title = { Text(stringResource(R.string.onboarding_guidelines)) },
-            text = {
-                Text(
-                    stringResource(R.string.onboarding_guidelines_body),
-                    Modifier.verticalScroll(rememberScrollState()),
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    { guidelines = false },
-                ) { Text(stringResource(R.string.onboarding_close)) }
-            },
-        )
     }
 }
 

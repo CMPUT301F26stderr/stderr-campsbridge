@@ -1,0 +1,15 @@
+<resources>
+    <string name="personal_details">Personal details</string>
+    <string name="contact_details">Contact details</string>
+    <string name="settings_title">Settings</string>
+    <string name="personal_details_summary">Name and profile photo</string>
+    <string name="contact_details_summary">Optional email and phone</string>
+    <string name="save_name">Save name</string>
+    <string name="save_contacts">Save contacts</string>
+    <string name="profile_saving">Saving changes</string>
+    <string name="name_validation_pending">Name validation is pending in this build.</string>
+    <string name="contact_validation_pending">Contact validation is pending in this build.</string>
+    <string name="email_invalid">Enter an email with one @ and no spaces, or leave it blank.</string>
+    <string name="phone_invalid">Use digits, spaces, parentheses, hyphens and an optional leading +, or leave it blank.</string>
+    <string name="contact_optional">Optional</string>
+</resources>

@@ -35,14 +35,19 @@ fun EmptyContent(message: String) {
  * Recoverable failure without discarding sibling content or user input.
  * @param message Localized explanation, not a raw SDK exception.
  * @param onRetry Explicit retry action.
+ * @param retryEnabled Whether the owning feature currently permits retrying.
  */
 @Composable
 fun FailureContent(
     message: String,
     onRetry: () -> Unit,
+    retryEnabled: Boolean = true,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         Text(message)
-        TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+        TextButton(
+            onClick = onRetry,
+            enabled = retryEnabled,
+        ) { Text(stringResource(R.string.retry)) }
     }
 }

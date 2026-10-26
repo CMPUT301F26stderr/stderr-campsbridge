@@ -43,7 +43,6 @@ fun WorkspaceScaffold(
     onSelectDestination: (String) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val switchDescription = stringResource(R.string.switch_workspace)
     AppScreen(
         title = title,
@@ -58,9 +57,9 @@ fun WorkspaceScaffold(
         },
         actions = {
             if (state.account.roles.size > 1) {
-                Box {
+                WorkspaceMenu(state, onSelectWorkspace) { open ->
                     TextButton(
-                        onClick = { expanded = true },
+                        onClick = open,
                         enabled = !state.isSelectingWorkspace,
                         modifier =
                             Modifier.semantics {
@@ -71,23 +70,40 @@ fun WorkspaceScaffold(
                         Text(roleLabel(state.workspace))
                         Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                     }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        for (role in Role.entries.filter { it in state.account.roles }) {
-                            DropdownMenuItem(
-                                text = { Text(roleLabel(role)) },
-                                onClick = {
-                                    expanded = false
-                                    onSelectWorkspace(role)
-                                },
-                                enabled = !state.isSelectingWorkspace,
-                            )
-                        }
-                    }
                 }
             }
         },
     ) {
         if (state.selectionFailed) Text(stringResource(R.string.workspace_selection_failure))
         content()
+    }
+}
+
+/** Shares the same granted-role menu between the app bar and profile navigation row.
+ * @param state Confirmed session and workspace-write state.
+ * @param onSelectWorkspace Selection request; does not grant capabilities.
+ * @param anchor Material button/row that opens this menu.
+ */
+@Composable
+fun WorkspaceMenu(
+    state: SessionState.Ready,
+    onSelectWorkspace: (Role) -> Unit,
+    anchor: @Composable (open: () -> Unit) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        anchor { if (!state.isSelectingWorkspace) expanded = true }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            for (role in Role.entries.filter { it in state.account.roles }) {
+                DropdownMenuItem(
+                    text = { Text(roleLabel(role)) },
+                    onClick = {
+                        expanded = false
+                        onSelectWorkspace(role)
+                    },
+                    enabled = !state.isSelectingWorkspace,
+                )
+            }
+        }
     }
 }

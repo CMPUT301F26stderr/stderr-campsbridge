@@ -42,7 +42,7 @@ class OnboardingScreenTest {
             }
         }
         compose.onNodeWithText("Guidelines").performClick()
-        compose.onNodeWithText("Close").performClick()
+        compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Get started").performClick()
         compose.runOnIdle { assertEquals(1, next) }
     }

@@ -77,7 +77,7 @@ class AppNavigationTest {
         }
     }
 
-    /** Workspace menu actions persist an actual capability without rebuilding navigation. */
+    /** Workspace changes retain one identity with separately restorable feature graph owners. */
     @Test fun workspaceSelectionUsesTheExistingSession() {
         host.accounts.account.value = sampleAccount(setOf(Role.ENTRANT, Role.OWNER))
         compose.setContent { host.Content() }
@@ -89,8 +89,15 @@ class AppNavigationTest {
             ).assertTextContains("Campsite owner")
         compose.runOnIdle {
             assertEquals(1, host.preferences.workspaceWrites)
-            assertEquals(1, host.profileCreations)
+            assertEquals(2, host.profileCreations)
             assertEquals(1, host.identity.calls)
+        }
+        compose.onNodeWithContentDescription("Switch workspace").performClick()
+        compose.onNode(hasText("Camper") and hasClickAction()).performClick()
+        compose.onNodeWithContentDescription("Switch workspace").assertTextContains("Camper")
+        compose.runOnIdle {
+            assertEquals(2, host.profileCreations)
+            assertEquals(2, host.preferences.workspaceWrites)
         }
     }
 

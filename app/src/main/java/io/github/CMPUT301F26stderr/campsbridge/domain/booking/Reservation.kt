@@ -11,7 +11,6 @@ import java.time.temporal.ChronoUnit
  */
 object BookingPolicy {
     const val VERSION = "full-refund-v1"
-    const val TEXT = "Cancelling or rejecting a reservation returns the full simulated payment."
 }
 
 /**

@@ -3,7 +3,6 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.app
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
@@ -52,9 +51,11 @@ fun AppRoot(
 
             is SessionState.Ready -> {
                 key(session.account.id) {
-                    WorkspaceScaffold(session, model::selectWorkspace) {
-                        AppNavigation(profileFactory(session.account.id), Modifier.weight(1f))
-                    }
+                    AppNavigation(
+                        profileFactory(session.account.id),
+                        session,
+                        model::selectWorkspace,
+                    )
                 }
             }
         }

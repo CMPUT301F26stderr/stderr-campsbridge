@@ -34,7 +34,12 @@ fun profileViewModelFactory(
                 accountId,
                 services.repositories.accounts,
                 services.repositories.images,
+                createSavedStateHandle(),
+                parseName = null,
+                parseEmail = null,
+                parsePhone = null,
             )
+            // Connect reviewed F01/F02 functions here; keep dependent saves pending until then.
         }
     }
 

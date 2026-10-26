@@ -11,3 +11,5 @@ Implemented local interactions include profile observation, capability-limited w
 Select `firebaseDebug` to run the real Firebase-backed app, or build `release` for delivery. These variants use `MainActivity` and exclude the demo launcher, menu and local repositories. The existing `firebaseEmulatorHost` Gradle property selects emulator endpoints only for Firebase-enabled hosts; see the [Firebase guide](../../../../../../../../../firebase/README.md).
 
 Run controller/data contracts with `:app:testDebugUnitTest --tests '*demo.*'`. Device tests in `demo/OfflineDemoTest.kt` launch the package's default launcher, verify real content and scenario controls, and assert that no Firebase app has been initialized.
+
+The debug Task examples catalogue supplies H01/H02 profile exercises against local repositories. Its bindings remain null in the shared baseline and are supplied independently in each task handoff. Later examples are explicit placeholders.
