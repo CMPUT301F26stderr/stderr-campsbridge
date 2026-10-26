@@ -70,3 +70,9 @@ Use **Download Latest APK** above to download `app-debug.apk` from the rolling [
 CI publishes the offline `debug` demo to the rolling beta. Firebase-connected builds use the separate `firebaseDebug` variant. The beta download stays available until replaced by a newer verified build. Per-run APKs and check reports remain available as Actions artifacts for 14 days.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses the [GNU GPL v3 license](LICENSE).
+
+### Assigned helper examples
+
+In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors with local sample records. Other task examples remain labelled pending until their baselines are published. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
+
+The shared baseline leaves assigned helper bindings disconnected. Follow the issue's prepared handoff to connect its real implementation and tests; a preview or pending example does not complete the task. Release and Firebase builds do not include the debug task host.
