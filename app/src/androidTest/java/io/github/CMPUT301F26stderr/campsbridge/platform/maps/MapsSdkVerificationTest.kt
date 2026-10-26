@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.assertIsDisplayed
@@ -20,6 +21,7 @@ import androidx.test.espresso.action.Press
 import androidx.test.espresso.action.Tap
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -120,6 +122,11 @@ class MapsSdkVerificationTest {
 
     /** Requires the SDK surface and its actual onMapLoaded callback, without replacing map content. */
     private fun awaitLoadedMap() {
+        compose.waitUntil(30_000) {
+            var mounted = false
+            onView(isRoot()).check { view, _ -> mounted = containsMap(view) }
+            mounted
+        }
         onView(
             isAssignableFrom(MapView::class.java),
         ).check(
@@ -134,6 +141,17 @@ class MapsSdkVerificationTest {
                 .isEmpty()
         }
     }
+
+    /** Waits for asynchronous AndroidView mounting without substituting an SDK callback.
+     * @param view Current Android hierarchy node.
+     */
+    private fun containsMap(view: View): Boolean =
+        view is MapView || (
+            view is ViewGroup &&
+                (0 until view.childCount).any {
+                    containsMap(view.getChildAt(it))
+                }
+        )
 
     /** Sends a native touch into the real MapView at a stable relative point.
      * @param x Horizontal fraction within the rendered map.

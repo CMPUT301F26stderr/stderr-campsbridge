@@ -139,6 +139,7 @@ jobs:
         with:
           name: firebase-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            firebase/tooling/build/reports/
             app/build/reports/tests/firebaseIntegrationTest/
             app/build/test-results/firebaseIntegrationTest/
           if-no-files-found: warn
