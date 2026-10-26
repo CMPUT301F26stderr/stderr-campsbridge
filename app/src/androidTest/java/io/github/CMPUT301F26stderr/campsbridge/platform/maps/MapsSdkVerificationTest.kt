@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -86,12 +87,20 @@ class MapsSdkVerificationTest {
         )
         awaitLoadedMap()
         tapMap(0.5f, 0.5f)
+        compose.waitUntil(10_000) {
+            !compose
+                .onNodeWithText("Use this location")
+                .fetchSemanticsNode()
+                .config
+                .contains(SemanticsProperties.Disabled)
+        }
         compose.onNodeWithText("Use this location").assertIsEnabled().performClick()
         compose.runOnIdle { assertNotNull(applied) }
         val tapped = checkNotNull(applied)
         compose.runOnIdle { generation.intValue++ }
         awaitLoadedMap()
         onView(isAssignableFrom(MapView::class.java)).perform(DragWorkingMarker())
+        awaitWorkingPinChange(tapped)
         compose.onNodeWithText("Use this location").performClick()
         compose.runOnIdle {
             assertNotEquals(
@@ -140,6 +149,22 @@ class MapsSdkVerificationTest {
                 ).fetchSemanticsNodes()
                 .isEmpty()
         }
+    }
+
+    /** Waits for the native drag callback to reach the same working-state presentation.
+     * @param previous Applied pin before the native gesture.
+     */
+    private fun awaitWorkingPinChange(previous: Coordinates) {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val label =
+            context.getString(
+                R.string.campsite_coordinates,
+                previous.latitude,
+                previous.longitude,
+            )
+        compose.waitUntil(
+            10_000,
+        ) { compose.onAllNodesWithText(label).fetchSemanticsNodes().isEmpty() }
     }
 
     /** Waits for asynchronous AndroidView mounting without substituting an SDK callback.
