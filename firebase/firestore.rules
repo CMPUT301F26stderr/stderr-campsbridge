@@ -215,26 +215,31 @@ service cloud.firestore {
       allow create: if role('OWNER') && request.resource.data.ownerId == request.auth.uid && config(request.resource.data)
         && request.resource.data.waitingCount == 0 && request.resource.data.publishedAt == null
         && request.resource.data.drawnAt == null && request.resource.data.cancellation == null;
-      allow update: if config(request.resource.data) && (
-          (ownsLottery(id) && resource.data.cancellation == null
-            && changes(['title', 'description', 'registrationOpensAt', 'registrationClosesAt', 'bookingOpensAt', 'bookingClosesAt', 'winnerCount', 'waitlistCapacity', 'publishedAt', '_revision'])
-            && ((resource.data.publishedAt == null || request.time < resource.data.registrationOpensAt) || changes(['title', 'description', '_revision']))
+      // Reuse the update shape and reject unrelated branches before document lookups.
+      function validUpdate() {
+        let fields = request.resource.data.diff(resource.data).affectedKeys();
+        return config(request.resource.data) && (
+          (fields.hasOnly(['title', 'description', 'registrationOpensAt', 'registrationClosesAt', 'bookingOpensAt', 'bookingClosesAt', 'winnerCount', 'waitlistCapacity', 'publishedAt', '_revision'])
+            && ownsLottery(id) && resource.data.cancellation == null
+            && ((resource.data.publishedAt == null || request.time < resource.data.registrationOpensAt) || fields.hasOnly(['title', 'description', '_revision']))
             && (resource.data.publishedAt == null || request.resource.data.publishedAt == resource.data.publishedAt))
-          || (changes(['waitingCount']) && membership())
-          || (changes(['waitingCount']) && canDraw(id) && request.resource.data.waitingCount in [resource.data.waitingCount, resource.data.waitingCount - 1])
-          || (changes(['drawnAt']) && canDraw(id) && resource.data.waitingCount == 0
+          || (fields.hasOnly(['waitingCount']) && membership())
+          || (fields.hasOnly(['waitingCount']) && canDraw(id) && request.resource.data.waitingCount in [resource.data.waitingCount, resource.data.waitingCount - 1])
+          || (fields.hasOnly(['drawnAt']) && canDraw(id) && resource.data.waitingCount == 0
             && exists(/databases/$(database)/documents/_draws/$(id)) && request.resource.data.drawnAt is timestamp)
-          || (admin() && changes(['waitingCount']) && request.resource.data.waitingCount == resource.data.waitingCount - 1)
-          || (changes(['waitingCount']) && removalActor(request.auth.uid)
+          || (fields.hasOnly(['waitingCount']) && admin() && request.resource.data.waitingCount == resource.data.waitingCount - 1)
+          || (fields.hasOnly(['waitingCount']) && removalActor(request.auth.uid)
             && request.time < resource.data.registrationClosesAt
             && get(/databases/$(database)/documents/lotteries/$(id)/entries/$(request.auth.uid)).data.state == 'WAITING'
             && getAfter(/databases/$(database)/documents/lotteries/$(id)/entries/$(request.auth.uid)).data.state == 'WITHDRAWN'
             && request.resource.data.waitingCount == resource.data.waitingCount - 1)
-          || ((drawOperator(id) || removalActor(resource.data.ownerId)) && changes(['cancellation'])
+          || (fields.hasOnly(['cancellation']) && (drawOperator(id) || removalActor(resource.data.ownerId))
             && resource.data.cancellation == null && request.resource.data.cancellation is map
             && (request.resource.data.cancellation.actorId == request.auth.uid || admin())
             && (!exists(/databases/$(database)/documents/_draws/$(id)) || resource.data.drawnAt != null))
         );
+      }
+      allow update: if validUpdate();
       match /offers/{campsite} {
         allow read: if signed() && (lottery(id).publishedAt != null || ownsLottery(id) || admin() || removalActor(lottery(id).ownerId));
         allow create, update: if ownsLottery(id) && lottery(id).cancellation == null
