@@ -38,15 +38,17 @@ interface CampsiteRepository {
     fun observeAll(): Flow<List<Campsite>>
 
     /**
-     * Creates an unpublished listing for an active owner and returns its generated ID.
-     *
-     * @param ownerId Account ID of the campsite or lottery owner.
-     * @param details Editable campsite facts to store.
+     * Creates a caller-identified unpublished draft, or returns the same owner's stored record.
+     * Existing facts are never overwritten by a creation retry; other ownership conflicts.
+     * @param id Stable draft identity allocated and retained before the first attempt.
+     * @param ownerId Active owner creating the draft.
+     * @param details Initial validated listing facts, used only if the document is absent.
      */
-    suspend fun create(
+    suspend fun createDraft(
+        id: String,
         ownerId: String,
         details: CampsiteDetails,
-    ): String
+    ): Campsite
 
     /**
      * Replaces editable listing details without changing ownership or publication history.

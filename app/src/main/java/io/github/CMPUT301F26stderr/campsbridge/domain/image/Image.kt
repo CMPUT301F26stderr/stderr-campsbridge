@@ -35,7 +35,7 @@ data class ImageAttachment(
 )
 
 /**
- * Content is opened by the caller; implementation owns closing the supplied stream.
+ * The repository opens and closes this lazy, repeatable content on an IO dispatcher.
  *
  * @param contentType Image MIME type supplied as Storage metadata.
  * @param openStream Opens image content; the repository closes the returned stream.

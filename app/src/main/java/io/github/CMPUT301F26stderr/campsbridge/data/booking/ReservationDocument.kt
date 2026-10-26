@@ -9,6 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.require
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.stored
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.AcceptedTerms
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookedCampsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Payment
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
 
@@ -47,6 +48,12 @@ object ReservationDocument : DocumentCodec<Reservation>() {
                     )
                 },
             "createdAt" to value.createdAt.stored(),
+            "payment" to
+                mapOf(
+                    "amountCents" to value.payment.amountCents,
+                    "paidAt" to value.payment.paidAt.stored(),
+                    "refundedAt" to value.payment.refundedAt?.stored(),
+                ),
             "cancellation" to
                 value.cancellation?.let {
                     mapOf(
@@ -92,6 +99,13 @@ object ReservationDocument : DocumentCodec<Reservation>() {
                 )
             },
             fields.instant("createdAt"),
+            fields.nested("payment").let {
+                Payment(
+                    it.long("amountCents"),
+                    it.instant("paidAt"),
+                    it.optionalInstant("refundedAt"),
+                )
+            },
             fields.optionalNested("cancellation")?.let {
                 ReservationCancellation(
                     it.instant("at"),

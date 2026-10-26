@@ -11,12 +11,15 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.assertPersis
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.registeredActor
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.seed
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -39,7 +42,7 @@ class CampsiteRepositoryTest {
             val owner = firebase.registeredActor(Role.OWNER)
             val campsites = owner.container.campsites
             val details = CampingFixtures.campsite().details
-            val id = campsites.create(owner.id, details)
+            val id = campsites.createDraft("site", owner.id, details).id
             val draft = campsites.get(id)!!
             assertFalse(draft.isPublished)
             assertNull(draft.publishedAt)
@@ -177,5 +180,71 @@ class CampsiteRepositoryTest {
                     )
                 }
             assertTrue(afterRetry.all { !it.isOffered && it.reservationId == null })
+        }
+
+    /** Caller identity survives uncertain acknowledgements and concurrent creation. */
+    @Test(timeout = 60000)
+    fun stableDraftCreationPreservesConfirmedEdits() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.OWNER)
+            val campsites = owner.container.campsites
+            val details = CampingFixtures.campsite().details
+            val original = campsites.createDraft("stable", owner.id, details)
+            campsites.update(original.id, owner.id, details.copy(name = "Confirmed edit"))
+            val edited = campsites.get(original.id)!!
+            firebase.clock.current = firebase.clock.current.plusSeconds(1)
+            assertEquals(edited, campsites.createDraft("stable", owner.id, details))
+            val concurrent =
+                (1..2)
+                    .map {
+                        async { campsites.createDraft("concurrent", owner.id, details) }
+                    }.awaitAll()
+            assertEquals(concurrent[0], concurrent[1])
+            assertEquals("concurrent", concurrent[0].id)
+            assertEquals(original.createdAt, edited.createdAt)
+            assertEquals(
+                setOf(
+                    "stable",
+                    "concurrent",
+                ),
+                campsites
+                    .observeForOwner(owner.id)
+                    .first()
+                    .map {
+                        it.id
+                    }.toSet(),
+            )
+        }
+
+    /** Colliding ownership and malformed IDs cannot overwrite or create unrelated records. */
+    @Test(timeout = 60000)
+    fun draftCreationRejectsOwnershipCollisionAndInvalidIds() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.OWNER)
+            val other = firebase.registeredActor(Role.OWNER)
+            val occupied = CampingFixtures.campsite("taken", other.id)
+            firebase.seed("campsites/taken", CampsiteDocument.encode(occupied))
+            val stored = other.container.campsites.get("taken")!!
+            assertPersistenceFailure(Reason.CONFLICT) {
+                owner.container.campsites.createDraft("taken", owner.id, occupied.details)
+            }
+            assertEquals(stored, owner.container.campsites.get("taken"))
+            listOf("", "a/b", "__reserved__").forEach { id ->
+                assertThrows(IllegalArgumentException::class.java) {
+                    runBlocking {
+                        owner.container.campsites.createDraft(
+                            id,
+                            owner.id,
+                            occupied.details,
+                        )
+                    }
+                }
+            }
+            assertTrue(
+                owner.container.campsites
+                    .observeForOwner(owner.id)
+                    .first()
+                    .isEmpty(),
+            )
         }
 }

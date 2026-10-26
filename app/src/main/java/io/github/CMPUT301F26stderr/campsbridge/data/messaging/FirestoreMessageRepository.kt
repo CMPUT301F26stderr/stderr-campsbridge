@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.data.firestore.observe
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.read
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.require
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.stored
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.DeliveryScope
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationWrites
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.MessageRepository
@@ -104,6 +105,7 @@ class FirestoreMessageRepository(
                     message.createdAt,
                 ),
                 listOf(recipient),
+                scope = DeliveryScope.Reservation(reservationId),
             )
         }
         return reference.id

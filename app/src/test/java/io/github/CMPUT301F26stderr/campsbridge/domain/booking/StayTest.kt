@@ -54,8 +54,8 @@ class StayTest {
             CampingFixtures.bookingRequest().copy(expectedTotalCents = -1)
         }
         assertThrows(IllegalArgumentException::class.java) {
-            Payment("reservation", -1, CampingFixtures.now)
+            Payment(-1, CampingFixtures.now)
         }
-        assertEquals(0L, Payment("reservation", 0, CampingFixtures.now).amountCents)
+        assertEquals(0L, Payment(0, CampingFixtures.now).amountCents)
     }
 }

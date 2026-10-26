@@ -1,5 +1,8 @@
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
+import com.google.firebase.firestore.Source
+import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentDecodingException
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason
@@ -10,9 +13,11 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.registeredAc
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.seed
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -35,12 +40,12 @@ class CancellationRepositoryTest {
             val fixture = firebase.bookingFixture()
             val bookings = fixture.entrant.container.bookings
             val id = bookings.reserve(fixture.request)
-            val originalPayment = bookings.getPayment(id)!!
+            val originalPayment = bookings.get(id)!!.payment
             bookings.cancel(
                 CancellationRequest(id, fixture.entrant.id, Role.ENTRANT, "Plans changed"),
             )
             val cancelled = bookings.get(id)!!
-            val refunded = bookings.getPayment(id)!!
+            val refunded = bookings.get(id)!!.payment
             assertEquals(fixture.entrant.id, cancelled.cancellation!!.actorId)
             assertEquals(Role.ENTRANT, cancelled.cancellation.initiatedAs)
             assertEquals("Plans changed", cancelled.cancellation.reason)
@@ -61,7 +66,7 @@ class CancellationRepositoryTest {
                 CancellationRequest(id, fixture.entrant.id, Role.ENTRANT, "A second reason"),
             )
             assertEquals(cancelled, bookings.get(id))
-            assertEquals(refunded, bookings.getPayment(id))
+            assertEquals(refunded, bookings.get(id)?.payment)
             assertPersistenceFailure(Reason.ALREADY_USED) { bookings.reserve(fixture.request) }
             assertPersistenceFailure(Reason.ALREADY_USED) {
                 fixture.entrant.container.lotteries
@@ -88,7 +93,8 @@ class CancellationRepositoryTest {
             assertEquals(Role.OWNER, cancellation.initiatedAs)
             assertNotNull(
                 fixture.owner.container.bookings
-                    .getPayment(id)!!
+                    .get(id)!!
+                    .payment
                     .refundedAt,
             )
         }
@@ -121,7 +127,7 @@ class CancellationRepositoryTest {
             val bookings = fixture.entrant.container.bookings
             val id = bookings.reserve(fixture.request)
             val before = bookings.get(id)
-            val payment = bookings.getPayment(id)
+            val payment = bookings.get(id)?.payment
             firebase.seed(
                 "campsites/site/calendar/${fixture.request.checkInDate.plusDays(1)}",
                 mapOf("isOffered" to true, "reservationId" to "different-reservation"),
@@ -130,7 +136,7 @@ class CancellationRepositoryTest {
                 bookings.cancel(CancellationRequest(id, fixture.entrant.id, Role.ENTRANT))
             }
             assertEquals(before, bookings.get(id))
-            assertEquals(payment, bookings.getPayment(id))
+            assertEquals(payment, bookings.get(id)?.payment)
             val nights =
                 fixture.owner.container.campsites
                     .observeCalendar(
@@ -140,7 +146,7 @@ class CancellationRepositoryTest {
                     ).first()
             assertEquals(id, nights.first().reservationId)
             assertEquals("different-reservation", nights.last().reservationId)
-            assertNull(bookings.getPayment(id)!!.refundedAt)
+            assertNull(bookings.get(id)!!.payment.refundedAt)
         }
 
     /** Missing payment data prevents cancellation and leaves the calendar claims intact. */
@@ -150,11 +156,21 @@ class CancellationRepositoryTest {
             val fixture = firebase.bookingFixture()
             val bookings = fixture.entrant.container.bookings
             val id = bookings.reserve(fixture.request)
-            firebase.erase("payments/$id")
-            assertPersistenceFailure(Reason.NOT_FOUND) {
-                bookings.cancel(CancellationRequest(id, fixture.entrant.id, Role.ENTRANT))
+            val stored = ReservationDocument.encode(bookings.get(id)!!)
+            firebase.seed("reservations/$id", stored - "payment")
+            assertThrows(DocumentDecodingException::class.java) {
+                runBlocking {
+                    bookings.cancel(
+                        CancellationRequest(id, fixture.entrant.id, Role.ENTRANT),
+                    )
+                }
             }
-            assertNull(bookings.get(id)!!.cancellation)
+            val after =
+                fixture.entrant.clients.firestore
+                    .document("reservations/$id")
+                    .get(Source.SERVER)
+                    .await()
+            assertNull(after.get("cancellation"))
             val nights =
                 fixture.owner.container.campsites
                     .observeCalendar(

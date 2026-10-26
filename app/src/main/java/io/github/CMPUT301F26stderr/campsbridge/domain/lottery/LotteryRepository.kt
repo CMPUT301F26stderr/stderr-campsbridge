@@ -54,19 +54,21 @@ interface LotteryRepository {
     fun observeForEntrant(accountId: String): Flow<List<LotteryEntry>>
 
     /**
-     * Creates an unpublished lottery with no offers or participants and returns its ID.
-     *
-     * @param ownerId Account ID of the campsite or lottery owner.
-     * @param title Display title for the lottery or announcement.
-     * @param description Listing or lottery description.
-     * @param configuration Registration/booking windows and participation limits.
+     * Creates a caller-identified unpublished draft, or returns the same owner's stored record.
+     * Existing facts are never overwritten by a creation retry; other ownership conflicts.
+     * @param id Stable draft identity allocated and retained before the first attempt.
+     * @param ownerId Active owner creating the draft.
+     * @param title Initial display title.
+     * @param description Initial description.
+     * @param configuration Initial registration/booking windows and limits.
      */
-    suspend fun create(
+    suspend fun createDraft(
+        id: String,
         ownerId: String,
         title: String,
         description: String,
         configuration: LotteryConfiguration,
-    ): String
+    ): Lottery
 
     /**
      * Updates descriptions and permitted configuration; published configuration freezes at
@@ -182,4 +184,10 @@ interface LotteryRepository {
         actorId: String,
         reason: String? = null,
     )
+
+    /**
+     * Observes associated published, noncancelled lotteries.
+     * @param campsiteId Published campsite whose lottery memberships are requested.
+     */
+    fun observePublishedForCampsite(campsiteId: String): Flow<List<Lottery>>
 }

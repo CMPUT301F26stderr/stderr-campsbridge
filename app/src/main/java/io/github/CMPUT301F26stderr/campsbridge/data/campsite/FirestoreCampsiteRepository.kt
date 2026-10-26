@@ -14,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INACTIVE
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
@@ -75,24 +76,36 @@ class FirestoreCampsiteRepository(
         db.collection("campsites").observe(CampsiteDocument)
 
     /**
-     * Creates an unpublished listing for an active owner and returns its generated ID.
-     *
-     * @param ownerId Account ID of the campsite or lottery owner.
-     * @param details Editable campsite facts to store.
+     * Creates one draft transactionally; retries return stored facts without resetting edits.
+     * Reads confirmed server values after commit; a read failure leaves creation safe to retry.
+     * @param id Stable caller-allocated draft identity.
+     * @param ownerId Active owner creating the draft.
+     * @param details Initial listing facts, used only for an absent document.
      */
-    override suspend fun create(
+    override suspend fun createDraft(
+        id: String,
         ownerId: String,
         details: CampsiteDetails,
-    ): String {
-        val reference = db.collection("campsites").document()
+    ): Campsite {
+        val reference = db.document(FirestorePaths.campsite(id))
         db.atomic { tx ->
             tx.activeAccount(db, ownerId, Role.OWNER)
-            tx.set(
-                reference,
-                CampsiteDocument.encode(Campsite(reference.id, ownerId, details, clock.instant())),
-            )
+            val existing = tx.read(reference, CampsiteDocument)
+            if (existing != null) {
+                requireOperation(
+                    existing.ownerId == ownerId,
+                    CONFLICT,
+                    "Draft ID belongs to another owner",
+                )
+                existing
+            } else {
+                val draft = Campsite(id, ownerId, details, clock.instant())
+                tx.set(reference, CampsiteDocument.encode(draft))
+                draft
+            }
         }
-        return reference.id
+        return reference.read(CampsiteDocument)
+            ?: throw PersistenceFailure(PersistenceFailure.Reason.NOT_FOUND, reference.path)
     }
 
     /**

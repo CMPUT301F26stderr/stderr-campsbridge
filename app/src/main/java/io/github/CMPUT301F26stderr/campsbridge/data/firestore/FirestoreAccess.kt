@@ -54,6 +54,16 @@ internal fun <T> DocumentReference.observe(codec: DocumentCodec<T>): Flow<T?> =
  * @param codec Codec converting stored fields into the application model.
  */
 internal fun <T> Query.observe(codec: DocumentCodec<T>): Flow<List<T>> =
+    observe(codec::decode)
+
+/**
+ * Streams a query projection with document context, releasing its listener on failure/cancellation.
+ * @param T Result produced for each document.
+ * @param decode Pure projection that validates and translates the snapshot within data code.
+ */
+internal fun <T> Query.observe(
+    decode: (com.google.firebase.firestore.DocumentSnapshot) -> T,
+): Flow<List<T>> =
     callbackFlow {
         val registration =
             addSnapshotListener { snapshot, failure ->
@@ -61,7 +71,7 @@ internal fun <T> Query.observe(codec: DocumentCodec<T>): Flow<List<T>> =
                     close(failure)
                 } else if (snapshot != null) {
                     try {
-                        trySend(snapshot.documents.map(codec::decode))
+                        trySend(snapshot.documents.map(decode))
                     } catch (failure: Exception) {
                         close(failure)
                     }

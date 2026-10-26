@@ -4,7 +4,6 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.account.DeviceRegistrationDocument
-import io.github.CMPUT301F26stderr.campsbridge.data.booking.PaymentDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
@@ -145,6 +144,7 @@ object PersistenceFixtures {
                     "acceptedAt" to stamp,
                 ),
             "createdAt" to stamp,
+            "payment" to mapOf("amountCents" to 13000L, "paidAt" to stamp, "refundedAt" to null),
             "cancellation" to null,
         )
 
@@ -233,7 +233,7 @@ object PersistenceFixtures {
             DocumentFixture(
                 "lotteries/draw/offers/site",
                 LotteryOfferDocument,
-                mapOf("nights" to listOf("2027-05-15", "2027-05-17")),
+                mapOf("campsiteId" to "site", "nights" to listOf("2027-05-15", "2027-05-17")),
                 LotteryOffer("site", listOf(date, date.plusDays(2))),
             ),
             DocumentFixture(
@@ -257,17 +257,20 @@ object PersistenceFixtures {
                 "reservations/4:draw7:entrant",
                 ReservationDocument,
                 reservationFields +
-                    mapOf("cancellation" to cancellationFields + mapOf("initiatedAs" to "OWNER")),
+                    mapOf(
+                        "cancellation" to cancellationFields + mapOf("initiatedAs" to "OWNER"),
+                        "payment" to
+                            mapOf(
+                                "amountCents" to 13000L,
+                                "paidAt" to stamp,
+                                "refundedAt" to stamp,
+                            ),
+                    ),
                 CampingFixtures.reservation().copy(
                     id = "4:draw7:entrant",
                     cancellation = ReservationCancellation(now, "owner", Role.OWNER, "Unavailable"),
+                    payment = Payment(13000, now, now),
                 ),
-            ),
-            DocumentFixture(
-                "payments/4:draw7:entrant",
-                PaymentDocument,
-                mapOf("amountCents" to 13000L, "paidAt" to stamp, "refundedAt" to stamp),
-                Payment("4:draw7:entrant", 13000, now, now),
             ),
             DocumentFixture(
                 "images/campsite_site",

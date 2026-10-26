@@ -1,0 +1,40 @@
+name: CI failure feedback
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+  issues: write
+
+concurrency:
+  group: ci-feedback-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+env:
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
+
+jobs:
+  comment:
+    name: Explain failed PR checks
+    if: >-
+      contains(fromJSON('["pull_request", "workflow_dispatch"]'), github.event.workflow_run.event) &&
+      contains(fromJSON('["failure", "timed_out", "startup_failure"]'), github.event.workflow_run.conclusion)
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 5
+    steps:
+      # Only trusted default-branch code runs with the commenting token.
+      - name: Check out the feedback script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Explain the CI failure on the current PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: nix develop .#repository --no-update-lock-file --command python3 scripts/ci-feedback.py

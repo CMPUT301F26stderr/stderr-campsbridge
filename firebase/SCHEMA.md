@@ -12,6 +12,7 @@ This contract defines the Firestore documents, Storage objects, and coordinated 
 - Check-in is inclusive; check-out is exclusive. Classify stays in the recorded campsite timezone.
 - One win permits one reservation at one campsite for consecutive nights. Winners share offered inventory first-come. Different lotteries may offer the same nights. No replacement draws; cancelled reservations still consume their win.
 - Payments and full refunds are simulated. Campsite ownership is immutable. One image attachment per account/campsite initially.
+- Campsite and lottery draft IDs are allocated by the caller before creation and retained across retries. Creation returns the current stored record when the same owner already owns that ID, preserving saved edits and lifecycle metadata; it never overwrites another owner's record. Later edits use the update operation.
 
 Reusable nested records (notation only, not collections):
 
@@ -96,6 +97,7 @@ lotteries/{lotteryId}
   cancellation: Cancellation?
 
 lotteries/{lotteryId}/offers/{campsiteId}
+  campsiteId: CampsiteId                             # Collection-group query field; equals path ID
   nights: List<Date>                                 # Unique, sorted
 
 lotteries/{lotteryId}/entries/{accountId}
@@ -107,6 +109,7 @@ lotteries/{lotteryId}/entries/{accountId}
 
 - `winnerCount` is the maximum winners; select fewer if fewer entrants are eligible. `waitlistCapacity = null` is unlimited. `waitingCount` counts `WAITING` entries and is maintained by the lottery repository, initially zero.
 - Require `registrationOpensAt < registrationClosesAt <= bookingOpensAt < bookingClosesAt`.
+- `campsiteId` on each offer is an immutable query copy of its path ID, validated by codecs and writes. Campsite lookup joins those memberships with the owner-scoped published lottery query; no global lottery scan or copied publication state is needed.
 - Offers alone own lottery-to-campsite/night membership; no separate campsite-ID list. Every offered campsite belongs to the lottery owner. Publishing validates offered calendar nights. Retain allocations after the lottery ends.
 - Freeze allocations, windows, winner count, and capacity once registration begins. Descriptive edits remain allowed. Cancellation is explicit.
 - Entries transition `WAITING <-> WITHDRAWN` during registration, `WAITING -> LOST | OFFERED` at draw, and unused `OFFERED -> DECLINED` during booking. Rejoining refreshes `joinedAt`.
@@ -142,18 +145,18 @@ reservations/{reservationId}
     initiatedAs: ENTRANT | OWNER | ADMIN,
     reason: String?
   }?
-
-payments/{reservationId}
-  amountCents: Int
-  paidAt: Timestamp
-  refundedAt: Timestamp?
+  payment: {
+    amountCents: Int,
+    paidAt: Timestamp,
+    refundedAt: Timestamp?
+  }
 ```
 
 `reservationId = reservationKey(lotteryId, entrantId)`: use one collision-free, Firestore-safe encoding helper. The fields remain queryable relationships. Check document existence during booking; cancellation does not remove it. Every occupied night must belong to the lottery offer and be free in the calendar; guest count must fit the campsite.
 
 The campsite snapshot and accepted terms are historical facts, independent of later listing edits. Retain all referenced policy versions in application resources. Owner identity follows immutable campsite ownership. Night count, active/past labels, and cancellation status are derived.
 
-Payment owns the charged total. Initially charge current nightly price times nights; reject/reconfirm a stale displayed quote. `refundedAt` records a full refund; no separate amount or status is needed. Booking creates the payment; cancellation records the refund.
+The nested payment record owns the charged total and is a required part of each reservation; it has no separate ID or collection. A single reservation observation includes cancellation and refund facts together. Initially charge current nightly price times nights; reject/reconfirm a stale displayed quote. `refundedAt` records a full refund; no separate amount or status is needed. Booking creates the payment; cancellation records the refund.
 
 ## Images
 
@@ -237,9 +240,8 @@ These are implementation-owned records, not additional application entities:
 ```text
 lotteries/{lotteryId}._revision: Int                    # Absent means zero
 _draws/{lotteryId}: { seed: String }
-_notificationDeliveries/{notificationId}: {
-  recipientIds: List<AccountId>, waitForDraw: LotteryId?
-}
+lotteries/{lotteryId}/_notificationDeliveries/{notificationId}: { recipientIds: List<AccountId> }
+reservations/{reservationId}/_notificationDeliveries/{notificationId}: { recipientIds: List<AccountId> }
 _storageCleanup/{blobId}: { queuedAt: Timestamp, attachmentId: String }
 _imageUploads/{blobId}: {
   attachmentId: String, expiresAt: Timestamp,
@@ -249,6 +251,8 @@ _removals/{attachmentId}: Removal
 ```
 
 The lottery revision guards a queried offer set against concurrent edits during publication. A draw first creates its seed and conflicts with in-flight membership changes, then assigns deterministic outcomes in per-entry transactions. Each assignment decrements the waiting count and queues its result event; completion requires zero waiting entries. Retrying uses the same seed and never resets completed entry states. Cancellation checks the draw marker transactionally: if a draw already started, finish it before cancelling. Historical completed-draw notifications remain deliverable after cancellation.
+
+Notification jobs live under their lottery (results/announcements) or reservation (confirmations/cancellations/message alerts). The parent path owns scope; event type and lottery completion gate result delivery without a copied gate field. Scoped listeners discover every job, including generated announcement/message IDs. Only explicit administrative maintenance uses a collection-group scan. Ready foreground sessions observe permitted parent records, perform due owner draws and resume these queues; background/account changes cancel observation and processing. There is no closed-app scheduler or OS/FCM transport in this layer.
 
 Notification jobs own a captured recipient set until receipts are created; retries preserve existing read timestamps. Event creation and its job are atomic with the originating write. Delivery jobs are deleted only after fan-out completes. Image replacement/removal queues obsolete blob cleanup with the attachment change. Upload intent is persisted before bytes are sent, with a 15-minute expiry and a 10-minute transfer timeout. Publication reads/deletes that intent in its transaction; cleanup claims expired intents as abandoned so publication cannot race deletion. If an interrupted uploader never acknowledged completion and no object exists, retain its abandoned intent to catch a late upload. An upload followed by ambiguous publication failure reports `ImagePublicationException` with the blob ID for reconciliation; never delete a possibly published blob blindly. Removal jobs are deleted only after dependent cleanup completes.
 

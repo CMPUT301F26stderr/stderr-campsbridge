@@ -1,0 +1,27 @@
+<resources>
+    <string name="decrease_count">Decrease %1$s</string>
+    <string name="increase_count">Increase %1$s</string>
+    <string name="skip_for_now">Skip for now</string>
+    <string name="edit">Edit</string>
+    <string name="campsite">Campsite</string>
+    <string name="dates">Dates</string>
+    <string name="stay">Stay</string>
+    <string name="guests">Guests</string>
+    <string name="total">Total</string>
+    <string name="stay_dates">%1$s to %2$s</string>
+    <string name="choose_value">Choose</string>
+    <string name="arrival_date">Arrival: %1$s</string>
+    <string name="checkout_date">Checkout: %1$s</string>
+    <string name="choose_time">Choose time</string>
+    <string name="use_keyboard">Use keyboard</string>
+    <string name="use_clock">Use clock</string>
+    <string name="per_night">%1$s / night</string>
+    <string name="up_to_guests">Up to %1$d guests</string>
+    <string name="search_campsites">Search campsites</string>
+    <string name="filters">Filters</string>
+    <string name="list_view">List</string>
+    <string name="map_view">Map</string>
+    <string name="photo_missing">No photo available</string>
+    <plurals name="nights"><item quantity="one">%d night</item><item quantity="other">%d nights</item></plurals>
+    <plurals name="guests"><item quantity="one">%d guest</item><item quantity="other">%d guests</item></plurals>
+</resources>

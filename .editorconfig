@@ -28,6 +28,6 @@ ktlint_function_naming_ignore_when_annotated_with = Composable
 # Preserve the existing application namespace; renaming it is not formatting.
 ktlint_standard_package-name = disabled
 
-[**/{AppNavigation,Integrations,Components,Controllers}.kt]
+[**/Integrations.kt]
 # These files intentionally contain integration TODOs until their features are assigned.
 ktlint_standard_no-empty-file = disabled

@@ -3,8 +3,8 @@ package io.github.CMPUT301F26stderr.campsbridge.data.moderation
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument
-import io.github.CMPUT301F26stderr.campsbridge.data.booking.FirestoreBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.booking.cancelReservationInTransaction
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.Fields
@@ -359,7 +359,7 @@ class FirestoreModerationRepository(
                         site.ownerId -> Role.OWNER
                         else -> Role.ADMIN
                     }
-                FirestoreBookingRepository.cancelInTransaction(
+                cancelReservationInTransaction(
                     db,
                     tx,
                     reservation,

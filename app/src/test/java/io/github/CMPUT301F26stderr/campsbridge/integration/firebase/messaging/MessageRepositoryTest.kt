@@ -82,7 +82,7 @@ class MessageRepositoryTest {
                 val job =
                     admin.clients.firestore
                         .document(
-                            "_notificationDeliveries/$eventId",
+                            "reservations/$reservationId/_notificationDeliveries/$eventId",
                         ).get()
                         .await()
                 assertEquals("NEW_MESSAGE", event.getString("type"))
@@ -145,7 +145,11 @@ class MessageRepositoryTest {
             assertPersistenceFailure(INACTIVE) {
                 entrant.container.messages.send(reservationId, entrant.id, "No recipient")
             }
-            for (collection in listOf("messages", "notifications", "_notificationDeliveries")) {
+            for (collection in listOf(
+                "messages",
+                "notifications",
+                "reservations/$reservationId/_notificationDeliveries",
+            )) {
                 assertTrue(
                     admin.clients.firestore
                         .collection(collection)

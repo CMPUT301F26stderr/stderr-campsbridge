@@ -24,6 +24,8 @@ import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -37,6 +39,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /** Owns Storage bytes, publication and deferred deletion, independently of removal cascades. */
 @RunWith(RobolectricTestRunner::class)
@@ -44,6 +47,34 @@ import java.util.concurrent.atomic.AtomicBoolean
 @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
 class ImageRepositoryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
+
+    /** Stream access stays off the caller thread, including a UI caller's dispatcher. */
+    @Test(timeout = 60000)
+    fun uploadOpensAndClosesContentOffCallerThread() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.ENTRANT)
+            val target = ImageTarget(ImageTargetType.ACCOUNT, owner.id)
+            val caller = Thread.currentThread()
+            val openedOn = AtomicReference<Thread>()
+            val closedOn = AtomicReference<Thread>()
+            val upload =
+                ImageUpload("image/png") {
+                    openedOn.set(Thread.currentThread())
+                    object : ByteArrayInputStream("selected-photo".toByteArray()) {
+                        /** Records the thread responsible for releasing selected content. */
+                        override fun close() {
+                            closedOn.set(Thread.currentThread())
+                            super.close()
+                        }
+                    }
+                }
+            val result = owner.container.images.replace(target, upload)
+            assertNotNull(result.attachment)
+            assertNotNull(openedOn.get())
+            assertNotNull(closedOn.get())
+            assertNotSame(caller, openedOn.get())
+            assertNotSame(caller, closedOn.get())
+        }
 
     /** Replacing an attachment closes the stream and preserves new bytes during old-blob cleanup. */
     @Test(timeout = 60000)
@@ -82,7 +113,7 @@ class ImageRepositoryTest {
                     .downloadUrl(current.blobId)
                     .contains("127.0.0.1:9199"),
             )
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists(old.blobId))
             assertTrue(blobExists(current.blobId))
             assertFalse(firebase.documentExists("_storageCleanup/${old.blobId}"))
@@ -107,8 +138,8 @@ class ImageRepositoryTest {
             assertEquals(attachment.blobId, result.obsoleteBlobId)
             assertNull(owner.container.images.get(target))
             assertTrue(blobExists(attachment.blobId))
-            admin.container.resumePendingWork()
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists(attachment.blobId))
             assertNull(
                 owner.container.images
@@ -148,7 +179,7 @@ class ImageRepositoryTest {
                 contentType = "image/png",
             )
             assertTrue(blobExists("late"))
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists("late"))
             assertFalse(firebase.documentExists("_imageUploads/late"))
             assertTrue(blobExists(attached.blobId))
@@ -194,7 +225,7 @@ class ImageRepositoryTest {
             assertTrue(blobExists(failure.uploadedBlobId))
             assertTrue(firebase.documentExists("_imageUploads/${failure.uploadedBlobId}"))
             intent(failure.uploadedBlobId, target, expired = true, finished = true)
-            admin.container.resumePendingWork()
+            admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists(failure.uploadedBlobId))
             assertTrue(blobExists(old.blobId))
         }

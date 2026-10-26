@@ -52,6 +52,18 @@
       includeCmake = false;
     };
 
+    # Separate runtime SDK keeps emulator images out of ordinary builds.
+    androidUi = pkgs.androidenv.composeAndroidPackages {
+      platformVersions = ["35"];
+      buildToolsVersions = ["36.0.0"];
+      includeEmulator = true;
+      includeSystemImages = true;
+      systemImageTypes = ["google_apis"];
+      abiVersions = ["x86_64"];
+      includeNDK = false;
+      includeCmake = false;
+    };
+
     sdk = "${android.androidsdk}/libexec/android-sdk";
 
     # Match the formatter version and checksum in .pre-commit-config.yaml.
@@ -68,7 +80,7 @@
       '';
     };
   in {
-    devShells.${system} = {
+    devShells.${system} = rec {
       default = pkgs.mkShell {
         packages = [
           pkgs.jdk25
@@ -105,9 +117,22 @@
         '';
       };
 
+      # Build with the normal SDK; boot a pinned API 35 device separately.
+      ui = pkgs.mkShell {
+        inputsFrom = [default];
+        packages = [androidUi.androidsdk];
+        ANDROID_HOME = sdk;
+        ANDROID_UI_HOME = "${androidUi.androidsdk}/libexec/android-sdk";
+        JAVA_HOME = pkgs.jdk25.home;
+        GRADLE_OPTS =
+          "-Dorg.gradle.project.android.aapt2FromMavenOverride="
+          + "${sdk}/build-tools/37.0.0/aapt2";
+      };
+
       # Hook checks need Python, Go, and Java, but not the Android SDK.
       hooks = pkgs.mkShell {
         packages = [
+          pkgs.gh
           pkgs.bash
           pkgs.git
           pkgs.gnutar
@@ -126,6 +151,7 @@
       # Repository validation does not need the Android SDK or app toolchain.
       repository = pkgs.mkShell {
         packages = [
+          pkgs.python3
           pkgs.bash
           pkgs.git
           pkgs.gh

@@ -2,7 +2,7 @@ import { after, before, beforeEach, test } from 'node:test';
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, Timestamp, GeoPoint } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, collectionGroup, query, where, setDoc, updateDoc, deleteDoc, writeBatch, Timestamp, GeoPoint } from 'firebase/firestore';
 import { ref, uploadBytes, getBytes, deleteObject, updateMetadata } from 'firebase/storage';
 
 // Test the deployed Rules language, not Kotlin mocks. Every actor is an authenticated UID.
@@ -37,7 +37,7 @@ const reservation = () => ({ lotteryId: 'book', entrantId: 'entrant', campsiteId
   checkInDate: '2027-05-15', checkOutDate: '2027-05-17', guestCount: 4,
   bookedCampsite: { name: 'Camp', locationLabel: 'Jasper', location: new GeoPoint(53, -118), timeZone: 'America/Edmonton' },
   acceptedTerms: { rules: 'Be kind', cancellationPolicyVersion: 'full-refund-v1', acceptedAt: now() },
-  createdAt: now(), cancellation: null });
+  createdAt: now(), cancellation: null, payment: { amountCents: 13000, paidAt: now(), refundedAt: null } });
 
 async function seed(records) {
   await env.withSecurityRulesDisabled(async ctx => {
@@ -46,17 +46,17 @@ async function seed(records) {
     await batch.commit();
   });
 }
-function event(batch, database, type, subjectType, subjectId, recipients, senderId = null, announcement = null) {
+function event(batch, database, type, subjectType, subjectId, recipients, senderId = null, announcement = null, reservationScope = null) {
   const id = pair(type, subjectId, ...(subjectType === 'LOTTERY' && type !== 'OWNER_ANNOUNCEMENT' ? recipients : []));
   batch.set(doc(database, `notifications/${id}`), { senderId, type, subject: { type: subjectType, id: subjectId }, announcement, createdAt: now() });
-  batch.set(doc(database, `_notificationDeliveries/${id}`), { recipientIds: recipients, waitForDraw: type.startsWith('LOTTERY_') ? subjectId : null });
+  const parent = subjectType === 'LOTTERY' ? `lotteries/${subjectId}` : `reservations/${reservationScope ?? subjectId}`;
+  batch.set(doc(database, `${parent}/_notificationDeliveries/${id}`), { recipientIds: recipients });
   return id;
 }
 function booking(uid = 'entrant', amount = 13000) {
   const database = db(uid);
   const batch = writeBatch(database);
-  batch.set(doc(database, `reservations/${reservationId}`), reservation());
-  batch.set(doc(database, `payments/${reservationId}`), { amountCents: amount, paidAt: now(), refundedAt: null });
+  batch.set(doc(database, `reservations/${reservationId}`), { ...reservation(), payment: { amountCents: amount, paidAt: now(), refundedAt: null } });
   for (const night of ['2027-05-15', '2027-05-16']) batch.update(doc(database, `campsites/site/calendar/${night}`), { reservationId });
   event(batch, database, 'RESERVATION_CONFIRMED', 'RESERVATION', reservationId, ['entrant']);
   return batch.commit();
@@ -80,7 +80,7 @@ beforeEach(async () => {
     'accounts/admin': account(['ADMIN']), 'campsites/site': campsite(),
     'campsites/draft': campsite('owner', false), 'lotteries/open': lottery('open'),
     'lotteries/draw': { ...lottery('draw'), waitingCount: 1 }, 'lotteries/book': lottery('book'),
-    'lotteries/book/offers/site': { nights: ['2027-05-15', '2027-05-16'] },
+    'lotteries/book/offers/site': { campsiteId: 'site', nights: ['2027-05-15', '2027-05-16'] },
     'lotteries/book/entries/entrant': entry('entrant', 'OFFERED'),
     'lotteries/draw/entries/entrant': entry('entrant', 'WAITING'),
     'campsites/site/calendar/2027-05-15': { isOffered: true, reservationId: null },
@@ -132,7 +132,7 @@ test('lottery owner configuration is frozen after registration opens', async () 
   await assertSucceeds(updateDoc(doc(db('owner'), 'lotteries/open'), { title: 'Updated', _revision: 1 }));
   await assertFails(updateDoc(doc(db('owner'), 'lotteries/open'), { winnerCount: 20 }));
   await assertFails(updateDoc(doc(db('owner2'), 'lotteries/open'), { title: 'Changed' }));
-  await assertFails(setDoc(doc(db('owner'), 'lotteries/open/offers/site'), { nights: ['2027-05-15'] }));
+  await assertFails(setDoc(doc(db('owner'), 'lotteries/open/offers/site'), { campsiteId: 'site', nights: ['2027-05-15'] }));
 });
 test('join requires own entry plus atomic count; a full waitlist rejects another join', async () => {
   const database = db('entrant');
@@ -172,7 +172,7 @@ test('coordinated winning booking succeeds; outsider booking, duplicate booking 
   await assertFails(booking('entrant', 1));
   await assertSucceeds(booking());
   await assertFails(booking());
-  await assertFails(updateDoc(doc(db('entrant'), `payments/${reservationId}`), { amountCents: 1 }));
+  await assertFails(updateDoc(doc(db('entrant'), `reservations/${reservationId}`), { 'payment.amountCents': 1 }));
   await assertFails(getDoc(doc(db('other'), `reservations/${reservationId}`)));
   await assertSucceeds(getDoc(doc(db('owner'), `reservations/${reservationId}`)));
 });
@@ -182,8 +182,7 @@ test('cancellation requires matching refund, releases nights and retains booking
   await assertFails(updateDoc(doc(db('entrant'), `reservations/${reservationId}`), { cancellation }));
   const database = db('entrant');
   const b = writeBatch(database);
-  b.update(doc(database, `reservations/${reservationId}`), { cancellation });
-  b.update(doc(database, `payments/${reservationId}`), { refundedAt: now() });
+  b.update(doc(database, `reservations/${reservationId}`), { cancellation, 'payment.refundedAt': now() });
   for (const night of ['2027-05-15', '2027-05-16']) b.update(doc(database, `campsites/site/calendar/${night}`), { reservationId: null });
   event(b, database, 'RESERVATION_CANCELLED', 'RESERVATION', reservationId, ['entrant']);
   await assertSucceeds(b.commit());
@@ -267,7 +266,6 @@ test('booking cannot grant an unrelated account a confirmation receipt', async (
   const database = db('entrant');
   const b = writeBatch(database);
   b.set(doc(database, `reservations/${reservationId}`), reservation());
-  b.set(doc(database, `payments/${reservationId}`), { amountCents: 13000, paidAt: now(), refundedAt: null });
   b.update(doc(database, 'campsites/site/calendar/2027-05-15'), { reservationId });
   b.update(doc(database, 'campsites/site/calendar/2027-05-16'), { reservationId });
   event(b, database, 'RESERVATION_CONFIRMED', 'RESERVATION', reservationId, ['other']);
@@ -278,8 +276,7 @@ test('cancellation actor and role cannot be spoofed; an owner rejection succeeds
   const database = db('owner');
   function reject(actorId, initiatedAs) {
     const b = writeBatch(database);
-    b.update(doc(database, `reservations/${reservationId}`), { cancellation: { at: now(), actorId, initiatedAs, reason: 'Closed' } });
-    b.update(doc(database, `payments/${reservationId}`), { refundedAt: now() });
+    b.update(doc(database, `reservations/${reservationId}`), { cancellation: { at: now(), actorId, initiatedAs, reason: 'Closed' }, 'payment.refundedAt': now() });
     return b.commit();
   }
   await assertFails(reject('entrant', 'ENTRANT'));
@@ -336,9 +333,9 @@ test('published-site image upload works with two cross-service document reads', 
 test('offer mutation needs owner scope and the matching revision update', async () => {
   await seed({ 'lotteries/future': { ...lottery('open'), registrationOpensAt: offset(1800), registrationClosesAt: offset(3600) } });
   const database = db('owner');
-  await assertFails(setDoc(doc(database, 'lotteries/future/offers/site'), { nights: ['2027-05-15'] }));
+  await assertFails(setDoc(doc(database, 'lotteries/future/offers/site'), { campsiteId: 'site', nights: ['2027-05-15'] }));
   const b = writeBatch(database);
-  b.set(doc(database, 'lotteries/future/offers/site'), { nights: ['2027-05-15'] });
+  b.set(doc(database, 'lotteries/future/offers/site'), { campsiteId: 'site', nights: ['2027-05-15'] });
   b.update(doc(database, 'lotteries/future'), { _revision: 1 });
   await assertSucceeds(b.commit());
 });
@@ -363,4 +360,53 @@ test('draft campsite images remain private in both metadata and Storage', async 
   await assertSucceeds(getBytes(object));
   await assertSucceeds(getBytes(ref(store('admin'), `images/${blob}/original`)));
   await assertSucceeds(deleteObject(object));
+});
+
+
+test('campsite-scoped offer query and owner-scoped published lottery query work for entrants', async () => {
+  await seed({
+    'lotteries/draft-lottery': { ...lottery('open'), publishedAt: null },
+    'lotteries/draft-lottery/offers/site': { campsiteId: 'site', nights: ['2027-05-15'] },
+    'lotteries/draft-lottery/offers/draft': { campsiteId: 'draft', nights: ['2027-05-15'] },
+  });
+  const database = db('entrant');
+  const offers = await assertSucceeds(getDocs(query(collectionGroup(database, 'offers'), where('campsiteId', '==', 'site'))));
+  assert.equal(offers.docs.length, 2);
+  const published = await assertSucceeds(getDocs(query(collection(database, 'lotteries'), where('ownerId', '==', 'owner'), where('publishedAt', '!=', null))));
+  assert.deepEqual(new Set(published.docs.map(d => d.id)), new Set(['open', 'draw', 'book']));
+  await assertFails(getDocs(collectionGroup(database, 'offers')));
+  const invalid = writeBatch(db('owner'));
+  invalid.set(doc(db('owner'), 'lotteries/draft-lottery/offers/site'), { campsiteId: 'draft', nights: ['2027-05-15'] });
+  invalid.update(doc(db('owner'), 'lotteries/draft-lottery'), { _revision: 1 });
+  await assertFails(invalid.commit());
+});
+
+test('delivery queues are discoverable through permitted parents and globally only by admin', async () => {
+  await seed({
+    [`reservations/${reservationId}`]: reservation(),
+    'lotteries/open/_notificationDeliveries/announcement': { recipientIds: ['entrant'] },
+    [`reservations/${reservationId}/_notificationDeliveries/message`]: { recipientIds: ['owner'] },
+  });
+  await assertSucceeds(getDocs(collection(db('owner'), 'lotteries/open/_notificationDeliveries')));
+  await assertFails(getDocs(collection(db('entrant'), 'lotteries/open/_notificationDeliveries')));
+  for (const uid of ['owner', 'entrant']) {
+    await assertSucceeds(getDocs(collection(db(uid), `reservations/${reservationId}/_notificationDeliveries`)));
+  }
+  await assertFails(getDocs(collection(db('other'), `reservations/${reservationId}/_notificationDeliveries`)));
+  await assertSucceeds(getDocs(collectionGroup(db('admin'), '_notificationDeliveries')));
+  await assertFails(getDocs(collectionGroup(db('owner'), '_notificationDeliveries')));
+  await assertFails(getDocs(collection(db('owner'), '_notificationDeliveries')));
+});
+
+test('message event and delivery job share the reservation context', async () => {
+  await seed({ [`reservations/${reservationId}`]: reservation() });
+  const database = db('entrant');
+  const valid = writeBatch(database);
+  valid.set(doc(database, 'messages/m'), { reservationId, senderId: 'entrant', body: 'Hello', createdAt: now(), readAt: null });
+  event(valid, database, 'NEW_MESSAGE', 'MESSAGE', 'm', ['owner'], 'entrant', null, reservationId);
+  await assertSucceeds(valid.commit());
+  const invalid = writeBatch(database);
+  invalid.set(doc(database, 'messages/wrong'), { reservationId, senderId: 'entrant', body: 'Hello', createdAt: now(), readAt: null });
+  event(invalid, database, 'NEW_MESSAGE', 'MESSAGE', 'wrong', ['owner'], 'entrant', null, 'elsewhere');
+  await assertFails(invalid.commit());
 });

@@ -70,6 +70,7 @@ data class ReservationCancellation(
  * @param bookedCampsite Historical campsite display/location snapshot.
  * @param acceptedTerms Historical rules and policy acknowledgement.
  * @param createdAt Original record creation time.
+ * @param payment Simulated charge and full-refund facts owned by this reservation.
  * @param cancellation Cancellation metadata, or null while not cancelled.
  */
 data class Reservation(
@@ -83,6 +84,7 @@ data class Reservation(
     val bookedCampsite: BookedCampsite,
     val acceptedTerms: AcceptedTerms,
     val createdAt: Instant,
+    val payment: Payment,
     val cancellation: ReservationCancellation? = null,
 ) {
     init {
@@ -97,13 +99,11 @@ data class Reservation(
 /**
  * Simulated charge and optional full-refund timestamp for a reservation.
  *
- * @param reservationId Reservation document ID.
  * @param amountCents Nonnegative total simulated CAD charge in integer cents.
  * @param paidAt Time the simulated charge was recorded.
  * @param refundedAt Full-refund time, or null if not refunded.
  */
 data class Payment(
-    val reservationId: String,
     val amountCents: Long,
     val paidAt: Instant,
     val refundedAt: Instant? = null,

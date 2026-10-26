@@ -70,10 +70,10 @@ class LotteryDrawTest {
                 val job =
                     fixture.owner.clients.firestore
                         .document(
-                            "_notificationDeliveries/$eventId",
+                            "lotteries/draw/_notificationDeliveries/$eventId",
                         ).get(Source.SERVER)
                         .await()
-                assertEquals("draw", job.getString("waitForDraw"))
+                assertEquals(setOf("recipientIds"), job.data!!.keys)
                 assertEquals(listOf(entry.accountId), job.get("recipientIds"))
             }
             firebase.clock.current = firebase.clock.current.plusSeconds(60)
@@ -144,7 +144,7 @@ class LotteryDrawTest {
                 val type = if (entry.state == EntryState.OFFERED) "LOTTERY_WON" else "LOTTERY_LOST"
                 val eventId = DocumentKeys.compound(type, "draw", entry.accountId)
                 firebase.erase("notifications/$eventId")
-                firebase.erase("_notificationDeliveries/$eventId")
+                firebase.erase("lotteries/draw/_notificationDeliveries/$eventId")
             }
             firebase.seed(
                 "lotteries/draw",

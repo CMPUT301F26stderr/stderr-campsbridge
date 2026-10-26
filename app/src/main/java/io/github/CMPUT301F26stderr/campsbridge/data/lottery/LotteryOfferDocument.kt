@@ -16,13 +16,15 @@ object LotteryOfferDocument : DocumentCodec<LotteryOffer>() {
      * @param value Application value to serialize.
      */
     override fun encode(value: LotteryOffer): Map<String, Any?> =
-        mapOf("nights" to value.nights.map { it.toString() })
+        mapOf("campsiteId" to value.campsiteId, "nights" to value.nights.map { it.toString() })
 
     /**
      * Reads and validates stored fields, recovering model identity from the document path.
      *
      * @param fields Strict field reader with the document’s path context.
      */
-    override fun read(fields: Fields): LotteryOffer =
-        LotteryOffer(fields.id, fields.strings("nights").map(::parseDate))
+    override fun read(fields: Fields): LotteryOffer {
+        require(fields.id == fields.string("campsiteId"))
+        return LotteryOffer(fields.id, fields.strings("nights").map(::parseDate))
+    }
 }

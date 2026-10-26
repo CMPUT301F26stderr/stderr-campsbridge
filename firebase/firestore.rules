@@ -61,6 +61,32 @@ service cloud.firestore {
           /databases/$(database)/documents/messages/$(e.subject.id)).data.reservationId)).data));
     }
 
+
+    function deliveryPath(e, eventId) {
+      return e.subject.type == 'LOTTERY'
+        ? /databases/$(database)/documents/lotteries/$(e.subject.id)/_notificationDeliveries/$(eventId)
+        : e.subject.type == 'RESERVATION'
+          ? /databases/$(database)/documents/reservations/$(e.subject.id)/_notificationDeliveries/$(eventId)
+          : /databases/$(database)/documents/reservations/$(get(/databases/$(database)/documents/messages/$(e.subject.id)).data.reservationId)/_notificationDeliveries/$(eventId);
+    }
+    function deliveryEvent(eventId) { return getAfter(/databases/$(database)/documents/notifications/$(eventId)).data; }
+    function messageRecipient(event, recipients) {
+      let message = getAfter(/databases/$(database)/documents/messages/$(event.subject.id)).data;
+      let r = get(/databases/$(database)/documents/reservations/$(message.reservationId)).data;
+      return recipients == [message.senderId == r.entrantId ? site(r.campsiteId).ownerId : r.entrantId];
+    }
+    function validDelivery(eventId) {
+      let event = deliveryEvent(eventId);
+      let recipients = request.resource.data.recipientIds;
+      return signed() && request.resource.data.keys().hasOnly(['recipientIds']) && recipients is list
+        && !exists(/databases/$(database)/documents/notifications/$(eventId)) && event.createdAt is timestamp
+        && ((event.type in ['LOTTERY_WON', 'LOTTERY_LOST'] && recipients.size() == 1)
+          || event.type == 'OWNER_ANNOUNCEMENT'
+          || (event.subject.type == 'RESERVATION'
+            && recipients == [getAfter(/databases/$(database)/documents/reservations/$(event.subject.id)).data.entrantId])
+          || (event.subject.type == 'MESSAGE' && messageRecipient(event, recipients)));
+    }
+
     match /accounts/{id} {
       allow read: if signed();
       allow create: if signed() && id == request.auth.uid && request.resource.data.roles == ['ENTRANT']
@@ -89,13 +115,11 @@ service cloud.firestore {
       }
       match /inbox/{eventId} {
         function e() { return get(/databases/$(database)/documents/notifications/$(eventId)).data; }
-        function job() { return get(/databases/$(database)/documents/_notificationDeliveries/$(eventId)).data; }
+        function job() { return get(deliveryPath(e(), eventId)).data; }
         allow read: if signed() && (id == request.auth.uid || admin() || (id in job().recipientIds && processEvent(e())));
         allow create: if signed() && request.resource.data == {'readAt': null}
           && id in job().recipientIds && processEvent(e())
-          && (job().waitForDraw == null || lottery(job().waitForDraw).drawnAt != null)
-          && (e().type != 'OWNER_ANNOUNCEMENT'
-            || get(/databases/$(database)/documents/lotteries/$(e().subject.id)/entries/$(id)).data.state != 'WITHDRAWN');
+          && (!(e().type in ['LOTTERY_WON', 'LOTTERY_LOST']) || lottery(e().subject.id).drawnAt != null);
         allow update: if active() && id == request.auth.uid && changes(['readAt'])
           && resource.data.readAt == null && request.resource.data.readAt is timestamp;
       }
@@ -217,7 +241,8 @@ service cloud.firestore {
           && (lottery(id).publishedAt == null || request.time < lottery(id).registrationOpensAt)
           && site(campsite).ownerId == request.auth.uid && site(campsite).removal == null
           && getAfter(/databases/$(database)/documents/lotteries/$(id)).data.get('_revision', 0) == lottery(id).get('_revision', 0) + 1
-          && request.resource.data.keys().hasOnly(['nights']) && request.resource.data.nights is list && request.resource.data.nights.size() > 0;
+          && request.resource.data.keys().hasOnly(['campsiteId', 'nights']) && request.resource.data.campsiteId == campsite
+          && request.resource.data.nights is list && request.resource.data.nights.size() > 0;
         allow delete: if ownsLottery(id) && lottery(id).cancellation == null
           && (lottery(id).publishedAt == null || request.time < lottery(id).registrationOpensAt)
           && getAfter(/databases/$(database)/documents/lotteries/$(id)).data.get('_revision', 0) == lottery(id).get('_revision', 0) + 1;
@@ -245,7 +270,10 @@ service cloud.firestore {
       }
     }
     match /{parent=**}/entries/{entry} { allow read: if signed() && (resource.data.accountId == request.auth.uid || admin()); }
-    match /{parent=**}/offers/{offer} { allow read: if admin(); }
+    match /{parent=**}/offers/{offer} {
+      allow read: if admin() || (signed() && site(resource.data.campsiteId).publishedAt != null
+        && site(resource.data.campsiteId).removal == null);
+    }
 
     match /reservations/{id} {
       function cancellationActor(r, c) {
@@ -268,28 +296,21 @@ service cloud.firestore {
           && r.bookedCampsite == {'name': s.name, 'locationLabel': s.locationLabel, 'location': s.location, 'timeZone': s.timeZone}
           && r.acceptedTerms.rules == s.rules && r.acceptedTerms.cancellationPolicyVersion == 'full-refund-v1'
           && getAfter(/databases/$(database)/documents/campsites/$(r.campsiteId)/calendar/$(r.checkInDate)).data.reservationId == id
-          && getAfter(/databases/$(database)/documents/payments/$(id)).data.refundedAt == null;
+          && r.payment is map && r.payment.keys().hasOnly(['amountCents', 'paidAt', 'refundedAt'])
+          && r.payment.amountCents is int && r.payment.amountCents >= 0 && r.payment.paidAt is timestamp
+          && r.payment.amountCents == s.nightlyPriceCents * (day(r.checkOutDate) - day(r.checkInDate)).seconds() / 86400
+          && r.payment.refundedAt == null;
       }
       allow get: if signed() && (resource == null || participant(resource.data) || admin());
       allow list: if participant(resource.data) || admin();
       allow create: if booking(request.resource.data);
-      allow update: if canCancel(resource.data) && resource.data.cancellation == null && changes(['cancellation'])
+      allow update: if canCancel(resource.data) && resource.data.cancellation == null && changes(['cancellation', 'payment'])
         && request.resource.data.cancellation is map && request.resource.data.cancellation.at is timestamp
         && request.resource.data.cancellation.initiatedAs in ['ENTRANT', 'OWNER', 'ADMIN']
         && cancellationActor(resource.data, request.resource.data.cancellation)
-        && getAfter(/databases/$(database)/documents/payments/$(id)).data.refundedAt != null;
-    }
-    match /payments/{id} {
-      allow get: if signed() && (resource == null || participant(get(/databases/$(database)/documents/reservations/$(id)).data) || admin());
-      allow list: if admin();
-      allow create: if role('ENTRANT') && !exists(/databases/$(database)/documents/reservations/$(id))
-        && getAfter(/databases/$(database)/documents/reservations/$(id)).data.entrantId == request.auth.uid
-        && request.resource.data.refundedAt == null && request.resource.data.amountCents is int
-        && request.resource.data.amountCents == site(getAfter(/databases/$(database)/documents/reservations/$(id)).data.campsiteId).nightlyPriceCents
-          * (day(getAfter(/databases/$(database)/documents/reservations/$(id)).data.checkOutDate) - day(getAfter(/databases/$(database)/documents/reservations/$(id)).data.checkInDate)).seconds() / 86400;
-      allow update: if canCancel(get(/databases/$(database)/documents/reservations/$(id)).data)
-        && resource.data.refundedAt == null && changes(['refundedAt']) && request.resource.data.refundedAt is timestamp
-        && getAfter(/databases/$(database)/documents/reservations/$(id)).data.cancellation != null;
+        && resource.data.payment.refundedAt == null
+        && request.resource.data.payment.diff(resource.data.payment).affectedKeys().hasOnly(['refundedAt'])
+        && request.resource.data.payment.refundedAt is timestamp;
     }
     match /messages/{id} {
       function r() { return get(/databases/$(database)/documents/reservations/$(resource.data.reservationId)).data; }
@@ -303,7 +324,9 @@ service cloud.firestore {
     }
     match /notifications/{id} {
       function validEvent(e) {
-        let job = getAfter(/databases/$(database)/documents/_notificationDeliveries/$(id)).data;
+        let job = e.subject.type == 'LOTTERY'
+          ? getAfter(/databases/$(database)/documents/lotteries/$(e.subject.id)/_notificationDeliveries/$(id)).data
+          : null;
         return e.keys().hasOnly(['senderId', 'type', 'subject', 'announcement', 'createdAt']) && (
           (e.type == 'OWNER_ANNOUNCEMENT' && e.senderId == request.auth.uid && e.subject.type == 'LOTTERY' && ownsLottery(e.subject.id) && e.announcement is map)
           || (e.type in ['LOTTERY_WON', 'LOTTERY_LOST'] && e.senderId == null && e.subject.type == 'LOTTERY' && canDraw(e.subject.id)
@@ -323,29 +346,22 @@ service cloud.firestore {
       allow create: if signed() && validEvent(request.resource.data);
       allow update: if request.resource.data == resource.data && processEvent(resource.data);
     }
-    match /_notificationDeliveries/{id} {
-      function e() { return get(/databases/$(database)/documents/notifications/$(id)).data; }
-      function recipientsMatch() {
-        let event = getAfter(/databases/$(database)/documents/notifications/$(id)).data;
-        return (event.type in ['LOTTERY_WON', 'LOTTERY_LOST'] && request.resource.data.recipientIds.size() == 1
-            && request.resource.data.waitForDraw == event.subject.id)
-          || (event.type == 'OWNER_ANNOUNCEMENT' && request.resource.data.waitForDraw == null)
-          || (event.subject.type == 'RESERVATION' && request.resource.data.waitForDraw == null
-            && request.resource.data.recipientIds == [getAfter(/databases/$(database)/documents/reservations/$(event.subject.id)).data.entrantId])
-          || (event.subject.type == 'MESSAGE' && request.resource.data.waitForDraw == null
-            && messageRecipient(event));
-      }
-      function messageRecipient(event) {
-        let message = getAfter(/databases/$(database)/documents/messages/$(event.subject.id)).data;
-        let r = get(/databases/$(database)/documents/reservations/$(message.reservationId)).data;
-        return request.resource.data.recipientIds == [message.senderId == r.entrantId ? site(r.campsiteId).ownerId : r.entrantId];
-      }
-      allow read: if processEvent(e());
-      allow create: if signed() && request.resource.data.keys().hasOnly(['recipientIds', 'waitForDraw'])
-        && request.resource.data.recipientIds is list && !exists(/databases/$(database)/documents/notifications/$(id))
-        && getAfter(/databases/$(database)/documents/notifications/$(id)).data.createdAt is timestamp && recipientsMatch();
-      allow delete: if processEvent(e());
+    match /lotteries/{lotteryId}/_notificationDeliveries/{id} {
+      allow read, delete: if drawOperator(lotteryId) || removalActor(lottery(lotteryId).ownerId);
+      allow create: if validDelivery(id) && deliveryEvent(id).subject.type == 'LOTTERY'
+        && deliveryEvent(id).subject.id == lotteryId;
     }
+    match /reservations/{reservationId}/_notificationDeliveries/{id} {
+      function r() { return get(/databases/$(database)/documents/reservations/$(reservationId)).data; }
+      function scopeMatches(event) {
+        return (event.subject.type == 'RESERVATION' && event.subject.id == reservationId)
+          || (event.subject.type == 'MESSAGE'
+            && getAfter(/databases/$(database)/documents/messages/$(event.subject.id)).data.reservationId == reservationId);
+      }
+      allow read, delete: if canCancel(r());
+      allow create: if validDelivery(id) && scopeMatches(deliveryEvent(id));
+    }
+    match /{parent=**}/_notificationDeliveries/{id} { allow read: if admin(); }
     match /_draws/{id} {
       allow read: if drawOperator(id) || removalActor(lottery(id).ownerId);
       allow create: if canDraw(id) && request.resource.data.keys().hasOnly(['seed']) && request.resource.data.seed is string;

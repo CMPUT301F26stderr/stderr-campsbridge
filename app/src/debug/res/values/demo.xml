@@ -1,0 +1,12 @@
+<resources>
+    <string name="demo_offline">Offline demo</string>
+    <string name="demo_tools">Demo tools</string>
+    <string name="demo_reset">Reset scenario</string>
+    <string name="demo_entrant">Existing entrant</string>
+    <string name="demo_owner">Existing owner</string>
+    <string name="demo_new_account">New account</string>
+    <string name="demo_previews">Onboarding previews</string>
+    <string name="demo_preview_explanation">Inspect sample screen states. These previews do not save or advance.</string>
+    <string name="demo_gallery">Component gallery</string>
+    <string name="demo_welcome">Welcome</string>
+</resources>
