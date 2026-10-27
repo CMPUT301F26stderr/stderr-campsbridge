@@ -240,19 +240,35 @@ private fun BookingSubmissionFeedback(
             Text(
                 stringResource(
                     when (submission.reason) {
-                        PersistenceFailure.Reason.CONFLICT -> R.string.booking_conflict
+                        PersistenceFailure.Reason.CONFLICT -> {
+                            R.string.booking_conflict
+                        }
 
-                        PersistenceFailure.Reason.STALE_QUOTE -> R.string.booking_rejected_quote
+                        PersistenceFailure.Reason.CAPACITY_REACHED -> {
+                            R.string.booking_guests_excessive
+                        }
 
-                        PersistenceFailure.Reason.WINDOW_CLOSED -> R.string.booking_closed
+                        PersistenceFailure.Reason.STALE_QUOTE -> {
+                            R.string.booking_rejected_quote
+                        }
+
+                        PersistenceFailure.Reason.WINDOW_CLOSED -> {
+                            R.string.booking_closed
+                        }
 
                         PersistenceFailure.Reason.NOT_FOUND,
                         PersistenceFailure.Reason.INACTIVE,
-                        -> R.string.booking_site_unavailable
+                        -> {
+                            R.string.booking_site_unavailable
+                        }
 
-                        PersistenceFailure.Reason.NOT_ALLOWED -> R.string.booking_not_winner
+                        PersistenceFailure.Reason.NOT_ALLOWED -> {
+                            R.string.booking_not_winner
+                        }
 
-                        else -> R.string.booking_rejected
+                        else -> {
+                            R.string.booking_rejected
+                        }
                     },
                 ),
             )

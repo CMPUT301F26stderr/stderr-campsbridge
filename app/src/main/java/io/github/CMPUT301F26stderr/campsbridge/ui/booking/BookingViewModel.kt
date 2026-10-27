@@ -336,6 +336,13 @@ class BookingViewModel(
                             )
                         }
 
+                        PersistenceFailure.Reason.CAPACITY_REACHED -> {
+                            draft.copy(
+                                step = BookingStep.GUESTS,
+                                returnToReview = true,
+                            )
+                        }
+
                         PersistenceFailure.Reason.STALE_QUOTE -> {
                             draft.copy(
                                 step = BookingStep.TERMS,
