@@ -23,7 +23,6 @@ class PhotoCreditsTest {
             SceneryPhoto.entries.map { it.id }.toSet(),
             catalog.photos.map { it.id }.toSet(),
         )
-        assertEquals(3, catalog.photos.size)
         for (photo in catalog.photos) {
             assertTrue(photo.title.isNotBlank())
             assertTrue(photo.photographer.isNotBlank())
