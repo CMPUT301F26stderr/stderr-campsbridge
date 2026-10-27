@@ -10,9 +10,11 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
@@ -154,7 +156,7 @@ class CampsiteDetailSectionsTest {
                 listOf(Triple(site.id, april.atDay(1), april.plusMonths(1).atDay(1))),
                 sites.observedCalendars,
             )
-            assertEquals(CampsiteInventoryUiState.Content(emptyList()), model.inventory.value)
+            assertEquals(CalendarInventoryRead.Content(emptyList()), model.inventory.value)
             val may = april.plusMonths(1)
             model.changeMonth(may)
             model.changeMonth(may)
@@ -164,7 +166,7 @@ class CampsiteDetailSectionsTest {
             model.selectSection(CampsiteDetailSection.MAP)
             runCurrent()
             assertEquals(0, sites.activeCalendarObservers)
-            assertEquals(CampsiteInventoryUiState.Loading, model.inventory.value)
+            assertEquals(CalendarInventoryRead.Loading, model.inventory.value)
             model.selectSection(CampsiteDetailSection.AVAILABILITY)
             runCurrent()
             assertEquals(may, model.month.value)
@@ -178,14 +180,14 @@ class CampsiteDetailSectionsTest {
             val model = model()
             model.selectSection(CampsiteDetailSection.AVAILABILITY)
             runCurrent()
-            assertEquals(CampsiteInventoryUiState.Loading, model.inventory.value)
+            assertEquals(CalendarInventoryRead.Loading, model.inventory.value)
             model.selectSection(CampsiteDetailSection.OVERVIEW)
             runCurrent()
             sites.calendarHandler = null
             sites.calendarFailure.value = IOException("calendar offline")
             model.selectSection(CampsiteDetailSection.AVAILABILITY)
             runCurrent()
-            assertEquals(CampsiteInventoryUiState.Failure, model.inventory.value)
+            assertEquals(CalendarInventoryRead.Failure, model.inventory.value)
             assertEquals(CampsiteDetailUiState.Content(site), model.state.value)
             sites.calendarFailure.value = null
             sites.calendarNights.value = listOf(CalendarNight(april.atDay(3), true))
@@ -193,7 +195,7 @@ class CampsiteDetailSectionsTest {
             model.retryInventory()
             runCurrent()
             assertEquals(
-                CampsiteInventoryUiState.Content(sites.calendarNights.value),
+                CalendarInventoryRead.Content(sites.calendarNights.value),
                 model.inventory.value,
             )
             assertEquals(1, sites.activeCalendarObservers)
@@ -344,11 +346,11 @@ class CampsiteDetailSectionsTest {
             model.changeMonth(april.plusMonths(1))
             runCurrent()
             checkNotNull(retired).emit(emptyList())
-            assertEquals(CampsiteInventoryUiState.Content(current.value), model.inventory.value)
+            assertEquals(CalendarInventoryRead.Content(current.value), model.inventory.value)
             model.selectSection(CampsiteDetailSection.RULES)
             runCurrent()
             checkNotNull(retired).emit(emptyList())
-            assertEquals(CampsiteInventoryUiState.Loading, model.inventory.value)
+            assertEquals(CalendarInventoryRead.Loading, model.inventory.value)
         }
 
     /** Creates a supplied rating fact without an editor or persistence simulation.
@@ -381,5 +383,6 @@ class CampsiteDetailSectionsTest {
             reviews,
             saved,
             clock,
+            FakeLotteryRepository(),
         ).also { store.put("detail", it) }
 }

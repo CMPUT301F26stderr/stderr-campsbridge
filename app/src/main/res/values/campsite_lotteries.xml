@@ -1,0 +1,8 @@
+<resources>
+    <string name="campsite_no_active_lottery">No active lottery</string>
+    <string name="campsite_available_lotteries">Available lotteries</string>
+    <string name="campsite_lotteries_failed">Could not load campsite lotteries.</string>
+    <string name="campsite_view_lottery">View lottery</string>
+    <string name="campsite_lottery_offer_unavailable">This campsite has no offered nights in this lottery.</string>
+    <string name="campsite_lottery_offer_failed">Could not load this campsite’s offered nights.</string>
+</resources>

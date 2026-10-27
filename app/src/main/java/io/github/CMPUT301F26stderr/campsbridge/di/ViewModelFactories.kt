@@ -13,9 +13,93 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
+
+/** Constructs an explicitly scoped list and optional owner-management allocation filter.
+ * @param services Current host's scoped sources and clock.
+ * @param accountId Ready account identity.
+ * @param context Requested owner or entrant presentation.
+ * @param campsiteId Optional saved listing association.
+ */
+fun lotteryListViewModelFactory(
+    services: AppServices,
+    accountId: String,
+    context: LotteryContext,
+    campsiteId: String? = null,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotteryListViewModel(
+                accountId,
+                context,
+                services.repositories.lotteries,
+                services.repositories.bookings,
+                services.repositories.campsites,
+                services.clock,
+                createSavedStateHandle(),
+                campsiteId,
+            )
+        }
+    }
+
+/** Constructs the saved/new lottery form; reserved F13 remains explicitly pending.
+ * @param services Current host's repository interfaces and clock.
+ * @param ownerId Current account identity whose published sites are eligible.
+ * @param lotteryId Existing draft target, or null for a new local form.
+ */
+fun lotterySetupViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    lotteryId: String? = null,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotterySetupViewModel(
+                ownerId,
+                services.repositories.campsites,
+                services.repositories.lotteries,
+                services.clock,
+                createSavedStateHandle(),
+                validateWindows = null,
+                lotteryId = lotteryId,
+            )
+        }
+    }
+
+/** Constructs the saved context-qualified reader independently of setup's local state.
+ * @param services Current host's repository dependencies.
+ * @param accountId Ready account identity.
+ * @param lotteryId Actual saved target carried by navigation.
+ * @param context Explicit owner management or entrant presentation.
+ */
+fun lotteryDetailViewModelFactory(
+    services: AppServices,
+    accountId: String,
+    lotteryId: String,
+    context: LotteryContext,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotteryDetailViewModel(
+                accountId,
+                lotteryId,
+                services.repositories.lotteries,
+                services.repositories.campsites,
+                services.clock,
+                services.repositories.bookings,
+                context,
+                services.repositories.accounts,
+                createSavedStateHandle(),
+                filterParticipants = null,
+            )
+        }
+    }
 
 /**
  * Supplies explicit root dependencies; the ViewModel never receives a concrete container.
@@ -117,6 +201,7 @@ fun campsiteDetailViewModelFactory(
                 services.repositories.reviews,
                 createSavedStateHandle(),
                 services.clock,
+                services.repositories.lotteries,
             )
         }
     }

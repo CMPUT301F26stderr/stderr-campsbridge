@@ -6,11 +6,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +41,8 @@ class TaskExampleSession(
             ),
         )
     private val campsites = TaskCampsiteRepository()
+    private val lotteries = TaskLotteryRepository()
+    private val bookings = DemoBookingRepository()
     private val images = DemoImageRepository(File(directory, UUID.randomUUID().toString()))
     var isClosed = false
         private set
@@ -107,6 +112,23 @@ class TaskExampleSession(
                 TaskExampleData.clock,
                 SavedStateHandle(),
                 bindings.remainingEdits,
+            )
+        }
+
+    /** Supplies an already-completed owner draw so participant filtering needs no earlier setup. */
+    fun participants(): LotteryDetailViewModel =
+        model(LotteryDetailViewModel::class.java) {
+            LotteryDetailViewModel(
+                TaskExampleData.OWNER_ID,
+                TaskExampleData.lottery.id,
+                lotteries,
+                campsites,
+                TaskExampleData.clock,
+                bookings,
+                LotteryContext.OWNER,
+                accounts,
+                SavedStateHandle(),
+                bindings.filterParticipants,
             )
         }
 

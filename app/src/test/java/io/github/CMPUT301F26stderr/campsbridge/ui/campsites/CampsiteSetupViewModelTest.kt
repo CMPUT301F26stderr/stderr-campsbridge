@@ -14,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PriceInput
@@ -333,7 +334,7 @@ class CampsiteSetupViewModelTest {
                 ),
                 sites.observedCalendars,
             )
-            assertEquals(CampsiteInventoryUiState.Content(emptyList()), content(model).inventory)
+            assertEquals(CalendarInventoryRead.Content(emptyList()), content(model).inventory)
             assertEquals(1, sites.activeCalendarObservers)
         }
 
@@ -343,14 +344,14 @@ class CampsiteSetupViewModelTest {
             sites.calendarFailure.value = IOException("calendar offline")
             val model = model(site.id)
             runCurrent()
-            assertEquals(CampsiteInventoryUiState.Failure, content(model).inventory)
+            assertEquals(CalendarInventoryRead.Failure, content(model).inventory)
             model.toggleDate(LocalDate.of(2027, 5, 14))
             assertTrue(content(model).draft.requestedAvailability.isEmpty())
             sites.calendarFailure.value = null
             model.retryCalendar()
             model.retryCalendar()
             runCurrent()
-            assertEquals(CampsiteInventoryUiState.Content(emptyList()), content(model).inventory)
+            assertEquals(CalendarInventoryRead.Content(emptyList()), content(model).inventory)
             assertEquals(listOf(site.id), sites.readIds)
             assertEquals(1, sites.activeCalendarObservers)
         }
@@ -360,7 +361,7 @@ class CampsiteSetupViewModelTest {
         runTest {
             val model = model()
             runCurrent()
-            assertEquals(CampsiteInventoryUiState.Content(emptyList()), content(model).inventory)
+            assertEquals(CalendarInventoryRead.Content(emptyList()), content(model).inventory)
             model.changeMonth(YearMonth.of(2027, 6))
             runCurrent()
             assertTrue(sites.observedCalendars.isEmpty())

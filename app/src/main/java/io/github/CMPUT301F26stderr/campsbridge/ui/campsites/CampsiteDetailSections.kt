@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.platform.maps.CampsiteMap
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.options.CampingOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.options.CampingOptions
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
@@ -53,6 +54,7 @@ internal fun campsiteSectionTitle(section: CampsiteDetailSection): String =
             CampsiteDetailSection.MAP -> R.string.campsite_map_title
             CampsiteDetailSection.AVAILABILITY -> R.string.availability_title
             CampsiteDetailSection.RULES -> R.string.campsite_rules_title
+            CampsiteDetailSection.LOTTERIES -> R.string.campsite_available_lotteries
         },
     )
 
@@ -229,7 +231,7 @@ fun CampsiteMapScreen(
 fun CampsiteAvailabilityScreen(
     state: CampsiteDetailUiState,
     month: YearMonth?,
-    inventory: CampsiteInventoryUiState,
+    inventory: CalendarInventoryRead,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onRetryInventory: () -> Unit,
@@ -240,14 +242,14 @@ fun CampsiteAvailabilityScreen(
         Text(stringResource(R.string.campsite_read_only_availability))
         Text(site.details.timeZone)
         when {
-            inventory == CampsiteInventoryUiState.Failure -> {
+            inventory == CalendarInventoryRead.Failure -> {
                 FailureContent(
                     stringResource(R.string.campsite_availability_read_failure),
                     onRetryInventory,
                 )
             }
 
-            inventory == CampsiteInventoryUiState.Loading || month == null -> {
+            inventory == CalendarInventoryRead.Loading || month == null -> {
                 LoadingContent()
             }
 
@@ -459,7 +461,7 @@ private fun CampsiteAvailabilityPreview() {
         CampsiteAvailabilityScreen(
             CampsiteDetailUiState.Content(previewCampsite()),
             YearMonth.of(2027, 5),
-            CampsiteInventoryUiState.Content(emptyList()),
+            CalendarInventoryRead.Content(emptyList()),
             {},
             {},
             {},

@@ -227,6 +227,7 @@ class CampsiteDetailFlowTest {
                                             host.reviews,
                                             createSavedStateHandle(),
                                             Clock.systemUTC(),
+                                            host.lotteries,
                                         )
                                     }
                                 }

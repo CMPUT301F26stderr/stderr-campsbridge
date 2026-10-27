@@ -1,0 +1,26 @@
+<resources>
+    <string name="lottery_membership_loading">Loading your entry</string>
+    <string name="lottery_membership_failed">Could not load your entry.</string>
+    <string name="lottery_not_joined">You have not joined this lottery.</string>
+    <string name="lottery_membership_waiting">You are on the waitlist.</string>
+    <string name="lottery_membership_withdrawn">You left this lottery.</string>
+    <string name="lottery_membership_won">You were selected.</string>
+    <string name="lottery_membership_lost">You were not selected.</string>
+    <string name="lottery_membership_declined">You declined this opportunity.</string>
+    <string name="lottery_opportunity_loading">Checking your reservation</string>
+    <string name="lottery_opportunity_failed">Could not confirm whether this win has been used.</string>
+    <string name="lottery_opportunity_unused">No reservation has been made with this win.</string>
+    <string name="lottery_saved_reservation">Reservation %1$s</string>
+    <string name="lottery_saved_reservation_unavailable">Your saved reservation is unavailable.</string>
+    <string name="lottery_join_waitlist">Join waitlist</string>
+    <string name="lottery_leave_waitlist">Leave waitlist</string>
+    <string name="lottery_joining_waitlist">Joining waitlist</string>
+    <string name="lottery_leaving_waitlist">Leaving waitlist</string>
+    <string name="lottery_leave_title">Leave this lottery?</string>
+    <string name="lottery_leave_consequence">You will be removed from the waitlist. You can join again while registration is open.</string>
+    <string name="lottery_leave_confirm">Leave</string>
+    <string name="lottery_membership_update_failed">Could not update your entry.</string>
+    <string name="lottery_waitlist_full">The waitlist is full. Your entry has not changed.</string>
+    <string name="lottery_membership_closed">Registration has closed. Check your current entry.</string>
+    <string name="lottery_membership_retry">Check your current entry and try again.</string>
+</resources>

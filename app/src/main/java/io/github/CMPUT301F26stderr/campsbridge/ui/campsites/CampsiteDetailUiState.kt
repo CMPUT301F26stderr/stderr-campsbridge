@@ -25,6 +25,7 @@ enum class CampsiteDetailSection(
     MAP("map"),
     AVAILABILITY("availability"),
     RULES("rules"),
+    LOTTERIES("lotteries"),
 }
 
 /** Optional owner label; a failed or missing profile never hides listing facts. */

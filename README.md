@@ -43,6 +43,8 @@ Owner campsite lists and the eight-step setup are available; the offline demo do
 
 The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name/contact fields are editable, while their submission remains blocked until the reserved teammate validators are integrated.
 
+Published campsite management opens a six-step lottery setup with one campsite, a working allocation calendar, native schedule inputs and unlimited registration. Input survives route recreation; allocation Back/Cancel leaves applied dates unchanged. The form saves and reopens drafts under one retained ID, reconciles offered nights and recovers uncertain publication before allowing further edits. Confirmed saves open the actual owner overview. The default factory keeps Save draft and Publish disabled until the reserved schedule validator is integrated.
+
 Select `firebaseDebug` in Android Studio for real account identity, Firestore and Storage, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.
 
 ## Maps configuration
@@ -79,6 +81,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses t
 
 ### Assigned helper examples
 
-In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors; H03 opens the availability editor and H04 the owner inventory. H05/H06 open independent text-search and guest-capacity examples using the real discovery controller and filter editor. All use local sample records. Later examples remain labelled pending until their baselines are published. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
+In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors; H03 opens the availability editor and H04 the owner inventory. H05/H06 open independent text-search and guest-capacity examples using the real discovery controller and filter editor. All use local sample records. H07 opens schedule validation and H08 participant filtering with seeded lottery records. Later examples remain labelled pending until their baselines are published. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
 
 The shared baseline leaves assigned helper bindings disconnected. Follow the issue's prepared handoff to connect its real implementation and tests; a preview or pending example does not complete the task. Release and Firebase builds do not include the debug task host.
