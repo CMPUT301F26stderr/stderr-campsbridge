@@ -44,6 +44,9 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -129,6 +132,36 @@ class OfflineDemoActivity : ComponentActivity() {
                                         )
                                     },
                                     { exploreViewModelFactory(session.services) },
+                                    {
+                                        ownerId,
+                                        id,
+                                        ->
+                                        lotterySetupViewModelFactory(session.services, ownerId, id)
+                                    },
+                                    {
+                                        accountId,
+                                        id,
+                                        context,
+                                        ->
+                                        lotteryDetailViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            id,
+                                            context,
+                                        )
+                                    },
+                                    {
+                                        accountId,
+                                        context,
+                                        campsiteId,
+                                        ->
+                                        lotteryListViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            context,
+                                            campsiteId,
+                                        )
+                                    },
                                 )
                             }
                         }

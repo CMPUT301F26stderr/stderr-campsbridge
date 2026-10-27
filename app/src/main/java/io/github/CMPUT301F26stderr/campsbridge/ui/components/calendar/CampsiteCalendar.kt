@@ -103,14 +103,16 @@ fun CampsiteCalendar(
             Column(Modifier.horizontalScroll(rememberScrollState()).width(cellWidth * 7)) {
                 Row {
                     repeat(7) { offset ->
+                        val weekday = state.firstWeekday.plus(offset.toLong())
                         Text(
-                            state.firstWeekday
-                                .plus(
-                                    offset.toLong(),
-                                ).getDisplayName(TextStyle.SHORT, locale),
-                            Modifier.width(cellWidth),
+                            weekday.getDisplayName(TextStyle.NARROW, locale),
+                            Modifier.width(cellWidth).clearAndSetSemantics {
+                                contentDescription = weekday.getDisplayName(TextStyle.FULL, locale)
+                            },
                             style = MaterialTheme.typography.labelMedium,
                             textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false,
                         )
                     }
                 }
@@ -135,9 +137,13 @@ fun CampsiteCalendar(
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.medium)) {
+            Text(
+                stringResource(R.string.calendar_selected_legend),
+                style = MaterialTheme.typography.labelSmall,
+            )
             CalendarDayStatus.entries.forEach { status ->
                 Text(
-                    "${calendarMark(status)} ${calendarLabel(status)}",
+                    "${calendarMark(status)} ${calendarLabel(status, state.labels)}",
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
@@ -165,7 +171,7 @@ private fun CalendarDate(
 ) {
     val day = state.days[date] ?: CalendarDayState(CalendarDayStatus.UNAVAILABLE)
     val isSelected = date in state.selection
-    val label = calendarLabel(day.status)
+    val label = calendarLabel(day.status, state.labels)
     val background =
         if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
     TextButton(
@@ -177,6 +183,20 @@ private fun CalendarDate(
             ButtonDefaults.textButtonColors(
                 containerColor = background,
                 disabledContainerColor = background,
+                disabledContentColor =
+                    when {
+                        !state.selectionEnabled && isSelected -> {
+                            MaterialTheme.colorScheme.primary
+                        }
+
+                        !state.selectionEnabled && day.status != CalendarDayStatus.UNAVAILABLE -> {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+
+                        else -> {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        }
+                    },
             ),
         modifier =
             Modifier
@@ -195,7 +215,17 @@ private fun CalendarDate(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(date.dayOfMonth.toString(), style = MaterialTheme.typography.labelLarge)
             Text(
-                calendarMark(day.status),
+                if (isSelected && day.status != CalendarDayStatus.AVAILABLE) {
+                    stringResource(
+                        R.string.calendar_selected_inventory_mark,
+                        stringResource(R.string.calendar_selected_mark),
+                        calendarMark(day.status),
+                    )
+                } else if (isSelected) {
+                    stringResource(R.string.calendar_selected_mark)
+                } else {
+                    calendarMark(day.status)
+                },
                 Modifier.clearAndSetSemantics {
                 },
                 style = MaterialTheme.typography.labelSmall,
@@ -207,14 +237,34 @@ private fun CalendarDate(
 /**
  * Resolves the visible and spoken inventory label.
  * @param status Inventory presentation supplied by the caller.
+ * @param labels Whether the known dates describe owner offers or guest availability.
  */
 @Composable
-private fun calendarLabel(status: CalendarDayStatus): String =
+private fun calendarLabel(
+    status: CalendarDayStatus,
+    labels: CalendarLabels,
+): String =
     stringResource(
         when (status) {
-            CalendarDayStatus.AVAILABLE -> R.string.calendar_available
-            CalendarDayStatus.UNAVAILABLE -> R.string.calendar_unavailable
-            CalendarDayStatus.OCCUPIED -> R.string.calendar_occupied
+            CalendarDayStatus.AVAILABLE -> {
+                if (labels == CalendarLabels.OFFERED_NIGHTS) {
+                    R.string.calendar_offered
+                } else {
+                    R.string.calendar_available
+                }
+            }
+
+            CalendarDayStatus.UNAVAILABLE -> {
+                if (labels == CalendarLabels.OFFERED_NIGHTS) {
+                    R.string.calendar_not_offered
+                } else {
+                    R.string.calendar_unavailable
+                }
+            }
+
+            CalendarDayStatus.OCCUPIED -> {
+                R.string.calendar_occupied
+            }
         },
     )
 

@@ -238,7 +238,7 @@ Removal hides accounts/listings, clears personal profile fields and images, and 
 These are implementation-owned records, not additional application entities:
 
 ```text
-lotteries/{lotteryId}._revision: Int                    # Absent means zero
+lotteries/{lotteryId}._revision: Int                    # Required; drafts start at zero
 _draws/{lotteryId}: { seed: String }
 lotteries/{lotteryId}/_notificationDeliveries/{notificationId}: { recipientIds: List<AccountId> }
 reservations/{reservationId}/_notificationDeliveries/{notificationId}: { recipientIds: List<AccountId> }
@@ -260,11 +260,6 @@ Calendar edits commit each requested night independently and are safe to retry; 
 
 ## Tooling and derived features
 
-```text
-_migrations/{migrationId}
-  completedAt: Timestamp
-```
-
-Numbered migration scripts are safe to rerun and record completion only after success. They run through tooling, never automatically on phone startup. Prefer updated fixtures/reseeding for disposable development data; no per-document schema version initially.
+Development data is disposable. Update fixtures and reseed after a schema change; do not add old-schema readers, migration records or per-document schema versions.
 
 Do not persist QR graphics/payloads, CSV exports, average ratings, reaction counts, match scores, carousel ordering, temporary filters/device location, selected UI role, derived lifecycle labels, or image caches. Reservation maps use booking snapshots; nearby maps use campsite coordinates; match scores use filters; carousels use preferences; accessibility uses account settings. Guidelines and versioned standard policy text ship with the app.

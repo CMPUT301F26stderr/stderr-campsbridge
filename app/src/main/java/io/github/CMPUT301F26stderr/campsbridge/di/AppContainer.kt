@@ -43,8 +43,8 @@ class AppContainer(
     override val campsites: CampsiteRepository =
         FirestoreCampsiteRepository(clients.firestore, clock)
     private val lotteryImplementation = FirestoreLotteryRepository(clients.firestore, clock, random)
-    val lotteries: LotteryRepository = lotteryImplementation
-    val bookings: BookingRepository = FirestoreBookingRepository(clients.firestore, clock)
+    override val lotteries: LotteryRepository = lotteryImplementation
+    override val bookings: BookingRepository = FirestoreBookingRepository(clients.firestore, clock)
     private val imageImplementation =
         FirebaseImageRepository(clients.firestore, clients.storage, clock)
     override val images: ImageRepository = imageImplementation

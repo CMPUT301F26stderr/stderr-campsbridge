@@ -219,6 +219,7 @@ service cloud.firestore {
     match /lotteries/{id} {
       function config(d) {
         return d.registrationOpensAt < d.registrationClosesAt && d.registrationClosesAt <= d.bookingOpensAt && d.bookingOpensAt < d.bookingClosesAt
+          && d._revision is int && d._revision >= 0
           && d.winnerCount is int && d.winnerCount > 0 && d.waitingCount is int && d.waitingCount >= 0
           && (d.waitlistCapacity == null || (d.waitlistCapacity is int && d.waitlistCapacity > 0));
       }
@@ -236,6 +237,7 @@ service cloud.firestore {
       }
       function ownerConfigurationUpdate(l, next, fields) {
         return ownsLotteryData(l) && l.cancellation == null
+          && next._revision == l._revision + 1
           && (l.publishedAt == null || request.time < l.registrationOpensAt
             || fields.hasOnly(['title', 'description', '_revision']))
           && (l.publishedAt == null || next.publishedAt == l.publishedAt);
@@ -296,7 +298,7 @@ service cloud.firestore {
         }
         function matchingRevision(l) {
           let next = getAfter(/databases/$(database)/documents/lotteries/$(id)).data;
-          return next.get('_revision', 0) == l.get('_revision', 0) + 1;
+          return next._revision == l._revision + 1;
         }
         function saveOffer() {
           let l = lottery(id);
@@ -529,6 +531,6 @@ service cloud.firestore {
         && ((id.matches('account_.+') && getAfter(/databases/$(database)/documents/accounts/$(id.replace('^account_', ''))).data.removal == request.resource.data)
           || (id.matches('campsite_.+') && getAfter(/databases/$(database)/documents/campsites/$(id.replace('^campsite_', ''))).data.removal == request.resource.data));
     }
-    // No client access to unknown collections or migration records.
+    // No client access to undeclared collections.
   }
 }

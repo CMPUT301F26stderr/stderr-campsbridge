@@ -40,6 +40,15 @@ interface LotteryRepository {
     fun observeOffers(id: String): Flow<List<LotteryOffer>>
 
     /**
+     * Reads current allocations from the server for draft restoration and write recovery.
+     * A confirmed empty result is distinct from a failed read; cached absence is insufficient.
+     * @param id Lottery document ID.
+     * @return All confirmed offers, in unspecified order; empty when none exist.
+     * @throws Exception When the server read or a stored allocation's decoding fails.
+     */
+    suspend fun getOffers(id: String): List<LotteryOffer>
+
+    /**
      * Observes participation records; callers show draw outcomes only after draw completion.
      *
      * @param id Lottery document ID.
