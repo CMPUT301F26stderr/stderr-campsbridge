@@ -41,6 +41,7 @@ import java.time.YearMonth
  * @param value Previously applied date.
  * @param onConfirm Applies a nonnull date.
  * @param onDismiss Cancels without applying edits.
+ * @param initialMonth Caller-clock month when no previous date is selected.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,9 +49,18 @@ fun DateInputDialog(
     value: LocalDate?,
     onConfirm: (LocalDate) -> Unit,
     onDismiss: () -> Unit,
+    initialMonth: YearMonth? = null,
 ) {
     val state =
-        rememberDatePickerState(initialSelectedDateMillis = value?.let(::dateToPickerMillis))
+        rememberDatePickerState(
+            initialSelectedDateMillis = value?.let(::dateToPickerMillis),
+            initialDisplayedMonthMillis =
+                (
+                    value ?: initialMonth?.atDay(
+                        1,
+                    )
+                )?.let(::dateToPickerMillis),
+        )
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {

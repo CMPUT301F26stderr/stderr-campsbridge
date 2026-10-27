@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import java.util.Locale
 
 /**
@@ -33,6 +35,9 @@ import java.util.Locale
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Local editor dependencies for a new/saved draft.
  * @param exploreFactory Discovery/filter dependencies for the current account.
+ * @param lotterySetupFactory New/saved lottery-setup dependencies for the current owner.
+ * @param lotteryDetailFactory Saved owner-reader dependencies.
+ * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -45,6 +50,9 @@ fun AppNavigation(
     campsiteSetupFactory: (String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String) -> ViewModelProvider.Factory,
     exploreFactory: ViewModelProvider.Factory,
+    lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
+    lotteryDetailFactory: (String, LotteryContext) -> ViewModelProvider.Factory,
+    lotteryListFactory: (LotteryContext, String?) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -58,6 +66,11 @@ fun AppNavigation(
                 Icons.Default.Home,
             ),
             WorkspaceNavigationItem(
+                AppDestination.OWNER_LOTTERIES,
+                stringResource(R.string.lotteries),
+                Icons.Default.DateRange,
+            ),
+            WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.OWNER),
                 stringResource(R.string.profile_title),
                 Icons.Default.Person,
@@ -69,6 +82,11 @@ fun AppNavigation(
                 AppDestination.EXPLORE,
                 stringResource(R.string.discovery_title),
                 Icons.Default.Home,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.ENTRANT_LOTTERIES,
+                stringResource(R.string.lotteries),
+                Icons.Default.DateRange,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.ENTRANT),
@@ -116,6 +134,33 @@ fun AppNavigation(
         }
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
+        lotterySetupGraph(controller, lotterySetupFactory)
+        lotteryDetailGraph(controller, lotteryDetailFactory, onCampsite = { campsiteId, context ->
+            val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
+            val presentation =
+                if (context ==
+                    LotteryContext.OWNER
+                ) {
+                    CampsiteDetailContext.PREVIEW
+                } else {
+                    CampsiteDetailContext.VIEW
+                }
+            controller.navigate(
+                "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
+            ) {
+                launchSingleTop =
+                    true
+            }
+        })
+        lotteryListGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            ownerItems,
+            entrantItems,
+            selectPrimary,
+            lotteryListFactory,
+        )
         for (workspace in Role.entries) {
             profileGraph(
                 controller,

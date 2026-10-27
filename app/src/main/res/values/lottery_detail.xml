@@ -1,0 +1,13 @@
+<resources>
+    <string name="lottery_schedule_title">Schedule and details</string>
+    <string name="lottery_campsites_title">Included campsites</string>
+    <string name="lottery_schedule_zone">Times in %1$s</string>
+    <string name="lottery_allocation_rules">Allocation rules</string>
+    <string name="lottery_registration_limit">Registration limit</string>
+    <string name="lottery_window_opens">Opens</string>
+    <string name="lottery_window_closes">Closes</string>
+    <string name="lottery_unavailable_campsite">Unavailable campsite</string>
+    <string name="lottery_view_calendar">View calendar</string>
+    <string name="booking_title">Book campsite</string>
+    <string name="reservation_view">View reservation</string>
+</resources>

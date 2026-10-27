@@ -1,5 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
@@ -36,6 +37,109 @@ import org.robolectric.annotation.LooperMode
 @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
 class BookingQueryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
+
+    /** A confirmed empty key is unused; another lottery/entrant's stay cannot consume it. */
+    @Test(timeout = 60000)
+    fun opportunityLookupConfirmsAbsenceAndKeepsTupleScope() =
+        runBlocking {
+            val entrant = firebase.registeredActor(Role.ENTRANT)
+            val foreign = opportunityReservation("other", entrant.id)
+            firebase.seed("reservations/${foreign.id}", ReservationDocument.encode(foreign))
+            assertEquals(null, entrant.container.bookings.getForOpportunity("unused", entrant.id))
+            assertEquals(
+                null,
+                entrant.container.bookings.getForOpportunity("other", "different-entrant"),
+            )
+        }
+
+    /** The application supplies identities; data owns the deterministic key and complete read. */
+    @Test(timeout = 60000)
+    fun opportunityLookupReturnsTheSavedReservationAndPayment() =
+        runBlocking {
+            val entrant = firebase.registeredActor(Role.ENTRANT)
+            val reservation = opportunityReservation("won", entrant.id)
+            firebase.seed("reservations/${reservation.id}", ReservationDocument.encode(reservation))
+            assertEquals(
+                reservation,
+                entrant.container.bookings.getForOpportunity("won", entrant.id),
+            )
+        }
+
+    /** Cancellation/refund never makes a consumed opportunity available to book again. */
+    @Test(timeout = 60000)
+    fun opportunityLookupRetainsCancelledRefundedHistory() =
+        runBlocking {
+            val entrant = firebase.registeredActor(Role.ENTRANT)
+            val reservation =
+                opportunityReservation("used", entrant.id).let {
+                    it.copy(
+                        cancellation =
+                            ReservationCancellation(
+                                firebase.clock.instant(),
+                                entrant.id,
+                                Role.ENTRANT,
+                                null,
+                            ),
+                        payment = it.payment.copy(refundedAt = firebase.clock.instant()),
+                    )
+                }
+            firebase.seed("reservations/${reservation.id}", ReservationDocument.encode(reservation))
+            assertEquals(
+                reservation,
+                entrant.container.bookings.getForOpportunity("used", entrant.id),
+            )
+        }
+
+    /** Cached records cannot stand in for a confirmed server read when the connection fails. */
+    @Test(timeout = 60000)
+    fun opportunityReadFailureDoesNotReturnCachedReservationOrAbsence() =
+        runBlocking {
+            val entrant = firebase.registeredActor(Role.ENTRANT)
+            val reservation = opportunityReservation("cached", entrant.id)
+            firebase.seed("reservations/${reservation.id}", ReservationDocument.encode(reservation))
+            val db = entrant.clients.firestore
+            db.document("reservations/${reservation.id}").get(Source.SERVER).await()
+            db
+                .document("reservations/${DocumentKeys.reservation("absent", entrant.id)}")
+                .get(Source.SERVER)
+                .await()
+            db.disableNetwork().await()
+            try {
+                for (id in listOf("cached", "absent")) {
+                    val failure =
+                        runCatching {
+                            entrant.container.bookings.getForOpportunity(id, entrant.id)
+                        }.exceptionOrNull()
+                    assertTrue(failure is FirebaseFirestoreException)
+                    assertEquals(
+                        FirebaseFirestoreException.Code.UNAVAILABLE,
+                        (failure as FirebaseFirestoreException).code,
+                    )
+                }
+            } finally {
+                db.enableNetwork().await()
+            }
+        }
+
+    /** Builds a valid independently seeded consuming record for the requested identity tuple.
+     * @param lotteryId Saved opportunity parent.
+     * @param entrantId Account consuming that opportunity.
+     */
+    private fun opportunityReservation(
+        lotteryId: String,
+        entrantId: String,
+    ): Reservation {
+        val sample = CampingFixtures.reservation()
+        val now = firebase.clock.instant()
+        return sample.copy(
+            id = DocumentKeys.reservation(lotteryId, entrantId),
+            lotteryId = lotteryId,
+            entrantId = entrantId,
+            createdAt = now,
+            acceptedTerms = sample.acceptedTerms.copy(acceptedAt = now),
+            payment = sample.payment.copy(paidAt = now),
+        )
+    }
 
     /** Only owned sites contribute, including removed sites and cancelled reservations. */
     @Test(timeout = 60000)

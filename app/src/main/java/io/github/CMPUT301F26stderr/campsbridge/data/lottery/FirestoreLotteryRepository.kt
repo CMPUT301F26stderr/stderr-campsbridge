@@ -66,6 +66,12 @@ class FirestoreLotteryRepository(
     override fun observeOffers(id: String) =
         queries.observeOffers(id)
 
+    /** Reads current allocations through the server-only query owner without a cache fallback.
+     * @param id Lottery document ID whose allocations must be confirmed.
+     */
+    override suspend fun getOffers(id: String): List<LotteryOffer> =
+        queries.getOffers(id)
+
     /**
      * Observes participation records; callers show draw outcomes only after draw completion.
      *

@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.data.booking
 
 import com.google.firebase.firestore.FirebaseFirestore
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.observe
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.observeRelated
@@ -24,6 +25,16 @@ internal class BookingQueries(
      */
     suspend fun get(id: String) =
         db.document(FirestorePaths.reservation(id)).read(ReservationDocument)
+
+    /** Reads a retained opportunity from the server without exposing key construction to UI.
+     * @param lotteryId Saved lottery identity.
+     * @param entrantId Entrant consuming the opportunity.
+     */
+    suspend fun forOpportunity(
+        lotteryId: String,
+        entrantId: String,
+    ): Reservation? =
+        get(DocumentKeys.reservation(lotteryId, entrantId))
 
     /**
      * Observes the reservation and its nested payment as one record.

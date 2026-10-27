@@ -1,7 +1,11 @@
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.createSavedStateHandle
@@ -9,11 +13,15 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -24,6 +32,11 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
@@ -39,8 +52,24 @@ class TestAppHost : AutoCloseable {
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
     val campsites = FakeCampsiteRepository()
+
+    @Volatile var keyboardVisible = false
+        private set
+    var participantFilter: ((List<LotteryEntry>, EntryState?) -> List<LotteryEntry>)? = null
+    val lotteryAccounts = FakeAccountRepository()
+    val lotteries = FakeLotteryRepository()
+    val bookings = FakeBookingRepository()
+    var lotteryListCreations = 0
+    var lotteryDetailCreations = 0
     val reviews = FakeReviewRepository()
     val campsiteOwners = FakeAccountRepository(sampleAccount())
+    var newLotteryId: () -> String = {
+        java.util.UUID
+            .randomUUID()
+            .toString()
+    }
+    var lotterySetupCreations = 0
+    var validateLotteryWindows: LotteryWindowValidator? = null
     var exploreCreations = 0
     var matchesText: ((Campsite, String) -> Boolean)? = null
     var matchesCapacity: ((Long, Long?) -> Boolean)? = null
@@ -70,8 +99,11 @@ class TestAppHost : AutoCloseable {
     }
 
     /** Composes production navigation without production bootstrap or network access. */
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     fun Content() {
+        val visible = WindowInsets.isImeVisible
+        SideEffect { keyboardVisible = visible }
         CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
             AppRoot(app, { id ->
                 viewModelFactory {
@@ -121,6 +153,7 @@ class TestAppHost : AutoCloseable {
                             reviews,
                             createSavedStateHandle(),
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            lotteries,
                         )
                     }
                 }
@@ -169,6 +202,56 @@ class TestAppHost : AutoCloseable {
                                     Instant.parse("2027-05-01T12:00:00Z"),
                                     ZoneOffset.UTC,
                                 ),
+                        )
+                    }
+                }
+            }, { ownerId, id ->
+                viewModelFactory {
+                    initializer {
+                        lotterySetupCreations++
+                        LotterySetupViewModel(
+                            ownerId,
+                            campsites,
+                            lotteries,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            createSavedStateHandle(),
+                            validateLotteryWindows,
+                            lotteryId = id,
+                            newId = newLotteryId,
+                        )
+                    }
+                }
+            }, { accountId, id, context ->
+                viewModelFactory {
+                    initializer {
+                        lotteryDetailCreations++
+                        LotteryDetailViewModel(
+                            accountId,
+                            id,
+                            lotteries,
+                            campsites,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            bookings,
+                            context,
+                            lotteryAccounts,
+                            createSavedStateHandle(),
+                            participantFilter,
+                        )
+                    }
+                }
+            }, { accountId, context, campsiteId ->
+                viewModelFactory {
+                    initializer {
+                        lotteryListCreations++
+                        LotteryListViewModel(
+                            accountId,
+                            context,
+                            lotteries,
+                            bookings,
+                            campsites,
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                            createSavedStateHandle(),
+                            campsiteId,
                         )
                     }
                 }

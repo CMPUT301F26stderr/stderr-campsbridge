@@ -68,6 +68,12 @@ internal class LotteryQueries(
     fun observeOffers(id: String) =
         ref(id).collection("offers").observe(LotteryOfferDocument)
 
+    /** Reads every allocation from the server; read and decoding failures propagate.
+     * @param id Lottery document ID whose allocations must be confirmed.
+     */
+    suspend fun getOffers(id: String) =
+        ref(id).collection("offers").read(LotteryOfferDocument)
+
     /**
      * Observes participation records; callers show draw outcomes only after draw completion.
      *

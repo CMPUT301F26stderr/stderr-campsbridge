@@ -7,6 +7,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
@@ -244,7 +245,7 @@ class AvailabilityViewModelTest {
             sites.calendarFailure.value = IOException("range offline")
             val model = model()
             runCurrent()
-            assertEquals(CampsiteInventoryUiState.Failure, content(model).availability.inventory)
+            assertEquals(CalendarInventoryRead.Failure, content(model).availability.inventory)
             model.selectDates(setOf(first))
             model.setRequestedOffered(true)
             assertTrue(content(model).selectedDates.isEmpty())
@@ -252,7 +253,7 @@ class AvailabilityViewModelTest {
             sites.calendarFailure.value = null
             model.retryCalendar()
             runCurrent()
-            assertTrue(content(model).availability.inventory is CampsiteInventoryUiState.Content)
+            assertTrue(content(model).availability.inventory is CalendarInventoryRead.Content)
             assertEquals(listOf(site.id), sites.readIds)
             assertEquals(0, sites.writeCalls)
         }

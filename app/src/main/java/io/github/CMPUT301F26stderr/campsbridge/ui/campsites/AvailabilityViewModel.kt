@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.currentCoroutineContext
@@ -198,7 +199,7 @@ class AvailabilityViewModel(
                 owner.state.collect { value ->
                     val current = state.value as? AvailabilityUiState.Content ?: return@collect
                     val selected =
-                        if (value.inventory is CampsiteInventoryUiState.Content &&
+                        if (value.inventory is CalendarInventoryRead.Content &&
                             !value.isSaving
                         ) {
                             current.selectedDates.filter(owner::canEdit).toSet()

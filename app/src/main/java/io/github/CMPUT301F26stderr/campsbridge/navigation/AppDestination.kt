@@ -4,6 +4,8 @@ import android.net.Uri
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.credits.BundledLicense
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import java.util.Locale
 
@@ -15,6 +17,68 @@ object AppDestination {
     const val PROFILE = "profile"
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
     const val CAMPSITE_SETUP_SAVED = "owner/campsite-setup/saved/{campsiteId}"
+    const val LOTTERY_SETUP = "owner/lottery-setup/new"
+    const val LOTTERY_SETUP_SAVED = "owner/lottery-setup/saved/{lotteryId}"
+    const val LOTTERY_DETAIL = "owner/lotteries/{lotteryId}/detail"
+    const val OWNER_LOTTERIES = "owner/lotteries"
+    const val ENTRANT_LOTTERIES = "entrant/lotteries"
+    const val ENTRANT_LOTTERY_DETAIL = "entrant/lotteries/{lotteryId}/detail"
+    const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
+
+    /** Addresses the owner's allocation-filtered list from actual campsite management.
+     * @param campsiteId Saved listing identity; punctuation is encoded as one argument.
+     */
+    fun campsiteLotteries(campsiteId: String): String =
+        "owner/campsites/${Uri.encode(campsiteId)}/lotteries"
+
+    /** Addresses one new form or an existing draft without copying record state.
+     * @param lotteryId Actual saved target, or null for a new form.
+     */
+    fun lotterySetupGraph(lotteryId: String? = null): String =
+        if (lotteryId ==
+            null
+        ) {
+            LOTTERY_SETUP
+        } else {
+            "owner/lottery-setup/saved/${Uri.encode(lotteryId)}"
+        }
+
+    /** Selects one registered saved-reader parent per workspace context.
+     * @param context Explicit owner management or own entrant presentation.
+     */
+    fun lotteryDetailPattern(context: LotteryContext): String =
+        when (context) {
+            LotteryContext.OWNER -> LOTTERY_DETAIL
+            LotteryContext.ENTRANT -> ENTRANT_LOTTERY_DETAIL
+        }
+
+    /** Addresses an actual saved overview in its caller's context.
+     * @param lotteryId Saved identity returned by persistence or an owner list.
+     * @param context Explicit presentation; the repository still owns authorization.
+     */
+    fun lotteryDetail(
+        lotteryId: String,
+        context: LotteryContext = LotteryContext.OWNER,
+    ): String =
+        lotteryDetailPattern(context).replace("{lotteryId}", Uri.encode(lotteryId))
+
+    /** Addresses one read-only child under its actual context-qualified saved parent.
+     * @param lotteryId Saved parent identity.
+     * @param context Explicit owner or entrant presentation.
+     * @param section Registered reader child.
+     */
+    fun lotterySection(
+        lotteryId: String,
+        context: LotteryContext,
+        section: LotteryDetailSection,
+    ): String =
+        "${lotteryDetail(lotteryId, context)}/${section.routeKey}"
+
+    /** Opens the owner participant child under its actual saved parent.
+     * @param lotteryId Saved parent identity.
+     */
+    fun lotteryParticipants(lotteryId: String): String =
+        "${lotteryDetail(lotteryId)}/participants"
 
     /** Addresses a distinct local/new or saved-ID setup parent.
      * @param campsiteId Existing unpublished target, or null for a new form.
