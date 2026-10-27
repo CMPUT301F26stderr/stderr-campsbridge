@@ -6,6 +6,11 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import java.time.Clock
 import java.time.Instant
@@ -59,6 +64,43 @@ object TaskExampleData {
                         ),
                 )
             },
+        )
+    val lottery =
+        Lottery(
+            "task-draw",
+            OWNER_ID,
+            "May camping draw",
+            "Local sample records",
+            LotteryConfiguration(
+                now.minusSeconds(172800),
+                now.minusSeconds(86400),
+                now.minusSeconds(86400),
+                now.plusSeconds(864000),
+                1,
+                null,
+            ),
+            0,
+            now.minusSeconds(259200),
+            now.minusSeconds(172800),
+            now.minusSeconds(86400),
+        )
+    val offers = listOf(LotteryOffer(sites[0].id, (11..14).map { today.withDayOfMonth(it) }))
+    val entries =
+        listOf(
+            LotteryEntry(
+                lottery.id,
+                ACCOUNT_ID,
+                EntryState.OFFERED,
+                now.minusSeconds(172800),
+                now.minusSeconds(86400),
+            ),
+            LotteryEntry(
+                lottery.id,
+                "task-other-entrant",
+                EntryState.LOST,
+                now.minusSeconds(172800),
+                now.minusSeconds(86400),
+            ),
         )
     val nights =
         (1..31).filter { it != 14 }.map { day ->

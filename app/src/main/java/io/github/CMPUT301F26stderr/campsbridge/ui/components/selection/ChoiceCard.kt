@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,6 +32,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param icon Standard icon that helps identify the option.
  * @param modifier Caller layout.
  * @param enabled Whether the choice can be changed.
+ * @param supportingText Optional factual context for this choice.
  */
 @Composable
 fun ChoiceCard(
@@ -40,6 +42,7 @@ fun ChoiceCard(
     icon: ImageVector,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    supportingText: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val contentColor = if (enabled) colors.onSurface else colors.onSurface.copy(alpha = 0.38f)
@@ -76,12 +79,16 @@ fun ChoiceCard(
                     Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
                 }
             }
-            Text(
-                label,
-                Modifier.weight(1f),
-                color = contentColor,
-                style = MaterialTheme.typography.titleMedium,
-            )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                Text(label, color = contentColor, style = MaterialTheme.typography.titleMedium)
+                if (supportingText != null) {
+                    Text(
+                        supportingText,
+                        color = if (enabled) colors.onSurfaceVariant else contentColor,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
             RadioButton(selected, onClick = null, enabled = enabled)
         }
     }

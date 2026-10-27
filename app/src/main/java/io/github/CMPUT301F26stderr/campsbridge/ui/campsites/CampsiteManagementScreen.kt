@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +52,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onAvailability Opens the registered independent offer editor.
  * @param onResume Opens existing draft setup; never used for a published listing.
  * @param onPreview Opens the separate read-only owner preview graph.
+ * @param onCreateLottery Opens the registered local lottery setup from a published listing.
+ * @param onViewLotteries Opens the registered allocation-filtered owner list.
  */
 @Composable
 fun CampsiteManagementScreen(
@@ -62,6 +66,8 @@ fun CampsiteManagementScreen(
     onResume: (() -> Unit)? = null,
     onAvailability: (() -> Unit)? = null,
     onPreview: (() -> Unit)? = null,
+    onCreateLottery: (() -> Unit)? = null,
+    onViewLotteries: (() -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.manage_campsite), modifier, onBack = onBack) {
         when (state) {
@@ -179,6 +185,20 @@ fun CampsiteManagementScreen(
                                 icon = Icons.Default.DateRange,
                             )
                         }
+                        if (onViewLotteries != null) {
+                            NavigationRow(
+                                stringResource(R.string.campsite_lotteries),
+                                onViewLotteries,
+                                icon = Icons.Default.List,
+                            )
+                        }
+                        if (site.isPublished && onCreateLottery != null) {
+                            NavigationRow(
+                                stringResource(R.string.lottery_create),
+                                onCreateLottery,
+                                icon = Icons.Default.Add,
+                            )
+                        }
 
                         if (onPreview != null) {
                             NavigationRow(
@@ -208,6 +228,8 @@ private fun CampsiteManagementPreview() {
             {},
             onAvailability = {},
             onPreview = {},
+            onCreateLottery = {},
+            onViewLotteries = {},
         )
     }
 }

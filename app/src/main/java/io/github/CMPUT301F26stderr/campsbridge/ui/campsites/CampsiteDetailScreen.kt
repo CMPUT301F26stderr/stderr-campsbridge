@@ -23,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -36,9 +37,10 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onRetryPhoto Retries only attachment/display reads.
  * @param modifier Caller layout.
  * @param rating Independent real rating result.
- * @param context Fixed caller presentation; never supplies mutation callbacks.
+ * @param context Fixed caller presentation; only VIEW renders entrant participation.
  * @param onRetryRatings Retries only the failed rating read.
  * @param onOpenSection Opens a child within the same saved reader graph.
+ * @param lotteryActions Optional current entrant actions owned by the saved route.
  */
 @Composable
 fun CampsiteDetailScreen(
@@ -52,8 +54,20 @@ fun CampsiteDetailScreen(
     context: CampsiteDetailContext = CampsiteDetailContext.VIEW,
     onRetryRatings: () -> Unit = {},
     onOpenSection: (CampsiteDetailSection) -> Unit = {},
+    lotteryActions: (@Composable () -> Unit)? = null,
 ) {
-    AppScreen(stringResource(R.string.campsite), modifier, onBack = onBack) {
+    AppScreen(
+        stringResource(R.string.campsite),
+        modifier,
+        onBack = onBack,
+        bottomContent = {
+            if (state is CampsiteDetailUiState.Content &&
+                context == CampsiteDetailContext.VIEW && lotteryActions != null
+            ) {
+                ActionFooter { lotteryActions() }
+            }
+        },
+    ) {
         when (state) {
             CampsiteDetailUiState.Loading -> {
                 LoadingContent()

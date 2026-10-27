@@ -92,7 +92,7 @@ test('unauthenticated reads/writes and undeclared collections are denied', async
   const anon = env.unauthenticatedContext().firestore();
   await assertFails(getDoc(doc(anon, 'accounts/entrant')));
   await assertFails(setDoc(doc(anon, 'accounts/new'), account(['ENTRANT'])));
-  await assertFails(setDoc(doc(db('admin'), '_migrations/0001'), { completedAt: now() }));
+  await assertFails(setDoc(doc(db('admin'), 'undeclared/example'), { completedAt: now() }));
 });
 test('own account creation is entrant-only; profile creation for another UID is denied', async () => {
   await assertSucceeds(setDoc(doc(db('new'), 'accounts/new'), account(['ENTRANT'])));

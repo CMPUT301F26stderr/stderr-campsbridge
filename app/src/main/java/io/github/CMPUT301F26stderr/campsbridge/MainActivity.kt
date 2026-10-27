@@ -14,6 +14,9 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
@@ -58,6 +61,21 @@ class MainActivity : ComponentActivity() {
                 { accountId, id -> campsiteSetupViewModelFactory(services, accountId, id) },
                 { accountId, id -> availabilityViewModelFactory(services, accountId, id) },
                 { exploreViewModelFactory(services) },
+                { ownerId, id -> lotterySetupViewModelFactory(services, ownerId, id) },
+                {
+                    accountId,
+                    id,
+                    context,
+                    ->
+                    lotteryDetailViewModelFactory(services, accountId, id, context)
+                },
+                {
+                    accountId,
+                    context,
+                    campsiteId,
+                    ->
+                    lotteryListViewModelFactory(services, accountId, context, campsiteId)
+                },
             )
         }
     }

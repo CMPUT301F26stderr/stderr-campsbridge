@@ -14,14 +14,15 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailSection
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 
-/** Registers the same read-only children with a separate saved model for each caller context.
+/** Registers saved children with entrant actions confined to the actual VIEW graph.
  * @param controller Current account's navigation host.
  * @param workspace Owning workspace; preview/inspection never borrow an entrant model.
- * @param context Fixed read-only presentation validated by the owning graph.
+ * @param context Fixed presentation validated by the owning graph.
  * @param factory Saved ID/context constructor binding.
  */
 internal fun NavGraphBuilder.campsiteReadGraph(
@@ -38,6 +39,11 @@ internal fun NavGraphBuilder.campsiteReadGraph(
         arguments = listOf(navArgument("campsiteId") {}),
     ) {
         for (section in CampsiteDetailSection.entries) {
+            if (section == CampsiteDetailSection.LOTTERIES &&
+                context != CampsiteDetailContext.VIEW
+            ) {
+                continue
+            }
             composable("$pattern/${section.routeKey}") { entry ->
                 val parent = remember(entry) { controller.getBackStackEntry(pattern) }
                 val id = checkNotNull(parent.arguments?.getString("campsiteId"))
@@ -47,14 +53,35 @@ internal fun NavGraphBuilder.campsiteReadGraph(
                         viewModelStoreOwner = parent,
                         factory = factory(id, context),
                     )
-                CampsiteDetailRoute(model, section = section, onOpenSection = { selected ->
-                    controller.navigate("$actual/${selected.routeKey}") { launchSingleTop = true }
-                }, onOpenPolicy = { policy ->
-                    controller.navigate(
-                        "$actual/policy/${policy.routeKey}?version=" +
-                            Uri.encode(policy.currentVersion),
-                    ) { launchSingleTop = true }
-                }) { controller.popBackStack() }
+                CampsiteDetailRoute(
+                    model,
+                    section = section,
+                    onOpenLottery =
+                        if (context ==
+                            CampsiteDetailContext.VIEW
+                        ) {
+                            { lotteryId ->
+                                controller.navigate(
+                                    AppDestination.lotteryDetail(lotteryId, LotteryContext.ENTRANT),
+                                ) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                    onOpenSection = { selected ->
+                        controller.navigate(
+                            "$actual/${selected.routeKey}",
+                        ) { launchSingleTop = true }
+                    },
+                    onOpenPolicy = { policy ->
+                        controller.navigate(
+                            "$actual/policy/${policy.routeKey}?version=" +
+                                Uri.encode(policy.currentVersion),
+                        ) { launchSingleTop = true }
+                    },
+                ) { controller.popBackStack() }
             }
         }
         composable(

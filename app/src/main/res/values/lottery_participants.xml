@@ -1,0 +1,19 @@
+<resources>
+    <string name="lottery_participants">Participants</string>
+    <string name="lottery_waiting_count">Waiting: %1$d</string>
+    <string name="lottery_participant_filter">Participant state</string>
+    <string name="lottery_participants_all">All participants</string>
+    <string name="lottery_participant_waiting">Waiting</string>
+    <string name="lottery_participant_withdrawn">Withdrawn</string>
+    <string name="lottery_participant_selected">Selected</string>
+    <string name="lottery_participant_not_selected">Not selected</string>
+    <string name="lottery_participant_declined">Declined</string>
+    <string name="lottery_participant_name_loading">Loading profile</string>
+    <string name="lottery_participant_name_unavailable">Profile unavailable</string>
+    <string name="lottery_participant_name_failed">Profile could not be loaded</string>
+    <string name="lottery_participant_joined">Joined %1$s</string>
+    <string name="lottery_participants_empty">No participants for this selection.</string>
+    <string name="lottery_participants_failed">Participants could not be loaded.</string>
+    <string name="lottery_participant_names_failed">Some profile names could not be loaded.</string>
+    <string name="lottery_participant_filter_pending">Participant filtering is pending implementation. Select All participants to see the full list.</string>
+</resources>

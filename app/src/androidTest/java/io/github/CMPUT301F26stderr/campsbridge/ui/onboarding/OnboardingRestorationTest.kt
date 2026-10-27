@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 import android.content.Intent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -31,6 +32,10 @@ class OnboardingRestorationTest {
             compose.onNodeWithText("Next").performClick()
             compose.onNodeWithText("Name").performTextInput("Unsubmitted draft")
             scenario.recreate()
+            // Activity recreation resumes before its replacement window finishes laying out.
+            compose.waitUntil(timeoutMillis = 10000) {
+                compose.onNodeWithText("Unsubmitted draft").isDisplayed()
+            }
             compose.onNodeWithText("Unsubmitted draft").assertIsDisplayed()
             compose.onNodeWithContentDescription("Back").performClick()
             compose.onNodeWithText("Manage campsites").assertIsSelected()

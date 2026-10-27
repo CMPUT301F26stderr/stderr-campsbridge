@@ -15,6 +15,19 @@ interface BookingRepository {
     suspend fun get(id: String): Reservation?
 
     /**
+     * Reads the server's retained reservation consuming one lottery opportunity.
+     * Confirmed absence is null; cache-only or failed reads must not imply an unused win.
+     * Cancelled reservations still consume the opportunity and are returned with refund facts.
+     * @param lotteryId Saved lottery identity.
+     * @param entrantId Entrant whose winning opportunity is addressed.
+     * @throws Exception When server confirmation or stored-document decoding fails.
+     */
+    suspend fun getForOpportunity(
+        lotteryId: String,
+        entrantId: String,
+    ): Reservation?
+
+    /**
      * Observes a complete reservation including its payment, or null when absent.
      * @param id Reservation document identity.
      */
