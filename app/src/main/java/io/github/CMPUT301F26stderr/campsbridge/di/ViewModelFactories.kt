@@ -12,6 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
@@ -71,7 +72,7 @@ fun onboardingViewModelFactory(
         }
     }
 
-/** Constructs the inventory owner with F11 ordering explicitly pending.
+/** Constructs the inventory owner with the assigned F11 ordering function.
  * @param services Selected host's dependencies.
  * @param ownerId Confirmed owner identity.
  */
@@ -86,7 +87,7 @@ fun campsiteListViewModelFactory(
                 services.repositories.campsites,
                 services.repositories.images,
                 createSavedStateHandle(),
-                sortCampsites = null,
+                sortCampsites = ::sortCampsitesByName,
             )
         }
     }
@@ -170,7 +171,7 @@ fun availabilityViewModelFactory(
         }
     }
 
-/** Constructs the discovery owner with reserved matching/ordering dependencies explicitly pending.
+/** Constructs the discovery owner with reserved matching dependencies explicitly pending.
  * @param services Selected host's published listing, attachment and rating sources.
  */
 fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
@@ -183,7 +184,7 @@ fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
                 createSavedStateHandle(),
                 matchesText = null,
                 matchesCapacity = null,
-                sortCampsites = null,
+                sortCampsites = ::sortCampsitesByName,
                 clock = services.clock,
             )
         }
