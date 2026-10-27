@@ -23,4 +23,9 @@
     <string name="reservation_load_failed">Could not load this reservation.</string>
     <string name="reservation_unavailable">Reservation unavailable</string>
     <string name="reservation_view">View reservation</string>
+    <string name="reservation_stay_details">Stay details</string>
+    <string name="reservation_cancellation">Cancellation</string>
+    <string name="reservation_payment_record">Payment record</string>
+    <string name="reservation_acceptance_record">Acceptance record</string>
+    <string name="reservation_refund_policy">Refund policy</string>
 </resources>

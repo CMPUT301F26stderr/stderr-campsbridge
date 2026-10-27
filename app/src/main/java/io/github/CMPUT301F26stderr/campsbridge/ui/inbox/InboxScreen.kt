@@ -3,24 +3,33 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -30,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
@@ -37,9 +47,11 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -94,7 +106,8 @@ fun InboxScreen(
     LazyColumn(
         modifier.fillMaxSize(),
         state = rememberLazyListState(),
-        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        contentPadding = PaddingValues(vertical = Spacing.medium),
+        verticalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
         if (state.orderingPending || state.unreadCountPending) {
             item("pending") {
@@ -115,11 +128,18 @@ fun InboxScreen(
                         },
                     ),
                     style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
         state.unreadCount?.let { count ->
-            item("unread") { Text(stringResource(R.string.inbox_unread_count, count)) }
+            item("unread") {
+                Text(
+                    stringResource(R.string.inbox_unread_count, count),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
         when (state.source) {
             InboxSourceState.LOADING -> {
@@ -157,46 +177,7 @@ fun InboxScreen(
                 )
             }
             items(state.unavailable, key = { "receipt:${it.receipt.notificationId}" }) { item ->
-                Card(
-                    Modifier.fillMaxWidth().testTag("inbox-receipt-${item.receipt.notificationId}"),
-                ) {
-                    Column(
-                        Modifier.padding(Spacing.medium),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                    ) {
-                        Text(
-                            stringResource(
-                                when (item.status) {
-                                    InboxEventStatus.LOADING -> R.string.inbox_event_loading
-                                    InboxEventStatus.FAILURE -> R.string.inbox_event_failed
-                                    InboxEventStatus.UNAVAILABLE -> R.string.inbox_event_unavailable
-                                },
-                            ),
-                        )
-                        Text(
-                            item.receipt.notificationId,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                        Text(
-                            stringResource(
-                                if (item.receipt.readAt ==
-                                    null
-                                ) {
-                                    R.string.inbox_unread
-                                } else {
-                                    R.string.inbox_read
-                                },
-                            ),
-                        )
-                        if (item.status !=
-                            InboxEventStatus.LOADING
-                        ) {
-                            TextButton({
-                                onRetryItem(item.receipt.notificationId)
-                            }) { Text(stringResource(R.string.inbox_retry_item)) }
-                        }
-                    }
-                }
+                UnavailableInboxRow(item, onRetryItem)
             }
         }
     }
@@ -218,214 +199,190 @@ private fun InboxEventRow(
     onRetryRead: (String) -> Unit,
 ) {
     val event = item.notification
-    val supported =
-        item.subject is NotificationSubjectContent.LotteryContent ||
-            item.subject is NotificationSubjectContent.ReservationContent
+    val canOpen =
+        !item.isLoading &&
+            (
+                item.subject is NotificationSubjectContent.LotteryContent ||
+                    item.subject is NotificationSubjectContent.ReservationContent
+            )
     val clickable =
-        if (supported &&
-            !item.isLoading
-        ) {
+        if (canOpen) {
             Modifier.clickable(role = Role.Button, onClick = { onOpen(event.id) })
         } else {
             Modifier
         }
-    Card(Modifier.fillMaxWidth().testTag("inbox-event-${event.id}").then(clickable)) {
-        Column(
-            Modifier.padding(Spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+    Column {
+        Surface(
+            Modifier.fillMaxWidth().testTag("inbox-event-${event.id}").then(clickable),
+            color = MaterialTheme.colorScheme.surface,
         ) {
-            Text(
-                event.announcement?.title ?: stringResource(
-                    when (event.type) {
-                        NotificationType.LOTTERY_WON -> {
-                            R.string.inbox_winner
-                        }
-
-                        NotificationType.LOTTERY_LOST -> {
-                            R.string.inbox_loser
-                        }
-
-                        NotificationType.RESERVATION_CONFIRMED -> {
-                            R.string.inbox_reservation_confirmed
-                        }
-
-                        NotificationType.RESERVATION_CANCELLED -> {
-                            R.string.inbox_reservation_cancelled
-                        }
-
-                        NotificationType.OWNER_ANNOUNCEMENT -> {
-                            R.string.inbox_announcement
-                        }
-
-                        NotificationType.NEW_MESSAGE -> {
-                            R.string.inbox_message
-                        }
-                    },
-                ),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            when (val subject = item.subject) {
-                is NotificationSubjectContent.LotteryContent -> {
-                    Text(subject.lottery.title)
-                }
-
-                is NotificationSubjectContent.ReservationContent -> {
-                    Text(
-                        subject.reservation.bookedCampsite.name,
-                    )
-                }
-
-                NotificationSubjectContent.Failure -> {
-                    Text(
-                        stringResource(R.string.inbox_context_failed),
-                    )
-                }
-
-                NotificationSubjectContent.Unavailable -> {
-                    Text(
-                        stringResource(R.string.inbox_context_unavailable),
-                    )
-                }
-
-                NotificationSubjectContent.Unsupported -> {
-                    Text(
-                        stringResource(R.string.inbox_context_unsupported),
-                    )
-                }
-            }
-            event.announcement?.let { Text(it.body) }
-            Text(
-                formatDateTime(
-                    event.createdAt,
-                    ZoneId.systemDefault(),
-                    LocalConfiguration.current.locales[0],
-                ),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(
-                stringResource(
-                    if (item.readAt ==
-                        null
-                    ) {
-                        R.string.inbox_unread
-                    } else {
-                        R.string.inbox_read
-                    },
-                ),
-                style = MaterialTheme.typography.labelMedium,
-            )
-            if (item.isLoading) {
-                Text(stringResource(R.string.inbox_context_loading))
-            } else if (item.subject == NotificationSubjectContent.Failure ||
-                item.subject == NotificationSubjectContent.Unavailable
+            Column(
+                Modifier.padding(vertical = Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
-                TextButton(
-                    { onRetryItem(event.id) },
-                ) { Text(stringResource(R.string.inbox_retry_item)) }
-            }
-            if (readFailed) {
-                Text(stringResource(R.string.inbox_read_failed))
-                TextButton(
-                    { onRetryRead(event.id) },
-                ) { Text(stringResource(R.string.inbox_retry_read)) }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                ) {
+                    Text(
+                        event.announcement?.title
+                            ?: stringResource(notificationTitleResource(event.type)),
+                        Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight =
+                            if (item.readAt ==
+                                null
+                            ) {
+                                FontWeight.SemiBold
+                            } else {
+                                FontWeight.Normal
+                            },
+                    )
+                    if (canOpen) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                val context =
+                    when (val subject = item.subject) {
+                        is NotificationSubjectContent.LotteryContent -> {
+                            subject.lottery.title
+                        }
+
+                        is NotificationSubjectContent.ReservationContent -> {
+                            subject.reservation.bookedCampsite.name
+                        }
+
+                        NotificationSubjectContent.Failure -> {
+                            stringResource(
+                                R.string.inbox_context_failed,
+                            )
+                        }
+
+                        NotificationSubjectContent.Unavailable -> {
+                            stringResource(
+                                R.string.inbox_context_unavailable,
+                            )
+                        }
+
+                        NotificationSubjectContent.Unsupported -> {
+                            stringResource(
+                                R.string.inbox_context_unsupported,
+                            )
+                        }
+                    }
+                Text(
+                    context,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                event.announcement?.let {
+                    Text(
+                        it.body,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                ) {
+                    Text(
+                        formatDateTime(
+                            event.createdAt,
+                            ZoneId.systemDefault(),
+                            LocalConfiguration.current.locales[0],
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    InboxReadLabel(item.readAt == null)
+                }
+                if (item.isLoading) {
+                    Text(
+                        stringResource(R.string.inbox_context_loading),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                } else if (item.subject == NotificationSubjectContent.Failure ||
+                    item.subject == NotificationSubjectContent.Unavailable
+                ) {
+                    TextButton(
+                        { onRetryItem(event.id) },
+                    ) { Text(stringResource(R.string.inbox_retry_item)) }
+                }
+                if (readFailed) {
+                    Text(
+                        stringResource(R.string.inbox_read_failed),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    TextButton(
+                        { onRetryRead(event.id) },
+                    ) { Text(stringResource(R.string.inbox_retry_read)) }
+                }
             }
         }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
-/** Supplies readable win/loss/saved history and independent source/context failure variants. */
-class InboxPreviewProvider : PreviewParameterProvider<InboxUiState> {
-    override val values: Sequence<InboxUiState> =
-        run {
-            val reservation = previewReservation()
-            val at = reservation.createdAt
-            val lottery =
-                Lottery(
-                    "may-weekends",
-                    "owner",
-                    "May camping",
-                    "Quiet riverside stays",
-                    LotteryConfiguration(
-                        at.minusSeconds(7200),
-                        at.minusSeconds(3600),
-                        at.minusSeconds(1800),
-                        at.plusSeconds(3600),
-                        1,
-                        null,
+/** Keeps missing-event history read-only without inventing its title or creation time.
+ * @param item Original receipt and independent event read outcome.
+ * @param onRetryItem Retries this receipt's exact immutable event identity.
+ */
+@Composable
+private fun UnavailableInboxRow(
+    item: UnavailableInboxReceipt,
+    onRetryItem: (String) -> Unit,
+) {
+    Column {
+        Surface(
+            Modifier.fillMaxWidth().testTag("inbox-receipt-${item.receipt.notificationId}"),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(
+                Modifier.padding(vertical = Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                Text(
+                    stringResource(
+                        when (item.status) {
+                            InboxEventStatus.LOADING -> R.string.inbox_event_loading
+                            InboxEventStatus.FAILURE -> R.string.inbox_event_failed
+                            InboxEventStatus.UNAVAILABLE -> R.string.inbox_event_unavailable
+                        },
                     ),
-                    2,
-                    at.minusSeconds(10800),
-                    publishedAt = at.minusSeconds(9000),
-                    drawnAt = at,
+                    style = MaterialTheme.typography.titleMedium,
                 )
-            val win =
-                Notification(
-                    "winner",
-                    null,
-                    NotificationType.LOTTERY_WON,
-                    NotificationSubject(SubjectType.LOTTERY, lottery.id),
-                    null,
-                    reservation.createdAt,
-                )
-            val loss =
-                win.copy(
-                    id = "loser",
-                    type = NotificationType.LOTTERY_LOST,
-                    subject = NotificationSubject(SubjectType.LOTTERY, "other-draw"),
-                )
-            val booked =
-                win.copy(
-                    id = "booked",
-                    type = NotificationType.RESERVATION_CONFIRMED,
-                    subject = NotificationSubject(SubjectType.RESERVATION, reservation.id),
-                )
-            val content =
-                InboxUiState(
-                    InboxSourceState.READY,
-                    listOf(
-                        InboxItem(win, null, NotificationSubjectContent.LotteryContent(lottery)),
-                        InboxItem(
-                            loss,
-                            reservation.createdAt,
-                            NotificationSubjectContent.LotteryContent(
-                                lottery.copy(id = "other-draw", title = "Summer camping"),
-                            ),
-                        ),
-                        InboxItem(
-                            booked,
-                            null,
-                            NotificationSubjectContent.ReservationContent(reservation),
-                        ),
-                    ),
-                    orderingPending = false,
-                    unreadCountPending = false,
-                    unreadCount = 2,
-                )
-            sequenceOf(
-                content,
-                content.copy(readFailures = setOf(win.id)),
-                content.copy(
-                    items =
-                        listOf(
-                            content.items.first().copy(
-                                subject = NotificationSubjectContent.Failure,
-                            ),
-                        ),
-                ),
-                content.copy(
-                    unavailable =
-                        listOf(
-                            UnavailableInboxReceipt(
-                                InboxReceipt("unresolved", null),
-                                InboxEventStatus.FAILURE,
-                            ),
-                        ),
-                ),
-                InboxUiState(source = InboxSourceState.READY),
-                InboxUiState(),
-                InboxUiState(source = InboxSourceState.FAILURE),
-            )
+                InboxReadLabel(item.receipt.readAt == null)
+                if (item.status != InboxEventStatus.LOADING) {
+                    TextButton({ onRetryItem(item.receipt.notificationId) }) {
+                        Text(stringResource(R.string.inbox_retry_item))
+                    }
+                }
+            }
         }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    }
+}
+
+/** Shows actual receipt state through text and emphasis, without marking it read.
+ * @param unread Whether the original receipt has no acknowledgement timestamp.
+ */
+@Composable
+private fun InboxReadLabel(unread: Boolean) {
+    Text(
+        stringResource(if (unread) R.string.inbox_unread else R.string.inbox_read),
+        style = MaterialTheme.typography.labelMedium,
+        color =
+            if (unread) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+    )
 }
 
 /** Passive supplied-state previews; the primary frame belongs to its workspace host.
@@ -437,5 +394,7 @@ class InboxPreviewProvider : PreviewParameterProvider<InboxUiState> {
 private fun InboxPreview(
     @PreviewParameter(InboxPreviewProvider::class) state: InboxUiState,
 ) {
-    CampsbridgeTheme { InboxScreen(state, {}, {}, {}, {}) }
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.inbox_title)) { InboxScreen(state, {}, {}, {}, {}) }
+    }
 }
