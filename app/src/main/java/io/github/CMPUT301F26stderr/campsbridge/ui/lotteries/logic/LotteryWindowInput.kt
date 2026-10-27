@@ -19,3 +19,19 @@ sealed interface LotteryWindowInput {
 
 /** F13 consumes registration open/close then booking open/close; null injection means pending. */
 typealias LotteryWindowValidator = (Instant, Instant, Instant, Instant) -> LotteryWindowInput
+
+/** Compiling F13 handoff stub; replace its placeholder feedback with the assigned ordered checks.
+ * @param registrationOpen Inclusive registration opening.
+ * @param registrationClose Exclusive registration closing.
+ * @param bookingOpen Inclusive booking opening.
+ * @param bookingClose Exclusive booking closing.
+ * @return Placeholder failure until the reserved implementation passes its contracts.
+ */
+@Suppress("UNUSED_PARAMETER")
+fun validateLotteryWindows(
+    registrationOpen: Instant,
+    registrationClose: Instant,
+    bookingOpen: Instant,
+    bookingClose: Instant,
+): LotteryWindowInput =
+    LotteryWindowInput.InvalidRegistration
