@@ -4,6 +4,19 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+# Ordinary checks exercise keyless feedback even when the developer has configured Maps.
+# The dedicated SDK scenario opts in to real native gestures and the local/CI key.
+ui_maps_required=false
+for ui_argument in "$@"; do
+    case "$ui_argument" in
+        -Pandroid.testInstrumentationRunnerArguments.requireConfiguredMaps=true) ui_maps_required=true ;;
+        -Pandroid.testInstrumentationRunnerArguments.requireConfiguredMaps=false) ui_maps_required=false ;;
+    esac
+done
+if [[ "$ui_maps_required" != true ]]; then
+    set -- "$@" -PmapsApiKey=
+fi
+
 ui_work=""
 ui_pid=""
 cleanup() {
@@ -24,13 +37,16 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 if [[ -z "${ANDROID_SERIAL:-}" ]]; then
-    : "${ANDROID_UI_HOME:?Run through nix develop .#ui, or set ANDROID_SERIAL to an existing test device}"
+    : "${ANDROID_UI_HOME:?Set ANDROID_SERIAL to a running test device from adb devices, or configure ANDROID_UI_HOME with the disposable test SDK}"
     if [[ ! -r /dev/kvm || ! -w /dev/kvm ]]; then
         echo 'A disposable Android test device requires readable/writable /dev/kvm.' >&2
         exit 1
     fi
+    if [[ -z "${CAMPSBRIDGE_UI_PORT:-}" ]]; then
+        exec python3 scripts/run-test-emulators.py android "$@"
+    fi
     # Compile before first boot so package/setup work does not contend with Kotlin and dexing.
-    bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+    bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest "$@"
     ui_work="$(mktemp -d -t campsbridge-ui.XXXXXXXX)"
     export ANDROID_AVD_HOME="$ui_work/avd"
     mkdir -p "$ANDROID_AVD_HOME"
@@ -45,24 +61,11 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
         cat "$ui_work/avd.log" >&2
         exit 1
     fi
-    ui_port="$(python3 - <<'PY'
-import socket
-for port in range(5580, 5680, 2):
-    try:
-        with socket.socket() as first, socket.socket() as second:
-            first.bind(('127.0.0.1', port))
-            second.bind(('127.0.0.1', port + 1))
-        print(port)
-        break
-    except OSError:
-        continue
-else:
-    raise SystemExit('No free emulator port pair')
-PY
-)"
+    ui_port="$CAMPSBRIDGE_UI_PORT"
+    adb start-server
     export ANDROID_SERIAL="emulator-$ui_port"
     ANDROID_HOME="$ANDROID_UI_HOME" ANDROID_SDK_ROOT="$ANDROID_UI_HOME" \
-        "$ANDROID_UI_HOME/emulator/emulator" -avd campsbridge-tests -port "$ui_port" \
+        "$ANDROID_UI_HOME/emulator/emulator" -avd campsbridge-tests -port "$ui_port" -grpc "$CAMPSBRIDGE_UI_GRPC_PORT" \
         -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -accel on \
         > "$ui_work/emulator.log" 2>&1 &
     ui_pid=$!

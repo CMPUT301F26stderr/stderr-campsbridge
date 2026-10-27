@@ -55,6 +55,7 @@ class AppNavigationTest {
         compose.onNodeWithText("Could not start Campsbridge").assertIsDisplayed()
         compose.runOnIdle { host.identity.failure = null }
         compose.onNodeWithText("Retry").performClick()
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Alex Chen").assertIsDisplayed()
         compose.runOnIdle { assertEquals(2, host.identity.calls) }
     }
@@ -62,6 +63,7 @@ class AppNavigationTest {
     /** Account updates keep one destination/model instead of pushing another profile. */
     @Test fun accountUpdatesKeepOneProfileDestination() {
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Alex Chen").assertIsDisplayed()
         compose.runOnIdle {
             host.accounts.account.value =
@@ -81,6 +83,7 @@ class AppNavigationTest {
     @Test fun workspaceSelectionUsesTheExistingSession() {
         host.accounts.account.value = sampleAccount(setOf(Role.ENTRANT, Role.OWNER))
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithContentDescription("Switch workspace").performClick()
         compose.onNode(hasText("Campsite owner") and hasClickAction()).performClick()
         compose
@@ -107,6 +110,7 @@ class AppNavigationTest {
     /** Removed accounts immediately lose the previous feature content. */
     @Test fun removedAccountHidesProfile() {
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Alex Chen").assertIsDisplayed()
         compose.runOnIdle {
             host.accounts.account.value =

@@ -2,7 +2,6 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,10 +10,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.OwnerIntroductionStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
-import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Existing-account hosting introduction, reusing onboarding's informational content.
  * @param state Observed profile and explicit activation outcome.
@@ -50,38 +49,37 @@ fun OwnerIntroductionScreen(
         backEnabled = !busy,
         bottomContent = {
             if (content != null) {
-                AppActionButton(
-                    stringResource(
-                        when {
-                            workspaceRequested && selectionFailed -> {
-                                R.string.profile_retry_owner_workspace
-                            }
-
-                            content.ownerActivationFailed -> {
-                                R.string.profile_retry_hosting
-                            }
-
-                            else -> {
-                                R.string.onboarding_host_label
-                            }
-                        },
-                    ),
-                    onContinue,
-                    Modifier.fillMaxWidth().padding(
-                        horizontal = Spacing.screen,
-                        vertical = Spacing.small,
-                    ),
-                    enabled = !workspaceRequested || ownerWorkspaceAvailable,
-                    isSubmitting = busy,
-                    progressDescription =
+                ActionFooter {
+                    AppActionButton(
                         stringResource(
-                            if (selectingWorkspace) {
-                                R.string.profile_switching_owner
-                            } else {
-                                R.string.profile_enabling_owner
+                            when {
+                                workspaceRequested && selectionFailed -> {
+                                    R.string.profile_retry_owner_workspace
+                                }
+
+                                content.ownerActivationFailed -> {
+                                    R.string.profile_retry_hosting
+                                }
+
+                                else -> {
+                                    R.string.onboarding_host_label
+                                }
                             },
                         ),
-                )
+                        onContinue,
+                        Modifier.fillMaxWidth(),
+                        enabled = !workspaceRequested || ownerWorkspaceAvailable,
+                        isSubmitting = busy,
+                        progressDescription =
+                            stringResource(
+                                if (selectingWorkspace) {
+                                    R.string.profile_switching_owner
+                                } else {
+                                    R.string.profile_enabling_owner
+                                },
+                            ),
+                    )
+                }
             }
         },
     ) {
@@ -94,7 +92,7 @@ fun OwnerIntroductionScreen(
                 )
             } else if (workspaceRequested && selectionFailed) {
                 Text(
-                    stringResource(R.string.workspace_selection_failure),
+                    stringResource(R.string.profile_owner_workspace_failure),
                     color = MaterialTheme.colorScheme.error,
                 )
             }

@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import io.github.CMPUT301F26stderr.campsbridge.R
 
 private val Inter =
@@ -20,7 +21,22 @@ private val Inter =
  * @param scale Account font-size multiplier.
  */
 fun appTypography(scale: Float): Typography {
-    val base = Typography()
+    val defaults = Typography()
+    val base =
+        defaults.copy(
+            headlineLarge = defaults.headlineLarge.copy(fontWeight = FontWeight.SemiBold),
+            headlineMedium = defaults.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
+            headlineSmall = defaults.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+            titleLarge =
+                defaults.titleLarge.copy(
+                    fontSize = 20.sp,
+                    lineHeight = 28.sp,
+                    fontWeight = FontWeight.SemiBold,
+                ),
+            titleMedium = defaults.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            labelLarge = defaults.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+            labelSmall = defaults.labelSmall.copy(letterSpacing = 0.sp),
+        )
     return Typography(
         displayLarge = scaledStyle(base.displayLarge, scale),
         displayMedium = scaledStyle(base.displayMedium, scale),

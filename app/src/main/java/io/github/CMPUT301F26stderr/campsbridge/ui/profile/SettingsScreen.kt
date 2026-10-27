@@ -13,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 /** Contains only implemented settings destinations; notification controls arrive with M4a.
  * @param onPolicies Opens the shared policy menu.
  * @param onBack Returns to the current workspace's profile menu.
+ * @param onCredits Opens packaged asset and dependency notices.
  * @param modifier Caller layout.
  */
 @Composable
@@ -20,10 +21,12 @@ fun SettingsScreen(
     onPolicies: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onCredits: () -> Unit = {},
 ) {
     BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.settings_title), modifier, onBack) {
         NavigationRow(stringResource(R.string.policies_title), onPolicies)
+        NavigationRow(stringResource(R.string.credits_title), onCredits)
     }
 }
 

@@ -8,11 +8,13 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
@@ -21,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
@@ -36,6 +39,11 @@ class TestAppHost : AutoCloseable {
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
     val campsites = FakeCampsiteRepository()
+    val reviews = FakeReviewRepository()
+    val campsiteOwners = FakeAccountRepository(sampleAccount())
+    var exploreCreations = 0
+    var matchesText: ((Campsite, String) -> Boolean)? = null
+    var matchesCapacity: ((Long, Long?) -> Boolean)? = null
     var availabilityCreations = 0
     var campsiteSetupCreations = 0
     var remainingAvailabilityEdits: AvailabilityDifference? = null
@@ -103,7 +111,17 @@ class TestAppHost : AutoCloseable {
                 viewModelFactory {
                     initializer {
                         campsiteDetailCreations++
-                        CampsiteDetailViewModel(accountId, id, context, campsites, images)
+                        CampsiteDetailViewModel(
+                            accountId,
+                            id,
+                            context,
+                            campsites,
+                            images,
+                            campsiteOwners,
+                            reviews,
+                            createSavedStateHandle(),
+                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                        )
                     }
                 }
             }, { accountId, id ->
@@ -132,6 +150,25 @@ class TestAppHost : AutoCloseable {
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                             createSavedStateHandle(),
                             remainingAvailabilityEdits,
+                        )
+                    }
+                }
+            }, {
+                viewModelFactory {
+                    initializer {
+                        exploreCreations++
+                        ExploreViewModel(
+                            campsites,
+                            images,
+                            reviews,
+                            createSavedStateHandle(),
+                            matchesText,
+                            matchesCapacity,
+                            clock =
+                                Clock.fixed(
+                                    Instant.parse("2027-05-01T12:00:00Z"),
+                                    ZoneOffset.UTC,
+                                ),
                         )
                     }
                 }

@@ -153,6 +153,7 @@ class OwnerActivationFlowTest {
         host.accounts.account.value = original
         host.accounts.allowWrites = true
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Start hosting").performScrollTo().performClick()
     }
 
