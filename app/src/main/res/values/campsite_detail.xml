@@ -1,0 +1,18 @@
+<resources>
+    <string name="campsite_about">About</string>
+    <string name="campsite_about_description">Description</string>
+    <string name="campsite_availability_read_failure">Could not load this month.</string>
+    <string name="campsite_map_title">Map &amp; location</string>
+    <string name="campsite_rules_title">Campsite rules</string>
+    <string name="campsite_owner">Campsite host</string>
+    <string name="campsite_owner_failure">Could not load the campsite host.</string>
+    <string name="campsite_owner_unavailable">Host unavailable</string>
+    <string name="campsite_no_description">No description supplied.</string>
+    <string name="campsite_no_rules">No additional campsite rules supplied.</string>
+    <string name="campsite_no_options">None listed</string>
+    <string name="campsite_read_only_availability">General availability · Read only</string>
+    <string name="campsite_retry_ratings">Retry ratings</string>
+    <string name="campsite_preview">Preview listing</string>
+    <string name="campsite_inspection">Campsite inspection</string>
+    <string name="campsite_removed">Removed</string>
+</resources>

@@ -38,6 +38,7 @@ fun CampsbridgeTheme(
                     StandardColors
                 },
             typography = typography,
+            shapes = CampsbridgeShapes,
             content = content,
         )
     }

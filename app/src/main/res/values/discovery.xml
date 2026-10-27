@@ -1,0 +1,21 @@
+<resources>
+    <string name="discovery_title">Explore</string>
+    <string name="discovery_search">Search</string>
+    <string name="discovery_empty">No campsites match these criteria.</string>
+    <string name="discovery_failure">Could not load matching campsites. Your criteria are retained.</string>
+    <string name="discovery_helpers_pending">Search and guest matching are pending implementation in this build.</string>
+    <string name="discovery_reset">Reset</string>
+    <string name="discovery_apply">Apply filters</string>
+    <string name="discovery_location">Location</string>
+    <string name="discovery_clear_dates">Clear dates</string>
+    <string name="discovery_date_pair">Choose both arrival and checkout.</string>
+    <string name="discovery_date_order">Checkout must follow arrival.</string>
+    <string name="discovery_guests_invalid">Enter a positive whole number of guests.</string>
+    <string name="discovery_location_summary">Location: %1$s</string>
+    <string name="discovery_guests_summary">Guests: %1$d</string>
+    <string name="discovery_rating_loading">Loading ratings</string>
+    <string name="discovery_no_ratings">No ratings</string>
+    <string name="discovery_rating_failure">Ratings unavailable</string>
+    <string name="discovery_rating_summary">%1$s / 5 (%2$d ratings)</string>
+    <string name="discovery_retry_row">Retry photo or ratings for %1$s</string>
+</resources>

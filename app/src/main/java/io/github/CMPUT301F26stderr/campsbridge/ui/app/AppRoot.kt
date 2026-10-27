@@ -26,6 +26,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param campsiteDetailFactory Factory for a saved identity/context reader.
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Factory for a local setup parent.
+ * @param exploreFactory Factory for this account's discovery/filter graph.
  */
 @Composable
 fun AppRoot(
@@ -36,6 +37,7 @@ fun AppRoot(
     campsiteDetailFactory: (String, String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     campsiteSetupFactory: (String, String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String, String) -> ViewModelProvider.Factory,
+    exploreFactory: () -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -98,6 +100,7 @@ fun AppRoot(
                                 },
                                 { id -> campsiteSetupFactory(session.account.id, id) },
                                 { id -> availabilityFactory(session.account.id, id) },
+                                exploreFactory(),
                             )
                         }
                     }

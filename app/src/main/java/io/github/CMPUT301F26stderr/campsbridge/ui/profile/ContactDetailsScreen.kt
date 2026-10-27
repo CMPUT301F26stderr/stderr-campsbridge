@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
@@ -47,16 +48,18 @@ fun ContactDetailsScreen(
         backEnabled = canExit,
         bottomContent = {
             if (content?.contactDraft != null) {
-                AppActionButton(
-                    stringResource(R.string.save_contacts),
-                    onSave,
-                    Modifier.fillMaxWidth(),
-                    enabled =
-                        content.operation == ProfileOperation.IDLE &&
-                            !content.contactValidationPending,
-                    isSubmitting = saving,
-                    progressDescription = stringResource(R.string.profile_saving),
-                )
+                ActionFooter {
+                    AppActionButton(
+                        stringResource(R.string.save_contacts),
+                        onSave,
+                        Modifier.fillMaxWidth(),
+                        enabled =
+                            content.operation == ProfileOperation.IDLE &&
+                                !content.contactValidationPending,
+                        isSubmitting = saving,
+                        progressDescription = stringResource(R.string.profile_saving),
+                    )
+                }
             }
         },
     ) {
