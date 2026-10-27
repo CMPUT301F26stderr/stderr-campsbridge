@@ -22,6 +22,8 @@ ui_pid=""
 cleanup() {
     local ui_status=$?
     if [[ "$ui_status" -ne 0 && -n "$ui_work" && -f "$ui_work/emulator.log" ]]; then
+        mkdir -p app/build/reports/androidTests
+        cp "$ui_work/emulator.log" app/build/reports/androidTests/emulator.log
         tail -n 80 "$ui_work/emulator.log" >&2
     fi
     if [[ -n "$ui_pid" ]]; then
@@ -48,8 +50,13 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
     # Compile before first boot so package/setup work does not contend with Kotlin and dexing.
     bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest "$@"
     ui_work="$(mktemp -d -t campsbridge-ui.XXXXXXXX)"
+    export ANDROID_USER_HOME="$ui_work/android"
+    export ANDROID_EMULATOR_HOME="$ANDROID_USER_HOME"
     export ANDROID_AVD_HOME="$ui_work/avd"
-    mkdir -p "$ANDROID_AVD_HOME"
+    mkdir -p "$ANDROID_USER_HOME" "$ANDROID_AVD_HOME"
+    # Connecting to an already-running shared ADB server does not create this user's keys.
+    # The pinned emulator requires a readable public key even for this debug system image.
+    adb keygen "$ANDROID_USER_HOME/adbkey"
     avd_manager="$ANDROID_UI_HOME/cmdline-tools/latest/bin/avdmanager"
     if [[ ! -x "$avd_manager" ]]; then
         avd_manager="$(find "$ANDROID_UI_HOME/cmdline-tools" -path '*/bin/avdmanager' -print -quit)"
@@ -66,7 +73,7 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
     export ANDROID_SERIAL="emulator-$ui_port"
     ANDROID_HOME="$ANDROID_UI_HOME" ANDROID_SDK_ROOT="$ANDROID_UI_HOME" \
         "$ANDROID_UI_HOME/emulator/emulator" -avd campsbridge-tests -port "$ui_port" -grpc "$CAMPSBRIDGE_UI_GRPC_PORT" \
-        -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -accel on \
+        -verbose -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -accel on \
         > "$ui_work/emulator.log" 2>&1 &
     ui_pid=$!
     ui_ready=false

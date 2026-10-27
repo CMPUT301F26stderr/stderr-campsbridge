@@ -84,13 +84,13 @@ class LotteryQueryTest {
                 repository.getOffers("read-draft").toSet(),
             )
             firebase.request(
-                "http://127.0.0.1:8080/v1/projects/${firebase.projectId}" +
+                "${firebase.firestoreEndpoint}/v1/projects/${firebase.projectId}" +
                     "/databases/(default)/documents/lotteries/read-draft/offers/first",
                 "DELETE",
             )
             assertEquals(listOf(second), repository.getOffers("read-draft"))
             firebase.request(
-                "http://127.0.0.1:8080/v1/projects/${firebase.projectId}" +
+                "${firebase.firestoreEndpoint}/v1/projects/${firebase.projectId}" +
                     "/databases/(default)/documents/lotteries/read-draft/offers/second",
                 "DELETE",
             )
