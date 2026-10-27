@@ -17,6 +17,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
@@ -96,7 +97,7 @@ fun lotteryDetailViewModelFactory(
                 context,
                 services.repositories.accounts,
                 createSavedStateHandle(),
-                filterParticipants = null,
+                filterParticipants = ::filterParticipantsByState,
             )
         }
     }
