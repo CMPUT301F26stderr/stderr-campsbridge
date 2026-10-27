@@ -26,8 +26,8 @@ class CampsiteOrderingTest {
     @Test
     fun sortsMixedCaseNamesAscending() {
         val zulu = campsite("zulu", "zULU Camp")
-        val alpha = campsite("alpha", "Alpha Camp")
-        val bravo = campsite("bravo", "bravo Camp")
+        val alpha = campsite("alpha", "alpha Camp")
+        val bravo = campsite("bravo", "Bravo Camp")
 
         assertEquals(listOf(alpha, bravo, zulu), sortCampsitesByName(listOf(zulu, alpha, bravo)))
     }
@@ -36,8 +36,8 @@ class CampsiteOrderingTest {
     @Test
     fun usesExactIdForFoldedNameTies() {
         val lowercaseId = campsite("a-1", "Cedar Camp")
-        val uppercaseId = campsite("A-1", "CEDAR CAMP")
-        val laterId = campsite("z-1", "cedar camp")
+        val uppercaseId = campsite("A-1", "cedar camp")
+        val laterId = campsite("z-1", "CEDAR CAMP")
 
         assertEquals(
             listOf(uppercaseId, lowercaseId, laterId),
@@ -86,10 +86,14 @@ class CampsiteOrderingTest {
         val previousLocale = Locale.getDefault()
         try {
             Locale.setDefault(Locale("tr", "TR"))
-            val item = campsite("item", "item")
+            val hazel = campsite("hazel", "hazel")
             val iris = campsite("iris", "Iris")
+            val juniper = campsite("juniper", "juniper")
 
-            assertEquals(listOf(iris, item), sortCampsitesByName(listOf(item, iris)))
+            assertEquals(
+                listOf(hazel, iris, juniper),
+                sortCampsitesByName(listOf(juniper, iris, hazel)),
+            )
         } finally {
             Locale.setDefault(previousLocale)
         }
