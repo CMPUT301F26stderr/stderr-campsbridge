@@ -44,6 +44,7 @@ class OnboardingFlowTest {
             )
         }
         compose.onNodeWithText("Skip for now").performClick()
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Alex").assertIsDisplayed()
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
         compose.onNodeWithText("Get started").assertDoesNotExist()

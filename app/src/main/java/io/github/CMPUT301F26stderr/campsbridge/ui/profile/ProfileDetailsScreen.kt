@@ -16,6 +16,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.ImageSlot
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
@@ -56,17 +57,19 @@ fun ProfileDetailsScreen(
         backEnabled = canExit,
         bottomContent = {
             if (content?.personalDraft != null) {
-                AppActionButton(
-                    stringResource(R.string.save_name),
-                    onSave,
-                    Modifier.fillMaxWidth(),
-                    enabled =
-                        content.operation == ProfileOperation.IDLE &&
-                            !content.nameValidationPending &&
-                            !photoBusy,
-                    isSubmitting = saving,
-                    progressDescription = stringResource(R.string.profile_saving),
-                )
+                ActionFooter {
+                    AppActionButton(
+                        stringResource(R.string.save_name),
+                        onSave,
+                        Modifier.fillMaxWidth(),
+                        enabled =
+                            content.operation == ProfileOperation.IDLE &&
+                                !content.nameValidationPending &&
+                                !photoBusy,
+                        isSubmitting = saving,
+                        progressDescription = stringResource(R.string.profile_saving),
+                    )
+                }
             }
         },
     ) {

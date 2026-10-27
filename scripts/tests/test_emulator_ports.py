@@ -92,15 +92,13 @@ class EmulatorPortsTest(unittest.TestCase):
         self.assertFalse(observed[0][1].exists())
         self.assertEqual(["firebase.json"], [path.name for path in source.iterdir()])
 
-    def test_android_launch_passes_distinct_adb_console_and_grpc_ports(self):
+    def test_android_launch_passes_distinct_device_and_grpc_ports(self):
         def launch(command, **kwargs):
             env = kwargs["env"]
             console = int(env["CAMPSBRIDGE_UI_PORT"])
-            adb = int(env["ANDROID_ADB_SERVER_PORT"])
             grpc = int(env["CAMPSBRIDGE_UI_GRPC_PORT"])
-            self.assertEqual(4, len({console, console + 1, adb, grpc}))
+            self.assertEqual(3, len({console, console + 1, grpc}))
             self.assertEqual(0, console % 2)
-            self.assertEqual(f"tcp:{adb}", env["ADB_SERVER_SOCKET"])
             self.assertEqual(["bash", "scripts/check-android-ui.sh", "--stacktrace"], command)
             return 9
 

@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -38,5 +39,9 @@ fun NameStep(
             ),
         keyboardActions = KeyboardActions(onDone = { onContinue() }),
     )
-    Text(stringResource(R.string.onboarding_device_identity))
+    Text(
+        stringResource(R.string.onboarding_device_identity),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }

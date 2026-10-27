@@ -81,7 +81,11 @@ fun ImageSlot(
     val imageSize = 128.dp * LocalControlScale.current
     val geometry = imageModifier ?: Modifier.size(imageSize)
     val reference = state.candidate?.previewReference ?: state.displayUrl
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+    Column(
+        modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         if (reference != null) {
             RemoteImage(
                 reference,

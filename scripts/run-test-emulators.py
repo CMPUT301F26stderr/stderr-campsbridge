@@ -80,19 +80,16 @@ def run_firebase(root):
 
 
 def run_android(root, arguments):
-    """Reserve one Android device pair plus private ADB and gRPC ports for the UI script."""
+    """Reserve one Android device port pair and a gRPC port for the UI script."""
     with ExitStack() as lifetime:
         console = lifetime.enter_context(lease_port(LOCK_DIR, range(5554, 5683, 2), width=2))
-        adb = lifetime.enter_context(lease_port(LOCK_DIR))
         grpc = lifetime.enter_context(lease_port(LOCK_DIR))
         environment = {
             **os.environ,
             "CAMPSBRIDGE_UI_PORT": str(console),
             "CAMPSBRIDGE_UI_GRPC_PORT": str(grpc),
-            "ANDROID_ADB_SERVER_PORT": str(adb),
-            "ADB_SERVER_SOCKET": f"tcp:{adb}",
         }
-        print(f"Android test ports: console={console}, device-adb={console + 1}, server-adb={adb}, grpc={grpc}", flush=True)
+        print(f"Android test ports: console={console}, device-adb={console + 1}, grpc={grpc}", flush=True)
         return subprocess.call(["bash", "scripts/check-android-ui.sh", *arguments], cwd=root, env=environment)
 
 

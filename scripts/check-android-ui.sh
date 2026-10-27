@@ -4,9 +4,21 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+# Ordinary checks exercise keyless feedback even when the developer has configured Maps.
+# The dedicated SDK scenario opts in to real native gestures and the local/CI key.
+ui_maps_required=false
+for ui_argument in "$@"; do
+    case "$ui_argument" in
+        -Pandroid.testInstrumentationRunnerArguments.requireConfiguredMaps=true) ui_maps_required=true ;;
+        -Pandroid.testInstrumentationRunnerArguments.requireConfiguredMaps=false) ui_maps_required=false ;;
+    esac
+done
+if [[ "$ui_maps_required" != true ]]; then
+    set -- "$@" -PmapsApiKey=
+fi
+
 ui_work=""
 ui_pid=""
-ui_private_adb=false
 cleanup() {
     local ui_status=$?
     if [[ "$ui_status" -ne 0 && -n "$ui_work" && -f "$ui_work/emulator.log" ]]; then
@@ -15,9 +27,6 @@ cleanup() {
     if [[ -n "$ui_pid" ]]; then
         kill "$ui_pid" 2>/dev/null || true
         wait "$ui_pid" 2>/dev/null || true
-    fi
-    if [[ "$ui_private_adb" == true ]]; then
-        adb kill-server 2>/dev/null || true
     fi
     if [[ -n "$ui_work" ]]; then
         rm -rf -- "$ui_work"
@@ -37,7 +46,7 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
         exec python3 scripts/run-test-emulators.py android "$@"
     fi
     # Compile before first boot so package/setup work does not contend with Kotlin and dexing.
-    bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+    bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest "$@"
     ui_work="$(mktemp -d -t campsbridge-ui.XXXXXXXX)"
     export ANDROID_AVD_HOME="$ui_work/avd"
     mkdir -p "$ANDROID_AVD_HOME"
@@ -53,7 +62,6 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
         exit 1
     fi
     ui_port="$CAMPSBRIDGE_UI_PORT"
-    ui_private_adb=true
     adb start-server
     export ANDROID_SERIAL="emulator-$ui_port"
     ANDROID_HOME="$ANDROID_UI_HOME" ANDROID_SDK_ROOT="$ANDROID_UI_HOME" \
