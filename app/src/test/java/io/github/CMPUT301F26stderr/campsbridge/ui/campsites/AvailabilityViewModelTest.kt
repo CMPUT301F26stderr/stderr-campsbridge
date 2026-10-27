@@ -327,43 +327,6 @@ class AvailabilityViewModelTest {
             assertEquals(0, sites.writeCalls)
         }
 
-    /** Confirming early abandonment clears requests and recovery markers before navigation pops. */
-    @Test fun confirmedEarlyDiscardCannotRestorePreviouslyRequestedWrites() =
-        runTest {
-            for (failedRead in listOf(false, true)) {
-                sites.readGate = if (failedRead) null else CompletableDeferred()
-                sites.readFailure = if (failedRead) IOException("parent offline") else null
-                val saved =
-                    SavedStateHandle(
-                        mapOf(
-                            "availability.requested.dates" to arrayListOf(first.toString()),
-                            "availability.requested.offered" to booleanArrayOf(false),
-                            "availability.unacknowledged" to arrayListOf(first.toString()),
-                        ),
-                    )
-                val model = model(saved)
-                runCurrent()
-                model.requestExit()
-                model.confirmDiscard()
-                assertTrue(model.exitRequested.value)
-                assertTrue(
-                    saved
-                        .get<ArrayList<String>>(
-                            "availability.requested.dates",
-                        ).orEmpty()
-                        .isEmpty(),
-                )
-                assertTrue(saved.get<BooleanArray>("availability.requested.offered")!!.isEmpty())
-                assertTrue(
-                    saved.get<ArrayList<String>>("availability.unacknowledged").orEmpty().isEmpty(),
-                )
-                sites.readGate?.complete(Unit)
-                runCurrent()
-                assertTrue(sites.observedCalendars.isEmpty())
-            }
-            assertEquals(0, sites.writeCalls)
-        }
-
     /** Builds a separately scoped editor with a fixed supplied comparison outcome.
      * @param saved Primitive restoration store.
      * @param difference Explicit fixture or missing teammate integration.

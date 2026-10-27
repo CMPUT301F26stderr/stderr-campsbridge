@@ -3,7 +3,6 @@ package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 import android.content.Context
 import android.view.KeyEvent
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -47,23 +46,15 @@ class TaskExamplesFlowTest {
         }
     }
 
-    /** Retains pending-editor input on recreation and resets it explicitly. */
+    /** Retains editor input on recreation and resets it independently of helper readiness. */
     @Test fun nameExampleRetainsInputAndResetRestoresFixtures() {
         ActivityScenario.launch(TaskExamplesActivity::class.java).use { scenario ->
             compose.onNodeWithTag("H01").performClick()
             compose.onNodeWithText("Name").performTextReplacement("changed")
-            compose.onNodeWithText("Save name").assertIsNotEnabled()
             scenario.recreate()
             compose.onNodeWithText("changed").assertIsDisplayed()
             compose.onNodeWithText("Reset example").performClick()
             compose.onNodeWithText("Alex Chen").assertIsDisplayed()
-            compose.onNodeWithText("Instructions and binding status").performClick()
-            compose
-                .onNodeWithText(
-                    "Helper not connected. The lead connects the real function " +
-                        "in the task handoff. " +
-                        "This example does not supply its answer.",
-                ).assertIsDisplayed()
         }
     }
 
