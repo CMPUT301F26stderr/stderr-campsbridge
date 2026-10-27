@@ -4,7 +4,6 @@
 from contextlib import ExitStack, contextmanager
 from copy import deepcopy
 import errno
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -15,15 +14,12 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-# All runner workspaces use the same advisory locks, even with different TMPDIR values.
-LOCK_DIR = Path("/tmp/campsbridge-emulator-ports")
 FIREBASE_SERVICES = ("auth", "firestore", "storage", "hub", "logging", "websocket")
 
 
 @contextmanager
-def lease_port(lock_dir, candidates=None, width=1):
+def lease_port(candidates=None, width=1):
     """Keep a free port or adjacent pair reserved against other test jobs until exit."""
-    lock_dir.mkdir(parents=True, exist_ok=True)
     choices = list(candidates) if candidates is not None else [0] * 128
     random.SystemRandom().shuffle(choices)
     for candidate in choices:
@@ -37,13 +33,15 @@ def lease_port(lock_dir, candidates=None, width=1):
                         if offset:
                             neighbor = probes.enter_context(socket.socket())
                             neighbor.bind(("127.0.0.1", port + offset))
-                        lock = lease.enter_context((lock_dir / f"{port + offset}.lock").open("a"))
-                        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        # Services use TCP. Hold the matching UDP ports as cross-process leases;
+                        # unlike files, these are shared even across runner users/private /tmp mounts.
+                        reservation = lease.enter_context(socket.socket(type=socket.SOCK_DGRAM))
+                        reservation.bind(("127.0.0.1", port + offset))
             except OSError as failure:
                 if failure.errno not in (errno.EADDRINUSE, errno.EACCES, errno.EAGAIN):
                     raise
                 continue
-            # Close probe sockets before the service binds; retain advisory ownership throughout.
+            # Close probe sockets before the service binds; retain UDP ownership throughout.
             yield port
             return
     raise RuntimeError("No available emulator ports")
@@ -63,7 +61,7 @@ def run_firebase(root):
     """Start disposable Firebase services with unique ports, config and hub locator files."""
     source = root / "firebase/firebase.json"
     with ExitStack() as lifetime:
-        ports = {name: lifetime.enter_context(lease_port(LOCK_DIR)) for name in FIREBASE_SERVICES}
+        ports = {name: lifetime.enter_context(lease_port()) for name in FIREBASE_SERVICES}
         work = Path(lifetime.enter_context(tempfile.TemporaryDirectory(prefix="campsbridge-firebase.")))
         config = lifetime.enter_context(tempfile.NamedTemporaryFile(
             mode="w", prefix=".emulators-", suffix=".json", dir=source.parent,
@@ -82,8 +80,8 @@ def run_firebase(root):
 def run_android(root, arguments):
     """Reserve one Android device port pair and a gRPC port for the UI script."""
     with ExitStack() as lifetime:
-        console = lifetime.enter_context(lease_port(LOCK_DIR, range(5554, 5683, 2), width=2))
-        grpc = lifetime.enter_context(lease_port(LOCK_DIR))
+        console = lifetime.enter_context(lease_port(range(5554, 5683, 2), width=2))
+        grpc = lifetime.enter_context(lease_port())
         environment = {
             **os.environ,
             "CAMPSBRIDGE_UI_PORT": str(console),

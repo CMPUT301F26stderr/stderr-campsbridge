@@ -23,16 +23,15 @@ class EmulatorPortsTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.locks = self.root / "locks"
 
     def test_parallel_reservations_keep_distinct_ports_until_released(self):
         with ExitStack() as leases:
-            ports = [leases.enter_context(EMULATORS.lease_port(self.locks)) for _ in range(24)]
+            ports = [leases.enter_context(EMULATORS.lease_port()) for _ in range(24)]
             self.assertEqual(len(ports), len(set(ports)))
             with self.assertRaisesRegex(RuntimeError, "No available"):
-                with EMULATORS.lease_port(self.locks, candidates=[ports[0]]):
+                with EMULATORS.lease_port(candidates=[ports[0]]):
                     self.fail("An active reservation must not be reused")
-        with EMULATORS.lease_port(self.locks, candidates=[ports[0]]) as reused:
+        with EMULATORS.lease_port(candidates=[ports[0]]) as reused:
             self.assertEqual(ports[0], reused)
 
     def test_android_pair_skips_an_occupied_neighbor_and_reserves_both_ports(self):
@@ -40,17 +39,17 @@ class EmulatorPortsTest(unittest.TestCase):
             occupied.bind(("127.0.0.1", 0))
             busy = occupied.getsockname()[1]
             with self.assertRaisesRegex(RuntimeError, "No available"):
-                with EMULATORS.lease_port(self.locks, candidates=[busy - 1], width=2):
+                with EMULATORS.lease_port(candidates=[busy - 1], width=2):
                     self.fail("Both Android ports must be available")
-        with EMULATORS.lease_port(self.locks) as first:
+        with EMULATORS.lease_port() as first:
             with self.assertRaisesRegex(RuntimeError, "No available"):
-                with EMULATORS.lease_port(self.locks, candidates=[first - 1], width=2):
+                with EMULATORS.lease_port(candidates=[first - 1], width=2):
                     self.fail("An adjacent lease must not be reused")
-        with EMULATORS.lease_port(self.locks, candidates=range(5554, 5683, 2), width=2) as console:
+        with EMULATORS.lease_port(candidates=range(5554, 5683, 2), width=2) as console:
             self.assertEqual(0, console % 2)
             self.assertIn(console, range(5554, 5683, 2))
             with self.assertRaisesRegex(RuntimeError, "No available"):
-                with EMULATORS.lease_port(self.locks, candidates=[console + 1]):
+                with EMULATORS.lease_port(candidates=[console + 1]):
                     self.fail("The ADB neighbor must remain reserved")
 
     def test_firebase_configuration_keeps_sources_and_assigns_all_service_ports(self):
@@ -84,9 +83,7 @@ class EmulatorPortsTest(unittest.TestCase):
             self.assertFalse(config["emulators"]["ui"]["enabled"])
             return 17
 
-        with patch.object(EMULATORS, "LOCK_DIR", self.locks), patch.object(
-            EMULATORS.subprocess, "call", side_effect=launch,
-        ):
+        with patch.object(EMULATORS.subprocess, "call", side_effect=launch):
             self.assertEqual(17, EMULATORS.run_firebase(self.root))
         self.assertFalse(observed[0][0].exists())
         self.assertFalse(observed[0][1].exists())
@@ -102,9 +99,7 @@ class EmulatorPortsTest(unittest.TestCase):
             self.assertEqual(["bash", "scripts/check-android-ui.sh", "--stacktrace"], command)
             return 9
 
-        with patch.object(EMULATORS, "LOCK_DIR", self.locks), patch.object(
-            EMULATORS.subprocess, "call", side_effect=launch,
-        ):
+        with patch.object(EMULATORS.subprocess, "call", side_effect=launch):
             self.assertEqual(9, EMULATORS.run_android(self.root, ["--stacktrace"]))
 
 
