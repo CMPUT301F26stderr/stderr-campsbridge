@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 MARKER = "<!-- campsbridge-ci-failure:{run_id}:{attempt} -->"
 BOT = "github-actions[bot]"
@@ -24,10 +25,22 @@ class GitHub:
             command += ["--allow-escape-sequences"]
         if data is not None:
             command += ["--input", "-"]
-        result = subprocess.run(
-            command, input=json.dumps(data) if data is not None else None,
-            capture_output=True, text=True, check=True,
-        )
+        try:
+            result = subprocess.run(
+                command, input=json.dumps(data) if data is not None else None,
+                capture_output=True, text=True, check=True,
+            )
+        except subprocess.CalledProcessError as failure:
+            print(f"GitHub API {method} {path} failed (exit {failure.returncode}).", file=sys.stderr)
+            for name, output in (("stderr", failure.stderr), ("response", failure.stdout)):
+                if not output:
+                    continue
+                for variable in ("GH_TOKEN", "GITHUB_TOKEN"):
+                    token = os.environ.get(variable)
+                    if token:
+                        output = output.replace(token, "[REDACTED]")
+                print(f"{name}: {output.rstrip()}", file=sys.stderr)
+            raise
         return result.stdout if text else json.loads(result.stdout or "null")
 
     def pages(self, path, key=None):
