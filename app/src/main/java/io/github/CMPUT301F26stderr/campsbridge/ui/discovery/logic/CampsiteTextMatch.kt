@@ -14,5 +14,13 @@ import java.util.Locale
 fun matchesCampsiteText(
     campsite: Campsite,
     query: String,
-): Boolean =
-    false
+): Boolean {
+
+    if (query.isBlank()) return true
+
+    val normalized = query.trim().lowercase(Locale.ROOT)
+
+    return campsite.details.name.lowercase(Locale.ROOT).contains(normalized) ||
+        campsite.details.locationLabel.lowercase(Locale.ROOT).contains(normalized) ||
+        campsite.details.description.lowercase(Locale.ROOT).contains(normalized)
+}
