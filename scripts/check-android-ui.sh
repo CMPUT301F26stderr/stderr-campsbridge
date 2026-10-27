@@ -24,7 +24,7 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 if [[ -z "${ANDROID_SERIAL:-}" ]]; then
-    : "${ANDROID_UI_HOME:?Run through nix develop .#ui, or set ANDROID_SERIAL to an existing test device}"
+    : "${ANDROID_UI_HOME:?Set ANDROID_SERIAL to a running test device from adb devices, or configure ANDROID_UI_HOME with the disposable test SDK}"
     if [[ ! -r /dev/kvm || ! -w /dev/kvm ]]; then
         echo 'A disposable Android test device requires readable/writable /dev/kvm.' >&2
         exit 1

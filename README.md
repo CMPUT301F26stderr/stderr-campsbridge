@@ -29,16 +29,16 @@ An Android campsite reservation app for CMPUT 301, built by a team of six. Entra
    .\gradlew.bat --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug
    ```
 
-The checks run Android Lint, local domain/schema/listener/controller tests, and a debug APK build. Run persistence integration tests separately:
+The checks run Android Lint, local domain/schema/listener/controller tests, and a debug APK build. For persistence integration tests, first complete the [Firebase test setup](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo#firebase-integration-checks), then run:
 
 ```bash
-nix develop --command bash scripts/check-firebase.sh
+bash scripts/check-firebase.sh
 ```
 
 This starts disposable Auth, Firestore, and Storage emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests remain separate:
 
 ```bash
-nix develop .#ui --command bash scripts/check-android-ui.sh
+bash scripts/check-android-ui.sh
 ```
 
 This uses a disposable API 35 emulator and requires usable KVM on Linux. See [CONTRIBUTING.md](CONTRIBUTING.md#test-boundaries) for existing-device and coverage commands.
