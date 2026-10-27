@@ -2,8 +2,10 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -11,24 +13,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.CampsiteFacts
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.ratingLabel
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
-/** Read-only saved overview shared by entrants, owner previews and admin inspection.
+/** Saved overview shared by entrants, owner previews and admin inspection.
  * @param state Actual listing outcome, never copied from a discovery row.
  * @param photo Independent attachment/display state.
  * @param onBack Returns to the actual caller.
@@ -70,63 +70,75 @@ fun CampsiteDetailScreen(
             is CampsiteDetailUiState.Content -> {
                 val site = state.campsite
                 Column(
-                    Modifier.verticalScroll(rememberScrollState()),
+                    Modifier.verticalScroll(rememberScrollState()).padding(bottom = Spacing.medium),
                     verticalArrangement = Arrangement.spacedBy(Spacing.medium),
                 ) {
-                    if (photo.loadState == ImageLoadState.LOADING || photo.isResolvingUrl) {
-                        LoadingContent()
-                    } else {
-                        RemoteImage(
-                            photo.displayUrl,
-                            site.details.name,
-                            Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-                        )
-                    }
-                    if (photo.loadState == ImageLoadState.FAILED || photo.displayFailed) {
-                        FailureContent(stringResource(R.string.photo_display_failure), onRetryPhoto)
-                    }
-                    Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
-                    if (context == CampsiteDetailContext.PREVIEW) {
-                        Text(stringResource(R.string.campsite_preview))
-                    } else if (context == CampsiteDetailContext.INSPECT) {
-                        Text(stringResource(R.string.campsite_inspection))
+                    AttachmentImage(
+                        photo,
+                        site.details.name,
+                        onRetryPhoto,
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(
+                                16f / 9f,
+                            ).clip(MaterialTheme.shapes.medium),
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                        Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
+                        if (context == CampsiteDetailContext.PREVIEW) {
+                            Text(stringResource(R.string.campsite_preview))
+                        } else if (context == CampsiteDetailContext.INSPECT) {
+                            Text(stringResource(R.string.campsite_inspection))
+                            Text(
+                                stringResource(
+                                    if (site.removal != null) {
+                                        R.string.campsite_removed
+                                    } else if (site.isPublished) {
+                                        R.string.campsite_published
+                                    } else {
+                                        R.string.campsite_draft
+                                    },
+                                ),
+                            )
+                        }
                         Text(
-                            stringResource(
-                                if (site.removal != null) {
-                                    R.string.campsite_removed
-                                } else if (site.isPublished) {
-                                    R.string.campsite_published
-                                } else {
-                                    R.string.campsite_draft
-                                },
-                            ),
+                            site.details.locationLabel,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                    }
-                    Text(site.details.locationLabel)
-                    Text(ratingLabel(rating))
-                    if (rating == RatingState.Failure) {
-                        TextButton(onRetryRatings) {
-                            Text(stringResource(R.string.campsite_retry_ratings))
+                        Text(
+                            ratingLabel(rating),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (rating == RatingState.Failure) {
+                            TextButton(onRetryRatings) {
+                                Text(stringResource(R.string.campsite_retry_ratings))
+                            }
+                        }
+                        CampsiteFacts(site)
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                            Text(
+                                stringResource(R.string.campsite_reference),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                site.id,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
-                    Text(stringResource(R.string.up_to_guests, site.details.maxGuests))
-                    Text(
-                        stringResource(
-                            R.string.per_night,
-                            formatCad(
-                                site.details.nightlyPriceCents,
-                                LocalConfiguration.current.locales[0],
-                            ),
-                        ),
-                    )
-                    DetailRow(stringResource(R.string.campsite_reference), site.id)
-                    for (section in listOf(
-                        CampsiteDetailSection.ABOUT,
-                        CampsiteDetailSection.MAP,
-                        CampsiteDetailSection.AVAILABILITY,
-                        CampsiteDetailSection.RULES,
-                    )) {
-                        NavigationRow(campsiteSectionTitle(section), { onOpenSection(section) })
+                    Column {
+                        for (section in listOf(
+                            CampsiteDetailSection.ABOUT,
+                            CampsiteDetailSection.MAP,
+                            CampsiteDetailSection.AVAILABILITY,
+                            CampsiteDetailSection.RULES,
+                        )) {
+                            NavigationRow(campsiteSectionTitle(section), { onOpenSection(section) })
+                        }
                     }
                 }
             }
@@ -144,7 +156,7 @@ private fun CampsiteDetailPreview() {
             CampsiteDetailUiState.Content(
                 previewCampsite(),
             ),
-            ImageSlotState(loadState = ImageLoadState.READY),
+            previewCampsitePhoto(),
             {
             },
             {},

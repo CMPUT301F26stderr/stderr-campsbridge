@@ -12,4 +12,6 @@ Select `firebaseDebug` to run the real Firebase-backed app, or build `release` f
 
 Run controller/data contracts with `:app:testDebugUnitTest --tests '*demo.*'`. Device tests in `demo/OfflineDemoTest.kt` launch the package's default launcher, verify real content and scenario controls, and assert that no Firebase app has been initialized.
 
-The debug Task examples catalogue supplies H01/H02 profile exercises, H03 availability, and H04 owner inventory against local repositories. H03 starts in May 2027 with a booked May 13; H04 retains the supplied fixture order until its helper is connected. Its bindings remain null in the shared baseline and are supplied independently in each task handoff. Later examples are explicit placeholders.
+The debug Task examples catalogue supplies H01/H02 profile exercises, H03 availability, and H04 owner inventory against local repositories. H03 starts in May 2027 with a booked May 13; H04 retains the supplied fixture order until its helper is connected. H05/H06 isolate discovery text and guest-capacity matching. Bindings remain null in the shared baseline and are supplied independently in each task handoff. Later examples are explicit placeholders.
+
+H05/H06 are available directly in Task examples. Each uses the real Explore controller, working filter child and supplied listings; only its assigned predicate is left pending. Other predicates and ordering use fixed fixture outcomes within that isolated example. The ordinary app retains its pending production helper bindings.

@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,6 +53,35 @@ class TaskExampleSession(
                 bindings.parseName,
                 bindings.parseEmail,
                 bindings.parsePhone,
+            )
+        }
+
+    /** Isolates discovery's target helper with constant peer outcomes for supplied records only. */
+    fun explore(): ExploreViewModel =
+        model(ExploreViewModel::class.java) {
+            ExploreViewModel(
+                campsites,
+                images,
+                DemoReviewRepository(),
+                SavedStateHandle(),
+                matchesText =
+                    if (example ==
+                        TaskExample.TEXT_MATCH
+                    ) {
+                        bindings.matchesText
+                    } else {
+                        { _, _ -> true }
+                    },
+                matchesCapacity =
+                    if (example ==
+                        TaskExample.GUEST_MATCH
+                    ) {
+                        bindings.matchesGuests
+                    } else {
+                        { _, _ -> true }
+                    },
+                sortCampsites = { it },
+                clock = TaskExampleData.clock,
             )
         }
 

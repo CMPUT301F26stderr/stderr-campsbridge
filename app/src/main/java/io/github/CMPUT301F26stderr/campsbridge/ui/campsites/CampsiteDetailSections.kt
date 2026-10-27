@@ -1,16 +1,27 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -21,8 +32,10 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.options.CampingOptions
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AccountAvatar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.TagLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -59,41 +72,93 @@ fun CampsiteAboutScreen(
     onRetryOwner: () -> Unit,
 ) {
     CampsiteSectionFrame(CampsiteDetailSection.ABOUT, state, onBack, onRetry) { site ->
-        Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
-        Text(site.details.locationLabel)
-        Text(stringResource(R.string.campsite_owner), style = MaterialTheme.typography.titleMedium)
-        when (owner) {
-            CampsiteOwnerState.Loading -> {
-                LoadingContent()
-            }
-
-            CampsiteOwnerState.Failure -> {
-                FailureContent(stringResource(R.string.campsite_owner_failure), onRetryOwner)
-            }
-
-            CampsiteOwnerState.Unavailable -> {
-                Text(stringResource(R.string.campsite_owner_unavailable))
-            }
-
-            is CampsiteOwnerState.Ready -> {
-                Text(owner.name)
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+            Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
+            Text(
+                site.details.locationLabel,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
-        Text(
-            stringResource(R.string.campsite_about_description),
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Text(site.details.description.ifBlank { stringResource(R.string.campsite_no_description) })
+        CampsiteOwnerCard(owner, onRetryOwner)
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+            Text(
+                stringResource(R.string.campsite_about_description),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                site.details.description.ifBlank {
+                    stringResource(
+                        R.string.campsite_no_description,
+                    )
+                },
+            )
+        }
         StoredOptions(
             stringResource(R.string.campsite_tags),
             site.details.tags,
             CampingOptions.tags,
+            asTags = true,
         )
         StoredOptions(
             stringResource(R.string.campsite_amenities),
             site.details.amenities,
             CampingOptions.amenities,
         )
+    }
+}
+
+/** Groups the host read independently from the surrounding saved listing facts.
+ * @param owner Current host-name read outcome.
+ * @param onRetry Retries only the failed host read.
+ */
+@Composable
+private fun CampsiteOwnerCard(
+    owner: CampsiteOwnerState,
+    onRetry: () -> Unit,
+) {
+    OutlinedCard(
+        Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors =
+            CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+    ) {
+        Row(
+            Modifier.padding(Spacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AccountAvatar(null, stringResource(R.string.campsite_owner))
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                Text(
+                    stringResource(R.string.campsite_owner),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                when (owner) {
+                    CampsiteOwnerState.Loading -> {
+                        LoadingContent()
+                    }
+
+                    CampsiteOwnerState.Failure -> {
+                        FailureContent(stringResource(R.string.campsite_owner_failure), onRetry)
+                    }
+
+                    CampsiteOwnerState.Unavailable -> {
+                        Text(stringResource(R.string.campsite_owner_unavailable))
+                    }
+
+                    is CampsiteOwnerState.Ready -> {
+                        Text(owner.name, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -108,10 +173,46 @@ fun CampsiteMapScreen(
     onBack: () -> Unit,
     onRetry: () -> Unit,
 ) {
-    CampsiteSectionFrame(CampsiteDetailSection.MAP, state, onBack, onRetry) { site ->
-        Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
-        Text(site.details.locationLabel)
-        CampsiteMap(site.details.location, Modifier.fillMaxWidth().aspectRatio(1f))
+    CampsiteSectionFrame(
+        CampsiteDetailSection.MAP,
+        state,
+        onBack,
+        onRetry,
+        scrollable = false,
+    ) { site ->
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val summaryMaximum = maxHeight / 3
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            ) {
+                CampsiteMap(
+                    site.details.location,
+                    Modifier.fillMaxWidth().weight(1f).clip(MaterialTheme.shapes.medium),
+                )
+                OutlinedCard(
+                    // Long saved labels may scroll, while the map keeps most of the viewport.
+                    Modifier.fillMaxWidth().heightIn(max = summaryMaximum),
+                    shape = MaterialTheme.shapes.medium,
+                    colors =
+                        CardDefaults.outlinedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ),
+                ) {
+                    Column(
+                        Modifier.verticalScroll(rememberScrollState()).padding(Spacing.medium),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                    ) {
+                        Text(site.details.name, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            site.details.locationLabel,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -194,6 +295,7 @@ fun CampsiteRulesScreen(
  * @param state Authoritative saved listing outcome.
  * @param onBack Returns to the actual parent destination.
  * @param onRetry Retries the saved listing read.
+ * @param scrollable Whether facts scroll or content uses the available height, as a native map does.
  * @param content Content shown only for an actual presentable record.
  */
 @Composable
@@ -202,6 +304,7 @@ private fun CampsiteSectionFrame(
     state: CampsiteDetailUiState,
     onBack: () -> Unit,
     onRetry: () -> Unit,
+    scrollable: Boolean = true,
     content: @Composable ColumnScope.(Campsite) -> Unit,
 ) {
     AppScreen(campsiteSectionTitle(section), onBack = onBack) {
@@ -220,8 +323,16 @@ private fun CampsiteSectionFrame(
 
             is CampsiteDetailUiState.Content -> {
                 Column(
-                    Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                    (
+                        if (scrollable) {
+                            Modifier.verticalScroll(
+                                rememberScrollState(),
+                            )
+                        } else {
+                            Modifier.fillMaxSize()
+                        }
+                    ).padding(vertical = Spacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.large),
                 ) { content(state.campsite) }
             }
         }
@@ -232,18 +343,56 @@ private fun CampsiteSectionFrame(
  * @param title Localized group label.
  * @param values Actual saved option IDs.
  * @param catalog Shared localized choices for this group.
+ * @param asTags Whether to wrap passive labels instead of grouping amenity rows.
  */
 @Composable
 private fun StoredOptions(
     title: String,
     values: Set<String>,
     catalog: List<CampingOption>,
+    asTags: Boolean = false,
 ) {
-    Text(title, style = MaterialTheme.typography.titleMedium)
-    if (values.isEmpty()) Text(stringResource(R.string.campsite_no_options))
-    for (value in values) {
-        val known = catalog.firstOrNull { it.id == value }
-        Text(if (known == null) value else stringResource(known.label))
+    val labels =
+        values.map { value ->
+            val known = catalog.firstOrNull { it.id == value }
+            if (known == null) value else stringResource(known.label)
+        }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        Text(title, style = MaterialTheme.typography.titleMedium)
+        when {
+            labels.isEmpty() -> {
+                Text(stringResource(R.string.campsite_no_options))
+            }
+
+            asTags -> {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                ) {
+                    labels.forEach { TagLabel(it) }
+                }
+            }
+
+            else -> {
+                OutlinedCard(
+                    Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    colors =
+                        CardDefaults.outlinedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ),
+                ) {
+                    labels.forEachIndexed { index, label ->
+                        if (index >
+                            0
+                        ) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+                        ListItem(headlineContent = { Text(label) })
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -268,6 +417,38 @@ private fun CampsiteAboutPreview() {
 @Composable
 private fun CampsiteMapPreview() {
     CampsbridgeTheme { CampsiteMapScreen(CampsiteDetailUiState.Content(previewCampsite()), {}, {}) }
+}
+
+/** Checks that a long saved summary scrolls independently of the usable native map. */
+@Preview(
+    name = "Long map summary",
+    showBackground = true,
+    widthDp = 390,
+    heightDp = 844,
+    fontScale = 2f,
+)
+@Composable
+private fun CampsiteMapLongPreview() {
+    val site = previewCampsite()
+    CampsbridgeTheme {
+        CampsiteMapScreen(
+            CampsiteDetailUiState.Content(
+                site.copy(
+                    details =
+                        site.details.copy(
+                            name = "Athabasca Riverside Family Camp and Woodland Retreat",
+                            locationLabel =
+                                "Along the Athabasca River, near " +
+                                    "Jasper National Park, Alberta. Follow the " +
+                                    "riverside access road to the clearing " +
+                                    "at the end of the trail.",
+                        ),
+                ),
+            ),
+            {},
+            {},
+        )
+    }
 }
 
 /** Shows the existing read-only calendar geometry with an explicitly confirmed empty month. */

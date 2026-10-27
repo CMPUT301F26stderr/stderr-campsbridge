@@ -1,27 +1,34 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
-import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.CampsiteFacts
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
@@ -29,10 +36,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.StatusLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.Instant
 
 /** Saved owner summary; future actions appear only when their actual routes are registered.
  * @param state Actual saved listing outcome.
@@ -80,82 +86,113 @@ fun CampsiteManagementScreen(
                     Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(Spacing.medium),
                 ) {
-                    if (photo.loadState == ImageLoadState.LOADING || photo.isResolvingUrl) {
-                        LoadingContent()
-                    } else {
-                        RemoteImage(
-                            photo.displayUrl,
-                            site.details.name,
-                            Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-                        )
+                    OutlinedCard(
+                        colors =
+                            CardDefaults.outlinedCardColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                            ),
+                    ) {
+                        Column(
+                            Modifier.fillMaxWidth().padding(Spacing.medium),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Box(
+                                    Modifier.size(64.dp).clip(MaterialTheme.shapes.small),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    if (photo.loadState == ImageLoadState.LOADING ||
+                                        photo.isResolvingUrl
+                                    ) {
+                                        CircularProgressIndicator()
+                                    } else {
+                                        RemoteImage(
+                                            photo.displayUrl,
+                                            site.details.name,
+                                            Modifier.fillMaxSize(),
+                                            compactFailure = true,
+                                        )
+                                    }
+                                }
+                                Column(
+                                    Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                                ) {
+                                    Text(
+                                        site.details.name,
+                                        style = MaterialTheme.typography.titleLarge,
+                                    )
+                                    Text(
+                                        site.details.locationLabel,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                            StatusLabel(
+                                stringResource(
+                                    if (site.isPublished) {
+                                        R.string.campsite_published
+                                    } else {
+                                        R.string.campsite_draft
+                                    },
+                                ),
+                                if (site.isPublished) {
+                                    Icons.Default.CheckCircle
+                                } else {
+                                    Icons.Default.Edit
+                                },
+                            )
+                            CampsiteFacts(site)
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                                Text(
+                                    stringResource(R.string.campsite_reference),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    site.id,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                     }
                     if (photo.loadState == ImageLoadState.FAILED || photo.displayFailed) {
                         FailureContent(stringResource(R.string.photo_display_failure), onRetryPhoto)
                     }
-                    Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
-                    StatusLabel(
-                        stringResource(
-                            if (site.isPublished) {
-                                R.string.campsite_published
-                            } else {
-                                R.string.campsite_draft
-                            },
-                        ),
-                        if (site.isPublished) Icons.Default.CheckCircle else Icons.Default.Edit,
-                    )
-                    DetailRow(
-                        stringResource(R.string.campsite_location),
-                        site.details.locationLabel,
-                    )
-                    Text(stringResource(R.string.up_to_guests, site.details.maxGuests))
-                    DetailRow(
-                        stringResource(R.string.campsite_nightly_price),
-                        stringResource(
-                            R.string.per_night,
-                            formatCad(
-                                site.details.nightlyPriceCents,
-                                LocalConfiguration.current.locales[0],
-                            ),
-                        ),
-                    )
-                    DetailRow(stringResource(R.string.campsite_reference), site.id)
-                    if (onPreview != null) {
-                        TextButton(onPreview) { Text(stringResource(R.string.campsite_preview)) }
-                    }
-                    if (onAvailability != null) {
-                        TextButton(
-                            onAvailability,
-                        ) { Text(stringResource(R.string.availability_title)) }
-                    }
-                    if (!site.isPublished && onResume != null) {
-                        TextButton(onResume) { Text(stringResource(R.string.campsite_resume)) }
+                    Column {
+                        if (!site.isPublished && onResume != null) {
+                            NavigationRow(
+                                stringResource(R.string.campsite_resume),
+                                onResume,
+                                icon = Icons.Default.Edit,
+                            )
+                        }
+                        if (onAvailability != null) {
+                            NavigationRow(
+                                stringResource(R.string.availability_title),
+                                onAvailability,
+                                icon = Icons.Default.DateRange,
+                            )
+                        }
+
+                        if (onPreview != null) {
+                            NavigationRow(
+                                stringResource(R.string.campsite_preview),
+                                onPreview,
+                                icon = Icons.Default.Info,
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
-
-/** Stable ordinary domain values used only by themed content previews. */
-internal fun previewCampsite(): Campsite =
-    Campsite(
-        "preview-campsite",
-        "preview-owner",
-        CampsiteDetails(
-            "River Camp",
-            "A quiet riverside campsite.",
-            Coordinates(53.0, -118.0),
-            "Jasper, Alberta",
-            "America/Edmonton",
-            8,
-            setOf("water"),
-            setOf("lakeside"),
-            6500,
-            "Keep the campsite clean.",
-        ),
-        Instant.EPOCH,
-        Instant.EPOCH,
-    )
 
 /** Shows the read-only summary with the same theme as owner inventory. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
@@ -165,10 +202,12 @@ private fun CampsiteManagementPreview() {
     CampsbridgeTheme {
         CampsiteManagementScreen(
             CampsiteDetailUiState.Content(previewCampsite()),
-            ImageSlotState(loadState = ImageLoadState.READY),
+            previewCampsitePhoto(),
             {},
             {},
             {},
+            onAvailability = {},
+            onPreview = {},
         )
     }
 }
