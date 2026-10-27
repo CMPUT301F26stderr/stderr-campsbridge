@@ -12,3 +12,16 @@ sealed interface DisplayNameInput {
         val name: String,
     ) : DisplayNameInput
 }
+
+/**
+ * Parses editable display-name text into a required-field result or accepted trimmed name.
+ * @param text Unsubmitted field text; internal whitespace, case and Unicode must be preserved.
+ */
+fun parseDisplayName(text: String): DisplayNameInput {
+    val name = text.trim()
+    return if (name.isEmpty()) {
+        DisplayNameInput.Required
+    } else {
+        DisplayNameInput.Valid(name)
+    }
+}

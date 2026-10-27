@@ -3,27 +3,25 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
@@ -54,12 +52,14 @@ fun LotteryAllocationScreen(
             ?.campsites
             ?.firstOrNull { it.id == state.draft.campsiteId }
     AppScreen(stringResource(R.string.lottery_allocate), onBack = onBack, bottomContent = {
-        AppActionButton(
-            stringResource(R.string.lottery_apply_nights),
-            onApply,
-            Modifier.fillMaxWidth().padding(Spacing.screen),
-            enabled = site != null && allocation?.canApply == true,
-        )
+        ActionFooter {
+            AppActionButton(
+                stringResource(R.string.lottery_apply_nights),
+                onApply,
+                Modifier.fillMaxWidth(),
+                enabled = site != null && allocation?.canApply == true,
+            )
+        }
     }) {
         Column(
             Modifier.verticalScroll(rememberScrollState()),
@@ -83,9 +83,12 @@ fun LotteryAllocationScreen(
                 }
 
                 else -> {
-                    Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
-                    Text(site.details.timeZone)
-                    Text(stringResource(R.string.lottery_allocation_hint))
+                    Text(site.details.name, style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        site.details.timeZone,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     when (allocation.inventory) {
                         CalendarInventoryRead.Loading -> {
                             LoadingContent()
@@ -106,21 +109,20 @@ fun LotteryAllocationScreen(
                             )
                         }
                     }
-                    val count = allocation.selected.size
-                    Text(pluralStringResource(R.plurals.lottery_allocated_nights, count, count))
-                    val locale = LocalConfiguration.current.locales[0]
-                    if (allocation.selected.isNotEmpty()) {
-                        Text(
-                            allocation.selected
-                                .sorted()
-                                .joinToString { formatDate(it, locale) },
-                        )
+                    SummarySection(stringResource(R.string.lottery_selected_nights)) {
+                        LotteryAllocatedNights(allocation.selected)
                     }
                     if (allocation.invalidSelection) {
                         Text(
                             stringResource(R.string.lottery_allocation_invalid),
+                            color = MaterialTheme.colorScheme.error,
                         )
                     }
+                    Text(
+                        stringResource(R.string.lottery_allocation_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }

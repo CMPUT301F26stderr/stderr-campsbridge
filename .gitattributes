@@ -3,3 +3,6 @@
 gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
+
+# Keep the prototype tracked, but exclude it from GitHub language statistics.
+/prototype/** linguist-vendored=true

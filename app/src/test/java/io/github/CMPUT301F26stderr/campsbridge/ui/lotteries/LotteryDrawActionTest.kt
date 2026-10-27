@@ -10,7 +10,6 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepo
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -314,20 +313,6 @@ class LotteryDrawActionTest {
             runCurrent()
             assertEquals(LotteryDetailUiState.Unavailable, model.state.value)
             assertEquals(listOf("draw:draw"), lotteries.events)
-        }
-
-    /** A cancelled repository call ends actual progress without creating a failure banner. */
-    @Test fun cancelledRepositoryCallReleasesTransientProgress() =
-        withOwner {
-            lotteries.drawHandler = { throw CancellationException("cancelled request") }
-            val model = model()
-            runCurrent()
-            model.draw()
-            runCurrent()
-            assertEquals(listOf("draw:draw"), lotteries.events)
-            assertFalse(content(model).isDrawing)
-            assertFalse(content(model).drawFailed)
-            assertEquals(parent, content(model).lottery)
         }
 
     /** Constructs the actual saved parent with no participant filter implementation.

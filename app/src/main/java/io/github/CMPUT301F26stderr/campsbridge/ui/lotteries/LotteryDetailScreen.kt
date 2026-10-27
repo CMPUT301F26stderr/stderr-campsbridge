@@ -2,102 +2,44 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
-import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.TagLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
-/** Connects the context-qualified saved reader to its caller and source retries.
- * @param model Actual saved-record owner.
- * @param onBack Returns to the retained caller.
- * @param onContinue Opens setup for this saved identity.
- * @param onParticipants Registered owner participant destination, absent for entrants.
- * @param onReservation Registered saved-record destination, absent until its graph is supplied.
- * @param onBooking Registered single-site winner flow; current state still gates entry.
- */
-@Composable
-fun LotteryDetailRoute(
-    model: LotteryDetailViewModel,
-    onBack: () -> Unit,
-    onContinue: () -> Unit,
-    onParticipants: (() -> Unit)? = null,
-    onReservation: ((String) -> Unit)? = null,
-    onBooking: ((String, String) -> Unit)? = null,
-) {
-    val state by model.state.collectAsStateWithLifecycle()
-    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
-        .collectAsStateWithLifecycle()
-    LaunchedEffect(lifecycle) {
-        if (lifecycle == Lifecycle.State.RESUMED) model.refreshTime()
-    }
-    LotteryDetailScreen(
-        state,
-        onBack,
-        model::retry,
-        model::retryOffers,
-        onContinue,
-        model::retryMembership,
-        model::retryOpportunity,
-        model::join,
-        model::requestLeave,
-        model::dismissLeave,
-        model::confirmLeave,
-        model::draw,
-        onParticipants = onParticipants,
-        onReservation = onReservation,
-        onBooking = onBooking,
-    )
-}
-
-/**
- * Shared owner/entrant overview of confirmed saved facts and independent participation reads.
- * @param state Saved record and independent allocation, membership and reservation outcomes.
+/** Saved owner/entrant overview; detailed facts live in registered read-only children.
+ * @param state Confirmed parent, independent reads and current command feedback.
  * @param onBack Returns to the actual caller.
  * @param onRetry Retries the parent observation.
- * @param onRetryOffers Retries allocations and referenced site labels.
- * @param onContinue Reopens this active unpublished draft by ID.
- * @param onRetryMembership Retries the independent own-entry source.
+ * @param onRetryOffers Retries only allocation/campsite reads.
+ * @param onContinue Reopens the active unpublished draft by ID.
+ * @param onRetryMembership Retries only the own-entry source.
  * @param onRetryOpportunity Reconciles unknown reservation consumption.
  * @param onJoin Joins or rejoins an eligible waitlist.
  * @param onRequestLeave Opens withdrawal confirmation.
  * @param onDismissLeave Dismisses an unsubmitted withdrawal.
- * @param onConfirmLeave Submits an explicitly confirmed withdrawal.
+ * @param onConfirmLeave Submits the confirmed withdrawal.
  * @param onDraw Invokes the eligible owner fallback or explicit retry.
  * @param modifier Caller layout.
- * @param onParticipants Registered owner-only child; no action is shown for drafts.
- * @param onReservation Opens an actual consuming saved record; no booking success is fabricated.
- * @param onBooking Opens the actual single-site winner flow with saved identities.
+ * @param onParticipants Registered owner participant child, hidden for drafts.
+ * @param onReservation Opens the confirmed consuming reservation.
+ * @param onBooking Opens the registered single-site winner flow.
+ * @param onOpenSection Registered detail children, absent in isolated examples.
  */
 @Composable
 fun LotteryDetailScreen(
@@ -117,199 +59,157 @@ fun LotteryDetailScreen(
     onParticipants: (() -> Unit)? = null,
     onReservation: ((String) -> Unit)? = null,
     onBooking: ((String, String) -> Unit)? = null,
+    onOpenSection: ((LotteryDetailSection) -> Unit)? = null,
 ) {
-    AppScreen(stringResource(R.string.lottery_detail_title), modifier, onBack = onBack) {
-        when (state) {
-            LotteryDetailUiState.Loading -> {
-                LoadingContent()
-            }
-
-            LotteryDetailUiState.Failure -> {
-                FailureContent(stringResource(R.string.lottery_load_failed), onRetry)
-            }
-
-            LotteryDetailUiState.Unavailable -> {
-                Text(stringResource(R.string.lottery_unavailable))
-            }
-
-            is LotteryDetailUiState.Content -> {
-                Column(
-                    Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-                ) {
-                    val record = state.lottery
-                    Text(record.title, style = MaterialTheme.typography.headlineSmall)
-                    Text(
-                        stringResource(
-                            when {
-                                record.cancellation != null -> R.string.lottery_cancelled_status
-                                record.publishedAt != null -> R.string.lottery_published_status
-                                else -> R.string.lottery_draft_status
-                            },
-                        ),
-                    )
-                    val duplicatePending =
-                        state.lifecycle == LotteryLifecycle.DRAW_PENDING &&
-                            (state.membership as? LotteryMembershipRead.Content)?.status ==
-                            LotteryMembershipStatus.RESULTS_PENDING
-                    if (state.lifecycle != LotteryLifecycle.DRAFT &&
-                        state.lifecycle != LotteryLifecycle.CANCELLED && !duplicatePending
-                    ) {
-                        Text(lotteryLifecycleLabel(state.lifecycle))
+    val content = state as? LotteryDetailUiState.Content
+    val bookingOffer =
+        content
+            ?.takeIf {
+                it.opportunity == LotteryOpportunityRead.Unused &&
+                    it.lifecycle == LotteryLifecycle.BOOKING_OPEN && onBooking != null
+            }?.let { (it.offers as? LotteryOffersState.Content)?.offers?.singleOrNull() }
+    val reservation =
+        (content?.opportunity as? LotteryOpportunityRead.Reserved)
+            ?.reservation
+            ?.takeIf { onReservation != null }
+    val participation = content?.participation
+    val hasActions =
+        content != null && (
+            bookingOffer != null || reservation != null || content.canContinue || content.canDraw ||
+                content.isDrawing || content.drawFailed || participation?.canJoin == true ||
+                participation?.canLeave == true || participation?.action != null ||
+                participation?.error != null || participation?.isConfirmingLeave == true
+        )
+    LotteryDetailFrame(
+        stringResource(R.string.lottery_detail_title),
+        state,
+        onBack,
+        onRetry,
+        modifier,
+        bottomContent = {
+            if (content != null && hasActions) {
+                ActionFooter {
+                    if (bookingOffer != null && onBooking != null) {
+                        AppActionButton(stringResource(R.string.booking_title), {
+                            onBooking(content.lottery.id, bookingOffer.offer.campsiteId)
+                        }, Modifier.fillMaxWidth())
                     }
-                    if (record.description.isNotEmpty()) Text(record.description)
-                    LotteryMembershipReadContent(state.membership, onRetryMembership)
-                    when (val opportunity = state.opportunity) {
-                        LotteryOpportunityRead.NotApplicable -> {
-                            Unit
-                        }
-
-                        LotteryOpportunityRead.Loading -> {
-                            Text(stringResource(R.string.lottery_opportunity_loading))
-                        }
-
-                        LotteryOpportunityRead.Failure -> {
-                            FailureContent(
-                                stringResource(R.string.lottery_opportunity_failed),
-                                onRetryOpportunity,
-                            )
-                        }
-
-                        LotteryOpportunityRead.Unused -> {
-                            Text(stringResource(R.string.lottery_opportunity_unused))
-                            val offer =
-                                (state.offers as? LotteryOffersState.Content)
-                                    ?.offers
-                                    ?.singleOrNull()
-                            if (onBooking != null && offer != null &&
-                                state.lifecycle == LotteryLifecycle.BOOKING_OPEN
-                            ) {
-                                AppActionButton(stringResource(R.string.booking_title), {
-                                    onBooking(record.id, offer.offer.campsiteId)
-                                })
-                            }
-                        }
-
-                        is LotteryOpportunityRead.Reserved -> {
-                            Text(
-                                stringResource(
-                                    R.string.lottery_saved_reservation,
-                                    opportunity.reservation.id,
-                                ),
-                            )
-                            if (onReservation != null) {
-                                AppActionButton(stringResource(R.string.reservation_view), {
-                                    onReservation(opportunity.reservation.id)
-                                })
-                            }
-                        }
-
-                        is LotteryOpportunityRead.Unavailable -> {
-                            Text(stringResource(R.string.lottery_saved_reservation_unavailable))
-                            Text(
-                                stringResource(
-                                    R.string.lottery_saved_reservation,
-                                    opportunity.reservationId,
-                                ),
-                            )
-                        }
+                    if (reservation != null && onReservation != null) {
+                        AppActionButton(stringResource(R.string.reservation_view), {
+                            onReservation(reservation.id)
+                        }, Modifier.fillMaxWidth())
                     }
                     LotteryMembershipActions(
-                        state.participation,
+                        content.participation,
                         onJoin,
                         onRequestLeave,
                         onDismissLeave,
                         onConfirmLeave,
                     )
-                    LotteryDrawActions(state, onDraw)
-                    if (onParticipants != null && record.publishedAt != null) {
-                        AppActionButton(
-                            stringResource(R.string.lottery_participants),
-                            onParticipants,
-                        )
-                    }
-                    if (state.canContinue) {
+                    LotteryDrawActions(content, onDraw)
+                    if (content.canContinue) {
                         AppActionButton(
                             stringResource(R.string.lottery_continue_setup),
                             onContinue,
+                            Modifier.fillMaxWidth(),
                         )
                     }
-                    DetailRow(
-                        stringResource(R.string.lottery_winners_step),
-                        record.configuration.winnerCount.toString(),
-                    )
-                    Text(stringResource(R.string.lottery_unlimited))
-                    when (val offers = state.offers) {
-                        LotteryOffersState.Loading -> {
-                            LoadingContent()
-                        }
-
-                        LotteryOffersState.Failure -> {
-                            FailureContent(
-                                stringResource(R.string.lottery_offers_failed),
-                                onRetryOffers,
-                            )
-                        }
-
-                        is LotteryOffersState.Content -> {
-                            if (offers.offers.isEmpty()) {
-                                Text(
-                                    stringResource(R.string.lottery_no_offers),
-                                )
-                            }
-                            for (summary in offers.offers) {
-                                Text(
-                                    summary.name
-                                        ?: stringResource(
-                                            R.string.lottery_missing_campsite,
-                                            summary.offer.campsiteId,
-                                        ),
-                                )
-                                val locale = LocalConfiguration.current.locales[0]
-                                for (night in summary.offer.nights) Text(formatDate(night, locale))
-                                val count = summary.offer.nights.size
-                                Text(
-                                    pluralStringResource(
-                                        R.plurals.lottery_allocated_nights,
-                                        count,
-                                        count,
-                                    ),
-                                )
-                            }
-                        }
-                    }
-                    val known = state.offers as? LotteryOffersState.Content
-                    val zone =
-                        known
-                            ?.offers
-                            ?.mapNotNull { it.timeZone }
-                            ?.distinct()
-                            ?.singleOrNull()
-                            ?.let(ZoneId::of) ?: ZoneId.of("UTC")
-                    val format =
-                        DateTimeFormatter
-                            .ofLocalizedDateTime(FormatStyle.MEDIUM)
-                            .withLocale(LocalConfiguration.current.locales[0])
-                            .withZone(zone)
-                    Text(zone.id)
-                    DetailRow(
-                        stringResource(R.string.lottery_registration_step),
-                        stringResource(
-                            R.string.lottery_window_range,
-                            format.format(record.configuration.registrationOpensAt),
-                            format.format(record.configuration.registrationClosesAt),
-                        ),
-                    )
-                    DetailRow(
-                        stringResource(R.string.lottery_booking_step),
-                        stringResource(
-                            R.string.lottery_window_range,
-                            format.format(record.configuration.bookingOpensAt),
-                            format.format(record.configuration.bookingClosesAt),
-                        ),
-                    )
                 }
             }
+        },
+    ) { current ->
+        Text(current.lottery.title, style = MaterialTheme.typography.headlineSmall)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+        ) {
+            if (current.lottery.publishedAt != null &&
+                current.lifecycle != LotteryLifecycle.CANCELLED
+            ) {
+                TagLabel(stringResource(R.string.lottery_published_status))
+            }
+            TagLabel(lotteryLifecycleLabel(current.lifecycle))
+        }
+        val deadline = lotteryDeadline(current.lottery, current.lifecycle)
+        if (deadline != null) {
+            Text(
+                stringResource(
+                    when (current.lifecycle) {
+                        LotteryLifecycle.UPCOMING -> R.string.lottery_registration_starts
+                        LotteryLifecycle.REGISTRATION_OPEN -> R.string.lottery_registration_ends
+                        LotteryLifecycle.AWAITING_BOOKING -> R.string.lottery_booking_starts
+                        else -> R.string.lottery_booking_deadline
+                    },
+                    formatDateTime(
+                        deadline,
+                        lotteryDisplayZone(current.offers),
+                        LocalConfiguration.current.locales[0],
+                    ),
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        val pendingIsInHeading =
+            current.lifecycle == LotteryLifecycle.DRAW_PENDING &&
+                (current.membership as? LotteryMembershipRead.Content)?.status ==
+                LotteryMembershipStatus.RESULTS_PENDING
+        if (!pendingIsInHeading) LotteryMembershipReadContent(current.membership, onRetryMembership)
+        LotteryOpportunityContent(current.opportunity, onRetryOpportunity)
+        if (current.offers == LotteryOffersState.Failure) {
+            FailureContent(stringResource(R.string.lottery_offers_failed), onRetryOffers)
+        } else if ((current.offers as? LotteryOffersState.Content)?.offers?.isEmpty() == true) {
+            Text(stringResource(R.string.lottery_no_offers))
+        }
+        Column {
+            if (onOpenSection != null) {
+                NavigationRow(stringResource(R.string.lottery_schedule_title), {
+                    onOpenSection(LotteryDetailSection.SCHEDULE)
+                })
+                NavigationRow(stringResource(R.string.lottery_campsites_title), {
+                    onOpenSection(LotteryDetailSection.CAMPSITES)
+                })
+            }
+            if (onParticipants != null && current.lottery.publishedAt != null) {
+                NavigationRow(stringResource(R.string.lottery_participants), onParticipants)
+            }
+        }
+    }
+}
+
+/** Keeps consumption knowledge separate from the footer's currently registered actions.
+ * @param opportunity Server-confirmed reservation outcome.
+ * @param onRetry Retries only a failed reservation source.
+ */
+@Composable
+private fun LotteryOpportunityContent(
+    opportunity: LotteryOpportunityRead,
+    onRetry: () -> Unit,
+) {
+    when (opportunity) {
+        LotteryOpportunityRead.NotApplicable -> {
+            Unit
+        }
+
+        LotteryOpportunityRead.Loading -> {
+            Text(stringResource(R.string.lottery_opportunity_loading))
+        }
+
+        LotteryOpportunityRead.Failure -> {
+            FailureContent(stringResource(R.string.lottery_opportunity_failed), onRetry)
+        }
+
+        LotteryOpportunityRead.Unused -> {
+            Text(stringResource(R.string.lottery_opportunity_unused))
+        }
+
+        is LotteryOpportunityRead.Reserved -> {
+            Text(stringResource(R.string.lottery_saved_reservation, opportunity.reservation.id))
+        }
+
+        is LotteryOpportunityRead.Unavailable -> {
+            Text(stringResource(R.string.lottery_saved_reservation_unavailable))
+            Text(stringResource(R.string.lottery_saved_reservation, opportunity.reservationId))
         }
     }
 }
@@ -332,163 +232,8 @@ internal fun lotteryLifecycleLabel(lifecycle: LotteryLifecycle): String =
         },
     )
 
-/** Supplies real-shaped saved content and read outcomes without constructing repositories. */
-class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiState> {
-    override val values: Sequence<LotteryDetailUiState> =
-        run {
-            val site = previewCampsite()
-            val record =
-                Lottery(
-                    "may-weekends",
-                    "owner",
-                    "May weekends 2027",
-                    "Quiet riverside camping for the long weekend.",
-                    LotteryConfiguration(
-                        Instant.parse("2027-05-05T15:00:00Z"),
-                        Instant.parse("2027-05-06T15:00:00Z"),
-                        Instant.parse("2027-05-07T15:00:00Z"),
-                        Instant.parse("2027-05-08T15:00:00Z"),
-                        2,
-                        null,
-                    ),
-                    0,
-                    Instant.parse("2027-05-01T12:00:00Z"),
-                )
-            val offer =
-                LotteryOffer(
-                    site.id,
-                    listOf(LocalDate.of(2027, 5, 14)),
-                )
-            val content =
-                LotteryDetailUiState.Content(
-                    record,
-                    LotteryOffersState.Content(
-                        listOf(
-                            LotteryOfferSummary(
-                                offer,
-                                site.details.name,
-                                site.details.timeZone,
-                            ),
-                        ),
-                    ),
-                    canContinue = true,
-                    lifecycle = lotteryLifecycle(record, record.createdAt),
-                )
-            sequenceOf(
-                content,
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.UPCOMING,
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.DRAW_PENDING,
-                    membership =
-                        LotteryMembershipRead.Content(
-                            LotteryMembershipStatus.RESULTS_PENDING,
-                        ),
-                ),
-                content.copy(
-                    lottery =
-                        record.copy(
-                            publishedAt = record.createdAt,
-                            drawnAt = record.createdAt,
-                        ),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.BOOKING_OPEN,
-                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WON),
-                    opportunity = LotteryOpportunityRead.Unused,
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
-                    membership = LotteryMembershipRead.Failure,
-                ),
-                content.copy(
-                    lottery =
-                        record.copy(
-                            publishedAt = record.createdAt,
-                            drawnAt = record.createdAt,
-                        ),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.BOOKING_OPEN,
-                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WON),
-                    opportunity = LotteryOpportunityRead.Failure,
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
-                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.NOT_JOINED),
-                    participation = LotteryMembershipUiState(canJoin = true),
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
-                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WITHDRAWN),
-                    participation =
-                        LotteryMembershipUiState(
-                            canJoin = true,
-                            action = LotteryMembershipAction.JOIN,
-                        ),
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
-                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WAITING),
-                    participation =
-                        LotteryMembershipUiState(
-                            canLeave = true,
-                            isConfirmingLeave = true,
-                        ),
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.REGISTRATION_OPEN,
-                    membership = LotteryMembershipRead.Content(LotteryMembershipStatus.WITHDRAWN),
-                    participation =
-                        LotteryMembershipUiState(
-                            canJoin = true,
-                            error = LotteryMembershipActionError.FAILED,
-                        ),
-                ),
-                content.copy(offers = LotteryOffersState.Content(emptyList())),
-                content.copy(offers = LotteryOffersState.Failure),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.DRAW_PENDING,
-                    canDraw = true,
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.DRAW_PENDING,
-                    canDraw = true,
-                    isDrawing = true,
-                ),
-                content.copy(
-                    lottery = record.copy(publishedAt = record.createdAt),
-                    canContinue = false,
-                    lifecycle = LotteryLifecycle.DRAW_PENDING,
-                    canDraw = true,
-                    drawFailed = true,
-                ),
-                LotteryDetailUiState.Loading,
-                LotteryDetailUiState.Failure,
-                LotteryDetailUiState.Unavailable,
-            )
-        }
-}
-
-/** Passive themed previews cover content, empty allocation and independent read failures.
- * @param state Supplied actual-shaped saved outcome.
+/** Shows real context actions and read states without constructing repositories.
+ * @param state Passive saved variant; callbacks cannot read or write.
  */
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Preview(name = "Large text", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
@@ -496,5 +241,26 @@ class LotteryDetailPreviewProvider : PreviewParameterProvider<LotteryDetailUiSta
 private fun LotteryDetailPreview(
     @PreviewParameter(LotteryDetailPreviewProvider::class) state: LotteryDetailUiState,
 ) {
-    CampsbridgeTheme { LotteryDetailScreen(state, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
+    val content = state as? LotteryDetailUiState.Content
+    val owner = content?.membership == LotteryMembershipRead.NotApplicable
+    CampsbridgeTheme {
+        LotteryDetailScreen(
+            state,
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            onParticipants = if (owner) ({}) else null,
+            onReservation = if (owner) null else ({}),
+            onBooking = if (owner) null else ({ _, _ -> }),
+            onOpenSection = {},
+        )
+    }
 }

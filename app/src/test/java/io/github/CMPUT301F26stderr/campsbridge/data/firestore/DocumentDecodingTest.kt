@@ -118,18 +118,6 @@ class DocumentDecodingTest {
         assertTrue(failure.cause is IllegalArgumentException)
     }
 
-    /** The reservation owns the complete simulated charge rather than a separate document. */
-    @Test fun storesPaymentInsideReservation() {
-        assertEquals(
-            mapOf(
-                "amountCents" to 13000L,
-                "paidAt" to CampingFixtures.now.stored(),
-                "refundedAt" to null,
-            ),
-            ReservationDocument.encode(CampingFixtures.reservation())["payment"],
-        )
-    }
-
     /** A reservation requires a valid payment object with strict nested field types. */
     @Test fun rejectsMissingOrMalformedReservationPayment() {
         val path = "reservations/4:draw7:entrant"

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
@@ -26,6 +27,7 @@ import java.time.Clock
  * @param context Owner inventory or own entrant memberships.
  * @param lotteries Current parent, allocation and own-entry sources.
  * @param bookings One entrant-reservations aggregate; never queried once per row.
+ * @param campsites Current visible-row display facts, independent of category truth.
  * @param clock Current phase/category time.
  * @param savedState Small category and campsite-filter restoration values.
  * @param initialCampsiteId Optional management-entry allocation filter.
@@ -35,6 +37,7 @@ class LotteryListViewModel(
     val context: LotteryContext,
     private val lotteries: LotteryRepository,
     private val bookings: BookingRepository,
+    campsites: CampsiteRepository,
     private val clock: Clock,
     private val savedState: SavedStateHandle = SavedStateHandle(),
     initialCampsiteId: String? = null,
@@ -97,6 +100,9 @@ class LotteryListViewModel(
     private val offerJobs = mutableMapOf<String, Job>()
     private val offers = mutableMapOf<String, List<LotteryOffer>>()
     private val offerIssues = mutableMapOf<String, LotteryReferenceIssue>()
+    private var visibleLotteryIds = emptySet<String>()
+    private val contextReader = LotteryListContextReader(campsites, viewModelScope)
+    val contexts = contextReader.state
 
     init {
         if (context == LotteryContext.OWNER) {
@@ -114,6 +120,8 @@ class LotteryListViewModel(
         if (category !in categories || category == this.category.value) return
         mutableCategory.value = category
         savedState["lotteryCategory"] = category.name
+        visibleLotteryIds = emptySet()
+        reconcileOffers()
         publish()
     }
 
@@ -128,6 +136,22 @@ class LotteryListViewModel(
         publish()
     }
 
+    /** Requests display context only for actual visible resolved rows, or releases it on exit.
+     * @param ids Saved lottery IDs currently present in the list viewport.
+     */
+    fun showVisibleLotteries(ids: Set<String>) {
+        val allowed =
+            (state.value as? LotteryListUiState.Content)
+                ?.items
+                .orEmpty()
+                .map { it.lottery.id }
+                .toSet()
+        val visible = ids.intersect(allowed)
+        if (visible == visibleLotteryIds) return
+        visibleLotteryIds = visible
+        reconcileOffers()
+    }
+
     /** Retries failed scoped or linked sources without repeating successful subscriptions. */
     fun retry() {
         if (ownerFailed) observeOwner()
@@ -139,6 +163,7 @@ class LotteryListViewModel(
         for ((id, issue) in offerIssues.toMap()) {
             if (issue == LotteryReferenceIssue.FAILURE) observeOffers(id)
         }
+        contextReader.retry()
         publish()
     }
 
@@ -239,6 +264,7 @@ class LotteryListViewModel(
             }
         }
         for (id in ids) if (id !in recordJobs) observeRecord(id)
+        reconcileOffers()
     }
 
     /** Observes one referenced parent without interpreting absence as a completed category.
@@ -260,6 +286,7 @@ class LotteryListViewModel(
                             records[id] = record
                             recordIssues.remove(id)
                         }
+                        reconcileOffers()
                         publish()
                     }
                 } catch (cancelled: CancellationException) {
@@ -268,6 +295,7 @@ class LotteryListViewModel(
                     currentCoroutineContext().ensureActive()
                     records.remove(id)
                     recordIssues[id] = LotteryReferenceIssue.FAILURE
+                    reconcileOffers()
                     publish()
                 }
             }
@@ -275,9 +303,9 @@ class LotteryListViewModel(
         pending.start()
     }
 
-    /** Loads allocations only when the owner explicitly scopes inventory to one campsite. */
+    /** Shares allocation readers between explicit owner filtering and visible-row display. */
     private fun reconcileOffers() {
-        val ids =
+        val filterIds =
             if (campsiteId.value !=
                 null
             ) {
@@ -285,6 +313,15 @@ class LotteryListViewModel(
             } else {
                 emptySet()
             }
+        val parents =
+            if (context ==
+                LotteryContext.OWNER
+            ) {
+                ownerRecords.orEmpty().map { it.id }.toSet()
+            } else {
+                records.keys
+            }
+        val ids = filterIds + visibleLotteryIds.intersect(parents)
         for (id in offerJobs.keys.toList()) {
             if (id !in ids) {
                 offerJobs.remove(id)?.cancel()
@@ -293,6 +330,12 @@ class LotteryListViewModel(
             }
         }
         for (id in ids) if (id !in offerJobs) observeOffers(id)
+        updateContexts()
+    }
+
+    /** Sends immutable allocation snapshots to the independent visible campsite reader. */
+    private fun updateContexts() {
+        contextReader.update(visibleLotteryIds, offers, offerIssues)
     }
 
     /** Confirms an allocation independently of parent/category reads.
@@ -302,6 +345,7 @@ class LotteryListViewModel(
         offerJobs.remove(id)?.cancel()
         offers.remove(id)
         offerIssues[id] = LotteryReferenceIssue.LOADING
+        updateContexts()
         val pending =
             viewModelScope.launch(start = CoroutineStart.LAZY) {
                 try {
@@ -309,6 +353,7 @@ class LotteryListViewModel(
                         currentCoroutineContext().ensureActive()
                         offers[id] = rows
                         offerIssues.remove(id)
+                        updateContexts()
                         publish()
                     }
                 } catch (cancelled: CancellationException) {
@@ -317,6 +362,7 @@ class LotteryListViewModel(
                     currentCoroutineContext().ensureActive()
                     offers.remove(id)
                     offerIssues[id] = LotteryReferenceIssue.FAILURE
+                    updateContexts()
                     publish()
                 }
             }
@@ -351,6 +397,17 @@ class LotteryListViewModel(
                     entrantContent()
                 }
             }
+        val shown =
+            (state.value as? LotteryListUiState.Content)
+                ?.items
+                .orEmpty()
+                .map { it.lottery.id }
+                .toSet()
+        val retained = visibleLotteryIds.intersect(shown)
+        if (retained != visibleLotteryIds) {
+            visibleLotteryIds = retained
+            reconcileOffers()
+        }
         if (state.value !is LotteryListUiState.Content) return
         val parents =
             if (context ==
@@ -478,6 +535,7 @@ class LotteryListViewModel(
         bookingJob?.cancel()
         recordJobs.values.forEach { it.cancel() }
         offerJobs.values.forEach { it.cancel() }
+        contextReader.close()
         timeJob?.cancel()
         super.onCleared()
     }

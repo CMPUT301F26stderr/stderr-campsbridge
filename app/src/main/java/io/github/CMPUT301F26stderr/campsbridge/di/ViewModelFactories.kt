@@ -12,6 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
@@ -19,8 +20,10 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 
@@ -71,6 +74,7 @@ fun lotteryListViewModelFactory(
                 context,
                 services.repositories.lotteries,
                 services.repositories.bookings,
+                services.repositories.campsites,
                 services.clock,
                 createSavedStateHandle(),
                 campsiteId,
@@ -78,7 +82,7 @@ fun lotteryListViewModelFactory(
         }
     }
 
-/** Constructs the saved/new lottery form; reserved F13 remains explicitly pending.
+/** Constructs the saved/new lottery form with the assigned F13 schedule validator.
  * @param services Current host's repository interfaces and clock.
  * @param ownerId Current account identity whose published sites are eligible.
  * @param lotteryId Existing draft target, or null for a new local form.
@@ -96,7 +100,7 @@ fun lotterySetupViewModelFactory(
                 services.repositories.lotteries,
                 services.clock,
                 createSavedStateHandle(),
-                validateWindows = null,
+                validateWindows = ::validateLotteryWindows,
                 lotteryId = lotteryId,
             )
         }
@@ -158,11 +162,11 @@ fun profileViewModelFactory(
                 services.repositories.accounts,
                 services.repositories.images,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
                 parseEmail = null,
                 parsePhone = null,
             )
-            // Connect reviewed F01/F02 functions here; keep dependent saves pending until then.
+            // F02 contacts remain independently pending.
         }
     }
 
@@ -181,13 +185,13 @@ fun onboardingViewModelFactory(
                 services.repositories.accounts,
                 services.preferences,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
             )
-            // Connect ::parseDisplayName here after the reserved task passes review.
+            // F01 handoff uses the same function as the personal-details editor.
         }
     }
 
-/** Constructs the inventory owner with F11 ordering explicitly pending.
+/** Constructs the inventory owner with the assigned F11 ordering function.
  * @param services Selected host's dependencies.
  * @param ownerId Confirmed owner identity.
  */
@@ -202,7 +206,7 @@ fun campsiteListViewModelFactory(
                 services.repositories.campsites,
                 services.repositories.images,
                 createSavedStateHandle(),
-                sortCampsites = null,
+                sortCampsites = ::sortCampsitesByName,
             )
         }
     }
@@ -287,7 +291,7 @@ fun availabilityViewModelFactory(
         }
     }
 
-/** Constructs the discovery owner with reserved matching/ordering dependencies explicitly pending.
+/** Constructs the discovery owner with reserved matching dependencies explicitly pending.
  * @param services Selected host's published listing, attachment and rating sources.
  */
 fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
@@ -300,7 +304,7 @@ fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
                 createSavedStateHandle(),
                 matchesText = null,
                 matchesCapacity = null,
-                sortCampsites = null,
+                sortCampsites = ::sortCampsitesByName,
                 clock = services.clock,
             )
         }

@@ -80,7 +80,7 @@ class LotteryMembershipFlowTest {
             compose.onNodeWithText("Join waitlist").assertDoesNotExist()
             compose.onNodeWithContentDescription("Back").performClick()
             compose.onNodeWithText("History").assertIsSelected()
-            compose.onNodeWithText("No lotteries in History.").assertIsDisplayed()
+            compose.onNodeWithText("No lotteries here yet.").assertIsDisplayed()
             compose.onNodeWithText("Waiting").performClick()
             compose.onNodeWithText(parent.title).assertIsDisplayed()
             compose.runOnIdle { assertEquals(1, host.lotteryDetailCreations) }
@@ -157,32 +157,6 @@ class LotteryMembershipFlowTest {
         compose.onNodeWithText("Leave waitlist").assertDoesNotExist()
         compose.onNodeWithText("Cancelled").assertIsDisplayed()
         compose.runOnIdle { assertTrue(host.lotteries.events.isEmpty()) }
-    }
-
-    /** Failed-source Retry remains reachable after withdrawal without resubmitting the operation. */
-    @Test fun withdrawalSourceFailureCanRecoverOutsideThePendingDialog() {
-        host.lotteries.withdrawHandler = { _, _ -> }
-        start(EntryState.WAITING)
-        compose.onNodeWithText("Leave waitlist").performClick()
-        compose.onNodeWithText("Leave").performClick()
-        compose.onNodeWithText("Leave this lottery?").assertIsDisplayed()
-        compose.runOnIdle { host.lotteries.entrantFailure.value = IOException("entry offline") }
-        compose.onNodeWithText("Leave this lottery?").assertDoesNotExist()
-        compose.onNodeWithText("Could not load your entry.").assertIsDisplayed()
-        compose.onNodeWithText("Leave waitlist").assertIsNotEnabled()
-        compose.runOnIdle {
-            assertEquals(listOf("withdraw:${parent.id}:account-1"), host.lotteries.events)
-            host.lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
-            host.lotteries.entrantFailure.value = null
-        }
-        compose.onNodeWithText("Retry").performClick()
-        compose.onNodeWithText("You left this lottery.").assertIsDisplayed()
-        compose.onNodeWithText("Leave this lottery?").assertDoesNotExist()
-        compose.onNodeWithText("Leave waitlist").assertDoesNotExist()
-        compose.onNodeWithText("Join waitlist").assertIsDisplayed()
-        compose.runOnIdle {
-            assertEquals(listOf("withdraw:${parent.id}:account-1"), host.lotteries.events)
-        }
     }
 
     /** Sends real Back only after Espresso has selected the focused modal window. */

@@ -38,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.demo.tasks.TaskExamplesActivity
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
@@ -78,6 +79,14 @@ class OfflineDemoActivity : ComponentActivity() {
                         {
                             startActivity(
                                 Intent(this@OfflineDemoActivity, DemoActivity::class.java),
+                            )
+                        },
+                        {
+                            startActivity(
+                                Intent(
+                                    this@OfflineDemoActivity,
+                                    TaskExamplesActivity::class.java,
+                                ),
                             )
                         },
                         { step ->
@@ -193,6 +202,7 @@ class OfflineDemoActivity : ComponentActivity() {
  * @param onScenario Replaces the local demo graph.
  * @param onReset Restores the currently selected starting scenario.
  * @param onGallery Opens the component gallery.
+ * @param onTaskExamples Opens direct local examples for assigned helper tasks.
  * @param onPreview Opens a passive onboarding state for inspection.
  */
 @Composable
@@ -200,6 +210,7 @@ private fun DemoToolbar(
     onScenario: (DemoScenario) -> Unit,
     onReset: () -> Unit,
     onGallery: () -> Unit,
+    onTaskExamples: () -> Unit,
     onPreview: (OnboardingStep) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -231,6 +242,13 @@ private fun DemoToolbar(
                         onClick = {
                             expanded = false
                             onReset()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.task_examples)) },
+                        onClick = {
+                            expanded = false
+                            onTaskExamples()
                         },
                     )
                     DropdownMenuItem(

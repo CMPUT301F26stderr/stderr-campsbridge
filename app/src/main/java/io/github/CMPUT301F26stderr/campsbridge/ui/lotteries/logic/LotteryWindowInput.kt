@@ -19,3 +19,25 @@ sealed interface LotteryWindowInput {
 
 /** F13 consumes registration open/close then booking open/close; null injection means pending. */
 typealias LotteryWindowValidator = (Instant, Instant, Instant, Instant) -> LotteryWindowInput
+
+/** Validates positive registration and booking windows using only the supplied instants.
+ * Booking may open exactly when registration closes; comparisons retain nanosecond precision.
+ * @param registrationOpen Inclusive registration opening.
+ * @param registrationClose Exclusive registration closing.
+ * @param bookingOpen Inclusive booking opening.
+ * @param bookingClose Exclusive booking closing.
+ * @return The first registration, overlap or booking error, or [LotteryWindowInput.Valid].
+ */
+@Suppress("UNUSED_PARAMETER")
+fun validateLotteryWindows(
+    registrationOpen: Instant,
+    registrationClose: Instant,
+    bookingOpen: Instant,
+    bookingClose: Instant,
+): LotteryWindowInput =
+    when {
+        registrationOpen >= registrationClose -> LotteryWindowInput.InvalidRegistration
+        bookingOpen < registrationClose -> LotteryWindowInput.BookingBeforeRegistrationClose
+        bookingOpen >= bookingClose -> LotteryWindowInput.InvalidBooking
+        else -> LotteryWindowInput.Valid
+    }

@@ -30,6 +30,35 @@ Cloud policy for [SCHEMA.md](SCHEMA.md). Firebase Auth UID is the account ID. Ro
 
 Profile reads expose the complete account document, including contact/settings fields. Device registrations and inboxes have separate rules. Published removed listing records remain readable for history; discovery excludes them. No unauthenticated reads are allowed.
 
+## Code and policy ownership
+
+| Boundary | Owns | Does not own |
+| --- | --- | --- |
+| Domain models | Pure value constraints and derived values | Firebase requests or actor authorization |
+| Kotlin operation owner | Current-state validation and coordinated transactions | Privileged server identity; these are ordinary client requests |
+| Firestore rules | Request identity, permitted fields/transitions and paired-document checks below | The full Kotlin ranking algorithm or arbitrary multi-night orchestration |
+| Storage rules | Image object reads, intent-bound creation and authorized deletion | Firestore attachment publication or cleanup scheduling |
+| Maintenance | Discovery and retry of existing operation owners | A second implementation of booking, draw or delivery rules |
+
+Rules and Kotlin have distinct jobs. Repositories give application callers meaningful operations; Firestore remains the enforcement boundary for direct requests. Refactoring an operation must preserve both its application behavior and its current cloud permission contract. There is one deployable rules file per service, without generated fragments.
+
+| Operation | Kotlin owner | Rules boundary | Existing verification |
+| --- | --- | --- | --- |
+| Profile, owner activation and device registration | `FirestoreAccountRepository` | Account/device matches | Account and permission suites |
+| Campsite details and availability | `FirestoreCampsiteRepository` | Campsite and calendar matches | Campsite and permission suites |
+| Lottery draft/configuration, offers and publication | `LotteryWrites` | `ownerConfigurationUpdate`, `saveOffer`, `deleteOffer` | Lottery and offer/revision permission cases |
+| Join, withdraw, rejoin and decline | `LotteryMembership` | `memberCountUpdate`, entry transition predicates | Lottery membership and permission cases |
+| Draw progress and completion | `LotteryDraw` | `drawEligible`, `drawAuthority`, draw transition predicates | Draw and permission cases |
+| Lottery cancellation | `LotteryCancellation` | `lotteryCancellation` | Lottery/moderation and permission cases |
+| Book and cancel a stay | `BookingWrites` and its shared cancellation transaction | `booking`, `cancelReservation`, calendar `claim`/`release` | Booking/cancellation and permission cases |
+| Record event and recipient job | `NotificationWrites`, called within the owning transaction | Event-family validators and scoped `createDelivery` | Notification and permission cases |
+| Deliver inbox receipts | `NotificationDeliveries` | Inbox and aggregate delivery matches | Notification/session-work and permission cases |
+| Image upload, attachment publication and cleanup | `FirebaseImageRepository` | `publishAttachment`, upload lifecycle predicates, Storage `createObject` | Image and permission cases |
+| Authorize and mark removal | `FirestoreModerationRepository`, `RemovalWrites` | Account/campsite removal and `_removals` matches | Moderation and permission cases |
+| Process recorded removals | `RemovalProcessor` | Explicit removal-actor predicates plus each affected operation's rules | Moderation and permission cases |
+
+A removal request authorizes and records the first removal fact before cleanup starts. The processor reads those durable facts and delegates cancellation/attachment operations; it does not grant itself privileges or rewrite historical attribution. `RemovalWrites` contains shared mark/queue transaction writes, not authorization. Lottery cancellation shares the existing draw owner so an interrupted draw is finished before cancellation.
+
 ## Coordinated writes
 
 | Data | Cloud-authorized writer |
@@ -43,9 +72,8 @@ Profile reads expose the complete account document, including contact/settings f
 | Inbox read time | Recipient only; write once |
 | Upload intent/attachment | Target owner; removal/obsolete cleanup is also available to admin |
 | Removal jobs/cascades | Original self-removal actor or admin; immutable removal facts |
-| Migration records | Console/Admin SDK tooling only |
 
-The current global `AppContainer.resumePendingWork()` scans private collections, so run it only under an admin session. Owner-scoped draws and participant-scoped delivery remain available. A future non-admin foreground scheduler must filter work before calling these operations; client code has no special system privilege. Query rules are not filters: private collection queries must constrain account/owner/participant fields, or run as admin.
+`SessionPendingWork` discovers only the active account's owner lotteries and entrant/owner reservations through `FirestoreWorkSource`. It invokes the same draw and delivery owners used by explicit actions. `AdminMaintenance.resume(adminId)` separately authorizes global removal, draw, notification and image recovery. Ordinary startup never performs global administrative cleanup. Query rules are not filters: private collection queries must constrain account/owner/participant fields or run as an authorized admin.
 
 Rules enforce access, immutable identities, allowed transitions, and selected transaction relationships. Repositories still own the lottery's random ranking and complete multi-night orchestration: Rules cannot run the Kotlin ranking algorithm or iterate an arbitrary stay. Do not mistake access rules for a replacement booking/draw implementation. Emulator permission tests cover direct denied writes and representative coordinated operations.
 
@@ -54,12 +82,11 @@ Storage objects carry `attachmentId` metadata. Creation requires a matching, une
 ## Test and deploy
 
 ```sh
-cd firebase/tooling
-npm ci
-cd ../..
-nix develop --command firebase emulators:exec --config firebase/firebase.json --project demo-stderr --only firestore,storage 'node --test firebase/tooling/tests/permissions.test.mjs'
+bash scripts/check-firebase.sh
 
-nix develop --command firebase deploy --config firebase/firebase.json --project project-3bc1a00e-fb80-48ba-948 --only firestore:rules,storage
+firebase deploy --config firebase/firebase.json --project project-3bc1a00e-fb80-48ba-948 --only firestore:rules,storage
 ```
+
+`scripts/check-firebase.sh` starts disposable emulators and runs the unchanged rules cases followed by the Kotlin repository integration suite. Rules logs and evaluator coverage JSON/HTML are captured under `firebase/tooling/build/reports/` before shutdown and uploaded by CI. Expression-budget exhaustion fails verification even when a negative test received a permission denial. Expected ordinary denials remain part of the suite.
 
 CLI deployment requires a logged-in project member. Anonymous app accounts never deploy rules. Local files take effect in the cloud only after deployment. Rule tests do not deploy or use the real project.

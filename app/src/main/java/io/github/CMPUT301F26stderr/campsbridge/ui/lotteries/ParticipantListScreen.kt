@@ -2,6 +2,10 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -103,20 +107,40 @@ fun ParticipantListScreen(
             }
 
             LotteryDetailUiState.Unavailable -> {
-                Text(stringResource(R.string.lottery_unavailable))
+                EmptyContent(stringResource(R.string.lottery_unavailable))
             }
 
             is LotteryDetailUiState.Content -> {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
-                    item {
-                        Text(parent.lottery.title, style = MaterialTheme.typography.headlineSmall)
-                        Text(lotteryLifecycleLabel(parent.lifecycle))
-                        Text(
-                            stringResource(
-                                R.string.lottery_waiting_count,
-                                parent.lottery.waitingCount,
-                            ),
-                        )
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = Spacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                ) {
+                    item("parent-summary") {
+                        Column(
+                            Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                        ) {
+                            Text(parent.lottery.title, style = MaterialTheme.typography.titleLarge)
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                            ) {
+                                Text(
+                                    lotteryLifecycleLabel(parent.lifecycle),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Text(
+                                    stringResource(
+                                        R.string.lottery_waiting_count,
+                                        parent.lottery.waitingCount,
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                     }
                     when (state) {
                         ParticipantListUiState.Loading -> {
@@ -124,7 +148,7 @@ fun ParticipantListScreen(
                         }
 
                         ParticipantListUiState.Unavailable -> {
-                            item { Text(stringResource(R.string.lottery_unavailable)) }
+                            item { EmptyContent(stringResource(R.string.lottery_unavailable)) }
                         }
 
                         ParticipantListUiState.Failure -> {
@@ -235,13 +259,30 @@ private fun ParticipantRowContent(row: ParticipantRow) {
             },
             style = MaterialTheme.typography.titleMedium,
         )
-        Text(row.accountId, style = MaterialTheme.typography.bodySmall)
-        Text(participantStatusLabel(row.status))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+        ) {
+            Text(
+                participantStatusLabel(row.status),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                stringResource(R.string.lottery_participant_joined, format.format(row.joinedAt)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Text(
-            stringResource(R.string.lottery_participant_joined, format.format(row.joinedAt)),
-            style = MaterialTheme.typography.bodySmall,
+            row.accountId,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        HorizontalDivider(Modifier.padding(top = Spacing.small))
+        HorizontalDivider(
+            Modifier.padding(top = Spacing.small),
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
     }
 }
 
@@ -277,49 +318,11 @@ private fun participantFilterLabel(state: EntryState): String =
         },
     )
 
-/** Passive states cover unavailable names, partial results and explicit pending filtering. */
-class ParticipantPreviewProvider : PreviewParameterProvider<ParticipantListUiState> {
-    override val values =
-        sequenceOf(
-            ParticipantListUiState.Loading,
-            ParticipantListUiState.Failure,
-            ParticipantListUiState.Content(emptyList(), listOf(EntryState.WAITING)),
-            ParticipantListUiState.Content(
-                emptyList(),
-                listOf(EntryState.WAITING),
-                filterPending = true,
-            ),
-            ParticipantListUiState.Content(
-                listOf(
-                    ParticipantRow(
-                        "entrant-A",
-                        ParticipantName.Available("Alexandra River Camper"),
-                        LotteryMembershipStatus.RESULTS_PENDING,
-                        Instant.parse("2027-05-01T12:00:00Z"),
-                    ),
-                    ParticipantRow(
-                        "entrant-B",
-                        ParticipantName.Unavailable,
-                        LotteryMembershipStatus.RESULTS_PENDING,
-                        Instant.parse("2027-05-01T12:30:00Z"),
-                    ),
-                    ParticipantRow(
-                        "entrant-C",
-                        ParticipantName.Failure,
-                        LotteryMembershipStatus.WITHDRAWN,
-                        Instant.parse("2027-05-01T12:45:00Z"),
-                    ),
-                ),
-                listOf(EntryState.WAITING, EntryState.WITHDRAWN),
-            ),
-        )
-}
-
 /** Shows the native child using supplied immutable content only.
  * @param state Representative entry-source outcome.
  */
-@Preview(showBackground = true)
-@Preview(showBackground = true, fontScale = 1.5f)
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable
 private fun ParticipantPreview(
     @PreviewParameter(ParticipantPreviewProvider::class) state: ParticipantListUiState,
@@ -328,17 +331,48 @@ private fun ParticipantPreview(
         LotteryDetailPreviewProvider()
             .values
             .filterIsInstance<LotteryDetailUiState.Content>()
-            .first()
+            .first { it.lifecycle == LotteryLifecycle.DRAW_PENDING }
     CampsbridgeTheme {
         ParticipantListScreen(
-            parent.copy(canContinue = false, lifecycle = LotteryLifecycle.DRAW_PENDING),
+            parent.copy(
+                lottery =
+                    parent.lottery.copy(
+                        waitingCount =
+                            if ((state as? ParticipantListUiState.Content)?.rows?.isNotEmpty() ==
+                                true
+                            ) {
+                                2
+                            } else {
+                                0
+                            },
+                    ),
+            ),
             state,
-            null,
+            if ((state as? ParticipantListUiState.Content)?.rows?.isEmpty() ==
+                true
+            ) {
+                EntryState.WAITING
+            } else {
+                null
+            },
             {},
             {},
             {},
             {},
             {},
         )
+    }
+}
+
+/** Keeps the child frame and Back available when its saved parent cannot be presented.
+ * @param parent Passive parent read outcome; no fake repository or mutation is constructed.
+ */
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Composable
+private fun ParticipantParentPreview(
+    @PreviewParameter(ParticipantParentPreviewProvider::class) parent: LotteryDetailUiState,
+) {
+    CampsbridgeTheme {
+        ParticipantListScreen(parent, ParticipantListUiState.Loading, null, {}, {}, {}, {}, {})
     }
 }

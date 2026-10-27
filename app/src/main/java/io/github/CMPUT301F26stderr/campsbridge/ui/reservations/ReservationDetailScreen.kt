@@ -28,6 +28,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -35,6 +36,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.StaySummary
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyDocumentContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
@@ -108,8 +110,12 @@ fun ReservationDetailScreen(
         onRetry,
         modifier,
     ) { record ->
-        Text(reservationStatusLabel(record), style = MaterialTheme.typography.titleMedium)
-        DetailRow(stringResource(R.string.reservation_reference), record.id)
+        Text(
+            reservationStatusLabel(record),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        ReservationReference(record)
         StaySummary(
             record.bookedCampsite.name,
             record.checkInDate,
@@ -117,26 +123,35 @@ fun ReservationDetailScreen(
             record.guestCount,
             record.payment.amountCents,
         )
-        DetailRow(stringResource(R.string.campsite_location), record.bookedCampsite.locationLabel)
-        DetailRow(stringResource(R.string.campsite_time_zone), record.bookedCampsite.timeZone)
-        DetailRow(
-            stringResource(R.string.reservation_booked_at),
-            reservationTime(record, record.createdAt),
-        )
-        record.cancellation?.let { cancellation ->
-            DetailRow(
-                stringResource(R.string.reservation_cancelled_at),
-                reservationTime(record, cancellation.at),
-            )
-            if (!cancellation.reason.isNullOrBlank()) {
-                DetailRow(
-                    stringResource(R.string.reservation_reason),
-                    cancellation.reason,
-                )
-            }
-        }
         NavigationRow(stringResource(R.string.reservation_payment), onPayment)
         NavigationRow(stringResource(R.string.reservation_accepted_terms), onTerms)
+        SummarySection(stringResource(R.string.reservation_stay_details)) {
+            DetailRow(
+                stringResource(R.string.campsite_location),
+                record.bookedCampsite.locationLabel,
+            )
+            DetailRow(stringResource(R.string.campsite_time_zone), record.bookedCampsite.timeZone)
+            DetailRow(
+                stringResource(R.string.reservation_booked_at),
+                reservationTime(record, record.createdAt),
+            )
+        }
+        record.cancellation?.let { cancellation ->
+            SummarySection(stringResource(R.string.reservation_cancellation)) {
+                DetailRow(
+                    stringResource(R.string.reservation_cancelled_at),
+                    reservationTime(record, cancellation.at),
+                )
+                cancellation.reason?.takeIf { it.isNotBlank() }?.let { reason ->
+                    DetailRow(stringResource(R.string.reservation_reason), reason)
+                }
+                if (record.payment.refundedAt !=
+                    null
+                ) {
+                    Text(stringResource(R.string.reservation_full_refund))
+                }
+            }
+        }
     }
 }
 
@@ -161,27 +176,48 @@ fun PaymentDetailsScreen(
         modifier,
     ) { record ->
         val locale = LocalConfiguration.current.locales[0]
-        Text(record.bookedCampsite.name, style = MaterialTheme.typography.titleMedium)
-        DetailRow(stringResource(R.string.reservation_reference), record.id)
-        DetailRow(
-            stringResource(R.string.reservation_total_paid),
-            formatCad(record.payment.amountCents, locale),
-        )
-        Text(stringResource(R.string.reservation_simulated_payment))
-        DetailRow(
-            stringResource(R.string.reservation_paid_at),
-            reservationTime(record, record.payment.paidAt),
-        )
-        record.payment.refundedAt?.let { at ->
+        Text(record.bookedCampsite.name, style = MaterialTheme.typography.titleLarge)
+        SummarySection(stringResource(R.string.reservation_total_paid)) {
             Text(
-                stringResource(R.string.reservation_full_refund),
-                style = MaterialTheme.typography.titleMedium,
+                formatCad(record.payment.amountCents, locale),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                stringResource(R.string.reservation_simulated_payment),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        SummarySection(stringResource(R.string.reservation_payment_record)) {
+            ReservationReference(record)
+            DetailRow(
+                stringResource(R.string.dates),
+                stringResource(
+                    R.string.stay_dates,
+                    formatDate(record.checkInDate, locale),
+                    formatDate(record.checkOutDate, locale),
+                ),
             )
             DetailRow(
-                stringResource(R.string.reservation_refunded_amount),
-                formatCad(record.payment.amountCents, locale),
+                stringResource(R.string.reservation_paid_at),
+                reservationTime(record, record.payment.paidAt),
             )
-            DetailRow(stringResource(R.string.reservation_refunded_at), reservationTime(record, at))
+        }
+        record.payment.refundedAt?.let { at ->
+            SummarySection(stringResource(R.string.reservation_full_refund)) {
+                DetailRow(
+                    stringResource(R.string.reservation_refunded_amount),
+                    formatCad(record.payment.amountCents, locale),
+                )
+                DetailRow(
+                    stringResource(R.string.reservation_refunded_at),
+                    reservationTime(record, at),
+                )
+                record.cancellation?.reason?.takeIf { it.isNotBlank() }?.let { reason ->
+                    DetailRow(stringResource(R.string.reservation_reason), reason)
+                }
+            }
         }
     }
 }
@@ -206,29 +242,31 @@ fun AcceptedTermsScreen(
         onRetry,
         modifier,
     ) { record ->
-        Text(record.bookedCampsite.name, style = MaterialTheme.typography.titleMedium)
-        DetailRow(
-            stringResource(R.string.reservation_accepted_at),
-            reservationTime(record, record.acceptedTerms.acceptedAt),
-        )
-        DetailRow(
-            stringResource(R.string.reservation_policy_version),
-            record.acceptedTerms.cancellationPolicyVersion,
-        )
-        Text(
-            stringResource(R.string.campsite_rules_title),
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Text(
-            record.acceptedTerms.rules.ifBlank {
-                stringResource(
-                    R.string.reservation_no_saved_rules,
-                )
-            },
-        )
-        PolicyDocumentContent(
-            policyContent(PolicyId.REFUND, record.acceptedTerms.cancellationPolicyVersion),
-        )
+        Text(record.bookedCampsite.name, style = MaterialTheme.typography.titleLarge)
+        SummarySection(stringResource(R.string.reservation_acceptance_record)) {
+            DetailRow(
+                stringResource(R.string.reservation_accepted_at),
+                reservationTime(record, record.acceptedTerms.acceptedAt),
+            )
+            DetailRow(
+                stringResource(R.string.reservation_policy_version),
+                record.acceptedTerms.cancellationPolicyVersion,
+            )
+        }
+        SummarySection(stringResource(R.string.campsite_rules_title)) {
+            Text(
+                record.acceptedTerms.rules.ifBlank {
+                    stringResource(
+                        R.string.reservation_no_saved_rules,
+                    )
+                },
+            )
+        }
+        SummarySection(stringResource(R.string.reservation_refund_policy)) {
+            PolicyDocumentContent(
+                policyContent(PolicyId.REFUND, record.acceptedTerms.cancellationPolicyVersion),
+            )
+        }
     }
 }
 
@@ -278,6 +316,25 @@ private fun ReservationRecordScreen(
                 }
             }
         }
+    }
+}
+
+/** Keeps the exact saved reference available without making it the page heading.
+ * @param record Historical reservation carrying the canonical identity.
+ */
+@Composable
+private fun ReservationReference(record: Reservation) {
+    Column {
+        Text(
+            stringResource(R.string.reservation_reference),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            record.id,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

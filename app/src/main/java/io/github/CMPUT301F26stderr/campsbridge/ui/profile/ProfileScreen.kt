@@ -18,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
@@ -64,33 +66,39 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
-            AccountAvatar(photoReference, stringResource(R.string.profile_photo))
-            Text(content.account.name, style = MaterialTheme.typography.headlineMedium)
-        }
-        NavigationRow(
-            stringResource(R.string.personal_details),
-            onPersonalDetails,
-            supportingText = stringResource(R.string.personal_details_summary),
-            icon = Icons.Default.Person,
-        )
-        NavigationRow(
-            stringResource(R.string.contact_details),
-            onContactDetails,
-            supportingText = stringResource(R.string.contact_details_summary),
-            icon = Icons.Default.Email,
-        )
-        workspaceContent()
-        if (Role.OWNER !in content.account.roles && onStartHosting != null) {
-            NavigationRow(stringResource(R.string.onboarding_host_label), onStartHosting)
-        }
-        if (onSettings !=
-            null
-        ) {
-            NavigationRow(
-                stringResource(R.string.settings_title),
-                onSettings,
-                icon = Icons.Default.Settings,
+            AccountAvatar(photoReference, stringResource(R.string.profile_photo), size = 80.dp)
+            Text(
+                content.account.name,
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
             )
+        }
+        Column {
+            NavigationRow(
+                stringResource(R.string.personal_details),
+                onPersonalDetails,
+                supportingText = stringResource(R.string.personal_details_summary),
+                icon = Icons.Default.Person,
+            )
+            NavigationRow(
+                stringResource(R.string.contact_details),
+                onContactDetails,
+                supportingText = stringResource(R.string.contact_details_summary),
+                icon = Icons.Default.Email,
+            )
+            workspaceContent()
+            if (Role.OWNER !in content.account.roles && onStartHosting != null) {
+                NavigationRow(stringResource(R.string.onboarding_host_label), onStartHosting)
+            }
+            if (onSettings !=
+                null
+            ) {
+                NavigationRow(
+                    stringResource(R.string.settings_title),
+                    onSettings,
+                    icon = Icons.Default.Settings,
+                )
+            }
         }
     }
 }
@@ -147,7 +155,9 @@ private fun ProfilePreviewContent(
     settings: AccountSettings = AccountSettings(),
 ) {
     CampsbridgeTheme(settings) {
-        AppScreen(stringResource(R.string.profile_title)) { ProfileScreen(state, {}) }
+        AppScreen(stringResource(R.string.profile_title)) {
+            ProfileScreen(state, {}, onSettings = {}, onStartHosting = {})
+        }
     }
 }
 

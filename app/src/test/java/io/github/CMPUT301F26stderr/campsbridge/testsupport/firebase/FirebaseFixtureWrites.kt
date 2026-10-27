@@ -19,7 +19,7 @@ fun FirebaseEmulatorRule.seed(
 ) {
     val payload = JSONObject(mapOf("fields" to fields.mapValues { firestoreValue(it.value) }))
     request(
-        "http://127.0.0.1:8080/v1/projects/$projectId/databases/(default)/documents/$path",
+        "$firestoreEndpoint/v1/projects/$projectId/databases/(default)/documents/$path",
         "PATCH",
         payload.toString(),
     )
@@ -121,7 +121,7 @@ suspend fun FirebaseEmulatorRule.registeredActor(vararg roles: Role): EmulatorAc
  * @param path Document path within the disposable project.
  */
 fun FirebaseEmulatorRule.documentExists(path: String): Boolean =
-    request("http://127.0.0.1:8080/v1/projects/$projectId/databases/(default)/documents/$path") !=
+    request("$firestoreEndpoint/v1/projects/$projectId/databases/(default)/documents/$path") !=
         null
 
 /**
@@ -131,7 +131,7 @@ fun FirebaseEmulatorRule.documentExists(path: String): Boolean =
  */
 fun FirebaseEmulatorRule.erase(path: String) {
     request(
-        "http://127.0.0.1:8080/v1/projects/$projectId/databases/(default)/documents/$path",
+        "$firestoreEndpoint/v1/projects/$projectId/databases/(default)/documents/$path",
         "DELETE",
     )
 }
