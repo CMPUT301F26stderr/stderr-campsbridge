@@ -35,13 +35,7 @@ The checks run Android Lint, local domain/schema/listener/controller tests, and 
 bash scripts/check-firebase.sh
 ```
 
-This starts disposable Auth, Firestore, and Storage emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests remain separate:
-
-```bash
-bash scripts/check-android-ui.sh
-```
-
-This uses a disposable API 35 emulator and requires usable KVM on Linux. See [CONTRIBUTING.md](CONTRIBUTING.md#test-boundaries) for existing-device and coverage commands.
+This starts disposable Auth, Firestore, and Storage emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests remain separate: start an emulator in Android Studio and run the relevant tests under `app/src/androidTest` with the green Run triangle. See [Testing and demo](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo) for terminal and coverage commands.
 
 The default `debug` build uses local sample accounts and private cached photos. Profile display, workspace switching, Start hosting and photo selection/save/removal work locally. Owner campsite lists and the eight-step setup are available; the offline demo does not save campsite changes. In the Firebase-enabled builds, a valid review can save details and staged photos under one retained draft ID, then publish after all requested work is confirmed. A saved listing also opens an independent availability editor from management. Date saving awaits the reserved availability-comparison helper; requested dates block saving and publishing until it is integrated. The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name/contact fields are editable, while their submission remains blocked until the reserved teammate validators are integrated.
 
