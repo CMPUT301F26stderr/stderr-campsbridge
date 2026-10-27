@@ -71,7 +71,7 @@ class LotteryEntrantFlowTest {
         compose.onNodeWithText("No reservation has been made with this win.").assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Waiting").assertIsSelected()
-        compose.onNodeWithText("No lotteries in Waiting.").assertIsDisplayed()
+        compose.onNodeWithText("No lotteries here yet.").assertIsDisplayed()
         compose.onNodeWithText("Action needed").performClick()
         compose.onNodeWithText(parent.title).assertIsDisplayed()
         compose.runOnIdle {
@@ -100,7 +100,7 @@ class LotteryEntrantFlowTest {
             assertEquals(1, host.lotteryDetailCreations)
             assertEquals(1, host.bookings.opportunityRequests.size)
             assertEquals(0, host.bookings.activeRecordObservers)
-            assertEquals(0, host.lotteries.activeOfferObservers)
+            assertEquals(1, host.lotteries.activeOfferObservers)
         }
     }
 
@@ -170,7 +170,7 @@ class LotteryEntrantFlowTest {
         compose.onNodeWithText(parent.id).assertIsDisplayed()
         compose.onNodeWithText("History").performClick()
         compose.onNodeWithText("Linked lottery is unavailable").assertIsDisplayed()
-        compose.onNodeWithText("No lotteries in History.").assertDoesNotExist()
+        compose.onNodeWithText("No lotteries here yet.").assertDoesNotExist()
         compose.onNodeWithText("Create lottery").assertDoesNotExist()
         compose.runOnIdle { assertEquals(0, host.lotteryDetailCreations) }
     }

@@ -86,7 +86,7 @@ class LotterySetupFlowTest {
             .onNodeWithText("Schedule validation is pending in this build.")
             .performScrollTo()
             .assertIsDisplayed()
-        compose.onNodeWithText("Edit Lottery basics").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Edit Lottery basics").performScrollTo().performClick()
         compose.onNodeWithText("May weekends").assertIsDisplayed()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
@@ -295,7 +295,9 @@ class LotterySetupFlowTest {
         pressBack()
         compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
         compose.runOnIdle { gate.complete(Unit) }
+        compose.onNodeWithText("Included campsites").performScrollTo().performClick()
         compose.onNodeWithText("May 14, 2027").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Continue setup").performScrollTo().assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()
         compose.onNodeWithText("Continue setup").performScrollTo().performClick()

@@ -9,7 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.resolveDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
@@ -355,7 +355,7 @@ class LotterySetupViewModel(
     fun toggleAllocationDate(date: LocalDate) {
         val current = state.value
         val allocation = current.allocation ?: return
-        val known = allocation.inventory as? CampsiteInventoryUiState.Content ?: return
+        val known = allocation.inventory as? CalendarInventoryRead.Content ?: return
         if (exitRequested.value || current.discardPrompt ||
             YearMonth.from(date) != allocation.month
         ) {
@@ -421,7 +421,7 @@ class LotterySetupViewModel(
 
     /** Retries the required working-allocation range without changing selection. */
     fun retryAllocation() {
-        if (state.value.allocation?.inventory == CampsiteInventoryUiState.Failure) {
+        if (state.value.allocation?.inventory == CalendarInventoryRead.Failure) {
             calendarRange = null
             reconcileCalendar()
         }
@@ -780,7 +780,7 @@ class LotterySetupViewModel(
                 configuration = null,
                 allocation =
                     state.value.allocation?.copy(
-                        inventory = CampsiteInventoryUiState.Loading,
+                        inventory = CalendarInventoryRead.Loading,
                     ),
             ),
         )
@@ -818,7 +818,7 @@ class LotterySetupViewModel(
                             configuration = null,
                             allocation =
                                 state.value.allocation?.copy(
-                                    inventory = CampsiteInventoryUiState.Loading,
+                                    inventory = CalendarInventoryRead.Loading,
                                 ),
                         ),
                     )
@@ -837,7 +837,7 @@ class LotterySetupViewModel(
                 publish(
                     current.copy(
                         allocation =
-                            allocation.copy(inventory = CampsiteInventoryUiState.Loading),
+                            allocation.copy(inventory = CalendarInventoryRead.Loading),
                     ),
                 )
             }
@@ -862,7 +862,7 @@ class LotterySetupViewModel(
         val version = calendarVersion
         publish(
             current.copy(
-                allocation = allocation.copy(inventory = CampsiteInventoryUiState.Loading),
+                allocation = allocation.copy(inventory = CalendarInventoryRead.Loading),
             ),
         )
         calendarJob =
@@ -877,7 +877,7 @@ class LotterySetupViewModel(
                                 state.value.copy(
                                     allocation =
                                         active.copy(
-                                            inventory = CampsiteInventoryUiState.Content(nights),
+                                            inventory = CalendarInventoryRead.Content(nights),
                                         ),
                                 ),
                             )
@@ -891,7 +891,7 @@ class LotterySetupViewModel(
                             state.value.copy(
                                 allocation =
                                     active.copy(
-                                        inventory = CampsiteInventoryUiState.Failure,
+                                        inventory = CalendarInventoryRead.Failure,
                                     ),
                             ),
                         )

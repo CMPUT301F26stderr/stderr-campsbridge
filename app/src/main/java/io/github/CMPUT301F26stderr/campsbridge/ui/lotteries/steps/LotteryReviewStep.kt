@@ -1,15 +1,21 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocatedNights
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoices
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryLocalDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryScheduleError
@@ -38,43 +44,75 @@ fun LotteryReviewStep(
         (state.choices as? LotteryCampsiteChoices.Content)
             ?.campsites
             ?.firstOrNull { it.id == draft.campsiteId }
-    DetailRow(stringResource(R.string.lottery_title), draft.title)
-    if (state.errors.titleRequired) Text(stringResource(R.string.lottery_title_required))
-    if (draft.description.isNotEmpty()) Text(draft.description)
-    EditLotteryStep(LotteryStep.BASICS, R.string.lottery_basics, onEdit, enabled)
-    Text(site?.details?.name ?: stringResource(R.string.lottery_site_required))
-    val locale = LocalConfiguration.current.locales[0]
-    for (night in draft.nights.sorted()) Text(formatDate(night, locale))
-    val count = draft.nights.size
-    Text(pluralStringResource(R.plurals.lottery_allocated_nights, count, count))
-    if (state.errors.allocationRequired) Text(stringResource(R.string.lottery_allocation_required))
-    EditLotteryStep(LotteryStep.SITE, R.string.lottery_site_step, onEdit, enabled)
-    if (site != null) Text(site.details.timeZone)
-    for (point in LotterySchedulePoint.entries) {
-        DetailRow(lotteryScheduleLabel(point), localScheduleLabel(draft.schedule[point]))
-        val scheduleError =
-            when (state.errors.schedule[point]) {
-                LotteryScheduleError.DATE_REQUIRED -> R.string.lottery_date_required
-                LotteryScheduleError.TIME_REQUIRED -> R.string.lottery_time_required
-                LotteryScheduleError.AMBIGUOUS_TIME -> R.string.lottery_time_ambiguous
-                null -> null
-            }
-        if (scheduleError != null) Text(stringResource(scheduleError))
-        if (point == LotterySchedulePoint.REGISTRATION_CLOSE) {
+    SummarySection(
+        stringResource(R.string.lottery_basics),
+        action = { EditLotteryStep(LotteryStep.BASICS, R.string.lottery_basics, onEdit, enabled) },
+    ) {
+        Text(draft.title, style = MaterialTheme.typography.bodyLarge)
+        if (state.errors.titleRequired) {
+            Text(
+                stringResource(R.string.lottery_title_required),
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        if (draft.description.isNotEmpty()) Text(draft.description)
+    }
+    SummarySection(
+        stringResource(R.string.lottery_site_step),
+        action = { EditLotteryStep(LotteryStep.SITE, R.string.lottery_site_step, onEdit, enabled) },
+    ) {
+        Text(site?.details?.name ?: stringResource(R.string.lottery_site_required))
+        LotteryAllocatedNights(draft.nights)
+        if (state.errors.allocationRequired) {
+            Text(
+                stringResource(R.string.lottery_allocation_required),
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+    }
+    if (site != null) {
+        Text(
+            stringResource(R.string.lottery_schedule_zone, site.details.timeZone),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    LotteryReviewWindow(
+        R.string.lottery_registration_step,
+        LotteryStep.REGISTRATION,
+        listOf(LotterySchedulePoint.REGISTRATION_OPEN, LotterySchedulePoint.REGISTRATION_CLOSE),
+        state,
+        onEdit,
+        enabled,
+    )
+    LotteryReviewWindow(
+        R.string.lottery_booking_step,
+        LotteryStep.BOOKING,
+        listOf(LotterySchedulePoint.BOOKING_OPEN, LotterySchedulePoint.BOOKING_CLOSE),
+        state,
+        onEdit,
+        enabled,
+    )
+    SummarySection(
+        stringResource(R.string.lottery_winners_title),
+        action = {
             EditLotteryStep(
-                LotteryStep.REGISTRATION,
-                R.string.lottery_registration_step,
+                LotteryStep.WINNERS,
+                R.string.lottery_winners_step,
                 onEdit,
                 enabled,
             )
-        } else if (point == LotterySchedulePoint.BOOKING_CLOSE) {
-            EditLotteryStep(LotteryStep.BOOKING, R.string.lottery_booking_step, onEdit, enabled)
+        },
+    ) {
+        DetailRow(stringResource(R.string.lottery_winners_step), draft.maximumWinnersText)
+        if (state.errors.winnerCount != null) {
+            Text(
+                stringResource(R.string.lottery_winners_invalid),
+                color = MaterialTheme.colorScheme.error,
+            )
         }
+        Text(stringResource(R.string.lottery_unlimited))
     }
-    DetailRow(stringResource(R.string.lottery_winners_step), draft.maximumWinnersText)
-    if (state.errors.winnerCount != null) Text(stringResource(R.string.lottery_winners_invalid))
-    Text(stringResource(R.string.lottery_unlimited))
-    EditLotteryStep(LotteryStep.WINNERS, R.string.lottery_winners_step, onEdit, enabled)
     if (state.errors.zoneConfirmationRequired && site != null) {
         Text(stringResource(R.string.lottery_zone_review, site.details.timeZone))
         TextButton(onConfirmZone, enabled = enabled) {
@@ -103,6 +141,41 @@ fun LotteryReviewStep(
     if (windowError != null) Text(stringResource(windowError))
 }
 
+/** Keeps the raw local window and its existing named edit action in one review group.
+ * @param title Localized window section.
+ * @param step Existing wizard destination for editing this window.
+ * @param points Opening and closing raw field identities in display order.
+ * @param state Actual input and per-field feedback.
+ * @param onEdit Opens the requested step in the same parent.
+ * @param enabled Whether the parent currently permits editing.
+ */
+@Composable
+private fun LotteryReviewWindow(
+    @StringRes title: Int,
+    step: LotteryStep,
+    points: List<LotterySchedulePoint>,
+    state: LotterySetupUiState,
+    onEdit: (LotteryStep) -> Unit,
+    enabled: Boolean,
+) {
+    SummarySection(
+        stringResource(title),
+        action = { EditLotteryStep(step, title, onEdit, enabled) },
+    ) {
+        for (point in points) {
+            DetailRow(lotteryScheduleLabel(point), localScheduleLabel(state.draft.schedule[point]))
+            val error =
+                when (state.errors.schedule[point]) {
+                    LotteryScheduleError.DATE_REQUIRED -> R.string.lottery_date_required
+                    LotteryScheduleError.TIME_REQUIRED -> R.string.lottery_time_required
+                    LotteryScheduleError.AMBIGUOUS_TIME -> R.string.lottery_time_ambiguous
+                    null -> null
+                }
+            if (error != null) Text(stringResource(error), color = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
 /** Labels review edits by their destination instead of repeated ambiguous Edit buttons.
  * @param step Target step in the same parent.
  * @param title Localized section label resource.
@@ -116,8 +189,21 @@ private fun EditLotteryStep(
     onEdit: (LotteryStep) -> Unit,
     enabled: Boolean,
 ) {
-    TextButton({ onEdit(step) }, enabled = enabled) {
-        Text(stringResource(R.string.lottery_edit_section, stringResource(title)))
+    IconButton({ onEdit(step) }, enabled = enabled) {
+        Icon(
+            Icons.Outlined.Edit,
+            contentDescription =
+                stringResource(
+                    R.string.lottery_edit_section,
+                    stringResource(title),
+                ),
+            tint =
+                if (enabled) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                },
+        )
     }
 }
 

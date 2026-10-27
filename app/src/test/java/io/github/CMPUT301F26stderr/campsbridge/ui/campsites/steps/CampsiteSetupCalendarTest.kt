@@ -1,8 +1,8 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.offeredNightCalendarState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import org.junit.Assert.assertEquals
@@ -23,7 +23,7 @@ class CampsiteSetupCalendarTest {
         val booked = month.atDay(15)
         val absent = month.atDay(16)
         val inventory =
-            CampsiteInventoryUiState.Content(
+            CalendarInventoryRead.Content(
                 listOf(
                     CalendarNight(offered, true),
                     CalendarNight(booked, true, "reservation"),
@@ -51,8 +51,8 @@ class CampsiteSetupCalendarTest {
     /** Pending/failed ranges cannot supply selectable dates or claim a known empty baseline. */
     @Test fun unknownRangeHasNoEditableDates() {
         for (inventory in listOf(
-            CampsiteInventoryUiState.Loading,
-            CampsiteInventoryUiState.Failure,
+            CalendarInventoryRead.Loading,
+            CalendarInventoryRead.Failure,
         )) {
             val state = offeredNightCalendarState(month, inventory, emptyMap())
             assertFalse(state.selectionEnabled)
@@ -67,7 +67,7 @@ class CampsiteSetupCalendarTest {
         val state =
             offeredNightCalendarState(
                 month,
-                CampsiteInventoryUiState.Content(emptyList()),
+                CalendarInventoryRead.Content(emptyList()),
                 mapOf(first to true),
                 setOf(second),
             )
@@ -80,7 +80,7 @@ class CampsiteSetupCalendarTest {
         val state =
             offeredNightCalendarState(
                 month,
-                CampsiteInventoryUiState.Content(emptyList()),
+                CalendarInventoryRead.Content(emptyList()),
                 mapOf(month.plusMonths(1).atDay(1) to true),
             )
         assertEquals(month.lengthOfMonth(), state.days.size)

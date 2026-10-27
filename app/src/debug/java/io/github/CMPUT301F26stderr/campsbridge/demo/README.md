@@ -17,3 +17,5 @@ Run controller/data contracts with `:app:testDebugUnitTest --tests '*demo.*'`. D
 The debug Task examples catalogue supplies H01/H02 profile exercises, H03 availability, and H04 owner inventory against local repositories. H03 starts in May 2027 with a booked May 13; H04 retains the supplied fixture order until its helper is connected. H05/H06 isolate discovery text and guest-capacity matching. Bindings remain null in the shared baseline and are supplied independently in each task handoff. Later examples are explicit placeholders.
 
 H05/H06 are available directly in Task examples. Each uses the real Explore controller, working filter child and supplied listings; only its assigned predicate is left pending. Other predicates and ordering use fixed fixture outcomes within that isolated example. The ordinary app retains its pending production helper bindings.
+
+H07 directly opens ordered-window validation with its actual nullable validator; H08 opens the real participant controller over a completed local draw. The assigned functions remain pending. Reset replaces their local state; no booking, Inbox or administrative graph is supplied by these exercises.

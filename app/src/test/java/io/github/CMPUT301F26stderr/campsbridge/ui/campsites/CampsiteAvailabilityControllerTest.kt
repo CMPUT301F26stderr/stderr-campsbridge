@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,7 +54,7 @@ class CampsiteAvailabilityControllerTest {
             val calendar = controller(null)
             runCurrent()
             assertEquals(
-                CampsiteInventoryUiState.Content(emptyList()),
+                CalendarInventoryRead.Content(emptyList()),
                 calendar.state.value.inventory,
             )
             calendar.toggleDate(first)
@@ -96,7 +97,7 @@ class CampsiteAvailabilityControllerTest {
             sites.calendarFailure.value = IOException("offline")
             val calendar = controller()
             runCurrent()
-            assertEquals(CampsiteInventoryUiState.Failure, calendar.state.value.inventory)
+            assertEquals(CalendarInventoryRead.Failure, calendar.state.value.inventory)
             calendar.toggleDate(first)
             assertTrue(
                 calendar.state.value.requested
@@ -286,7 +287,7 @@ class CampsiteAvailabilityControllerTest {
             val restored = controller(saved = snapshot)
             runCurrent()
             assertEquals(month.plusMonths(1), restored.state.value.month)
-            assertEquals(CampsiteInventoryUiState.Failure, restored.state.value.inventory)
+            assertEquals(CalendarInventoryRead.Failure, restored.state.value.inventory)
             assertEquals(mapOf(first to false), restored.state.value.requested)
             assertEquals(1, sites.offerRequests.size)
             sites.offerHandler = { _, _, _, offered -> assertFalse(offered) }

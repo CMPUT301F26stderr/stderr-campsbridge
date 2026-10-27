@@ -16,6 +16,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.SearchFiltersRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.ParticipantListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileUiState
@@ -32,6 +33,14 @@ internal fun TaskExampleFeature(
     when (session.example) {
         TaskExample.DISPLAY_NAME, TaskExample.CONTACT -> {
             ProfileTaskExample(session, onBack)
+        }
+
+        TaskExample.LOTTERY_WINDOWS -> {
+            LotteryWindowTaskExample(session.bindings, onBack)
+        }
+
+        TaskExample.PARTICIPANTS -> {
+            ParticipantListRoute(session.participants(), onBack)
         }
 
         TaskExample.TEXT_MATCH, TaskExample.GUEST_MATCH -> {

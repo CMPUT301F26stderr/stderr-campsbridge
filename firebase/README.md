@@ -43,5 +43,5 @@ The command installs pinned Node test dependencies, starts disposable Auth/Fires
 Pending work:
 
 - Enable anonymous Auth and deploy the agreed rules/indexes in the configured cloud project.
-- Feature controllers, closed-app scheduling and OS/FCM push delivery. Ready foreground sessions already run account-scoped draw/inbox recovery; global removal/image recovery remains an explicit administrative operation.
-- Seed and migration commands; see [tooling conventions](tooling/README.md).
+- Connected installed-app verification, closed-app scheduling and OS/FCM push delivery. Ready foreground sessions already run account-scoped draw/inbox recovery; global removal/image recovery remains an explicit administrative operation.
+- Fixture seeding commands; see [tooling conventions](tooling/README.md).

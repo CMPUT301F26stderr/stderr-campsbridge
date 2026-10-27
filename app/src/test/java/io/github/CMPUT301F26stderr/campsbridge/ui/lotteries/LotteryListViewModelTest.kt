@@ -12,6 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -383,7 +384,15 @@ class LotteryListViewModelTest {
             val store = ViewModelStore()
             try {
                 val model =
-                    LotteryListViewModel("account-1", context, lotteries, bookings, clock, saved)
+                    LotteryListViewModel(
+                        "account-1",
+                        context,
+                        lotteries,
+                        bookings,
+                        FakeCampsiteRepository(),
+                        clock,
+                        saved,
+                    )
                 store.put("list", model)
                 block(model)
             } finally {

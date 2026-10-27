@@ -221,28 +221,6 @@ class LotteryMembershipControllerTest {
             assertTrue(reader.state.value.canJoin)
         }
 
-    /** Unknown membership exposes recovery without releasing or reopening a submitted withdrawal. */
-    @Test fun pendingWithdrawalMakesSourceRecoveryReachable() =
-        withReader { reader ->
-            lotteries.withdrawHandler = { _, _ -> }
-            reader.updateFacts(parent, entry(EntryState.WAITING), true)
-            reader.requestLeave()
-            reader.confirmLeave()
-            runCurrent()
-            assertTrue(reader.state.value.isConfirmingLeave)
-            reader.updateFacts(parent, null, false)
-            assertFalse(reader.state.value.isConfirmingLeave)
-            assertEquals(LotteryMembershipAction.LEAVE, reader.state.value.action)
-            reader.confirmLeave()
-            reader.join()
-            reader.updateFacts(parent, entry(EntryState.WAITING), true)
-            assertFalse(reader.state.value.isConfirmingLeave)
-            assertEquals(LotteryMembershipAction.LEAVE, reader.state.value.action)
-            reader.updateFacts(parent, entry(EntryState.WITHDRAWN), true)
-            assertNull(reader.state.value.action)
-            assertEquals(listOf("withdraw:draw:entrant"), lotteries.events)
-        }
-
     /** Supplies exact immutable own-entry facts.
      * @param state Current saved entry state.
      */

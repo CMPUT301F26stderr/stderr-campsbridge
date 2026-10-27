@@ -128,7 +128,7 @@ class LotteryListFlowTest {
             host.lotteries.records.value = emptyList()
         }
         compose.onNodeWithText("Retry").performClick()
-        compose.onNodeWithText("No lotteries in Drafts.").assertIsDisplayed()
+        compose.onNodeWithText("No lotteries here yet.").assertIsDisplayed()
         compose.runOnIdle { assertEquals(1, host.lotteries.activeOwnerObservers) }
     }
 

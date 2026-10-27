@@ -3,8 +3,9 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 import android.net.Uri
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.credits.BundledLicense
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import java.util.Locale
 
@@ -60,6 +61,18 @@ object AppDestination {
         context: LotteryContext = LotteryContext.OWNER,
     ): String =
         lotteryDetailPattern(context).replace("{lotteryId}", Uri.encode(lotteryId))
+
+    /** Addresses one read-only child under its actual context-qualified saved parent.
+     * @param lotteryId Saved parent identity.
+     * @param context Explicit owner or entrant presentation.
+     * @param section Registered reader child.
+     */
+    fun lotterySection(
+        lotteryId: String,
+        context: LotteryContext,
+        section: LotteryDetailSection,
+    ): String =
+        "${lotteryDetail(lotteryId, context)}/${section.routeKey}"
 
     /** Opens the owner participant child under its actual saved parent.
      * @param lotteryId Saved parent identity.

@@ -1,7 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import org.junit.Assert.assertEquals
@@ -23,7 +23,7 @@ class LotteryAllocationCalendarTest {
                 LotteryAllocationUiState(
                     month,
                     setOf(month.atDay(4)),
-                    CampsiteInventoryUiState.Content(
+                    CalendarInventoryRead.Content(
                         listOf(
                             CalendarNight(month.atDay(1), true),
                             CalendarNight(month.atDay(2), true, "booked"),
@@ -51,8 +51,8 @@ class LotteryAllocationCalendarTest {
     @Test fun unknownInventoryHasNoDateActions() {
         val month = YearMonth.of(2027, 5)
         for (inventory in listOf(
-            CampsiteInventoryUiState.Loading,
-            CampsiteInventoryUiState.Failure,
+            CalendarInventoryRead.Loading,
+            CalendarInventoryRead.Failure,
         )) {
             val state =
                 lotteryAllocationCalendarState(

@@ -9,7 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -387,7 +387,7 @@ class LotterySetupViewModelTest {
             model.toggleAllocationDate(day)
             model.changeAllocationMonth(may.plusMonths(1))
             assertEquals(
-                CampsiteInventoryUiState.Loading,
+                CalendarInventoryRead.Loading,
                 model.state.value.allocation!!
                     .inventory,
             )
@@ -415,7 +415,7 @@ class LotterySetupViewModelTest {
             assertTrue(model.beginAllocation())
             runCurrent()
             assertEquals(
-                CampsiteInventoryUiState.Failure,
+                CalendarInventoryRead.Failure,
                 model.state.value.allocation!!
                     .inventory,
             )
@@ -611,7 +611,7 @@ class LotterySetupViewModelTest {
             runCurrent()
             checkNotNull(retired).emit(emptyList())
             assertEquals(
-                CampsiteInventoryUiState.Content(current.value),
+                CalendarInventoryRead.Content(current.value),
                 model.state.value.allocation!!
                     .inventory,
             )

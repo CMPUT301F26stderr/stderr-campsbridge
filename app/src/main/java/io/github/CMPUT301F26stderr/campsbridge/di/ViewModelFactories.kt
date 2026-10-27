@@ -11,12 +11,12 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 
@@ -39,6 +39,7 @@ fun lotteryListViewModelFactory(
                 context,
                 services.repositories.lotteries,
                 services.repositories.bookings,
+                services.repositories.campsites,
                 services.clock,
                 createSavedStateHandle(),
                 campsiteId,

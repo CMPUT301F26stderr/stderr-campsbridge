@@ -2,11 +2,14 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -18,11 +21,9 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryMembershipAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryMembershipActions
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryMembershipRead
@@ -88,24 +89,39 @@ internal fun CampsiteLotteryEntry(
                         AppActionButton(
                             stringResource(R.string.campsite_available_lotteries),
                             onOpenChoices,
+                            Modifier.fillMaxWidth(),
                         )
                     }
 
                     else -> {
-                        Text(sole.title, style = MaterialTheme.typography.titleMedium)
-                        Text(campsiteLotteryDeadline(sole, timeZone))
-                        LotteryMembershipReadContent(state.membership, onRetryMembership)
+                        FlowRow(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                        ) {
+                            Text(
+                                sole.title,
+                                Modifier.align(Alignment.CenterVertically),
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                            TextButton({ onOpenLottery(sole.id) }) {
+                                Text(stringResource(R.string.campsite_view_lottery))
+                            }
+                        }
+                        Text(
+                            campsiteLotteryDeadline(sole, timeZone),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                            LotteryMembershipReadContent(state.membership, onRetryMembership)
+                        }
                         LotteryMembershipActions(
                             state.participation,
                             { onJoin(sole.id) },
                             { onRequestLeave(sole.id) },
                             { onDismissLeave(sole.id) },
                             { onConfirmLeave(sole.id) },
-                        )
-                        AppActionButton(
-                            stringResource(R.string.campsite_view_lottery),
-                            { onOpenLottery(sole.id) },
-                            style = ActionStyle.SECONDARY,
                         )
                     }
                 }
@@ -221,8 +237,14 @@ private fun CampsiteLotteryEntryPreview(
     @PreviewParameter(CampsiteLotteryPreviewProvider::class) state: CampsiteLotteriesUiState,
 ) {
     CampsbridgeTheme {
-        AppScreen(stringResource(R.string.campsite), onBack = {}) {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
+        CampsiteDetailScreen(
+            CampsiteDetailUiState.Content(previewCampsite()),
+            previewCampsitePhoto(),
+            {},
+            {},
+            {},
+            rating = RatingState.Ready(RatingSummary(0, null)),
+            lotteryActions = {
                 CampsiteLotteryEntry(
                     state,
                     previewCampsite().details.timeZone,
@@ -235,7 +257,7 @@ private fun CampsiteLotteryEntryPreview(
                     {},
                     {},
                 )
-            }
-        }
+            },
+        )
     }
 }

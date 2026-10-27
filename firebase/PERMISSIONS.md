@@ -72,7 +72,6 @@ A removal request authorizes and records the first removal fact before cleanup s
 | Inbox read time | Recipient only; write once |
 | Upload intent/attachment | Target owner; removal/obsolete cleanup is also available to admin |
 | Removal jobs/cascades | Original self-removal actor or admin; immutable removal facts |
-| Migration records | Console/Admin SDK tooling only |
 
 `SessionPendingWork` discovers only the active account's owner lotteries and entrant/owner reservations through `FirestoreWorkSource`. It invokes the same draw and delivery owners used by explicit actions. `AdminMaintenance.resume(adminId)` separately authorizes global removal, draw, notification and image recovery. Ordinary startup never performs global administrative cleanup. Query rules are not filters: private collection queries must constrain account/owner/participant fields or run as an authorized admin.
 

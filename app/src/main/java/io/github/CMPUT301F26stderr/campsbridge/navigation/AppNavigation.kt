@@ -135,7 +135,23 @@ fun AppNavigation(
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
         lotterySetupGraph(controller, lotterySetupFactory)
-        lotteryDetailGraph(controller, lotteryDetailFactory)
+        lotteryDetailGraph(controller, lotteryDetailFactory, onCampsite = { campsiteId, context ->
+            val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
+            val presentation =
+                if (context ==
+                    LotteryContext.OWNER
+                ) {
+                    CampsiteDetailContext.PREVIEW
+                } else {
+                    CampsiteDetailContext.VIEW
+                }
+            controller.navigate(
+                "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
+            ) {
+                launchSingleTop =
+                    true
+            }
+        })
         lotteryListGraph(
             controller,
             state,

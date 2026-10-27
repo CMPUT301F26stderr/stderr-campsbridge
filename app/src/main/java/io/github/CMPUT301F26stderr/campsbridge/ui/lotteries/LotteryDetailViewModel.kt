@@ -484,7 +484,7 @@ class LotteryDetailViewModel(
     }
 
     /**
-     * Owns live allocations and reads their actual site labels without dropping missing
+     * Owns live allocations and reads their actual campsites without dropping missing
      * references.
      */
     private fun observeOffers() {
@@ -502,8 +502,7 @@ class LotteryDetailViewModel(
                                 currentCoroutineContext().ensureActive()
                                 LotteryOfferSummary(
                                     offer,
-                                    site?.details?.name,
-                                    site?.details?.timeZone,
+                                    site,
                                 )
                             }
                         if (version != offerVersion) return@collect
