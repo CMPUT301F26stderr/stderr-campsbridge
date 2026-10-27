@@ -123,14 +123,15 @@ def render_comment(pr, run, failures):
         else:
             body += ["", "A useful log excerpt was unavailable; open the failed job above for details.", ""]
     body += ["Run the ordinary Android checks:", "", "```sh", "bash scripts/check.sh", "```", "",
+             "On Windows PowerShell: `./gradlew.bat --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug`.", "",
              "Optional: run `pre-commit install` once and `pre-commit run --all-files` "
              "to catch issues earlier. If hooks change files, include those fixes in your commit. "
              "The bot applies formatting after approval, so installing local hooks is not required."]
     names = {job["name"] for job, _ in failures}
     if "Firebase contracts" in names:
-        body += ["", "For Firebase failures: `nix develop --command bash scripts/check-firebase.sh`."]
+        body += ["", "For Firebase failures: `bash scripts/check-firebase.sh` after the [Firebase test setup](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo#firebase-integration-checks)."]
     if "Android UI checks" in names:
-        body += ["", "For device-test failures: `nix develop .#ui --command bash scripts/check-android-ui.sh`."]
+        body += ["", "For device-test failures, start an emulator in Android Studio and run the tests in `app/src/androidTest`. On macOS/Linux, set `ANDROID_SERIAL` to its serial from `adb devices` and run `bash scripts/check-android-ui.sh`."]
     body += ["", "For runner, dependency or setup failures, ask the team lead for help with the linked logs."]
     return "\n\n".join(body[:4]) + "\n" + "\n".join(body[4:])
 

@@ -21,7 +21,7 @@ Prefer Jetpack and Android platform components. Use official Google SDKs for Fir
 | Remote image display | Coil for downloading, decoding, resizing, caching, and loading/error states |
 | CSV export | A small tested encoder with correct escaping, connected to Android file creation/sharing APIs |
 
-Coil and ZXing are the initial community-library exceptions. Check Android/Compose compatibility and licensing when selecting versions. Add application dependencies through the Gradle version catalog; development tools belong in the Nix flake.
+Coil and ZXing are the initial community-library exceptions. Check Android/Compose compatibility and licensing when selecting versions. Add application dependencies through the Gradle version catalog; development tools are configured separately from Android runtime dependencies.
 
 ## Shared foundation
 
