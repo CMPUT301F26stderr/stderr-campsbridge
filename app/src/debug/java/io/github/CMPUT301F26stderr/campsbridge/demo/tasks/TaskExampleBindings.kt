@@ -5,6 +5,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
@@ -51,4 +52,8 @@ data class TaskExampleBindings(
 
 /** Connects reviewed task functions in isolated handoffs; shared defaults remain pending. */
 fun taskExampleBindings(): TaskExampleBindings =
-    TaskExampleBindings(parseName = ::parseDisplayName, orderCampsites = ::sortCampsitesByName)
+    TaskExampleBindings(
+        parseName = ::parseDisplayName,
+        orderCampsites = ::sortCampsitesByName,
+        matchesGuests = ::matchesGuestCapacity,
+    )

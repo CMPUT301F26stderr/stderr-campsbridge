@@ -13,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
@@ -257,7 +258,7 @@ fun availabilityViewModelFactory(
         }
     }
 
-/** Constructs the discovery owner with reserved matching dependencies explicitly pending.
+/** Constructs discovery with the assigned matching helper; the peer matcher stays pending.
  * @param services Selected host's published listing, attachment and rating sources.
  */
 fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
@@ -269,7 +270,7 @@ fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
                 services.repositories.reviews,
                 createSavedStateHandle(),
                 matchesText = null,
-                matchesCapacity = null,
+                matchesCapacity = ::matchesGuestCapacity,
                 sortCampsites = ::sortCampsitesByName,
                 clock = services.clock,
             )
