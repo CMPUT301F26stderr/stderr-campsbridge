@@ -52,6 +52,7 @@ class ProfileImageTest {
                 LocalActivityResultRegistryOwner provides picker,
             ) { host.Content() }
         }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Choose photo").performScrollTo().performClick()
         waitForText("Save photo")
@@ -81,6 +82,7 @@ class ProfileImageTest {
                 LocalActivityResultRegistryOwner provides picker,
             ) { host.Content() }
         }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Choose photo").performScrollTo().performClick()
         waitForText("Save photo")
@@ -107,6 +109,7 @@ class ProfileImageTest {
                 LocalActivityResultRegistryOwner provides picker,
             ) { host.Content() }
         }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Choose photo").performScrollTo().performClick()
         waitForText("Save photo")
@@ -137,6 +140,7 @@ class ProfileImageTest {
             )
         host.images.urlResults["existing"] = uri.toString()
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Remove photo").performScrollTo().performClick()
         compose.onNodeWithText("Cancel").performClick()
@@ -161,6 +165,7 @@ class ProfileImageTest {
                 LocalActivityResultRegistryOwner provides picker,
             ) { host.Content() }
         }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Personal details").performClick()
         compose.onNodeWithText("Choose photo").performScrollTo().performClick()
         waitForText("Save photo")

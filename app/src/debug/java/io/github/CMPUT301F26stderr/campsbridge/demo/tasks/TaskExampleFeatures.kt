@@ -14,6 +14,8 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.SearchFiltersRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileUiState
@@ -30,6 +32,10 @@ internal fun TaskExampleFeature(
     when (session.example) {
         TaskExample.DISPLAY_NAME, TaskExample.CONTACT -> {
             ProfileTaskExample(session, onBack)
+        }
+
+        TaskExample.TEXT_MATCH, TaskExample.GUEST_MATCH -> {
+            DiscoveryTaskExample(session, onBack)
         }
 
         TaskExample.CAMPSITE_ORDER -> {
@@ -120,6 +126,40 @@ private fun ProfileTaskExample(
             )
         } else {
             ProfileDetailsScreen(state, model::editName, model::saveName, onBack, model::retry)
+        }
+    }
+}
+
+/** Opens the actual working filter child without requiring another helper or screen journey.
+ * @param session Current supplied listings and isolated predicate.
+ * @param onBack Returns to the catalogue.
+ */
+@Composable
+private fun DiscoveryTaskExample(
+    session: TaskExampleSession,
+    onBack: () -> Unit,
+) {
+    val model = session.explore()
+    var filter by rememberSaveable { mutableStateOf(false) }
+    var selected by rememberSaveable { mutableStateOf<String?>(null) }
+    val id = selected
+    when {
+        filter -> {
+            SearchFiltersRoute(model, { filter = false })
+        }
+
+        id != null -> {
+            val site = TaskExampleData.sites.first { it.id == id }
+            AppScreen(
+                site.details.name,
+                onBack = { selected = null },
+            ) { Text(site.details.description) }
+        }
+
+        else -> {
+            AppScreen(stringResource(session.example.title), onBack = onBack) {
+                ExploreRoute(model, { filter = true }, { selected = it })
+            }
         }
     }
 }

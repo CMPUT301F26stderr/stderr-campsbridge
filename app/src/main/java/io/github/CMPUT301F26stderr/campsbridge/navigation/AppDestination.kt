@@ -3,12 +3,14 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 import android.net.Uri
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.credits.BundledLicense
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import java.util.Locale
 
 /** Registered destinations only; add feature routes when their implementations exist. */
 object AppDestination {
     const val AVAILABILITY_EDITOR = "owner/campsites/{campsiteId}/availability/edit"
+    const val EXPLORE = "entrant/explore"
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
@@ -93,6 +95,28 @@ object AppDestination {
      */
     fun settings(workspace: Role): String =
         "${profileGraph(workspace)}/settings"
+
+    /** Addresses shared image/font credits and dependency notices.
+     * @param workspace Profile graph owning the caller's Back stack.
+     */
+    fun credits(workspace: Role): String =
+        "${settings(workspace)}/credits"
+
+    /** Registers the complete bundled license reader under credits.
+     * @param workspace Profile graph owning the caller's Back stack.
+     */
+    fun creditLicensePattern(workspace: Role): String =
+        "${credits(workspace)}/licenses/{license}"
+
+    /** Opens one exact bundled font or Java API license.
+     * @param workspace Profile graph owning the caller's Back stack.
+     * @param license Fixed packaged document identity.
+     */
+    fun creditLicense(
+        workspace: Role,
+        license: BundledLicense,
+    ): String =
+        "${credits(workspace)}/licenses/${license.routeKey}"
 
     /** Addresses the offline policy menu.
      * @param workspace Owning workspace.

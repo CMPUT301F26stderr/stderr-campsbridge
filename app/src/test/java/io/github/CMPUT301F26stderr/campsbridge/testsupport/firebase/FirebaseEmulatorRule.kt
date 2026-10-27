@@ -121,15 +121,17 @@ class FirebaseEmulatorRule : ExternalResource() {
             "com.google.firebase.components.ComponentRegistrar",
         )
         Shadows.shadowOf(application.packageManager).addOrUpdateService(service)
+        val instanceId = UUID.randomUUID().toString()
         val options =
             FirebaseOptions
                 .Builder()
                 .setProjectId(projectId)
                 .setApplicationId("1:123456789:android:emulator")
-                .setApiKey("fake-api-key")
+                // Auth emulator configuration is cached by API key across app lifetimes.
+                .setApiKey("emulator-only-$instanceId")
                 .setStorageBucket("$projectId.appspot.com")
                 .build()
-        val app = FirebaseApp.initializeApp(application, options, UUID.randomUUID().toString())
+        val app = FirebaseApp.initializeApp(application, options, instanceId)
         val auth = FirebaseAuth.getInstance(app)
         auth.useEmulator("127.0.0.1", 9099)
         val id = checkNotNull(auth.signInAnonymously().await().user).uid

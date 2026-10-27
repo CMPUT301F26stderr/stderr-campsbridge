@@ -12,6 +12,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactI
  * @param parsePhone F02 phone implementation.
  * @param remainingEdits F08 comparison of requested and confirmed offered values.
  * @param orderCampsites F11 stable campsite ordering.
+ * @param matchesText F09 submitted text predicate.
+ * @param matchesGuests F10 guest-capacity predicate.
  */
 data class TaskExampleBindings(
     val parseName: ((String) -> DisplayNameInput)? = null,
@@ -19,6 +21,8 @@ data class TaskExampleBindings(
     val parsePhone: ((String) -> OptionalContactInput)? = null,
     val remainingEdits: AvailabilityDifference? = null,
     val orderCampsites: ((List<Campsite>) -> List<Campsite>)? = null,
+    val matchesText: ((Campsite, String) -> Boolean)? = null,
+    val matchesGuests: ((Long, Long?) -> Boolean)? = null,
 ) {
     /** Reports whether the selected task's actual functions are supplied.
      * @param example Selected task identity.
@@ -29,6 +33,8 @@ data class TaskExampleBindings(
             TaskExample.CONTACT -> parseEmail != null && parsePhone != null
             TaskExample.AVAILABILITY -> remainingEdits != null
             TaskExample.CAMPSITE_ORDER -> orderCampsites != null
+            TaskExample.TEXT_MATCH -> matchesText != null
+            TaskExample.GUEST_MATCH -> matchesGuests != null
             else -> false
         }
 }

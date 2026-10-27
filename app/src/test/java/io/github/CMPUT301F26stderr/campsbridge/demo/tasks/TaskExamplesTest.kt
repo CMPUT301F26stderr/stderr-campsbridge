@@ -28,7 +28,7 @@ class TaskExamplesTest {
 
     @get:Rule val files = TemporaryFolder()
 
-    /** Only the accepted B1/B2 examples are available; all actual helper ports remain deliberately absent. */
+    /** Only the accepted B1/B2 and published B3 examples are available; all actual helper ports remain deliberately absent. */
     @Test fun catalogueDistinguishesReadyAndFutureScaffolds() {
         assertEquals(23, TaskExample.entries.size)
         assertEquals(
@@ -40,7 +40,7 @@ class TaskExamplesTest {
         )
         assertFalse(TaskExample.entries.any { it.id == "H14" })
         assertEquals(
-            setOf("H01", "H02", "H03", "H04"),
+            setOf("H01", "H02", "H03", "H04", "H05", "H06"),
             TaskExample.entries
                 .filter {
                     it.scaffoldReady

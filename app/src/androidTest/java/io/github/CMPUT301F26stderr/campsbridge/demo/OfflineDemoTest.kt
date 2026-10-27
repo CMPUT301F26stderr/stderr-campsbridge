@@ -30,6 +30,7 @@ class OfflineDemoTest {
         assertTrue(intent.component!!.className.endsWith(".OfflineDemoActivity"))
         ActivityScenario.launch<OfflineDemoActivity>(intent).use { scenario ->
             compose.onNodeWithText("Offline demo").assertIsDisplayed()
+            compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Alex Chen").assertIsDisplayed()
             assertTrue(FirebaseApp.getApps(context).isEmpty())
             compose.onNodeWithText("Demo tools").performClick()
@@ -74,6 +75,7 @@ class OfflineDemoTest {
             assertTrue(FirebaseApp.getApps(context).isEmpty())
             InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
             compose.waitUntil(5_000) { scenario.state == Lifecycle.State.RESUMED }
+            compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Alex Chen").assertIsDisplayed()
         }
     }

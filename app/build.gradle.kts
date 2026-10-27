@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.google.oss.licenses)
     id("com.google.gms.google-services")
 }
 
@@ -49,8 +50,8 @@ android {
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
@@ -58,6 +59,65 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    sourceSets
+        .getByName("main")
+        .assets.directories
+        .add(rootProject.file("assets").path)
+}
+
+/** Writes the current runtime graph for license extraction in every build variant. */
+abstract class RuntimeLicenseDependencies : DefaultTask() {
+    @get:Input abstract val coordinates: ListProperty<String>
+
+    @get:OutputFile abstract val catalog: RegularFileProperty
+
+    /** Serializes resolved Maven identities using the notices plugin's documented catalog fields. */
+    @TaskAction
+    fun writeCatalog() {
+        val entries =
+            coordinates.get().map { coordinate ->
+                val (group, name, version) = coordinate.split(":", limit = 3)
+                mapOf("group" to group, "name" to name, "version" to version)
+            }
+        val destination = catalog.get().asFile
+        destination.parentFile.mkdirs()
+        destination.writeText(groovy.json.JsonOutput.toJson(entries))
+    }
+}
+
+// AGP does not publish its dependency report for debug builds. Use the actual runtime graph
+// for every variant so the installed debug app has the same complete notices as release.
+androidComponents.onVariants { variant ->
+    val runtimeCoordinates =
+        variant.runtimeConfiguration.incoming
+            .artifactView {
+                componentFilter {
+                    it is org.gradle.api.artifacts.component.ModuleComponentIdentifier
+                }
+            }.artifacts.resolvedArtifacts
+            .map { artifacts ->
+                artifacts
+                    .map { artifact ->
+                        val id =
+                            artifact.id.componentIdentifier as
+                                org.gradle.api.artifacts.component.ModuleComponentIdentifier
+                        "${id.group}:${id.module}:${id.version}"
+                    }.sorted()
+            }
+    val catalog =
+        tasks.register<RuntimeLicenseDependencies>("${variant.name}RuntimeLicenseDependencies") {
+            coordinates.set(runtimeCoordinates)
+            this.catalog.set(
+                layout.buildDirectory.file(
+                    "generated/third_party_licenses/${variant.name}/runtime-dependencies.json",
+                ),
+            )
+        }
+    tasks.named<com.google.android.gms.oss.licenses.plugin.LicensesTask>(
+        "${variant.name}OssLicensesTask",
+    ) {
+        dependenciesJson.set(catalog.flatMap { it.catalog })
     }
 }
 
@@ -69,6 +129,7 @@ dokka {
 }
 
 dependencies {
+    implementation(libs.google.oss.licenses)
     implementation(libs.maps.compose)
     implementation(libs.maps.sdk)
     implementation(libs.coil.compose)

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo credits · Campsbridge</title>
+  <style>
+    body { margin: 0 auto; max-width: 52rem; padding: 2rem 1.25rem; font: 1rem/1.6 system-ui, sans-serif; color: #18231d; background: white; }
+    a { color: #006b39; }
+    article { margin: 2rem 0; }
+    img { display: block; width: 100%; max-height: 22rem; object-fit: cover; border-radius: 1rem; }
+    h2 { margin-bottom: 0.25rem; }
+  </style>
+</head>
+<body>
+  <a href="index.html">Back to prototype</a>
+  <h1>Photo credits</h1>
+  <p>Illustrative scenery from Banff, Jasper and Kananaskis. Photos may be cropped to fit the screen.</p>
+  <p id="license"></p>
+  <main id="photos"></main>
+  <h2>Prototype libraries and fonts</h2>
+  <ul>
+    <li><a href="https://github.com/tailwindlabs/tailwindcss/blob/main/LICENSE">Tailwind CSS · MIT License</a></li>
+    <li><a href="https://github.com/rsms/inter/blob/master/LICENSE.txt">Inter · SIL Open Font License 1.1</a></li>
+    <li><a href="https://github.com/google/material-design-icons/blob/master/LICENSE">Material Symbols · Apache License 2.0</a></li>
+  </ul>
+  <script>
+    const catalogUrl = new URL('../assets/photo-credits.json', location.href);
+    function link(text, url) {
+      const anchor = document.createElement('a');
+      anchor.textContent = text;
+      anchor.href = url;
+      return anchor;
+    }
+    fetch(catalogUrl).then(response => {
+      if (!response.ok) throw new Error('Photo credits unavailable');
+      return response.json();
+    }).then(catalog => {
+      document.querySelector('#license').append(link(catalog.licenseName, catalog.licenseUrl));
+      for (const photo of catalog.photos) {
+        const article = document.createElement('article');
+        const image = document.createElement('img');
+        image.src = new URL(`photos/${photo.id}.jpg`, catalogUrl).href;
+        image.alt = photo.title;
+        const title = document.createElement('h2');
+        title.textContent = photo.title;
+        const credit = document.createElement('p');
+        credit.append('Photo by ', link(photo.photographer, photo.photographerUrl), ' on ', link('Unsplash', photo.sourceUrl));
+        article.append(image, title, credit);
+        document.querySelector('#photos').append(article);
+      }
+    }).catch(error => { document.querySelector('#photos').textContent = error.message; });
+  </script>
+</body>
+</html>

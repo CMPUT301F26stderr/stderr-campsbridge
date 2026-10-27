@@ -4,6 +4,19 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+# Ordinary checks exercise keyless feedback even when the developer has configured Maps.
+# The dedicated SDK scenario opts in to real native gestures and the local/CI key.
+ui_maps_required=false
+for ui_argument in "$@"; do
+    case "$ui_argument" in
+        -Pandroid.testInstrumentationRunnerArguments.requireConfiguredMaps=true) ui_maps_required=true ;;
+        -Pandroid.testInstrumentationRunnerArguments.requireConfiguredMaps=false) ui_maps_required=false ;;
+    esac
+done
+if [[ "$ui_maps_required" != true ]]; then
+    set -- "$@" -PmapsApiKey=
+fi
+
 ui_work=""
 ui_pid=""
 cleanup() {
@@ -30,7 +43,7 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
         exit 1
     fi
     # Compile before first boot so package/setup work does not contend with Kotlin and dexing.
-    bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+    bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest "$@"
     ui_work="$(mktemp -d -t campsbridge-ui.XXXXXXXX)"
     export ANDROID_AVD_HOME="$ui_work/avd"
     mkdir -p "$ANDROID_AVD_HOME"
