@@ -19,6 +19,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.credits.BundledLicense
+import io.github.CMPUT301F26stderr.campsbridge.ui.credits.BundledLicenseScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.credits.CreditsRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PoliciesScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
@@ -139,7 +142,27 @@ internal fun NavGraphBuilder.profileGraph(
                     }
                 },
                 onBack = { controller.popBackStack() },
+                onCredits = {
+                    controller.navigate(AppDestination.credits(workspace)) {
+                        launchSingleTop =
+                            true
+                    }
+                },
             )
+        }
+        composable(AppDestination.credits(workspace)) {
+            CreditsRoute(
+                onBack = { controller.popBackStack() },
+                onLicense = { controller.navigate(AppDestination.creditLicense(workspace, it)) },
+            )
+        }
+        composable(AppDestination.creditLicensePattern(workspace)) { entry ->
+            val license =
+                BundledLicense.entries.single {
+                    it.routeKey ==
+                        entry.arguments?.getString("license")
+                }
+            BundledLicenseScreen(license) { controller.popBackStack() }
         }
         composable(AppDestination.policies(workspace)) {
             PoliciesScreen(

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Checkbox
@@ -135,6 +136,7 @@ fun PreferenceChips(
     FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
         options.forEach { option ->
             FilterChip(
+                shape = CircleShape,
                 selected = option.id in selectedIds,
                 onClick = { onToggle(option.id) },
                 label = { Text(option.label) },

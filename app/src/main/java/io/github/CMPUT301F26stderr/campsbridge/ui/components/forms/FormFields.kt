@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,5 +61,6 @@ fun AppTextField(
         supportingText = (errorMessage ?: supportingText)?.let { message -> { Text(message) } },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
+        shape = MaterialTheme.shapes.medium,
     )
 }
