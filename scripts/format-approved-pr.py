@@ -5,7 +5,11 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
+
+from identify.identify import tags_from_path
+import yaml
 
 HOOKS = ("pretty-format-kotlin", "trailing-whitespace", "end-of-file-fixer")
 BOT_NAME = "github-actions[bot]"
@@ -37,13 +41,38 @@ def git(checkout, *args):
 
 
 def format_hooks(checkout, config, files):
-    """Use only automatic formatting hooks; one repeat confirms their fixes are complete."""
+    """Run Nix-pinned formatters directly, preserving the trusted hook filters and args."""
+    configuration = yaml.safe_load(config.read_text())
+    definitions = {
+        hook["id"]: hook
+        for repo in configuration["repos"]
+        for hook in repo["hooks"]
+        if hook["id"] in HOOKS
+    }
+    tags = {name: tags_from_path(checkout / name) for name in files}
     for hook in HOOKS:
-        command = ["pre-commit", "run", "--config", str(config), "--hook-stage", "pre-commit",
-                   hook, "--files", *files]
+        definition = definitions[hook]
+        selected = [
+            name for name in files
+            if re.search(configuration.get("files", ""), name)
+            and not re.search(configuration.get("exclude", "^$"), name)
+            and re.search(definition.get("files", ""), name)
+            and not re.search(definition.get("exclude", "^$"), name)
+            and set(definition.get("types", ["file" if hook == "pretty-format-kotlin" else "text"])) <= tags[name]
+        ]
+        if not selected:
+            print(f"{hook}: skipped (no matching files)", flush=True)
+            continue
+        if hook == "pretty-format-kotlin":
+            # flake.nix owns the same pinned ktlint JAR used by the local hook.
+            command = ["ktlint", "--format", "--", *selected]
+        else:
+            module = "trailing_whitespace_fixer" if hook == "trailing-whitespace" else "end_of_file_fixer"
+            command = ["python3", "-m", f"pre_commit_hooks.{module}",
+                       *definition.get("args", []), "--", *selected]
         result = subprocess.run(command, cwd=checkout, check=False)
         if result.returncode == 1:
-            # pre-commit returns 1 after modifying a file, even when its fixes succeeded.
+            # Whitespace fixers return 1 after modifying files; rerun to verify convergence.
             result = subprocess.run(command, cwd=checkout, check=False)
         if result.returncode:
             raise RuntimeError(f"{hook} could not finish automatically; see its diagnostics above")
@@ -75,7 +104,7 @@ def format_approved(event, checkout, config, *, api=github, formatter=format_hoo
     if not files:
         print("No changed files need formatting.")
         return False
-    # A leading dash is legal in a filename, but must not become a pre-commit option.
+    # A leading dash is legal in a filename, but must not become a formatter option.
     formatter(checkout, config, [f"./{name}" if name.startswith("-") else name for name in files])
     if not git(checkout, "diff", "--name-only"):
         print("Formatting is already clean; no bot commit is needed.")
