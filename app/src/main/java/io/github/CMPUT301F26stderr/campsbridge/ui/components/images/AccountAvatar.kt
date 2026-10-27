@@ -41,7 +41,9 @@ fun AccountAvatar(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceContainer,
         ) {
-            Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Person, description) }
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.Default.Person, description, modifier = Modifier.size(size * 0.5f))
+            }
         }
     }
 }

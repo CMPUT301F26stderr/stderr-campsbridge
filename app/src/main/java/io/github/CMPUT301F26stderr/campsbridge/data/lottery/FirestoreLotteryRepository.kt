@@ -1,41 +1,12 @@
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Source
-import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
-import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
-import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.activeAccount
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.atomic
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.cancellation
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.observe
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.read
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.removal
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.require
-import io.github.CMPUT301F26stderr.campsbridge.data.firestore.stored
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.DrawResult
-import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.ALREADY_USED
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CAPACITY_REACHED
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INACTIVE
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INVALID_STATE
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_FOUND
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.WINDOW_CLOSED
-import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.tasks.await
 import java.time.Clock
 
 /**
@@ -47,20 +18,15 @@ import java.time.Clock
  * @param random Injectable source for proposing the persisted draw seed.
  */
 class FirestoreLotteryRepository(
-    private val db: FirebaseFirestore,
-    private val clock: Clock,
+    db: FirebaseFirestore,
+    clock: Clock,
     random: kotlin.random.Random = kotlin.random.Random.Default,
 ) : LotteryRepository {
     private val queries = LotteryQueries(db)
     private val draws = LotteryDraw(db, clock, random)
-
-    /**
-     * Builds a validated reference to the lottery document.
-     *
-     * @param id Lottery document ID.
-     */
-    private fun ref(id: String) =
-        db.document(FirestorePaths.lottery(id))
+    private val writes = LotteryWrites(db, clock)
+    private val membership = LotteryMembership(db, clock)
+    private val cancellation = LotteryCancellation(db, clock, draws)
 
     /**
      * Returns the lottery record, or null when absent.
@@ -137,28 +103,8 @@ class FirestoreLotteryRepository(
         title: String,
         description: String,
         configuration: LotteryConfiguration,
-    ): Lottery {
-        val reference = db.document(FirestorePaths.lottery(id))
-        db.atomic { tx ->
-            tx.activeAccount(db, ownerId, Role.OWNER)
-            val existing = tx.read(reference, LotteryDocument)
-            if (existing != null) {
-                requireOperation(
-                    existing.ownerId == ownerId,
-                    CONFLICT,
-                    "Draft ID belongs to another owner",
-                )
-                existing
-            } else {
-                val draft =
-                    Lottery(id, ownerId, title, description, configuration, 0, clock.instant())
-                tx.set(reference, LotteryDocument.encode(draft) + ("_revision" to 0L))
-                draft
-            }
-        }
-        return reference.read(LotteryDocument)
-            ?: throw PersistenceFailure(PersistenceFailure.Reason.NOT_FOUND, reference.path)
-    }
+    ): Lottery =
+        writes.createDraft(id, ownerId, title, description, configuration)
 
     /**
      * Updates descriptions and permitted configuration; published configuration freezes at
@@ -176,62 +122,8 @@ class FirestoreLotteryRepository(
         title: String,
         description: String,
         configuration: LotteryConfiguration,
-    ) {
-        db.atomic { tx ->
-            tx.activeAccount(db, ownerId, Role.OWNER)
-            val snapshot = tx.get(ref(id))
-            val lottery = LotteryDocument.decode(snapshot)
-            requireOperation(
-                lottery.ownerId == ownerId && lottery.cancellation == null,
-                NOT_ALLOWED,
-                "Lottery is not editable",
-            )
-            requireOperation(
-                lottery.configuration == configuration ||
-                    lottery.publishedAt == null ||
-                    clock.instant() < lottery.configuration.registrationOpensAt,
-                WINDOW_CLOSED,
-                "Lottery configuration is frozen",
-            )
-            val changed =
-                lottery.copy(
-                    title = title,
-                    description = description,
-                    configuration = configuration,
-                )
-            tx.set(
-                ref(id),
-                LotteryDocument.encode(changed) +
-                    ("_revision" to ((snapshot.getLong("_revision") ?: 0) + 1)),
-            )
-        }
-    }
-
-    /**
-     * Rejects a foreign, cancelled, or frozen lottery before changing its offered inventory.
-     *
-     * @param lottery Lottery document ID.
-     * @param ownerId Account ID of the campsite or lottery owner.
-     */
-    private fun editable(
-        lottery: Lottery,
-        ownerId: String,
-    ) {
-        requireOperation(
-            lottery.ownerId == ownerId && lottery.cancellation == null,
-            NOT_ALLOWED,
-            "Lottery is not editable",
-        )
-        requireOperation(
-            (
-                lottery.publishedAt == null ||
-                    clock.instant() < lottery.configuration.registrationOpensAt
-            ) &&
-                lottery.drawnAt == null,
-            WINDOW_CLOSED,
-            "Offers are frozen",
-        )
-    }
+    ) =
+        writes.update(id, ownerId, title, description, configuration)
 
     /**
      * Validates owned offered nights and replaces an allocation while advancing the revision
@@ -245,35 +137,8 @@ class FirestoreLotteryRepository(
         id: String,
         ownerId: String,
         offer: LotteryOffer,
-    ) {
-        db.atomic { tx ->
-            tx.activeAccount(db, ownerId, Role.OWNER)
-            val snapshot = tx.get(ref(id))
-            val lottery = LotteryDocument.decode(snapshot)
-            editable(lottery, ownerId)
-            val site =
-                tx.require(db.document(FirestorePaths.campsite(offer.campsiteId)), CampsiteDocument)
-            requireOperation(
-                site.ownerId == ownerId && site.removal == null,
-                NOT_ALLOWED,
-                "Campsite is not owned by lottery owner",
-            )
-            val nights =
-                offer.nights.map {
-                    tx.read(db.document(FirestorePaths.night(site.id, it)), CalendarNightDocument)
-                }
-            requireOperation(
-                nights.all { it?.isOffered == true },
-                INVALID_STATE,
-                "Calendar nights must be offered first",
-            )
-            tx.set(
-                db.document(FirestorePaths.offer(id, site.id)),
-                LotteryOfferDocument.encode(offer),
-            )
-            tx.update(ref(id), "_revision", (snapshot.getLong("_revision") ?: 0) + 1)
-        }
-    }
+    ) =
+        writes.setOffer(id, ownerId, offer)
 
     /**
      * Removes an editable campsite allocation and advances the revision guard.
@@ -286,15 +151,8 @@ class FirestoreLotteryRepository(
         id: String,
         ownerId: String,
         campsiteId: String,
-    ) {
-        db.atomic { tx ->
-            tx.activeAccount(db, ownerId, Role.OWNER)
-            val snapshot = tx.get(ref(id))
-            editable(LotteryDocument.decode(snapshot), ownerId)
-            tx.delete(db.document(FirestorePaths.offer(id, campsiteId)))
-            tx.update(ref(id), "_revision", (snapshot.getLong("_revision") ?: 0) + 1)
-        }
-    }
+    ) =
+        writes.removeOffer(id, ownerId, campsiteId)
 
     /**
      * Validates published campsites and offered nights before publication; a revision guard
@@ -306,54 +164,8 @@ class FirestoreLotteryRepository(
     override suspend fun publish(
         id: String,
         ownerId: String,
-    ) {
-        // Query membership outside the transaction, then guard it with the parent revision.
-        val snapshot = ref(id).get(Source.SERVER).await()
-        requireOperation(snapshot.exists(), NOT_FOUND, "Lottery missing")
-        val revision = snapshot.getLong("_revision") ?: 0
-        val offers = ref(id).collection("offers").read(LotteryOfferDocument)
-        requireOperation(offers.isNotEmpty(), INVALID_STATE, "Lottery needs an offer")
-        db.atomic { tx ->
-            tx.activeAccount(db, ownerId, Role.OWNER)
-            val current = tx.get(ref(id))
-            val lottery = LotteryDocument.decode(current)
-            requireOperation(
-                (current.getLong("_revision") ?: 0) == revision,
-                CONFLICT,
-                "Offers changed; retry publication",
-            )
-            editable(lottery, ownerId)
-            requireOperation(
-                clock.instant() < lottery.configuration.registrationOpensAt,
-                WINDOW_CLOSED,
-                "Move registration into the future before publishing",
-            )
-            for (offer in offers) {
-                val site =
-                    tx.require(
-                        db.document(FirestorePaths.campsite(offer.campsiteId)),
-                        CampsiteDocument,
-                    )
-                requireOperation(
-                    site.isPublished && site.ownerId == ownerId,
-                    INACTIVE,
-                    "Offered campsite must be published",
-                )
-                for (date in offer.nights) {
-                    requireOperation(
-                        tx
-                            .read(
-                                db.document(FirestorePaths.night(site.id, date)),
-                                CalendarNightDocument,
-                            )?.isOffered == true,
-                        INVALID_STATE,
-                        "Offered date withdrawn",
-                    )
-                }
-            }
-            tx.update(ref(id), "publishedAt", (lottery.publishedAt ?: clock.instant()).stored())
-        }
-    }
+    ) =
+        writes.publish(id, ownerId)
 
     /**
      * Joins or rejoins during registration, updating membership and waiting count
@@ -366,7 +178,7 @@ class FirestoreLotteryRepository(
         id: String,
         accountId: String,
     ) =
-        membership(id, accountId, true)
+        membership.join(id, accountId)
 
     /**
      * Withdraws during registration, updating membership and waiting count atomically.
@@ -378,61 +190,7 @@ class FirestoreLotteryRepository(
         id: String,
         accountId: String,
     ) =
-        membership(id, accountId, false)
-
-    /**
-     * Applies an idempotent join/withdraw transaction while validating the window and
-     * capacity.
-     *
-     * @param id Lottery document ID.
-     * @param accountId Account ID whose participation or data is addressed.
-     * @param joining True to join/rejoin, false to withdraw.
-     */
-    private suspend fun membership(
-        id: String,
-        accountId: String,
-        joining: Boolean,
-    ) {
-        db.atomic { tx ->
-            tx.activeAccount(db, accountId, Role.ENTRANT)
-            val lottery = tx.require(ref(id), LotteryDocument)
-            val now = clock.instant()
-            requireOperation(
-                lottery.registrationIsOpen(now),
-                WINDOW_CLOSED,
-                "Registration is closed",
-            )
-            tx.activeAccount(db, lottery.ownerId, Role.OWNER)
-            val entryRef = db.document(FirestorePaths.entry(id, accountId))
-            val old = tx.read(entryRef, LotteryEntryDocument)
-            if (joining && old?.state == EntryState.WAITING) return@atomic
-            if (!joining && (old == null || old.state == EntryState.WITHDRAWN)) return@atomic
-            requireOperation(
-                old == null || old.state in setOf(EntryState.WAITING, EntryState.WITHDRAWN),
-                INVALID_STATE,
-                "Entry cannot change membership",
-            )
-            val count = lottery.waitingCount + if (joining) 1 else -1
-            requireOperation(
-                !joining ||
-                    lottery.configuration.waitlistCapacity == null ||
-                    count <= lottery.configuration.waitlistCapacity,
-                CAPACITY_REACHED,
-                "Waitlist is full",
-            )
-            requireOperation(count >= 0, INVALID_STATE, "Invalid waiting count")
-            val entry =
-                LotteryEntry(
-                    id,
-                    accountId,
-                    if (joining) EntryState.WAITING else EntryState.WITHDRAWN,
-                    if (joining) now else old!!.joinedAt,
-                    now,
-                )
-            tx.set(entryRef, LotteryEntryDocument.encode(entry))
-            tx.update(ref(id), "waitingCount", count)
-        }
-    }
+        membership.withdraw(id, accountId)
 
     /**
      * Declines an unused winning opportunity during booking; existing reservations prevent
@@ -444,35 +202,8 @@ class FirestoreLotteryRepository(
     override suspend fun decline(
         id: String,
         accountId: String,
-    ) {
-        db.atomic { tx ->
-            tx.activeAccount(db, accountId, Role.ENTRANT)
-            val lottery = tx.require(ref(id), LotteryDocument)
-            requireOperation(
-                lottery.bookingIsOpen(clock.instant()),
-                WINDOW_CLOSED,
-                "Booking window is closed",
-            )
-            val entryRef = db.document(FirestorePaths.entry(id, accountId))
-            val entry = tx.require(entryRef, LotteryEntryDocument)
-            val reservation =
-                tx.read(
-                    db.document(
-                        FirestorePaths.reservation(DocumentKeys.reservation(id, accountId)),
-                    ),
-                    ReservationDocument,
-                )
-            requireOperation(reservation == null, ALREADY_USED, "Offer already used")
-            if (entry.state == EntryState.DECLINED) return@atomic
-            requireOperation(entry.state == EntryState.OFFERED, NOT_ALLOWED, "Entry did not win")
-            tx.set(
-                entryRef,
-                LotteryEntryDocument.encode(
-                    entry.copy(state = EntryState.DECLINED, stateChangedAt = clock.instant()),
-                ),
-            )
-        }
-    }
+    ) =
+        membership.decline(id, accountId)
 
     /** Starts or resumes the same deterministic operation used by foreground recovery.
      * @param id Lottery whose closed registration is being drawn.
@@ -493,7 +224,7 @@ class FirestoreLotteryRepository(
         actorId: String,
         reason: String?,
     ) =
-        cancelCoordinated(id, actorId, reason, authorize = true)
+        cancellation.cancel(id, actorId, reason)
 
     /**
      * Only removal jobs call this after the original actor has already been authorized.
@@ -507,50 +238,7 @@ class FirestoreLotteryRepository(
         actorId: String,
         reason: String?,
     ) =
-        cancelCoordinated(id, actorId, reason, authorize = false)
-
-    /**
-     * Serializes draw start and cancellation; completes an in-progress draw before retrying
-     * cancellation.
-     *
-     * @param id Lottery document ID.
-     * @param actorId Account ID responsible for the requested operation.
-     * @param reason Optional explanation recorded with the operation.
-     * @param authorize Whether this call must authorize the actor rather than trust a prior
-     * removal check.
-     */
-    private suspend fun cancelCoordinated(
-        id: String,
-        actorId: String,
-        reason: String?,
-        authorize: Boolean,
-    ) {
-        while (true) {
-            val finishDraw =
-                db.atomic { tx ->
-                    val actor = if (authorize) tx.activeAccount(db, actorId) else null
-                    val lottery = tx.require(ref(id), LotteryDocument)
-                    val drawStarted = tx.get(db.collection("_draws").document(id)).exists()
-                    requireOperation(
-                        !authorize || actorId == lottery.ownerId || Role.ADMIN in actor!!.roles,
-                        NOT_ALLOWED,
-                        "Not owner or admin",
-                    )
-                    if (lottery.cancellation != null) return@atomic false
-                    // Read both the draw marker and lottery so a concurrent draw start conflicts.
-                    if (drawStarted && lottery.drawnAt == null) return@atomic true
-                    tx.update(
-                        ref(id),
-                        "cancellation",
-                        Cancellation(clock.instant(), actorId, reason).stored(),
-                    )
-                    false
-                }
-            if (!finishDraw) return
-            // Complete already-started outcomes before cancellation; a retry uses the same seed.
-            draw(id)
-        }
-    }
+        cancellation.cancelForRemoval(id, actorId, reason)
 
     /**
      * Observes canonical campsite memberships and their owner's published lottery records.

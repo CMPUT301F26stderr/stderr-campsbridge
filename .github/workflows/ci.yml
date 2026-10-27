@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      verify-maps:
+        description: Verify the configured Maps SDK with real device gestures
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -67,6 +72,8 @@ jobs:
           # Self-hosted runners retain Gradle's home between jobs.
           cache-overwrite-existing: true
       - name: Lint, test, build, and generate API documentation
+        env:
+          ORG_GRADLE_PROJECT_mapsApiKey: ${{ secrets.MAPS_API_KEY }}
         run: nix develop .#default --no-update-lock-file --command bash scripts/check.sh :app:unitCoverageReport :app:pureLogicCoverage :app:dokkaGeneratePublicationHtml --stacktrace
       - name: Make cached Gradle launchers executable
         if: always()
@@ -132,6 +139,7 @@ jobs:
         with:
           name: firebase-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            firebase/tooling/build/reports/
             app/build/reports/tests/firebaseIntegrationTest/
             app/build/test-results/firebaseIntegrationTest/
           if-no-files-found: warn
@@ -147,12 +155,41 @@ jobs:
         with:
           persist-credentials: false
       - name: Run shared-control interactions on a disposable device
-        run: nix develop .#ui --no-update-lock-file --command bash scripts/check-android-ui.sh --stacktrace
+        run: nix develop .#ui --no-update-lock-file --command bash scripts/check-android-ui.sh -PmapsApiKey= --stacktrace
       - name: Upload UI reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: ui-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  maps:
+    name: Configured Maps verification
+    if: github.event_name == 'workflow_dispatch' && inputs.verify-maps
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Verify actual map load, tap, drag, Apply, and Cancel
+        env:
+          ORG_GRADLE_PROJECT_mapsApiKey: ${{ secrets.MAPS_API_KEY }}
+        run: >-
+          nix develop .#ui --no-update-lock-file --command bash scripts/check-android-ui.sh
+          -Pandroid.testInstrumentationRunnerArguments.class=io.github.CMPUT301F26stderr.campsbridge.platform.maps.MapsSdkVerificationTest
+          -Pandroid.testInstrumentationRunnerArguments.requireConfiguredMaps=true
+          --stacktrace
+      - name: Upload configured Maps reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: maps-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             app/build/reports/androidTests/
             app/build/outputs/androidTest-results/

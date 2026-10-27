@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -8,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +33,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Arranges short onboarding steps from supplied state, without persistence or navigation lookup.
  * @param state Current draft and operation state.
@@ -137,13 +140,17 @@ fun OnboardingScreen(
                 nextLabel = stringResource(nextLabel),
                 steps = StepProgress(position, 3),
                 onSkip = if (state.step == OnboardingStep.INTERESTS) onSkip else null,
+                stepLabel = stringResource(label),
+                contentArrangement =
+                    if (state.step == OnboardingStep.OWNER) {
+                        Arrangement.spacedBy(Spacing.large, Alignment.CenterVertically)
+                    } else {
+                        Arrangement.spacedBy(Spacing.medium)
+                    },
             ) {
-                Text(
-                    stringResource(label),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(stringResource(title), style = MaterialTheme.typography.headlineMedium)
+                if (state.step != OnboardingStep.OWNER) {
+                    Text(stringResource(title), style = MaterialTheme.typography.headlineSmall)
+                }
                 when (state.step) {
                     OnboardingStep.INTENT -> {
                         IntentStep(state.draft.intent, onIntent, !state.isSubmitting)
@@ -249,6 +256,13 @@ private fun WelcomePreview() {
 @Composable
 private fun IntentPreview() {
     OnboardingPreviewContent(OnboardingStep.INTENT)
+}
+
+/** Shows ordinary name-entry composition independently of the reserved validator. */
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun NamePreview() {
+    OnboardingPreviewContent(OnboardingStep.NAME)
 }
 
 /** Name input with the explicit reserved implementation boundary. */

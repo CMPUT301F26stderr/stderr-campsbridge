@@ -1,28 +1,31 @@
 [versions]
 agp = "9.4.1"
-coreKtx = "1.10.1"
+coreKtx = "1.19.1"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.9.4"
-datastore = "1.2.1"
-navigation = "2.9.5"
-activityCompose = "1.8.0"
-kotlin = "2.2.10"
-composeBom = "2026.02.01"
-firebaseBom = "35.0.0"
-coroutines = "1.10.2"
-jacoco = "0.8.14"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycleRuntimeKtx = "2.11.0"
+datastore = "1.3.0"
+navigation = "2.10.2"
+activityCompose = "1.13.0"
+kotlin = "2.4.21"
+composeBom = "2026.09.00"
+firebaseBom = "35.1.0"
+coroutines = "1.11.0"
+jacoco = "0.8.16"
 desugar = "2.1.5"
 dokka = "2.2.0"
 robolectric = "4.17"
-mockito = "5.20.0"
-coil = "3.3.0"
-# Matches this app's Kotlin 2.2 metadata; Maps 9.x requires a newer compiler.
-mapsCompose = "6.12.0"
-mapsSdk = "19.2.0"
+mockito = "5.24.0"
+coil = "3.6.3"
+mapsCompose = "9.0.1"
+mapsSdk = "20.1.0"
+ossLicensesPlugin = "0.13.0"
+ossLicenses = "17.5.2"
 
 [libraries]
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+google-oss-licenses = { module = "com.google.android.gms:play-services-oss-licenses", version.ref = "ossLicenses" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 maps-sdk = { module = "com.google.android.gms:play-services-maps", version.ref = "mapsSdk" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
@@ -36,8 +39,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
-# Auth client compatible with this project's Kotlin compiler.
-firebase-auth = { module = "com.google.firebase:firebase-auth", version = { strictly = "24.0.1" } }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
@@ -58,6 +60,7 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 [plugins]
+google-oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicensesPlugin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -49,6 +52,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param secondaryEnabled Whether the secondary action's own prerequisites permit submission.
  * @param submittingAction Action whose progress is shown while the shared submitting guard is set.
  * @param exitEnabled Whether leaving the step is safe while an idle action awaits recovery.
+ * @param stepLabel Optional short step name beside the progress count.
+ * @param contentArrangement Places fields at the top or centers short introduction content.
  * @throws IllegalArgumentException If actions are incomplete, incompatible or unavailable.
  */
 @Composable
@@ -69,6 +74,8 @@ fun StepScaffold(
     secondaryEnabled: Boolean = true,
     submittingAction: StepAction = StepAction.PRIMARY,
     exitEnabled: Boolean = true,
+    stepLabel: String? = null,
+    contentArrangement: Arrangement.Vertical = Arrangement.spacedBy(Spacing.medium),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     require((secondaryLabel == null) == (onSecondaryAction == null)) {
@@ -125,14 +132,42 @@ fun StepScaffold(
             }
         },
     ) {
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-        ) {
-            Text(progress)
-            steps?.let { StepIndicator(it) }
-            content()
-            Spacer(Modifier.height(Spacing.large))
+        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
+            Column(
+                Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        progress,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    stepLabel?.let {
+                        Text(
+                            it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                steps?.let { StepIndicator(it) }
+            }
+            BoxWithConstraints(Modifier.weight(1f)) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = maxHeight)
+                        .padding(bottom = Spacing.large),
+                    verticalArrangement = contentArrangement,
+                    content = content,
+                )
+            }
         }
     }
 }

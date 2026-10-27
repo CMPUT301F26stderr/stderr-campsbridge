@@ -68,9 +68,10 @@ fun CampsiteDetailRoute(
                     context = model.context,
                     onRetryRatings = model::retryRatings,
                     onOpenSection = onOpenSection,
-                    lotteryContent =
+                    lotteryActions =
                         if (model.context == CampsiteDetailContext.VIEW &&
-                            onOpenLottery != null
+                            onOpenLottery != null &&
+                            lotteries != CampsiteLotteriesUiState.Unavailable
                         ) {
                             {
                                 val site = (state as? CampsiteDetailUiState.Content)?.campsite

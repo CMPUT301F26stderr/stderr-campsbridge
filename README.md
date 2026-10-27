@@ -57,6 +57,8 @@ Select `firebaseDebug` in Android Studio for real account identity, Firestore an
 
 For the campsite pin picker, enable [Maps SDK for Android](https://developers.google.com/maps/documentation/android-sdk/start) for your Google Cloud project and add `mapsApiKey=YOUR_ANDROID_MAPS_KEY` to your local Gradle user properties (`~/.gradle/gradle.properties`). Sync and rebuild the selected app variant. The key is supplied to the Android manifest; keep its value out of tracked project files.
 
+CI reads the repository Actions secret `MAPS_API_KEY` through `ORG_GRADLE_PROJECT_mapsApiKey` when building the downloadable APK. Store only the raw API key as its secret value. Ordinary UI checks explicitly use an empty key. To verify the real SDK, manually run CI with **Verify the configured Maps SDK with real device gestures** enabled; its separate job requires map loading, native tap/drag, Apply and Cancel to work.
+
 An unconfigured build still starts normally. Opening the picker shows unavailable-map feedback and retains the current draft. Choosing a pin does not request device location or guess the label/timezone; it changes the draft only after **Use this location**. A stored campsite coordinate can also be displayed through the same map adapter.
 
 ## Repository layout
@@ -82,3 +84,9 @@ Use **Download Latest APK** above to download `app-debug.apk` from the rolling [
 CI publishes the offline `debug` demo to the rolling beta. Firebase-connected builds use the separate `firebaseDebug` variant. The beta download stays available until replaced by a newer verified build. Per-run APKs and check reports remain available as Actions artifacts for 14 days.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses the [GNU GPL v3 license](LICENSE).
+
+### Assigned helper examples
+
+In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors; H03 opens the availability editor and H04 the owner inventory. H05/H06 open independent text-search and guest-capacity examples using the real discovery controller and filter editor. All use local sample records. Later examples remain labelled pending until their baselines are published. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
+
+The shared baseline leaves assigned helper bindings disconnected. Follow the issue's prepared handoff to connect its real implementation and tests; a preview or pending example does not complete the task. Release and Firebase builds do not include the debug task host.

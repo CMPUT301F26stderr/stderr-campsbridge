@@ -44,6 +44,8 @@ jobs:
           cp prototype/index.html prototype/prototype.css prototype/prototype.js \
             prototype/hotspots.css prototype/wiring.json "$SITE_DIR/storyboard/"
           cp -R prototype/screens "$SITE_DIR/storyboard/screens"
+          cp prototype/credits.html "$SITE_DIR/storyboard/credits.html"
+          cp -R assets "$SITE_DIR/assets"
       - name: Upload Pages site
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
