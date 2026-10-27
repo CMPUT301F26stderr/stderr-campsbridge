@@ -8,6 +8,7 @@
     <string name="booking_date_hint">Choose an arrival, then a checkout. Checkout is not an occupied night.</string>
     <string name="booking_deadline">Book by %1$s</string>
     <string name="booking_clear_dates">Clear dates</string>
+    <string name="booking_stay_total">Stay total: %1$s</string>
     <string name="booking_arrival_missing">Choose an arrival date.</string>
     <string name="booking_checkout_missing">Choose a checkout date.</string>
     <string name="booking_range_invalid">Checkout must follow arrival.</string>

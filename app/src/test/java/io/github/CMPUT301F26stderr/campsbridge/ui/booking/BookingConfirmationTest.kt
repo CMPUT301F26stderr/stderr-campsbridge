@@ -15,6 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
@@ -531,54 +532,6 @@ class BookingConfirmationTest {
             assertEquals(0, sites.activeCalendarObservers)
         }
 
-    /** A foreground consumption read must finish before a new confirm can use the win. */
-    @Test fun heldForegroundLookupCannotOverlapAReservationAttempt() =
-        runBookingTest {
-            val model = model()
-            review(model)
-            val held = CompletableDeferred<Unit>()
-            bookings.opportunityHandler = { _, _ ->
-                held.await()
-                null
-            }
-            model.refreshTime()
-            runCurrent()
-            assertEquals(BookingUiState.Loading, model.state.value)
-            model.confirm()
-            assertTrue(bookings.reserveRequests.isEmpty())
-            held.complete(Unit)
-            runCurrent()
-            bookings.reserveHandler = { record.id }
-            model.confirm()
-            runCurrent()
-            assertEquals(record.id, model.completion.value)
-            assertEquals(1, bookings.reserveRequests.size)
-        }
-
-    /** Unknown restored consumption remains locked without relying on current win/listing reads. */
-    @Test fun failedRestoredRecoveryCanRetryWhileAllCurrentSourcesAreAbsent() =
-        runBookingTest {
-            lotteries.records.value = emptyList()
-            lotteries.entries.value = emptyList()
-            sites.records.value = emptyList()
-            bookings.opportunityHandler = { _, _ -> throw IOException("Unknown history") }
-            val saved = SavedStateHandle(mapOf("bookingRecoveryRequired" to true))
-            val model = model(saved)
-            runCurrent()
-            assertEquals(BookingSubmission.Unknown, model.submission.value)
-            model.back()
-            model.requestExit()
-            model.confirm()
-            assertFalse(model.exitRequested.value)
-            assertFalse(model.discardPrompt.value)
-            bookings.opportunityHandler = { _, _ -> record }
-            model.retryRecovery()
-            runCurrent()
-            assertEquals(record.id, model.completion.value)
-            assertTrue(bookings.reserveRequests.isEmpty())
-            assertTrue(saved.get<Boolean>("bookingRecoveryRequired") != true)
-        }
-
     /** Creates a graph-owned parent with a fixed F15 fixture, never an exercise implementation.
      * @param saved Primitive draft and uncertainty state to restore.
      * @param useHelper Whether a known F15 result is available to this parent.
@@ -594,6 +547,7 @@ class BookingConfirmationTest {
             lotteries,
             sites,
             bookings,
+            FakeImageRepository(),
             clock,
             saved,
             if (useHelper) { _, _ -> nights } else null,

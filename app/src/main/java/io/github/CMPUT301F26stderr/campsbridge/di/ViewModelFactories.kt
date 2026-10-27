@@ -48,6 +48,7 @@ fun bookingViewModelFactory(
                 services.repositories.lotteries,
                 services.repositories.campsites,
                 services.repositories.bookings,
+                services.repositories.images,
                 services.clock,
                 createSavedStateHandle(),
                 availableNights = null,

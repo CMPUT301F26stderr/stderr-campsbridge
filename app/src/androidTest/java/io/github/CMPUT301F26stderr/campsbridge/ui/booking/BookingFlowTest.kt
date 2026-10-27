@@ -38,6 +38,7 @@ import io.github.CMPUT301F26stderr.campsbridge.navigation.reservationGraph
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.previewReservation
@@ -474,6 +475,7 @@ class BookingFlowTest {
                                         lotteries,
                                         sites,
                                         bookings,
+                                        FakeImageRepository(),
                                         clock,
                                         createSavedStateHandle(),
                                         if (useHelper) { _, _ -> offer.nights.toSet() } else null,

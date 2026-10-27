@@ -14,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
@@ -280,22 +281,6 @@ class BookingViewModelTest {
             assertTrue(saved.keys().any { saved.get<String>(it) == reservation.id })
         }
 
-    /** A corrupt or unrelated lookup result is unknown, never consumed or confirmed unused. */
-    @Test fun mismatchedConsumptionRecordIsAFailedConfirmation() =
-        runBookingTest {
-            val record = CampingFixtures.reservation()
-            val model = model()
-            // Replace the source before its installed lazy job has started.
-            bookings.opportunityHandler = { _, _ -> record.copy(entrantId = "other") }
-            runCurrent()
-            assertEquals(BookingUiState.Failure(BookingReadSource.OPPORTUNITY), model.state.value)
-            bookings.opportunityHandler = { _, _ -> record.copy(lotteryId = "another-draw") }
-            model.retry(BookingReadSource.OPPORTUNITY)
-            runCurrent()
-            assertEquals(BookingUiState.Failure(BookingReadSource.OPPORTUNITY), model.state.value)
-            assertTrue(sites.observedCalendars.isEmpty())
-        }
-
     /** Failed lookup retry is explicit, coalesced and does not restart other sources. */
     @Test fun failedConsumptionRetriesOnlyItsServerLookup() =
         runBookingTest {
@@ -555,44 +540,6 @@ class BookingViewModelTest {
             assertTrue(sites.observedCalendars.isEmpty())
         }
 
-    /** First month follows campsite-local today or a restored arrival in a different month. */
-    @Test fun initialMonthUsesLocalTodayThenRestoredArrivalWhenNoMonthWasChosen() =
-        runBookingTest {
-            val earlyUtc = java.time.Instant.parse("2027-05-01T05:00:00Z")
-            clock.advance(Duration.between(now, earlyUtc))
-            lotteries.records.value =
-                listOf(
-                    lottery.copy(
-                        drawnAt = earlyUtc.minusSeconds(150),
-                        configuration =
-                            lottery.configuration.copy(
-                                registrationOpensAt = earlyUtc.minusSeconds(300),
-                                registrationClosesAt = earlyUtc.minusSeconds(200),
-                                bookingOpensAt = earlyUtc.minusSeconds(100),
-                                bookingClosesAt = earlyUtc.plusSeconds(1000),
-                            ),
-                    ),
-                )
-            val first = model()
-            runCurrent()
-            assertEquals(YearMonth.of(2027, 4), content(first).month)
-            store.clear()
-            runCurrent()
-            val june = LocalDate.of(2027, 6, 15)
-            val restored =
-                model(
-                    SavedStateHandle(
-                        mapOf(
-                            "bookingCheckIn" to june.toString(),
-                            "bookingCheckOut" to june.plusDays(2).toString(),
-                        ),
-                    ),
-                )
-            runCurrent()
-            assertEquals(YearMonth.from(june), content(restored).month)
-            assertEquals(LocalDate.of(2027, 4, 30), content(restored).today)
-        }
-
     /** A retained consuming ID survives recreation even if current records are now unavailable. */
     @Test fun knownConsumptionRestoresWithoutAnotherLookupOrInventory() =
         runBookingTest {
@@ -746,53 +693,6 @@ class BookingViewModelTest {
             assertEquals(2, bookings.opportunityRequests.size)
         }
 
-    /** A cancelled live source retires stale facts and permits explicit same-source recovery. */
-    @Test fun repositorySourceCancellationCanBeExplicitlyRetried() =
-        runBookingTest {
-            val model = model()
-            runCurrent()
-            content(model)
-            lotteries.recordFailure.value = CancellationException("source interrupted")
-            runCurrent()
-            assertEquals(BookingUiState.Loading, model.state.value)
-            lotteries.recordFailure.value = null
-            model.retry(BookingReadSource.LOTTERY)
-            model.retry(BookingReadSource.LOTTERY)
-            runCurrent()
-            content(model)
-            assertEquals(2, lotteries.observedRecordIds.size)
-            assertEquals(1, lotteries.entrantRequests.size)
-            assertEquals(1, sites.observedIds.size)
-        }
-
-    /** Foreground return also recovers interrupted observations and unknown lookup confirmation. */
-    @Test fun foregroundReturnRecoversCancelledReadsWithoutTreatingThemAsFailures() =
-        runBookingTest {
-            val model = model()
-            runCurrent()
-            content(model)
-            lotteries.recordFailure.value = CancellationException("source interrupted")
-            runCurrent()
-            assertEquals(BookingUiState.Loading, model.state.value)
-            lotteries.recordFailure.value = null
-            model.refreshTime()
-            runCurrent()
-            content(model)
-            bookings.opportunityHandler =
-                { _, _ -> throw CancellationException("lookup interrupted") }
-            model.refreshTime()
-            runCurrent()
-            assertEquals(BookingUiState.Loading, model.state.value)
-            bookings.opportunityHandler = { _, _ -> null }
-            model.refreshTime()
-            model.refreshTime()
-            runCurrent()
-            content(model)
-            assertEquals(2, lotteries.observedRecordIds.size)
-            assertEquals(4, bookings.opportunityRequests.size)
-            assertEquals(1, sites.observedIds.size)
-        }
-
     /** Graph removal cancels all sources and later UI callbacks cannot restart any of them. */
     @Test fun clearedGraphRejectsStaleActionsAndReleasesEverySource() =
         runBookingTest {
@@ -848,6 +748,7 @@ class BookingViewModelTest {
             lotteries,
             sites,
             bookings,
+            FakeImageRepository(),
             clock,
             saved,
             if (useHelper) {

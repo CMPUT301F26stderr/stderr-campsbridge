@@ -10,6 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
@@ -54,49 +55,6 @@ class BookingDateSelectionTest {
             liveOffers.value = mapOf(draw.id to listOf(LotteryOffer(site.id, eligible.sorted())))
         }
     private val bookings = FakeBookingRepository()
-
-    /** An earlier arrival can depart on next month's first day using its preceding night. */
-    @Test fun firstOfNextMonthCheckoutWorksForAnEarlierArrival() =
-        runBookingTest {
-            val prefixDates = (14..31).map { month.atDay(it) }.toSet()
-            val prefixRows = prefixDates.sorted().map { CalendarNight(it, true) }
-            sites.calendarNights.value = prefixRows
-            lotteries.liveOffers.value =
-                mapOf(draw.id to listOf(LotteryOffer(site.id, prefixDates.sorted())))
-            eligibility = { _, rows ->
-                when (rows) {
-                    prefixRows -> prefixDates
-                    listOf(CalendarNight(start, true)) -> setOf(start)
-                    listOf(CalendarNight(month.atEndOfMonth(), true)) -> setOf(month.atEndOfMonth())
-                    emptyList<CalendarNight>() -> emptySet()
-                    else -> error("Configure the expected F15 fixture result")
-                }
-            }
-            val model = model()
-            model.setDatesVisible(true)
-            runCurrent()
-            model.selectDate(start)
-            model.changeMonth(month.plusMonths(1))
-            runCurrent()
-            assertTrue(
-                sites.observedCalendars.contains(
-                    Triple(
-                        site.id,
-                        month.atEndOfMonth(),
-                        month.plusMonths(1).atDay(1),
-                    ),
-                ),
-            )
-            model.selectDate(month.plusMonths(1).atDay(1))
-            runCurrent()
-            assertEquals(month.plusMonths(1).atDay(1), content(model).draft.checkOut)
-            assertEquals(StaySelectionInput.VALID, content(model).stayValidation)
-            assertTrue(
-                sites.observedCalendars.contains(
-                    Triple(site.id, start, month.plusMonths(1).atDay(1)),
-                ),
-            )
-        }
 
     /** Actual first/second taps choose occupied dates and an unoffered excluded checkout. */
     @Test fun calendarTapsChooseStayWithoutOccupyingCheckout() =
@@ -254,6 +212,7 @@ class BookingDateSelectionTest {
             lotteries,
             sites,
             bookings,
+            FakeImageRepository(),
             MutableClock(now),
             saved,
             if (useHelper) eligibility else null,

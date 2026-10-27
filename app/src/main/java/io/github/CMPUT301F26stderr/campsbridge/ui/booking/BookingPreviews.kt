@@ -13,7 +13,10 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsitePhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import java.time.Instant
 import java.time.LocalDate
@@ -106,7 +109,12 @@ class BookingPreviewProvider : PreviewParameterProvider<BookingUiState> {
             ),
             previewBooking(BookingStep.REVIEW).let {
                 it.copy(
+                    campsite =
+                        it.campsite.copy(
+                            details = it.campsite.details.copy(nightlyPriceCents = 7000),
+                        ),
                     draft = it.draft.copy(reviewedTotalCents = null, agreement = null),
+                    quote = BookingQuote.Value(14000),
                     canConfirm = false,
                 )
             },
@@ -144,16 +152,30 @@ class BookingSubmissionPreviewProvider : PreviewParameterProvider<BookingSubmiss
 private fun BookingSubmissionPreview(
     @PreviewParameter(BookingSubmissionPreviewProvider::class) submission: BookingSubmission,
 ) =
-    BookingPreviewContent(previewBooking(BookingStep.REVIEW), submission)
+    BookingPreviewContent(
+        previewBooking(BookingStep.REVIEW).let { state ->
+            if (submission == BookingSubmission.Rejected(PersistenceFailure.Reason.CONFLICT)) {
+                state.copy(
+                    draft = state.draft.copy(step = BookingStep.DATES, returnToReview = true),
+                    canConfirm = false,
+                )
+            } else {
+                state
+            }
+        },
+        submission,
+    )
 
 /** Shares passive callback binding for screen and operation-state previews.
  * @param state Actual-shaped source/draft facts.
  * @param submission Independent command phase to display.
+ * @param photo Passive current campsite image, independent of booking outcomes.
  */
 @Composable
 private fun BookingPreviewContent(
     state: BookingUiState,
     submission: BookingSubmission,
+    photo: ImageSlotState = previewCampsitePhoto(previewBooking().campsite.id),
 ) {
     CampsbridgeTheme {
         BookingScreen(
@@ -180,6 +202,35 @@ private fun BookingPreviewContent(
             submission,
             {},
             {},
+            photo,
+            {},
         )
     }
+}
+
+/** Independent loaded, empty, unresolved and failed image outcomes for one unchanged review. */
+internal class BookingPhotoPreviewProvider : PreviewParameterProvider<ImageSlotState> {
+    override val values: Sequence<ImageSlotState> =
+        run {
+            val loaded = previewCampsitePhoto(previewBooking().campsite.id)
+            sequenceOf(
+                loaded,
+                ImageSlotState(loadState = ImageLoadState.READY),
+                ImageSlotState(),
+                ImageSlotState(loadState = ImageLoadState.FAILED),
+                loaded.copy(displayUrl = null, displayFailed = true),
+                loaded.copy(displayUrl = null, isResolvingUrl = true),
+            )
+        }
+}
+
+/** Shows image source variations without changing the reviewed stay or confirming a booking.
+ * @param photo Passive attachment/display result.
+ */
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Composable
+private fun BookingPhotoPreview(
+    @PreviewParameter(BookingPhotoPreviewProvider::class) photo: ImageSlotState,
+) {
+    BookingPreviewContent(previewBooking(BookingStep.REVIEW), BookingSubmission.Idle, photo)
 }

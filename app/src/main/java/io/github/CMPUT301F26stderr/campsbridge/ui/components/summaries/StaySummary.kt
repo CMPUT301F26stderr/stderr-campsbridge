@@ -30,6 +30,7 @@ import java.time.temporal.ChronoUnit
  * @param guests Positive party size.
  * @param totalCents Nonnegative quoted or recorded total.
  * @param modifier Caller layout.
+ * @param image Optional caller-owned image presentation; this summary never resolves assets.
  */
 @Composable
 fun StaySummary(
@@ -39,6 +40,7 @@ fun StaySummary(
     guests: Long,
     totalCents: Long,
     modifier: Modifier = Modifier,
+    image: (@Composable () -> Unit)? = null,
 ) {
     require(checkOut > checkIn && guests > 0)
     val locale = LocalConfiguration.current.locales[0]
@@ -55,6 +57,7 @@ fun StaySummary(
             Modifier.padding(Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
+            image?.invoke()
             Text(name, style = MaterialTheme.typography.titleLarge)
             DetailRow(
                 stringResource(R.string.dates),

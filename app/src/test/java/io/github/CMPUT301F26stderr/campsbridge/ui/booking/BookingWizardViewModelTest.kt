@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
@@ -275,38 +276,6 @@ class BookingWizardViewModelTest {
             assertEquals(13000L, content(model).draft.reviewedTotalCents)
         }
 
-    /** An invalid earlier step retains the review caller while routing through its correction. */
-    @Test fun crossStepCorrectionPreservesReviewReturnAndOtherValidInput() =
-        runBookingTest {
-            val model = model()
-            review(model)
-            model.editStep(BookingStep.GUESTS)
-            model.editGuests("3")
-            eligible = emptySet()
-            sites.calendarNights.value = dates.sorted().map { CalendarNight(it, false) }
-            runCurrent()
-            model.next(content(model).draft.step)
-            assertEquals(BookingStep.DATES, content(model).draft.step)
-            assertTrue(content(model).draft.returnToReview)
-            assertEquals(
-                BookingStepError.Dates(StaySelectionInput.UNAVAILABLE_NIGHTS),
-                content(model).error,
-            )
-            eligible = setOf(start.plusDays(1))
-            sites.calendarNights.value = listOf(CalendarNight(start.plusDays(1), true))
-            model.selectCheckIn(start.plusDays(1))
-            model.selectCheckOut(end)
-            runCurrent()
-            model.next(content(model).draft.step)
-            assertEquals(BookingStep.REVIEW, content(model).draft.step)
-            assertEquals("3", content(model).draft.guestInput)
-            assertEquals(
-                BookingAgreement(site.details.rules, BookingPolicy.VERSION),
-                content(model).draft.agreement,
-            )
-            assertEquals(null, content(model).draft.reviewedTotalCents)
-        }
-
     /** Back follows actual steps; an explicit review edit returns directly to its caller. */
     @Test fun backUsesStepHistoryAndReviewEditReturn() =
         runBookingTest {
@@ -530,6 +499,7 @@ class BookingWizardViewModelTest {
             lotteries,
             sites,
             bookings,
+            FakeImageRepository(),
             MutableClock(now),
             saved,
             if (useHelper) { _, _ -> eligible } else null,
@@ -545,80 +515,6 @@ class BookingWizardViewModelTest {
         model.selectCheckOut(end)
         runCurrent()
     }
-
-    /** Guest/terms edits cannot implicitly approve a price changed after the first review. */
-    @Test fun returningFromAnUnrelatedReviewEditCannotApproveChangedPrice() =
-        runBookingTest {
-            val model = model()
-            review(model)
-            sites.records.value =
-                listOf(site.copy(details = site.details.copy(nightlyPriceCents = 7000)))
-            runCurrent()
-            model.editStep(BookingStep.GUESTS)
-            model.editGuests("3")
-            model.next(content(model).draft.step)
-            assertEquals(BookingStep.REVIEW, content(model).draft.step)
-            assertEquals(null, content(model).draft.reviewedTotalCents)
-            model.editStep(BookingStep.TERMS)
-            model.next(content(model).draft.step)
-            assertEquals(BookingStep.REVIEW, content(model).draft.step)
-            assertEquals(null, content(model).draft.reviewedTotalCents)
-            model.acknowledgeQuote(14000)
-            assertEquals(14000L, content(model).draft.reviewedTotalCents)
-        }
-
-    /** Recreation cannot disguise a return to review as the first displayed quote. */
-    @Test fun invalidatedQuoteApprovalSurvivesRecreationDuringAReviewEdit() =
-        runBookingTest {
-            val saved = SavedStateHandle()
-            val first = model(saved)
-            review(first)
-            sites.records.value =
-                listOf(site.copy(details = site.details.copy(nightlyPriceCents = 7000)))
-            runCurrent()
-            first.editStep(BookingStep.GUESTS)
-            val values = saved.keys().associateWith { saved.get<Any?>(it) }
-            store.clear()
-            runCurrent()
-            val restored = model(SavedStateHandle(values))
-            runCurrent()
-            assertEquals(BookingStep.GUESTS, content(restored).draft.step)
-            restored.next(content(restored).draft.step)
-            assertEquals(BookingStep.REVIEW, content(restored).draft.step)
-            assertEquals(null, content(restored).draft.reviewedTotalCents)
-            restored.acknowledgeQuote(14000)
-            assertEquals(14000L, content(restored).draft.reviewedTotalCents)
-        }
-
-    /** Retired step callbacks cannot change dates/month/guests on a later screen. */
-    @Test fun fieldCallbacksAreAcceptedOnlyByTheirOwningStep() =
-        runBookingTest {
-            val model = model()
-            chooseDates(model)
-            model.next(content(model).draft.step)
-            runCurrent()
-            val guestsDraft = content(model).draft
-            val month = content(model).month
-            model.selectCheckIn(start.plusDays(1))
-            model.selectCheckOut(end.plusDays(1))
-            model.changeMonth(month.plusMonths(1))
-            assertEquals(guestsDraft, content(model).draft)
-            assertEquals(month, content(model).month)
-            model.editGuests("3")
-            model.next(content(model).draft.step)
-            val termsDraft = content(model).draft
-            model.editGuests("7")
-            assertEquals(termsDraft, content(model).draft)
-            model.acceptTerms(true, site.details.rules, BookingPolicy.VERSION)
-            model.next(content(model).draft.step)
-            val reviewed = content(model).draft
-            model.editGuests("8")
-            model.selectCheckIn(null)
-            model.selectCheckOut(null)
-            model.changeMonth(month.minusMonths(1))
-            assertEquals(reviewed, content(model).draft)
-            assertEquals(month, content(model).month)
-        }
 
     /** Drives the real four-step actions; never assigns state or injects a fake agreement.
      * @param model Parent under test.

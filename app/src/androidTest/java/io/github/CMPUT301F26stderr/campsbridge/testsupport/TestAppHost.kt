@@ -294,6 +294,7 @@ class TestAppHost : AutoCloseable {
                             lotteries,
                             campsites,
                             bookings,
+                            images,
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                             createSavedStateHandle(),
                         )

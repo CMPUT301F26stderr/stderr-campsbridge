@@ -22,6 +22,7 @@ fun BookingRoute(
     onSaved: (String) -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
+    val photo by model.photoState.collectAsStateWithLifecycle()
     val discard by model.discardPrompt.collectAsStateWithLifecycle()
     val exit by model.exitRequested.collectAsStateWithLifecycle()
     val completion by model.completion.collectAsStateWithLifecycle()
@@ -77,5 +78,7 @@ fun BookingRoute(
         submission,
         model::confirm,
         model::retryRecovery,
+        photo,
+        model::retryPhoto,
     )
 }

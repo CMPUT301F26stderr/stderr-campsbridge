@@ -1,19 +1,26 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.StayDatesStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.SearchFiltersRoute
@@ -98,6 +105,10 @@ internal fun TaskExampleFeature(
 
         TaskExample.INBOX_ORDER, TaskExample.UNREAD_COUNT -> {
             InboxTaskExample(session, onBack)
+        }
+
+        TaskExample.BOOKING_NIGHTS -> {
+            BookingDatesTaskExample(session, onBack)
         }
 
         else -> {
@@ -199,5 +210,42 @@ private fun InboxTaskExample(
         }
     } else {
         LotteryDetailRoute(session.lottery(id), { lottery = null }, { lottery = null })
+    }
+}
+
+/** Shows only the actual winner's dates step; this example never exposes a reservation write.
+ * @param session Current fixed win and physical inventory.
+ * @param onBack Returns to the catalogue.
+ */
+@Composable
+private fun BookingDatesTaskExample(
+    session: TaskExampleSession,
+    onBack: () -> Unit,
+) {
+    val model = session.booking()
+    val state by model.state.collectAsStateWithLifecycle()
+    DisposableEffect(model) {
+        model.setDatesVisible(true)
+        onDispose { model.setDatesVisible(false) }
+    }
+    AppScreen(stringResource(R.string.task_booking), onBack = onBack) {
+        val content = state as? BookingUiState.Content
+        if (content != null) {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                StayDatesStep(
+                    content,
+                    model::changeMonth,
+                    model::selectDate,
+                    model::clearDates,
+                    model::retryVisibleInventory,
+                    model::retrySelectedInventory,
+                    true,
+                )
+            }
+        } else if (state == BookingUiState.Loading) {
+            LoadingContent()
+        } else {
+            Text(stringResource(R.string.task_record_unavailable))
+        }
     }
 }

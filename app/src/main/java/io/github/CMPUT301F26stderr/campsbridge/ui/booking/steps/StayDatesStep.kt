@@ -1,5 +1,13 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -10,12 +18,15 @@ import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.bookingCalendarState
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -40,17 +51,29 @@ fun StayDatesStep(
     enabled: Boolean,
 ) {
     val locale = LocalConfiguration.current.locales[0]
-    Text(
-        stringResource(
-            R.string.booking_deadline,
-            formatDateTime(
-                state.lottery.configuration.bookingClosesAt,
-                ZoneId.of(state.campsite.details.timeZone),
-                locale,
+    Surface(
+        Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Text(
+            stringResource(
+                R.string.booking_deadline,
+                formatDateTime(
+                    state.lottery.configuration.bookingClosesAt,
+                    ZoneId.of(state.campsite.details.timeZone),
+                    locale,
+                ),
             ),
-        ),
+            Modifier.padding(Spacing.medium),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+    Text(
+        stringResource(R.string.booking_date_hint),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    Text(stringResource(R.string.booking_date_hint))
     if (state.eligibilityPending) Text(stringResource(R.string.booking_eligibility_pending))
     when (state.calendar.visible) {
         CalendarInventoryRead.Loading -> {
@@ -76,17 +99,40 @@ fun StayDatesStep(
         Modifier.testTag("booking-calendar"),
         enabled = enabled,
     )
-    state.draft.checkIn?.let { Text(stringResource(R.string.arrival_date, formatDate(it, locale))) }
-    state.draft.checkOut?.let {
-        Text(
-            stringResource(R.string.checkout_date, formatDate(it, locale)),
-        )
-    }
     if (state.draft.checkIn != null || state.draft.checkOut != null) {
-        TextButton(
-            onClear,
-            enabled = enabled,
-        ) { Text(stringResource(R.string.booking_clear_dates)) }
+        OutlinedCard(
+            Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors =
+                CardDefaults.outlinedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+        ) {
+            Column(
+                Modifier.padding(Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                state.draft.checkIn?.let {
+                    Text(stringResource(R.string.arrival_date, formatDate(it, locale)))
+                }
+                state.draft.checkOut?.let {
+                    Text(stringResource(R.string.checkout_date, formatDate(it, locale)))
+                }
+                (state.quote as? BookingQuote.Value)?.let {
+                    Text(
+                        stringResource(
+                            R.string.booking_stay_total,
+                            formatCad(it.totalCents, locale),
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                TextButton(onClear, enabled = enabled) {
+                    Text(stringResource(R.string.booking_clear_dates))
+                }
+            }
+        }
     }
     if (state.calendar.selected == CalendarInventoryRead.Failure &&
         state.calendar.visible != CalendarInventoryRead.Failure

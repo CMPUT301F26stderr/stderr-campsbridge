@@ -9,6 +9,9 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
@@ -20,6 +23,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInp
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.bookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.validateStaySelection
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
@@ -45,6 +50,7 @@ import java.time.ZoneId
  * @param lotteries Parent, own membership and allocation sources.
  * @param campsites Current site and half-open inventory sources.
  * @param bookings Atomic reservations and server-confirmed consuming history.
+ * @param images Independent current campsite attachment/display source.
  * @param clock Explicit time for booking windows and campsite-local today.
  * @param savedState Primitive draft, uncertainty marker and known consuming identity.
  * @param availableNights Reserved F15; null explicitly leaves date eligibility pending.
@@ -56,6 +62,7 @@ class BookingViewModel(
     private val lotteries: LotteryRepository,
     private val campsites: CampsiteRepository,
     private val bookings: BookingRepository,
+    private val images: ImageRepository,
     private val clock: Clock,
     private val savedState: SavedStateHandle = SavedStateHandle(),
     private val availableNights: ((Set<LocalDate>, List<CalendarNight>) -> Set<LocalDate>)? = null,
@@ -133,6 +140,10 @@ class BookingViewModel(
             },
         )
     val submission = mutableSubmission.asStateFlow()
+    private val mutablePhoto = MutableStateFlow(ImageSlotState())
+    val photoState = mutablePhoto.asStateFlow()
+    private var photo: ImageSlotController? = null
+    private var photoJob: Job? = null
 
     private val calendarJob =
         viewModelScope.launch(start = CoroutineStart.LAZY) {
@@ -166,6 +177,39 @@ class BookingViewModel(
             render()
         }
         if (recoveryRequired && knownReservationId == null) startSubmission(null)
+    }
+
+    /** Retries only a failed attachment or URL read, without changing the booking draft. */
+    fun retryPhoto() {
+        photo?.retry()
+    }
+
+    /** Starts one image reader for presentable content; other outcomes release its references. */
+    private fun syncPhoto() {
+        if (state.value !is BookingUiState.Content) {
+            stopPhoto()
+        } else if (photo == null) {
+            val controller =
+                ImageSlotController(
+                    images,
+                    ImageTarget(ImageTargetType.CAMPSITE, campsiteId),
+                    viewModelScope,
+                )
+            photo = controller
+            photoJob =
+                viewModelScope.launch {
+                    controller.state.collect { mutablePhoto.value = it }
+                }
+        }
+    }
+
+    /** Releases attachment work and clears transient display references for the retired parent. */
+    private fun stopPhoto() {
+        photoJob?.cancel()
+        photoJob = null
+        photo?.close()
+        photo = null
+        mutablePhoto.value = ImageSlotState()
     }
 
     /** Revalidates a reviewed stay and starts one guarded reservation attempt. */
@@ -981,6 +1025,7 @@ class BookingViewModel(
         val frozen = submissionSnapshot
         if (submissionBlocksEditing() && frozen != null && knownReservationId == null) {
             mutableState.value = frozen
+            syncPhoto()
             scheduleTime()
             return
         }
@@ -1045,6 +1090,7 @@ class BookingViewModel(
             } else {
                 outcome
             }
+        syncPhoto()
         scheduleTime()
     }
 
@@ -1126,6 +1172,7 @@ class BookingViewModel(
         timeJob?.cancel()
         calendar.close()
         calendarJob.cancel()
+        stopPhoto()
         super.onCleared()
     }
 }

@@ -13,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.BookingReviewSte
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.GuestsStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.StayDatesStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.TermsStep
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
@@ -48,6 +49,8 @@ import java.time.YearMonth
  * @param submission Independent command/result state; unknown consumption blocks conflicting input.
  * @param onConfirm Submits only the currently reviewed stay through the parent.
  * @param onRecover Retries only server confirmation of an unresolved result.
+ * @param photo Independent current campsite image read, used only in Review.
+ * @param onRetryPhoto Retries only its failed attachment/URL source.
  * @param modifier Caller layout.
  */
 @Composable
@@ -75,6 +78,8 @@ fun BookingScreen(
     submission: BookingSubmission,
     onConfirm: () -> Unit,
     onRecover: () -> Unit,
+    photo: ImageSlotState,
+    onRetryPhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val blocked =
@@ -108,7 +113,9 @@ fun BookingScreen(
             exitEnabled = !exitPending && !blocked,
         ) {
             BookingSubmissionFeedback(submission, onRecover)
-            Text(state.campsite.details.name, style = MaterialTheme.typography.titleMedium)
+            if (step != BookingStep.REVIEW) {
+                Text(state.campsite.details.name, style = MaterialTheme.typography.titleMedium)
+            }
             state.error?.let { Text(bookingErrorText(it), color = MaterialTheme.colorScheme.error) }
             when (step) {
                 BookingStep.DATES -> {
@@ -132,7 +139,15 @@ fun BookingScreen(
                 }
 
                 BookingStep.REVIEW -> {
-                    BookingReviewStep(state, onEdit, onQuote, onPolicy, enabled)
+                    BookingReviewStep(
+                        state,
+                        onEdit,
+                        onQuote,
+                        onPolicy,
+                        enabled,
+                        photo,
+                        onRetryPhoto,
+                    )
                 }
             }
         }
