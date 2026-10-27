@@ -42,6 +42,7 @@ import java.util.Locale
  * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
  * @param reservationDetailFactory Saved aggregate dependencies keyed by ID/context.
  * @param inboxFactory One account receipt owner shared by both workspace primaries.
+ * @param bookingFactory One actual winner wizard keyed by saved lottery and campsite IDs.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -59,6 +60,7 @@ fun AppNavigation(
     lotteryListFactory: (LotteryContext, String?) -> ViewModelProvider.Factory,
     reservationDetailFactory: (String, ReservationContext) -> ViewModelProvider.Factory,
     inboxFactory: ViewModelProvider.Factory,
+    bookingFactory: (String, String) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -161,6 +163,7 @@ fun AppNavigation(
             inboxFactory,
         )
         reservationGraph(controller, reservationDetailFactory)
+        bookingGraph(controller, bookingFactory)
         lotteryDetailGraph(controller, lotteryDetailFactory, onReservation = { id ->
             controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
                 launchSingleTop = true
@@ -178,6 +181,11 @@ fun AppNavigation(
             controller.navigate(
                 "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
             ) {
+                launchSingleTop =
+                    true
+            }
+        }, onBooking = { lotteryId, campsiteId ->
+            controller.navigate(AppDestination.booking(lotteryId, campsiteId)) {
                 launchSingleTop =
                     true
             }

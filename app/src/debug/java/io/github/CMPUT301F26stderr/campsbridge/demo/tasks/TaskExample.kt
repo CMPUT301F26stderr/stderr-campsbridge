@@ -27,7 +27,7 @@ enum class TaskExample(
     PARTICIPANTS("H08", R.string.task_participants, "B4", true, R.string.task_participants_steps),
     INBOX_ORDER("H09", R.string.task_inbox_order, "B5", true, R.string.task_inbox_steps),
     UNREAD_COUNT("H10", R.string.task_unread, "B5", true, R.string.task_unread_steps),
-    BOOKING_NIGHTS("H11", R.string.task_booking, "B6", false, R.string.task_booking_steps),
+    BOOKING_NIGHTS("H11", R.string.task_booking, "B6", true, R.string.task_booking_steps),
     RESERVATION_CATEGORY("H12", R.string.task_category, "B7", false, R.string.task_category_steps),
     RESERVATION_ORDER("H13", R.string.task_stay_order, "B7", false, R.string.task_stay_order_steps),
     PROFILE_ROLE("H15", R.string.task_role, "B9", false, R.string.task_future),

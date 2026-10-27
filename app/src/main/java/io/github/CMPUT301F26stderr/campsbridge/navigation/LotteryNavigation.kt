@@ -119,12 +119,14 @@ internal fun NavGraphBuilder.lotteryListGraph(
  * @param factory Dependencies keyed by actual saved ID and explicit caller context.
  * @param onReservation Actual saved consuming reservation, absent in isolated hosts.
  * @param onCampsite Actual saved campsite calendar, absent in isolated hosts.
+ * @param onBooking Registered winner wizard, absent in isolated hosts.
  */
 internal fun NavGraphBuilder.lotteryDetailGraph(
     controller: NavHostController,
     factory: (String, LotteryContext) -> ViewModelProvider.Factory,
     onReservation: ((String) -> Unit)? = null,
     onCampsite: ((String, LotteryContext) -> Unit)? = null,
+    onBooking: ((String, String) -> Unit)? = null,
 ) {
     for (context in LotteryContext.entries) {
         val pattern = AppDestination.lotteryDetailPattern(context)
@@ -162,6 +164,7 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                             } else {
                                 null
                             },
+                        onBooking = if (context == LotteryContext.ENTRANT) onBooking else null,
                         onParticipants =
                             if (context == LotteryContext.OWNER) {
                                 {

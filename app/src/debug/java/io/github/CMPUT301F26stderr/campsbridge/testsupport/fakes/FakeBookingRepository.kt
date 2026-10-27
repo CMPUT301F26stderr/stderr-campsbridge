@@ -22,6 +22,8 @@ class FakeBookingRepository(
     val entrantRequests = mutableListOf<String>()
     val opportunityRequests = mutableListOf<Pair<String, String>>()
     var opportunityHandler: (suspend (String, String) -> Reservation?)? = null
+    val reserveRequests = mutableListOf<BookingRequest>()
+    var reserveHandler: (suspend (BookingRequest) -> String)? = null
     var observeHandler: ((String) -> Flow<Reservation?>)? = null
     val recordFailure = MutableStateFlow<Exception?>(null)
     val observedRecordIds = mutableListOf<String>()
@@ -107,11 +109,14 @@ class FakeBookingRepository(
     override fun observeForOwner(ownerId: String): Flow<List<Reservation>> =
         unsupported()
 
-    /** Rejects unconfigured booking writes.
+    /** Records exact booking input and requires an explicit configured outcome.
      * @param request Exact reservation attempt.
      */
-    override suspend fun reserve(request: BookingRequest): String =
-        unsupported()
+    override suspend fun reserve(request: BookingRequest): String {
+        reserveRequests.add(request)
+        val handler = reserveHandler ?: unsupported()
+        return handler(request)
+    }
 
     /** Rejects unconfigured cancellation writes.
      * @param request Exact cancellation attempt.

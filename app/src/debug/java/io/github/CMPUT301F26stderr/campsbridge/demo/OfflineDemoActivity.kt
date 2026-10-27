@@ -40,6 +40,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.demo.tasks.TaskExamplesActivity
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
@@ -178,6 +179,14 @@ class OfflineDemoActivity : ComponentActivity() {
                                     },
                                     { accountId ->
                                         inboxViewModelFactory(session.services, accountId)
+                                    },
+                                    { accountId, lotteryId, campsiteId ->
+                                        bookingViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            lotteryId,
+                                            campsiteId,
+                                        )
                                     },
                                 )
                             }
