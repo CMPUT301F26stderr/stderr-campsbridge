@@ -28,6 +28,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageUpload
+import io.github.CMPUT301F26stderr.campsbridge.platform.assets.SceneryPhoto
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.SelectedPhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
@@ -245,7 +246,7 @@ private fun GalleryPhotoEditor() {
             SelectedPhoto(
                 GALLERY_PHOTO,
                 ImageUpload("image/jpeg") {
-                    context.assets.open("gallery_campsite.jpg")
+                    context.assets.open(SceneryPhoto.JASPER.assetPath)
                 },
             )
         }

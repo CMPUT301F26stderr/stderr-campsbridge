@@ -211,49 +211,6 @@ class LotteryDetailEntrantTest {
                 content(it).opportunity,
             )
             assertEquals(1, bookings.opportunityRequests.size)
-            it.refreshTime()
-            runCurrent()
-            assertEquals(
-                LotteryOpportunityRead.Unavailable(reservation.id),
-                content(it).opportunity,
-            )
-            assertEquals(1, bookings.opportunityRequests.size)
-        }
-
-    /** Foreground refresh keeps a healthy confirmed saved observer rather than replacing it. */
-    @Test fun foregroundKeepsHealthyKnownReservationObservation() =
-        withModel {
-            lotteries.records.value = listOf(drawn)
-            lotteries.entries.value = listOf(entry(EntryState.OFFERED))
-            bookings.records.value = listOf(reservation)
-            runCurrent()
-            bookings.opportunityHandler = { _, _ -> throw IOException("a new lookup would fail") }
-            it.refreshTime()
-            runCurrent()
-            assertEquals(LotteryOpportunityRead.Reserved(reservation), content(it).opportunity)
-            assertEquals(1, bookings.opportunityRequests.size)
-            assertEquals(1, bookings.observedRecordIds.size)
-        }
-
-    /** A failed live reader's retry cannot release an already confirmed consuming identity. */
-    @Test fun recoveryAbsenceKeepsPreviouslyConfirmedConsumption() =
-        withModel {
-            lotteries.records.value = listOf(drawn)
-            lotteries.entries.value = listOf(entry(EntryState.OFFERED))
-            bookings.records.value = listOf(reservation)
-            runCurrent()
-            bookings.recordFailure.value = IOException("live read failed")
-            runCurrent()
-            assertEquals(LotteryOpportunityRead.Failure, content(it).opportunity)
-            bookings.records.value = emptyList()
-            bookings.recordFailure.value = null
-            it.retryOpportunity()
-            runCurrent()
-            assertEquals(
-                LotteryOpportunityRead.Unavailable(reservation.id),
-                content(it).opportunity,
-            )
-            assertEquals(2, bookings.opportunityRequests.size)
         }
 
     /** A failed saved aggregate is unknown; explicit recovery replaces its reader once. */

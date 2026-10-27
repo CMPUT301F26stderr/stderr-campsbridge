@@ -1,6 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
@@ -10,7 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSt
  * @param allocation Visible month, working selection and required inventory outcome.
  */
 internal fun lotteryAllocationCalendarState(allocation: LotteryAllocationUiState): CalendarState =
-    (allocation.inventory as? CampsiteInventoryUiState.Content)?.let { known ->
+    (allocation.inventory as? CalendarInventoryRead.Content)?.let { known ->
         val nights = known.nights.associateBy { it.date }
         CalendarState(
             allocation.month,

@@ -1,5 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
@@ -15,11 +16,11 @@ import java.time.YearMonth
  */
 internal fun offeredNightCalendarState(
     month: YearMonth,
-    inventory: CampsiteInventoryUiState,
+    inventory: CalendarInventoryRead,
     requested: Map<LocalDate, Boolean>,
     selected: Set<LocalDate> = requested.keys,
 ): CalendarState {
-    val known = inventory as? CampsiteInventoryUiState.Content
+    val known = inventory as? CalendarInventoryRead.Content
     val nights = known?.nights.orEmpty().associateBy { it.date }
     val days =
         (1..month.lengthOfMonth()).associate { day ->

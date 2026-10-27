@@ -81,8 +81,8 @@ class LotteryDetailViewModelTest {
                 assertEquals(
                     LotteryOffersState.Content(
                         listOf(
-                            LotteryOfferSummary(first, site.details.name, site.details.timeZone),
-                            LotteryOfferSummary(missing, null, null),
+                            LotteryOfferSummary(first, site),
+                            LotteryOfferSummary(missing, null),
                         ),
                     ),
                     (model.state.value as LotteryDetailUiState.Content).offers,

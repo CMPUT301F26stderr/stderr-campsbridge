@@ -13,14 +13,13 @@ class LocationPickerStateTest {
         assertNull(LocationPickerState(null).selected)
     }
 
-    /** Selecting/replacing a working pin cannot mutate its immutable parent input. */
-    @Test fun workingSelectionDoesNotChangeOriginal() {
+    /** Selecting and replacing the working pin retains the latest chosen coordinates. */
+    @Test fun workingSelectionUsesTheLatestPin() {
         val original = Coordinates(53.0, -118.0)
         val state = LocationPickerState(original)
         val selected = Coordinates(51.2, -115.6)
         state.select(selected)
         assertEquals(selected, state.selected)
-        assertEquals(Coordinates(53.0, -118.0), original)
         state.select(Coordinates(-90.0, 180.0))
         assertEquals(Coordinates(-90.0, 180.0), state.selected)
     }

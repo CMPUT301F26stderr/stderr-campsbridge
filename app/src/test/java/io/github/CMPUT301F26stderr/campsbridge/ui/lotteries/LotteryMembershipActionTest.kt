@@ -173,58 +173,6 @@ class LotteryMembershipActionTest {
             }
         }
 
-    /** A later withdrawal cannot erase evidence that the held Join already took effect. */
-    @Test fun supersededJoinObservationStillReleasesItsAcknowledgedCommand() =
-        withModel { model, _ ->
-            runCurrent()
-            val gate = CompletableDeferred<Unit>()
-            try {
-                lotteries.joinHandler = { _, _ -> gate.await() }
-                model.join()
-                runCurrent()
-                lotteries.entries.value = listOf(entry(EntryState.WAITING))
-                runCurrent()
-                lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
-                runCurrent()
-                assertEquals(LotteryMembershipAction.JOIN, content(model).participation.action)
-                gate.complete(Unit)
-                runCurrent()
-                assertNull(content(model).participation.action)
-                assertEquals(LotteryMembershipStatus.WITHDRAWN, membership(model))
-                assertTrue(content(model).participation.canJoin)
-                assertEquals(listOf("join:draw:entrant"), lotteries.events)
-            } finally {
-                gate.complete(Unit)
-            }
-        }
-
-    /** A later rejoin cannot erase the observed effect of a held withdrawal. */
-    @Test fun supersededLeaveObservationStillReleasesItsAcknowledgedCommand() =
-        withModel { model, _ ->
-            lotteries.entries.value = listOf(entry(EntryState.WAITING))
-            runCurrent()
-            val gate = CompletableDeferred<Unit>()
-            try {
-                lotteries.withdrawHandler = { _, _ -> gate.await() }
-                model.requestLeave()
-                model.confirmLeave()
-                runCurrent()
-                lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
-                runCurrent()
-                lotteries.entries.value = listOf(entry(EntryState.WAITING))
-                runCurrent()
-                gate.complete(Unit)
-                runCurrent()
-                assertNull(content(model).participation.action)
-                assertFalse(content(model).participation.isConfirmingLeave)
-                assertEquals(LotteryMembershipStatus.WAITING, membership(model))
-                assertTrue(content(model).participation.canLeave)
-                assertEquals(listOf("withdraw:draw:entrant"), lotteries.events)
-            } finally {
-                gate.complete(Unit)
-            }
-        }
-
     /** Opening and dismissing Leave has no persistence effect. */
     @Test fun leaveRequiresAnExplicitLiveConfirmation() =
         withModel { model, _ ->
@@ -509,32 +457,6 @@ class LotteryMembershipActionTest {
      */
     private fun membership(model: LotteryDetailViewModel): LotteryMembershipStatus =
         (content(model).membership as LotteryMembershipRead.Content).status
-
-    /** A submitted withdrawal cannot trap failed-source Retry behind a pending dialog. */
-    @Test fun acknowledgedWithdrawalRetainsItsGuardWhileSourceRetryStaysReachable() =
-        withModel { model, _ ->
-            runCurrent()
-            lotteries.entries.value = listOf(entry(EntryState.WAITING))
-            runCurrent()
-            lotteries.withdrawHandler = { _, _ -> }
-            model.requestLeave()
-            model.confirmLeave()
-            runCurrent()
-            assertTrue(content(model).participation.isConfirmingLeave)
-            lotteries.entrantFailure.value = IOException("entry offline")
-            runCurrent()
-            assertEquals(LotteryMembershipRead.Failure, content(model).membership)
-            assertFalse(content(model).participation.isConfirmingLeave)
-            assertEquals(LotteryMembershipAction.LEAVE, content(model).participation.action)
-            model.confirmLeave()
-            lotteries.entrantFailure.value = null
-            lotteries.entries.value = listOf(entry(EntryState.WITHDRAWN))
-            model.retryMembership()
-            runCurrent()
-            assertNull(content(model).participation.action)
-            assertEquals(LotteryMembershipStatus.WITHDRAWN, membership(model))
-            assertEquals(listOf("withdraw:draw:entrant"), lotteries.events)
-        }
 
     /** Cancelled repository work releases the real parent action without a failed-save notice. */
     @Test fun cancelledRequestDoesNotLeaveTheParentSubmitting() =

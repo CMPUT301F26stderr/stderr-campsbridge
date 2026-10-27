@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
@@ -144,18 +145,18 @@ fun AvailabilityScreen(
                         enabled = !saving && !discardPrompt,
                     )
                     when (calendar.inventory) {
-                        CampsiteInventoryUiState.Loading -> {
+                        CalendarInventoryRead.Loading -> {
                             LoadingContent()
                         }
 
-                        CampsiteInventoryUiState.Failure -> {
+                        CalendarInventoryRead.Failure -> {
                             FailureContent(
                                 stringResource(R.string.campsite_calendar_failure),
                                 onRetryCalendar,
                             )
                         }
 
-                        is CampsiteInventoryUiState.Content -> {
+                        is CalendarInventoryRead.Content -> {
                             Unit
                         }
                     }
@@ -171,7 +172,7 @@ fun AvailabilityScreen(
                                 enabled =
                                     state.selectedDates.isNotEmpty() && !saving &&
                                         !discardPrompt &&
-                                        calendar.inventory is CampsiteInventoryUiState.Content,
+                                        calendar.inventory is CalendarInventoryRead.Content,
                                 style = ActionStyle.SECONDARY,
                             )
                         }
@@ -225,7 +226,7 @@ private fun AvailabilityPreview() {
             previewCampsite(),
             CampsiteAvailabilityState(
                 month,
-                CampsiteInventoryUiState.Content(
+                CalendarInventoryRead.Content(
                     listOf(CalendarNight(month.atDay(14), true, "reservation")),
                 ),
                 requested =
@@ -247,7 +248,7 @@ private fun AvailabilityPartialFailurePreview() {
             previewCampsite(),
             CampsiteAvailabilityState(
                 month,
-                CampsiteInventoryUiState.Content(listOf(CalendarNight(month.atDay(21), true))),
+                CalendarInventoryRead.Content(listOf(CalendarNight(month.atDay(21), true))),
                 requested =
                     mapOf(month.atDay(22) to true),
                 pendingEdits = mapOf(month.atDay(22) to true),
@@ -280,7 +281,7 @@ private fun AvailabilitySavingPreview() {
             previewCampsite(),
             CampsiteAvailabilityState(
                 YearMonth.of(2027, 5),
-                CampsiteInventoryUiState.Content(emptyList()),
+                CalendarInventoryRead.Content(emptyList()),
                 isSaving = true,
             ),
         ),

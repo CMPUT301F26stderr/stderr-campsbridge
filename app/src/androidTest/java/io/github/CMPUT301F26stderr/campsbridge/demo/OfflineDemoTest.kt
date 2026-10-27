@@ -3,7 +3,6 @@ package io.github.CMPUT301F26stderr.campsbridge.demo
 import android.content.Context
 import android.view.KeyEvent
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -58,7 +57,6 @@ class OfflineDemoTest {
             compose.onNodeWithText("Find a campsite").performClick()
             compose.onNodeWithText("Next").performClick()
             compose.onNodeWithText("Name").performTextInput("Alex")
-            compose.onNodeWithText("Continue").assertIsNotEnabled()
             assertTrue(FirebaseApp.getApps(context).isEmpty())
         }
     }

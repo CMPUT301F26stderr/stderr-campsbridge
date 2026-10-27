@@ -1,8 +1,20 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
+
+/** Saved reader children share one context-qualified parent and its current source outcomes.
+ * @param routeKey Stable navigation token, independent of localized labels.
+ */
+enum class LotteryDetailSection(
+    val routeKey: String,
+) {
+    OVERVIEW("overview"),
+    SCHEDULE("schedule"),
+    CAMPSITES("campsites"),
+}
 
 /** Server-confirmed consuming reservation and its subsequent aggregate observation. */
 sealed interface LotteryOpportunityRead {
@@ -49,15 +61,13 @@ sealed interface LotteryOffersState {
     ) : LotteryOffersState
 }
 
-/** Read-only allocation facts; labels never replace the authoritative campsite identity.
+/** Read-only allocation and its already-read current campsite; the offer owns its identity.
  * @param offer Actual saved allocation.
- * @param name Current campsite name, or null when that record is absent.
- * @param timeZone Current campsite zone, or null when that record is absent.
+ * @param campsite Current referenced record, or null when it is absent.
  */
 data class LotteryOfferSummary(
     val offer: LotteryOffer,
-    val name: String?,
-    val timeZone: String?,
+    val campsite: Campsite?,
 )
 
 /** Saved owner/entrant overview with independent source outcomes. */

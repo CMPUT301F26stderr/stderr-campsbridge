@@ -1,5 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -10,7 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceCard
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoices
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupUiState
 
@@ -40,10 +42,11 @@ fun LotteryCampsiteStep(
         is LotteryCampsiteChoices.Content -> {
             if (choices.campsites.isEmpty()) Text(stringResource(R.string.lottery_no_sites))
             for (site in choices.campsites) {
-                ChoiceRow(
+                ChoiceCard(
                     site.details.name,
                     state.draft.campsiteId == site.id,
                     { onChoose(site.id) },
+                    Icons.Outlined.Place,
                     supportingText =
                         site.details.locationLabel + " · " +
                             stringResource(

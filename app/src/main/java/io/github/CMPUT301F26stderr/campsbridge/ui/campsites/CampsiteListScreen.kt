@@ -1,16 +1,27 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,7 +31,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.CampsiteR
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Owner inventory content; the workspace frame belongs to navigation.
  * @param state Confirmed source outcome.
@@ -45,9 +58,6 @@ fun CampsiteListScreen(
     onCreate: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxSize()) {
-        onCreate?.let { action ->
-            TextButton(action) { Text(stringResource(R.string.campsite_create)) }
-        }
         PrimaryTabRow(selectedTabIndex = tab.ordinal) {
             for (item in CampsiteListTab.entries) {
                 Tab(
@@ -67,34 +77,44 @@ fun CampsiteListScreen(
                 )
             }
         }
-        when (state) {
-            CampsiteListUiState.Loading -> {
-                LoadingContent()
-            }
-
-            CampsiteListUiState.Failure -> {
-                FailureContent(
-                    stringResource(R.string.campsite_list_failure),
-                    onRetry,
-                )
-            }
-
-            is CampsiteListUiState.Content -> {
-                if (state.orderingPending) {
-                    Text(stringResource(R.string.campsite_ordering_pending))
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(vertical = Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            when (state) {
+                CampsiteListUiState.Loading -> {
+                    item { LoadingContent() }
                 }
-                if (state.campsites.isEmpty()) {
-                    EmptyContent(
-                        stringResource(
-                            if (tab == CampsiteListTab.PUBLISHED) {
-                                R.string.campsite_list_empty_published
-                            } else {
-                                R.string.campsite_list_empty_drafts
-                            },
-                        ),
-                    )
-                } else {
-                    LazyColumn(state = listState, modifier = Modifier.weight(1f)) {
+
+                CampsiteListUiState.Failure -> {
+                    item { FailureContent(stringResource(R.string.campsite_list_failure), onRetry) }
+                }
+
+                is CampsiteListUiState.Content -> {
+                    if (state.orderingPending) {
+                        item {
+                            Text(
+                                stringResource(R.string.campsite_ordering_pending),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    if (state.campsites.isEmpty()) {
+                        item {
+                            EmptyContent(
+                                stringResource(
+                                    if (tab == CampsiteListTab.PUBLISHED) {
+                                        R.string.campsite_list_empty_published
+                                    } else {
+                                        R.string.campsite_list_empty_drafts
+                                    },
+                                ),
+                            )
+                        }
+                    } else {
                         items(state.campsites, key = { it.id }) { site ->
                             CampsiteRow(
                                 site,
@@ -115,6 +135,22 @@ fun CampsiteListScreen(
                 }
             }
         }
+        onCreate?.let { action ->
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = Spacing.medium),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                ExtendedFloatingActionButton(
+                    onClick = action,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(Modifier.width(Spacing.small))
+                    Text(stringResource(R.string.campsite_create))
+                }
+            }
+        }
     }
 }
 
@@ -123,13 +159,18 @@ fun CampsiteListScreen(
 @Preview(name = "Large text", showBackground = true, widthDp = 360, fontScale = 2f)
 @Composable
 private fun CampsiteListPreview() {
-    CampsbridgeTheme {
+    CampsiteListPreviewFrame {
         CampsiteListScreen(
-            CampsiteListUiState.Content(listOf(previewCampsite()), true),
+            CampsiteListUiState.Content(
+                listOf(previewCampsite()),
+                true,
+                mapOf(previewCampsite().id to previewCampsitePhoto()),
+            ),
             CampsiteListTab.PUBLISHED,
             {},
             {},
             {},
+            onCreate = {},
         )
     }
 }
@@ -138,8 +179,15 @@ private fun CampsiteListPreview() {
 @Preview(showBackground = true, widthDp = 390, heightDp = 700)
 @Composable
 private fun CampsiteListFailurePreview() {
-    CampsbridgeTheme {
-        CampsiteListScreen(CampsiteListUiState.Failure, CampsiteListTab.DRAFTS, {}, {}, {})
+    CampsiteListPreviewFrame {
+        CampsiteListScreen(
+            CampsiteListUiState.Failure,
+            CampsiteListTab.DRAFTS,
+            {},
+            {},
+            {},
+            onCreate = {},
+        )
     }
 }
 
@@ -147,13 +195,24 @@ private fun CampsiteListFailurePreview() {
 @Preview(showBackground = true, widthDp = 390, heightDp = 700)
 @Composable
 private fun CampsiteListEmptyPreview() {
-    CampsbridgeTheme {
+    CampsiteListPreviewFrame {
         CampsiteListScreen(
             CampsiteListUiState.Content(emptyList(), true),
             CampsiteListTab.PUBLISHED,
             {},
             {},
             {},
+            onCreate = {},
         )
+    }
+}
+
+/** Frames passive inventory fixtures without adding a second frame to production routes.
+ * @param content Inventory state supplied without repositories or navigation.
+ */
+@Composable
+private fun CampsiteListPreviewFrame(content: @Composable () -> Unit) {
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.campsites)) { content() }
     }
 }

@@ -6,6 +6,8 @@
     <string name="lottery_site_step">Campsite &amp; nights</string>
     <string name="lottery_registration_step">Registration window</string>
     <string name="lottery_booking_step">Booking window</string>
+    <string name="lottery_registration_hint">Entrants can join during this registration window.</string>
+    <string name="lottery_booking_hint">Winners can reserve during this window. Booking must open at or after registration closes.</string>
     <string name="lottery_winners_step">Maximum winners</string>
     <string name="lottery_winners_title">Winners</string>
     <string name="lottery_review_step">Review lottery</string>
@@ -16,6 +18,7 @@
     <string name="lottery_selected_site_unavailable">The selected campsite is unavailable. Return to Campsite &amp; nights to choose a published campsite.</string>
     <string name="lottery_allocate">Allocate nights</string>
     <string name="lottery_apply_nights">Apply nights</string>
+    <string name="lottery_selected_nights">Selected nights</string>
     <string name="lottery_allocation_required">Allocate at least one available night.</string>
     <string name="lottery_allocation_invalid">Choose a nonempty selection of currently offered, unbooked nights. Remove any selected nights that are no longer available.</string>
     <string name="lottery_allocation_failure">Could not load allocation availability. Your working selection is retained.</string>

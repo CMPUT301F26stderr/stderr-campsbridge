@@ -7,6 +7,9 @@ import java.time.YearMonth
 /** Inventory presentation independent of visual selection. */
 enum class CalendarDayStatus { UNAVAILABLE, AVAILABLE, OCCUPIED }
 
+/** Labels known owner offer intent separately from availability to a prospective guest. */
+enum class CalendarLabels { AVAILABILITY, OFFERED_NIGHTS }
+
 /**
  * Caller-supplied inventory label and action availability.
  * @param status Inventory presentation for the date.
@@ -24,6 +27,7 @@ data class CalendarDayState(
  * @param selection Highlighted dates, independent of inventory.
  * @param firstWeekday First column in each week.
  * @param selectionEnabled Whether date actions are enabled for the whole calendar.
+ * @param labels Meaning of known inventory; unknown ranges retain availability labels.
  */
 data class CalendarState(
     val month: YearMonth,
@@ -31,4 +35,5 @@ data class CalendarState(
     val selection: CalendarSelection = CalendarSelection.None,
     val firstWeekday: DayOfWeek = DayOfWeek.MONDAY,
     val selectionEnabled: Boolean = false,
+    val labels: CalendarLabels = CalendarLabels.AVAILABILITY,
 )

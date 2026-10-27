@@ -3,74 +3,51 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.LotteryCard
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneId
-
-/** Connects the read owner to real navigation and retains a scroll position per category.
- * @param model Account-scoped source owner.
- * @param onCreate Registered new-setup entry, absent in entrant presentation.
- * @param onOpen Navigation using the selected actual row identity.
- */
-@Composable
-fun LotteryListRoute(
-    model: LotteryListViewModel,
-    onCreate: (() -> Unit)?,
-    onOpen: (LotteryListItem) -> Unit,
-) {
-    val state by model.state.collectAsStateWithLifecycle()
-    val category by model.category.collectAsStateWithLifecycle()
-    val campsite by model.campsiteId.collectAsStateWithLifecycle()
-    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
-        .collectAsStateWithLifecycle()
-    LaunchedEffect(model, lifecycle) {
-        if (lifecycle == Lifecycle.State.RESUMED) model.refreshTime()
-    }
-    // Each remembered category keeps its own saveable lazy-list position.
-    val positions = model.categories.associateWith { item -> key(item) { rememberLazyListState() } }
-    LotteryListScreen(
-        state,
-        category,
-        model.categories,
-        model::selectCategory,
-        onOpen,
-        model::retry,
-        listState = positions.getValue(category),
-        onCreate = onCreate,
-        campsiteId = campsite,
-        onClearCampsite = { model.selectCampsite(null) },
-    )
-}
+import java.time.LocalDate
 
 /** Ordinary Material list content; its workspace or child AppScreen belongs to navigation.
  * @param state Confirmed rows and unresolved references.
@@ -84,6 +61,7 @@ fun LotteryListRoute(
  * @param onCreate Optional real setup entry.
  * @param campsiteId Optional active owner association filter.
  * @param onClearCampsite Clears that filter without changing saved records.
+ * @param contexts Independently observed campsite facts for visible resolved rows.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,91 +77,225 @@ fun LotteryListScreen(
     onCreate: (() -> Unit)? = null,
     campsiteId: String? = null,
     onClearCampsite: () -> Unit = {},
+    contexts: Map<String, LotteryOffersState> = emptyMap(),
 ) {
     Column(modifier.fillMaxSize()) {
-        onCreate?.let { action ->
-            TextButton(action) { Text(stringResource(R.string.lottery_create)) }
-        }
-        PrimaryTabRow(categories.indexOf(category)) {
-            for (item in categories) {
-                Tab(selected = item == category, onClick = {
-                    onSelectCategory(item)
-                }, text = { Text(lotteryCategoryLabel(item)) })
-            }
-        }
-        if (campsiteId != null) {
-            Text(stringResource(R.string.lottery_filtered_campsite, campsiteId))
-            TextButton(onClearCampsite) { Text(stringResource(R.string.lottery_show_all)) }
-        }
-        when (state) {
-            LotteryListUiState.Loading -> {
-                LoadingContent()
-            }
-
-            LotteryListUiState.Failure -> {
-                FailureContent(stringResource(R.string.lottery_list_failed), onRetry)
-            }
-
-            is LotteryListUiState.Content -> {
-                if (state.items.isEmpty() && state.unresolved.isEmpty()) {
-                    EmptyContent(
-                        stringResource(R.string.lottery_list_empty, lotteryCategoryLabel(category)),
+        LotteryCategoryTabs(category, categories, onSelectCategory)
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(vertical = Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            if (campsiteId != null) {
+                item(key = "filter") {
+                    Text(
+                        stringResource(R.string.lottery_filtered_campsite, campsiteId),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(vertical = Spacing.medium),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-                    ) {
-                        items(
-                            state.unresolved,
-                            key = { "unresolved:${it.lotteryId}" },
-                        ) { reference ->
-                            val label =
-                                when (reference.issue) {
-                                    LotteryReferenceIssue.LOADING -> {
-                                        R.string.lottery_reference_loading
-                                    }
+                    TextButton(onClearCampsite) { Text(stringResource(R.string.lottery_show_all)) }
+                }
+            }
+            when (state) {
+                LotteryListUiState.Loading -> {
+                    item { LoadingContent() }
+                }
 
-                                    LotteryReferenceIssue.MISSING -> {
-                                        R.string.lottery_reference_missing
-                                    }
+                LotteryListUiState.Failure -> {
+                    item {
+                        FailureContent(stringResource(R.string.lottery_list_failed), onRetry)
+                    }
+                }
 
-                                    LotteryReferenceIssue.FAILURE -> {
-                                        R.string.lottery_reference_failed
-                                    }
-                                }
-                            InlineNotice(
-                                stringResource(label),
-                                reference.lotteryId,
-                                action =
-                                    if (reference.issue == LotteryReferenceIssue.FAILURE) {
-                                        {
-                                            TextButton(
-                                                onRetry,
-                                            ) { Text(stringResource(R.string.retry)) }
-                                        }
-                                    } else {
-                                        null
-                                    },
-                            )
-                        }
-                        items(state.items, key = { it.lottery.id }) { item ->
-                            val record = item.lottery
-                            LotteryCard(
-                                record,
-                                lotteryLifecycleLabel(
-                                    item.lifecycle,
+                is LotteryListUiState.Content -> {
+                    if (state.items.isEmpty() && state.unresolved.isEmpty()) {
+                        item {
+                            EmptyContent(
+                                stringResource(
+                                    R.string.lottery_list_empty,
                                 ),
-                                lotteryListDeadline(item),
-                                {
-                                    onOpen(item)
-                                },
                             )
                         }
                     }
+                    items(state.unresolved, key = { "unresolved:${it.lotteryId}" }) { reference ->
+                        val label =
+                            when (reference.issue) {
+                                LotteryReferenceIssue.LOADING -> R.string.lottery_reference_loading
+                                LotteryReferenceIssue.MISSING -> R.string.lottery_reference_missing
+                                LotteryReferenceIssue.FAILURE -> R.string.lottery_reference_failed
+                            }
+                        SummarySection(stringResource(label)) {
+                            Text(
+                                reference.lotteryId,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            if (reference.issue == LotteryReferenceIssue.FAILURE) {
+                                TextButton(onRetry) { Text(stringResource(R.string.retry)) }
+                            }
+                        }
+                    }
+                    items(state.items, key = { it.lottery.id }) { item ->
+                        val context = contexts[item.lottery.id] ?: LotteryOffersState.Loading
+                        LotteryCard(
+                            item.lottery,
+                            lotteryLifecycleLabel(item.lifecycle),
+                            lotteryListDeadline(item, context),
+                            { onOpen(item) },
+                            supportingContent = {
+                                LotteryRowContext(context, onRetry)
+                                val outcome =
+                                    if (item.reservationId != null) {
+                                        R.string.lottery_list_reservation_made
+                                    } else {
+                                        when (item.entryState) {
+                                            EntryState.WAITING -> {
+                                                R.string.lottery_membership_waiting
+                                            }
+
+                                            EntryState.WITHDRAWN -> {
+                                                R.string.lottery_membership_withdrawn
+                                            }
+
+                                            EntryState.OFFERED -> {
+                                                R.string.lottery_membership_won
+                                            }
+
+                                            EntryState.LOST -> {
+                                                R.string.lottery_membership_lost
+                                            }
+
+                                            EntryState.DECLINED -> {
+                                                R.string.lottery_membership_declined
+                                            }
+
+                                            null -> {
+                                                null
+                                            }
+                                        }
+                                    }
+                                if (outcome != null) {
+                                    Text(
+                                        stringResource(outcome),
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                }
+                            },
+                        )
+                    }
                 }
+            }
+        }
+        onCreate?.let { action ->
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = Spacing.medium),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                ExtendedFloatingActionButton(
+                    onClick = action,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(Modifier.width(Spacing.small))
+                    Text(stringResource(R.string.lottery_create))
+                }
+            }
+        }
+    }
+}
+
+/** Uses Material scrolling for the longer entrant labels and the existing page gutter.
+ * @param category Current scope-allowed category.
+ * @param categories Actual categories in display order.
+ * @param onSelect Explicit selection without resetting other category scroll positions.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LotteryCategoryTabs(
+    category: LotteryListCategory,
+    categories: List<LotteryListCategory>,
+    onSelect: (LotteryListCategory) -> Unit,
+) {
+    val tabs: @Composable () -> Unit = {
+        for (item in categories) {
+            Tab(
+                selected = item == category,
+                onClick = { onSelect(item) },
+                text = {
+                    Text(lotteryCategoryLabel(item), style = MaterialTheme.typography.labelLarge)
+                },
+            )
+        }
+    }
+    if (categories.size > 2) {
+        PrimaryScrollableTabRow(categories.indexOf(category), edgePadding = 0.dp, tabs = tabs)
+    } else {
+        PrimaryTabRow(categories.indexOf(category), tabs = tabs)
+    }
+}
+
+/** Shows only known allocation/site facts without making their absence a primary-list failure.
+ * @param state Independent visible-row display result.
+ * @param onRetry Retries failed context sources through the owner.
+ */
+@Composable
+private fun LotteryRowContext(
+    state: LotteryOffersState,
+    onRetry: () -> Unit,
+) {
+    when (state) {
+        LotteryOffersState.Loading -> {
+            Text(
+                stringResource(R.string.lottery_list_context_loading),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        LotteryOffersState.Failure -> {
+            Text(
+                stringResource(R.string.lottery_list_context_failed),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            TextButton(onRetry) { Text(stringResource(R.string.retry)) }
+        }
+
+        is LotteryOffersState.Content -> {
+            if (state.offers.isEmpty()) {
+                Text(
+                    stringResource(R.string.lottery_no_offers),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            for (summary in state.offers) {
+                Text(
+                    summary.campsite?.details?.name
+                        ?: stringResource(R.string.lottery_unavailable_campsite),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                summary.campsite?.details?.locationLabel?.let { location ->
+                    Text(
+                        location,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                val count = summary.offer.nights.size
+                Text(
+                    pluralStringResource(R.plurals.lottery_allocated_nights, count, count),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                val locale = LocalConfiguration.current.locales[0]
+                Text(
+                    summary.offer.nights
+                        .sorted()
+                        .joinToString { formatDate(it, locale) },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -191,9 +303,13 @@ fun LotteryListScreen(
 
 /** Formats the task-relevant saved boundary in an explicit zone, without a per-row site query.
  * @param item Confirmed row and controller-derived phase.
+ * @param context Actual visible-row campsite facts, or explicitly unresolved context.
  */
 @Composable
-private fun lotteryListDeadline(item: LotteryListItem): String {
+private fun lotteryListDeadline(
+    item: LotteryListItem,
+    context: LotteryOffersState,
+): String {
     val windows = item.lottery.configuration
     val (label, instant) =
         when (item.lifecycle) {
@@ -218,7 +334,7 @@ private fun lotteryListDeadline(item: LotteryListItem): String {
         }
     return stringResource(
         label,
-        formatDateTime(instant, ZoneId.of("UTC"), LocalConfiguration.current.locales[0]),
+        formatDateTime(instant, lotteryDisplayZone(context), LocalConfiguration.current.locales[0]),
     )
 }
 
@@ -274,14 +390,35 @@ private fun LotteryListPreview(
     @PreviewParameter(LotteryListPreviewProvider::class) state: LotteryListUiState,
 ) {
     CampsbridgeTheme {
-        LotteryListScreen(
-            state,
-            LotteryListCategory.PUBLISHED,
-            listOf(LotteryListCategory.PUBLISHED, LotteryListCategory.DRAFTS),
-            {},
-            {},
-            {},
-            onCreate = {},
-        )
+        AppScreen(stringResource(R.string.my_lotteries)) {
+            LotteryListScreen(
+                state,
+                LotteryListCategory.PUBLISHED,
+                listOf(LotteryListCategory.PUBLISHED, LotteryListCategory.DRAFTS),
+                {},
+                {},
+                {},
+                onCreate = {},
+                contexts =
+                    (state as? LotteryListUiState.Content)?.items.orEmpty().associate {
+                        val site = previewCampsite()
+                        it.lottery.id to
+                            LotteryOffersState.Content(
+                                listOf(
+                                    LotteryOfferSummary(
+                                        LotteryOffer(
+                                            site.id,
+                                            listOf(
+                                                LocalDate.of(2027, 5, 14),
+                                                LocalDate.of(2027, 5, 15),
+                                            ),
+                                        ),
+                                        site,
+                                    ),
+                                ),
+                            )
+                    },
+            )
+        }
     }
 }

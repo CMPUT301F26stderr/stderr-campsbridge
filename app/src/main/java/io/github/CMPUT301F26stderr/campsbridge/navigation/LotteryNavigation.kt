@@ -17,6 +17,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
@@ -113,15 +114,17 @@ internal fun NavGraphBuilder.lotteryListGraph(
     }
 }
 
-/** Registers one context-qualified parent shared by the saved overview and its later children.
+/** Registers context-qualified overview, schedule, allocation and owner participant children.
  * @param controller Current account's navigation host.
  * @param factory Dependencies keyed by actual saved ID and explicit caller context.
- * @param onReservation Actual registered consuming-record destination, absent in isolated hosts.
+ * @param onReservation Actual saved consuming reservation, absent in isolated hosts.
+ * @param onCampsite Actual saved campsite calendar, absent in isolated hosts.
  */
 internal fun NavGraphBuilder.lotteryDetailGraph(
     controller: NavHostController,
     factory: (String, LotteryContext) -> ViewModelProvider.Factory,
     onReservation: ((String) -> Unit)? = null,
+    onCampsite: ((String, LotteryContext) -> Unit)? = null,
 ) {
     for (context in LotteryContext.entries) {
         val pattern = AppDestination.lotteryDetailPattern(context)
@@ -130,33 +133,60 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
             route = pattern,
             arguments = listOf(navArgument("lotteryId") {}),
         ) {
-            composable("$pattern/overview") { entry ->
-                val parent = remember(entry) { controller.getBackStackEntry(pattern) }
-                val id = requireNotNull(parent.arguments?.getString("lotteryId"))
-                val model: LotteryDetailViewModel =
-                    viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
-                LotteryDetailRoute(
-                    model,
-                    { controller.popBackStack(pattern, inclusive = true) },
-                    {
-                        controller.navigate(AppDestination.lotterySetupGraph(id)) {
-                            launchSingleTop =
-                                true
-                        }
-                    },
-                    onReservation = if (context == LotteryContext.ENTRANT) onReservation else null,
-                    onParticipants =
-                        if (context == LotteryContext.OWNER) {
-                            {
-                                controller.navigate(AppDestination.lotteryParticipants(id)) {
-                                    launchSingleTop =
-                                        true
-                                }
+            for (section in LotteryDetailSection.entries) {
+                composable("$pattern/${section.routeKey}") { entry ->
+                    val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                    val id = requireNotNull(parent.arguments?.getString("lotteryId"))
+                    val model: LotteryDetailViewModel =
+                        viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
+                    LotteryDetailRoute(
+                        model,
+                        {
+                            if (section == LotteryDetailSection.OVERVIEW) {
+                                controller.popBackStack(pattern, inclusive = true)
+                            } else {
+                                controller.popBackStack()
                             }
-                        } else {
-                            null
                         },
-                )
+                        {
+                            controller.navigate(AppDestination.lotterySetupGraph(id)) {
+                                launchSingleTop =
+                                    true
+                            }
+                        },
+                        onReservation =
+                            if (context ==
+                                LotteryContext.ENTRANT
+                            ) {
+                                onReservation
+                            } else {
+                                null
+                            },
+                        onParticipants =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(AppDestination.lotteryParticipants(id)) {
+                                        launchSingleTop =
+                                            true
+                                    }
+                                }
+                            } else {
+                                null
+                            },
+                        section = section,
+                        onOpenSection = { selected ->
+                            controller.navigate(
+                                AppDestination.lotterySection(id, context, selected),
+                            ) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onCampsite =
+                            onCampsite?.let { open ->
+                                { campsiteId -> open(campsiteId, context) }
+                            },
+                    )
+                }
             }
             if (context == LotteryContext.OWNER) {
                 composable("$pattern/participants") { entry ->

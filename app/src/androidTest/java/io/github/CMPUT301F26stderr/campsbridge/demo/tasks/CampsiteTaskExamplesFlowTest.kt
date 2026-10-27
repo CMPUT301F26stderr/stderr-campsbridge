@@ -1,0 +1,45 @@
+package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
+
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
+import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso.pressBack
+import org.junit.Rule
+import org.junit.Test
+
+/** Exercises the two B2 task entry points without onboarding, Firebase, or peer helpers. */
+class CampsiteTaskExamplesFlowTest {
+    @get:Rule val compose = createEmptyComposeRule()
+
+    /** The actual editor shows the known month and protects the booked fixture. */
+    @Test fun availabilityExampleUsesKnownCalendarAndProtectsBookedNight() {
+        ActivityScenario.launch(TaskExamplesActivity::class.java).use {
+            compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H03"))
+            compose.onNodeWithTag("H03").performClick()
+            compose.onNodeWithText("May 2027").assertIsDisplayed()
+            compose.onNodeWithTag("calendar-date-2027-05-13").performScrollTo().assertIsNotEnabled()
+        }
+    }
+
+    /** The real owner inventory keeps its original records visible and returns to the catalogue. */
+    @Test fun orderingExampleShowsActualRowsWithConnectedOrdering() {
+        ActivityScenario.launch(TaskExamplesActivity::class.java).use {
+            compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H04"))
+            compose.onNodeWithTag("H04").performClick()
+            compose
+                .onNodeWithText(
+                    "Alphabetical ordering is pending in this build.",
+                ).assertDoesNotExist()
+            compose.onNodeWithText("River Camp").performScrollTo().assertIsDisplayed()
+            pressBack()
+            compose.onNodeWithText("Task examples").assertIsDisplayed()
+        }
+    }
+}

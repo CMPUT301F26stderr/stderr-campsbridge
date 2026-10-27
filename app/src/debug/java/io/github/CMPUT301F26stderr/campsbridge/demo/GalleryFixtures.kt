@@ -10,12 +10,13 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
+import io.github.CMPUT301F26stderr.campsbridge.platform.assets.SceneryPhoto
 import java.time.Instant
 import java.time.LocalDate
 
 internal val GalleryDate: LocalDate = LocalDate.of(2027, 5, 14)
 internal val GalleryInstant: Instant = Instant.parse("2027-04-14T15:00:00Z")
-internal const val GALLERY_PHOTO = "file:///android_asset/gallery_campsite.jpg"
+internal val GALLERY_PHOTO = SceneryPhoto.JASPER.reference
 
 /** Builds one realistic listing without SDK or repository initialization.
  * @param name Localized example name.

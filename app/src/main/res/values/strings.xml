@@ -59,8 +59,13 @@
     <string name="calendar_next_month">Next month</string>
     <string name="calendar_available">Available</string>
     <string name="calendar_unavailable">Unavailable</string>
+    <string name="calendar_offered">Offered</string>
+    <string name="calendar_not_offered">Not offered</string>
     <string name="calendar_occupied">Occupied</string>
     <string name="calendar_available_mark">○</string>
+    <string name="calendar_selected_mark">✓</string>
+    <string name="calendar_selected_inventory_mark">%1$s %2$s</string>
+    <string name="calendar_selected_legend">✓ Selected</string>
     <string name="calendar_unavailable_mark">–</string>
     <string name="calendar_occupied_mark">×</string>
 </resources>

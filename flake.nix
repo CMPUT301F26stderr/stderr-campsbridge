@@ -120,7 +120,11 @@
       # Build with the normal SDK; boot a pinned API 35 device separately.
       ui = pkgs.mkShell {
         inputsFrom = [default];
-        packages = [androidUi.androidsdk];
+        packages = [
+          androidUi.androidsdk
+          (pkgs.python3.withPackages (ps: [ps.pillow]))
+          pkgs.slirp4netns
+        ];
         ANDROID_HOME = sdk;
         ANDROID_UI_HOME = "${androidUi.androidsdk}/libexec/android-sdk";
         JAVA_HOME = pkgs.jdk25.home;

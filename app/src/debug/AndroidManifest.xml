@@ -11,6 +11,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".demo.DemoActivity" android:exported="true" />
+        <activity android:name=".demo.tasks.TaskExamplesActivity" android:exported="true" />
         <activity android:name=".demo.OnboardingPreviewActivity" android:exported="true" />
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -1,0 +1,24 @@
+<resources>
+    <string name="credits_title">Credits and licenses</string>
+    <string name="credits_libraries">Library licenses</string>
+    <string name="credits_additional_libraries">Additional library notices</string>
+    <string name="credits_photos">Photography</string>
+    <string name="credits_photos_body">Scenery photos from Unsplash illustrate the app and prototype. Images may be cropped to fit the screen.</string>
+    <string name="credits_photo_by">Photo by %1$s on Unsplash</string>
+    <string name="credits_photo_source">View photo: %1$s</string>
+    <string name="credits_photographer">Photographer profile</string>
+    <string name="credits_font">Inter typeface</string>
+    <string name="credits_font_body">Inter Project authors. Licensed under the SIL Open Font License 1.1.</string>
+    <string name="credits_font_license">Inter font license</string>
+    <string name="credits_font_source">Inter project</string>
+    <string name="credits_java">Java API support</string>
+    <string name="credits_java_body">desugar_jdk_libs provides Java APIs on supported Android versions. Licensed under GPL version 2 with the Classpath Exception.</string>
+    <string name="credits_java_license">Java API support license</string>
+    <string name="credits_java_source">desugar_jdk_libs project</string>
+    <string name="credits_services">Google services</string>
+    <string name="credits_services_body">Google Maps SDK and Firebase Authentication use Google SDK terms. Their services also have service-specific terms. Open-source dependency notices are listed under Library licenses.</string>
+    <string name="credits_sdk_terms">Android SDK terms</string>
+    <string name="credits_maps_terms">Google Maps Platform terms</string>
+    <string name="credits_firebase_terms">Firebase terms</string>
+    <string name="welcome_scenery">Mountain lake in Jasper, Alberta</string>
+</resources>

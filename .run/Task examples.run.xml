@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Task examples" type="AndroidRunConfigurationType" factoryName="Android App">
+    <module name="stderr-campsbridge.app" />
+    <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+    <option name="DEPLOY" value="true" />
+    <option name="MODE" value="specific_activity" />
+    <option name="ACTIVITY_CLASS" value="io.github.CMPUT301F26stderr.campsbridge.demo.tasks.TaskExamplesActivity" />
+    <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+    <method v="2">
+      <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

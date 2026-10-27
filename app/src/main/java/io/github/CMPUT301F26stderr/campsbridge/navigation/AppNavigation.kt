@@ -161,12 +161,27 @@ fun AppNavigation(
             inboxFactory,
         )
         reservationGraph(controller, reservationDetailFactory)
-        lotteryDetailGraph(controller, lotteryDetailFactory) { id ->
+        lotteryDetailGraph(controller, lotteryDetailFactory, onReservation = { id ->
             controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
+                launchSingleTop = true
+            }
+        }, onCampsite = { campsiteId, context ->
+            val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
+            val presentation =
+                if (context ==
+                    LotteryContext.OWNER
+                ) {
+                    CampsiteDetailContext.PREVIEW
+                } else {
+                    CampsiteDetailContext.VIEW
+                }
+            controller.navigate(
+                "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
+            ) {
                 launchSingleTop =
                     true
             }
-        }
+        })
         lotteryListGraph(
             controller,
             state,
