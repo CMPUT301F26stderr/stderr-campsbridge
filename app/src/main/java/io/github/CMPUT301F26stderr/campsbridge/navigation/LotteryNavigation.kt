@@ -117,11 +117,13 @@ internal fun NavGraphBuilder.lotteryListGraph(
 /** Registers context-qualified overview, schedule, allocation and owner participant children.
  * @param controller Current account's navigation host.
  * @param factory Dependencies keyed by actual saved ID and explicit caller context.
+ * @param onReservation Actual saved consuming reservation, absent in isolated hosts.
  * @param onCampsite Actual saved campsite calendar, absent in isolated hosts.
  */
 internal fun NavGraphBuilder.lotteryDetailGraph(
     controller: NavHostController,
     factory: (String, LotteryContext) -> ViewModelProvider.Factory,
+    onReservation: ((String) -> Unit)? = null,
     onCampsite: ((String, LotteryContext) -> Unit)? = null,
 ) {
     for (context in LotteryContext.entries) {
@@ -152,6 +154,14 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                                     true
                             }
                         },
+                        onReservation =
+                            if (context ==
+                                LotteryContext.ENTRANT
+                            ) {
+                                onReservation
+                            } else {
+                                null
+                            },
                         onParticipants =
                             if (context == LotteryContext.OWNER) {
                                 {

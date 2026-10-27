@@ -16,10 +16,13 @@ class FakeBookingRepository(
     initial: List<Reservation> = emptyList(),
 ) : BookingRepository {
     val records = MutableStateFlow(initial)
+    val getRequests = mutableListOf<String>()
+    var getHandler: (suspend (String) -> Reservation?)? = null
     val entrantFailure = MutableStateFlow<Exception?>(null)
     val entrantRequests = mutableListOf<String>()
     val opportunityRequests = mutableListOf<Pair<String, String>>()
     var opportunityHandler: (suspend (String, String) -> Reservation?)? = null
+    var observeHandler: ((String) -> Flow<Reservation?>)? = null
     val recordFailure = MutableStateFlow<Exception?>(null)
     val observedRecordIds = mutableListOf<String>()
     var activeRecordObservers = 0
@@ -44,11 +47,14 @@ class FakeBookingRepository(
             }
         }
 
-    /** Rejects unconfigured single-record reads.
+    /** Reads controlled complete saved facts, including confirmed absence.
      * @param id Requested target.
      */
-    override suspend fun get(id: String): Reservation? =
-        unsupported()
+    override suspend fun get(id: String): Reservation? {
+        getRequests.add(id)
+        val handler = getHandler
+        return if (handler != null) handler(id) else records.value.firstOrNull { it.id == id }
+    }
 
     /** Reads exact controlled opportunity facts without deriving a persistence key in UI.
      * @param lotteryId Requested lottery.
@@ -75,6 +81,11 @@ class FakeBookingRepository(
             observedRecordIds.add(id)
             activeRecordObservers++
             try {
+                val handler = observeHandler
+                if (handler != null) {
+                    handler(id).collect { emit(it) }
+                    return@flow
+                }
                 combine(records, recordFailure) { rows, failure ->
                     failure?.let { throw it }
                     rows.firstOrNull { it.id == id }

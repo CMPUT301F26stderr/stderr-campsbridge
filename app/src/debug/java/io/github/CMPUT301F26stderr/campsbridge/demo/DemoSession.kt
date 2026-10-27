@@ -10,6 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.di.AppRepositories
 import io.github.CMPUT301F26stderr.campsbridge.di.AppServices
@@ -131,6 +132,7 @@ private class DemoRepositories(
     override val images = DemoImageRepository(directory)
     override val lotteries = DemoLotteryRepository()
     override val bookings = DemoBookingRepository()
+    override val notifications = DemoNotificationRepository()
     override val reviews = DemoReviewRepository()
     override val campsites =
         DemoCampsiteRepository(

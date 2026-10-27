@@ -16,6 +16,7 @@ import io.github.CMPUT301F26stderr.campsbridge.navigation.OnboardingNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.SessionNavigationOwner
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
 /**
@@ -31,6 +32,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param lotterySetupFactory Factory for this owner's new/saved lottery setup graph.
  * @param lotteryDetailFactory Factory for this owner's saved lottery overview.
  * @param lotteryListFactory Factory for the owner's primary or campsite-filtered list.
+ * @param reservationDetailFactory Factory for a saved aggregate, keyed by account/ID/context.
+ * @param inboxFactory Factory for the ready account receipt owner, independent of workspace.
  */
 @Composable
 fun AppRoot(
@@ -45,6 +48,8 @@ fun AppRoot(
     lotterySetupFactory: (String, String?) -> ViewModelProvider.Factory,
     lotteryDetailFactory: (String, String, LotteryContext) -> ViewModelProvider.Factory,
     lotteryListFactory: (String, LotteryContext, String?) -> ViewModelProvider.Factory,
+    reservationDetailFactory: (String, String, ReservationContext) -> ViewModelProvider.Factory,
+    inboxFactory: (String) -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -118,6 +123,13 @@ fun AppRoot(
                                 { context, campsiteId ->
                                     lotteryListFactory(session.account.id, context, campsiteId)
                                 },
+                                {
+                                    id,
+                                    context,
+                                    ->
+                                    reservationDetailFactory(session.account.id, id, context)
+                                },
+                                inboxFactory(session.account.id),
                             )
                         }
                     }
