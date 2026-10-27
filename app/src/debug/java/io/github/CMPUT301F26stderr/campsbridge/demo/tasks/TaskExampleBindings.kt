@@ -8,6 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesB
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 
 /** Real B1 parser ports; each handoff connects only its own functions.
  * @param parseName F01 display-name implementation.
@@ -50,4 +51,4 @@ data class TaskExampleBindings(
 
 /** Connects reviewed task functions in isolated handoffs; shared defaults remain pending. */
 fun taskExampleBindings(): TaskExampleBindings =
-    TaskExampleBindings(orderCampsites = ::sortCampsitesByName)
+    TaskExampleBindings(parseName = ::parseDisplayName, orderCampsites = ::sortCampsitesByName)

@@ -19,6 +19,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -127,11 +128,11 @@ fun profileViewModelFactory(
                 services.repositories.accounts,
                 services.repositories.images,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
                 parseEmail = null,
                 parsePhone = null,
             )
-            // Connect reviewed F01/F02 functions here; keep dependent saves pending until then.
+            // F02 contacts remain independently pending.
         }
     }
 
@@ -150,9 +151,9 @@ fun onboardingViewModelFactory(
                 services.repositories.accounts,
                 services.preferences,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
             )
-            // Connect ::parseDisplayName here after the reserved task passes review.
+            // F01 handoff uses the same function as the personal-details editor.
         }
     }
 
