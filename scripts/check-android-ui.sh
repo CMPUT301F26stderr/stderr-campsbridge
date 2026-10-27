@@ -6,6 +6,7 @@ cd "$repo_root"
 
 ui_work=""
 ui_pid=""
+ui_private_adb=false
 cleanup() {
     local ui_status=$?
     if [[ "$ui_status" -ne 0 && -n "$ui_work" && -f "$ui_work/emulator.log" ]]; then
@@ -14,6 +15,9 @@ cleanup() {
     if [[ -n "$ui_pid" ]]; then
         kill "$ui_pid" 2>/dev/null || true
         wait "$ui_pid" 2>/dev/null || true
+    fi
+    if [[ "$ui_private_adb" == true ]]; then
+        adb kill-server 2>/dev/null || true
     fi
     if [[ -n "$ui_work" ]]; then
         rm -rf -- "$ui_work"
@@ -28,6 +32,9 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
     if [[ ! -r /dev/kvm || ! -w /dev/kvm ]]; then
         echo 'A disposable Android test device requires readable/writable /dev/kvm.' >&2
         exit 1
+    fi
+    if [[ -z "${CAMPSBRIDGE_UI_PORT:-}" ]]; then
+        exec python3 scripts/run-test-emulators.py android "$@"
     fi
     # Compile before first boot so package/setup work does not contend with Kotlin and dexing.
     bash ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
@@ -45,24 +52,12 @@ if [[ -z "${ANDROID_SERIAL:-}" ]]; then
         cat "$ui_work/avd.log" >&2
         exit 1
     fi
-    ui_port="$(python3 - <<'PY'
-import socket
-for port in range(5580, 5680, 2):
-    try:
-        with socket.socket() as first, socket.socket() as second:
-            first.bind(('127.0.0.1', port))
-            second.bind(('127.0.0.1', port + 1))
-        print(port)
-        break
-    except OSError:
-        continue
-else:
-    raise SystemExit('No free emulator port pair')
-PY
-)"
+    ui_port="$CAMPSBRIDGE_UI_PORT"
+    ui_private_adb=true
+    adb start-server
     export ANDROID_SERIAL="emulator-$ui_port"
     ANDROID_HOME="$ANDROID_UI_HOME" ANDROID_SDK_ROOT="$ANDROID_UI_HOME" \
-        "$ANDROID_UI_HOME/emulator/emulator" -avd campsbridge-tests -port "$ui_port" \
+        "$ANDROID_UI_HOME/emulator/emulator" -avd campsbridge-tests -port "$ui_port" -grpc "$CAMPSBRIDGE_UI_GRPC_PORT" \
         -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -accel on \
         > "$ui_work/emulator.log" 2>&1 &
     ui_pid=$!

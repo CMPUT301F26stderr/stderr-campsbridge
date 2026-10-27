@@ -38,7 +38,7 @@ Run the real rules and Kotlin repository contracts with:
 bash scripts/check-firebase.sh
 ```
 
-The command installs pinned Node test dependencies, starts disposable Auth/Firestore/Storage services for `demo-stderr`, runs both suites, and shuts down the services. It does not import or export persistent data. Kotlin tests reset Firestore and Storage between scenarios and use an authenticated Robolectric host with real SDK clients. No Android virtual device is required. CI requires this suite in the `Firebase contracts` job.
+The command installs pinned Node test dependencies, starts disposable Auth/Firestore/Storage services for `demo-stderr`, runs both suites, and shuts down the services. Each invocation reserves random available loopback ports for the services, Firestore websocket, hub and logging; Kotlin and rules tests use the addresses exported by the CLI. Temporary configuration and hub files are isolated per run so self-hosted runners can share a VM. The checked-in configuration keeps the usual ports for manual development. The command does not import or export persistent data. Kotlin tests reset Firestore and Storage between scenarios and use an authenticated Robolectric host with real SDK clients. No Android virtual device is required. CI requires this suite in the `Firebase contracts` job.
 
 Pending work:
 
