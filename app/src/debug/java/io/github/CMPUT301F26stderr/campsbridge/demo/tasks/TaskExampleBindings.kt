@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
@@ -35,4 +36,4 @@ data class TaskExampleBindings(
 
 /** Connects reviewed task functions in isolated handoffs; shared defaults remain pending. */
 fun taskExampleBindings(): TaskExampleBindings =
-    TaskExampleBindings(parseName = ::parseDisplayName)
+    TaskExampleBindings(parseName = ::parseDisplayName, orderCampsites = ::sortCampsitesByName)

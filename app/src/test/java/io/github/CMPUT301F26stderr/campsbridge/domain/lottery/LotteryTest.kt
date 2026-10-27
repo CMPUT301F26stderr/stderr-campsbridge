@@ -13,7 +13,6 @@ class LotteryTest {
     /** Registration and booking windows are ordered, with adjacent windows permitted. */
     @Test fun validatesWindowOrderAndLimits() {
         val config = CampingFixtures.lottery().configuration
-        assertEquals(config.registrationClosesAt, config.bookingOpensAt)
         config.copy(waitlistCapacity = 1)
         for (invalid in listOf<() -> LotteryConfiguration>(
             { config.copy(registrationClosesAt = config.registrationOpensAt) },

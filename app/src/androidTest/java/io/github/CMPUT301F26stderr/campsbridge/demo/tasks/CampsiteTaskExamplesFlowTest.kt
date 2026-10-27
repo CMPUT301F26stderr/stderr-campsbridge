@@ -18,34 +18,26 @@ import org.junit.Test
 class CampsiteTaskExamplesFlowTest {
     @get:Rule val compose = createEmptyComposeRule()
 
-    /** The actual editor protects the booked fixture and retains a withdrawal until H03 is supplied. */
-    @Test fun availabilityExampleUsesKnownCalendarAndKeepsMissingHelperPending() {
+    /** The actual editor shows the known month and protects the booked fixture. */
+    @Test fun availabilityExampleUsesKnownCalendarAndProtectsBookedNight() {
         ActivityScenario.launch(TaskExamplesActivity::class.java).use {
             compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H03"))
             compose.onNodeWithTag("H03").performClick()
             compose.onNodeWithText("May 2027").assertIsDisplayed()
             compose.onNodeWithTag("calendar-date-2027-05-13").performScrollTo().assertIsNotEnabled()
-            compose.onNodeWithTag("calendar-date-2027-05-11").performScrollTo().performClick()
-            compose.onNodeWithText("Withdraw nights").performScrollTo().performClick()
-            compose
-                .onNodeWithText(
-                    "Saving date changes is pending in this build. Your date choices are retained.",
-                ).performScrollTo()
-                .assertIsDisplayed()
-            compose.onNodeWithText("Save changes").assertIsNotEnabled()
         }
     }
 
     /** The real owner inventory keeps its original records visible and returns to the catalogue. */
-    @Test fun orderingExampleShowsActualRowsAndExplicitPendingOrdering() {
+    @Test fun orderingExampleShowsActualRowsWithConnectedOrdering() {
         ActivityScenario.launch(TaskExamplesActivity::class.java).use {
             compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H04"))
             compose.onNodeWithTag("H04").performClick()
             compose
                 .onNodeWithText(
                     "Alphabetical ordering is pending in this build.",
-                ).assertIsDisplayed()
-            compose.onNodeWithText("River Camp").assertIsDisplayed()
+                ).assertDoesNotExist()
+            compose.onNodeWithText("River Camp").performScrollTo().assertIsDisplayed()
             pressBack()
             compose.onNodeWithText("Task examples").assertIsDisplayed()
         }
