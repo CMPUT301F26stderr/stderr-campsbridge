@@ -1,10 +1,10 @@
 # F13: Validate lottery schedule ordering
 
-This is an intentionally unfinished handoff. Its function stub compiles and its contract tests fail until the reserved body is implemented. Application binding and coverage configuration are already prepared on this branch.
+H07 implements this contract in `validateLotteryWindows`. Production lottery setup and the debug H07 example call the same function; its supplied tests and coverage gate verify the behavior below.
 
-## Your task
+## Contract
 
-Edit only the body and KDoc of `validateLotteryWindows` in `LotteryWindowInput.kt`. Keep its signature, package and supplied result types unchanged. Do not edit tests, factories, Gradle configuration or another feature's helper.
+`validateLotteryWindows` lives in `LotteryWindowInput.kt` and uses the supplied `LotteryWindowInput` result types. It is a pure ordering rule; persistence and publication checks belong to their existing owners.
 
 The function receives four `Instant` values: registration opening, registration closing, booking opening and booking closing. Return the first matching result in this order:
 
@@ -26,14 +26,6 @@ Examples, written as second offsets from any fixed Instant:
 | 0 / 10 | 5 / 0 | BookingBeforeRegistrationClose |
 | 0 / 10 | 20 / 20 | InvalidBooking |
 
-## Suggested steps
-
-1. Read the supplied result types, function stub and `LotteryWindowInputTest` cases.
-2. Run the focused contracts below and observe their assertion failures.
-3. Read the completed `parsePositiveCount` in `ui/common/input/PositiveCountInput.kt` as an example of explicit input and feedback. No parsing is needed here.
-4. Implement only the assigned body and update its KDoc to describe the completed behavior.
-5. Rerun the contracts, then the prepared coverage gate.
-
 ## Checks
 
 Focused contracts:
@@ -42,20 +34,20 @@ Focused contracts:
 bash ./gradlew :app:testDebugUnitTest --tests '*LotteryWindowInputTest'
 ```
 
-Prepared coverage gate:
+Full unit suite and coverage gate:
 
 ```sh
 bash ./gradlew :app:testDebugUnitTest :app:pureLogicCoverage
 ```
 
-## App connection and acceptance
+## App connection
 
-`LotterySetupViewModel` accepts this function as `validateWindows`. It first requires explicit local date/time fields, converts through the existing site-zone/DST helper and confirms any changed-zone interpretation. Only then does it invoke this four-Instant contract. This branch connects `::validateLotteryWindows` in `lotterySetupViewModelFactory`; the shared application branch keeps that dependency null until review and has no substitute ordering function.
+`lotterySetupViewModelFactory` supplies `::validateLotteryWindows` to `LotterySetupViewModel` as `validateWindows`. The ViewModel first requires explicit local date/time fields, converts through the existing site-zone/DST helper and confirms any changed-zone interpretation. Only then does it invoke this four-Instant contract. An explicitly null validator remains available for pending-dependency scenarios; production uses the completed function.
 
-The exercise is ready for review when the focused tests and measured 100% executable source-line/source-branch coverage pass and your diff changes only the permitted body/KDoc. Submit the task branch for lead review. The lead verifies actual factory/controller integration. Completing this helper does not implement lottery persistence, publication recovery or participant filtering.
+The coverage gate requires 100% executable source-line/source-branch coverage for this helper. Lottery persistence, publication recovery and participant filtering remain separate responsibilities.
 
 ## Android Studio and local example
 
-Update your personal branch from main, then merge the prepared handoff named in the issue. In Android Studio, open `LotteryWindowInputTest` and run it using the green gutter triangle before editing. The supplied stub intentionally fails its contracts. Implement only the assigned body and KDoc, then rerun that class and the full unit/coverage command above. On Windows use `gradlew.bat`.
+In Android Studio, open `LotteryWindowInputTest` and run it using the green gutter triangle. All supplied cases should pass. The full unit/coverage command above checks the complete measured suite. On Windows use `gradlew.bat`.
 
-Select the debug variant, run app and open **Demo tools → Task examples → H07**. Both production and this local example use the same assigned function; no factory, Firebase or ADB setup is required. Before implementation, the compiling placeholder returns InvalidRegistration for every selection. After implementation: Try Valid, Registration reversed, Booking overlaps and Booking reversed. Compare the actual result with the expected result shown below the supplied instants. This view does not save or publish. Reset example restores the local records.
+Select the debug variant, run app and open **Demo tools → Task examples → H07**. Both production and this local example use the same function; no factory, Firebase or ADB setup is required. Try Valid, Registration reversed, Booking overlaps and Booking reversed. Compare the actual result with the expected result shown below the supplied instants. This view does not save or publish. Reset example restores the local records.
