@@ -331,7 +331,8 @@ test('published-site image upload works with two cross-service document reads', 
   await assertSucceeds(deleteObject(object));
 });
 test('offer mutation needs owner scope and the matching revision update', async () => {
-  await seed({ 'lotteries/future': { ...lottery('open'), registrationOpensAt: offset(1800), registrationClosesAt: offset(3600) } });
+  const registrationClosesAt = offset(3600);
+  await seed({ 'lotteries/future': { ...lottery('open'), registrationOpensAt: offset(1800), registrationClosesAt, bookingOpensAt: registrationClosesAt } });
   const database = db('owner');
   await assertFails(setDoc(doc(database, 'lotteries/future/offers/site'), { campsiteId: 'site', nights: ['2027-05-15'] }));
   const b = writeBatch(database);

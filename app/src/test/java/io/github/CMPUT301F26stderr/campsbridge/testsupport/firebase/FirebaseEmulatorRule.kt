@@ -74,19 +74,19 @@ data class EmulatorActor(
 class FirebaseEmulatorRule : ExternalResource() {
     val projectId = "demo-stderr"
     val clock = TestClock()
+    val firestoreEndpoint = localEmulatorEndpoint("FIRESTORE_EMULATOR_HOST")
+    val authEndpoint = localEmulatorEndpoint("FIREBASE_AUTH_EMULATOR_HOST")
+    val storageEndpoint = localEmulatorEndpoint("FIREBASE_STORAGE_EMULATOR_HOST")
     private val actors = mutableListOf<EmulatorActor>()
     private var storageTransport: AutoCloseable? = null
     private val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()
 
     /** Refuses missing emulator configuration and clears persisted state before the scenario. */
     override fun before() {
-        check(System.getenv("FIRESTORE_EMULATOR_HOST") == "127.0.0.1:8080") {
-            "Run with scripts/check-firebase.sh; repository tests require local emulators."
-        }
-        storageTransport = installStorageHttpTransport()
-        request("http://127.0.0.1:9199/internal/reset", "POST")
+        storageTransport = installStorageHttpTransport(storageEndpoint)
+        request("$storageEndpoint/internal/reset", "POST")
         request(
-            "http://127.0.0.1:8080/emulator/v1/projects/$projectId/databases/(default)/documents",
+            "$firestoreEndpoint/emulator/v1/projects/$projectId/databases/(default)/documents",
             "DELETE",
         )
         clock.current = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS)
@@ -133,9 +133,15 @@ class FirebaseEmulatorRule : ExternalResource() {
                 .build()
         val app = FirebaseApp.initializeApp(application, options, instanceId)
         val auth = FirebaseAuth.getInstance(app)
-        auth.useEmulator("127.0.0.1", 9099)
+        auth.useEmulator(authEndpoint.host, authEndpoint.port)
         val id = checkNotNull(auth.signInAnonymously().await().user).uid
-        val clients = FirebaseClients.forEmulators(app, "127.0.0.1")
+        val clients =
+            FirebaseClients.forEmulators(
+                app,
+                firestoreEndpoint.host,
+                firestorePort = firestoreEndpoint.port,
+                storagePort = storageEndpoint.port,
+            )
         clients.firestore.firestoreSettings =
             FirebaseFirestoreSettings
                 .Builder(clients.firestore.firestoreSettings)
@@ -165,7 +171,15 @@ class FirebaseEmulatorRule : ExternalResource() {
         contentType: String = "application/json",
     ): String? {
         val uri = URI(url)
-        require(uri.host == "127.0.0.1" && uri.port in setOf(8080, 9099, 9199))
+        require(
+            uri.scheme == "http" &&
+                uri.rawAuthority in
+                setOf(
+                    firestoreEndpoint.rawAuthority,
+                    authEndpoint.rawAuthority,
+                    storageEndpoint.rawAuthority,
+                ),
+        )
         val request =
             HttpRequest
                 .newBuilder(uri)
@@ -183,5 +197,25 @@ class FirebaseEmulatorRule : ExternalResource() {
             "Emulator $method failed (${response.statusCode()}): ${response.body()}"
         }
         return response.body()
+    }
+}
+
+/**
+ * Reads the CLI-selected loopback service address and refuses cloud endpoints.
+ * @param variable Standard Firebase emulator environment variable.
+ * @return Local HTTP base URI with the run's assigned port.
+ */
+private fun localEmulatorEndpoint(variable: String): URI {
+    val address =
+        checkNotNull(System.getenv(variable)) {
+            "Run scripts/check-firebase.sh; $variable is required for local repository tests."
+        }
+    return URI("http://$address").also { endpoint ->
+        require(
+            endpoint.host == "127.0.0.1" && endpoint.port in 1..65535 &&
+                endpoint.rawAuthority == address,
+        ) {
+            "$variable must address a local emulator."
+        }
     }
 }

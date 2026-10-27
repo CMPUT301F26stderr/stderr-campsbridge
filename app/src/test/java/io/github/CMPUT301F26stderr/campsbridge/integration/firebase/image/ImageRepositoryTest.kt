@@ -111,7 +111,7 @@ class ImageRepositoryTest {
             assertTrue(
                 owner.container.images
                     .downloadUrl(current.blobId)
-                    .contains("127.0.0.1:9199"),
+                    .contains(firebase.storageEndpoint.rawAuthority),
             )
             admin.container.maintenance.resume(admin.id)
             assertFalse(blobExists(old.blobId))
@@ -172,7 +172,8 @@ class ImageRepositoryTest {
             assertTrue(firebase.documentExists("_imageUploads/late"))
             // Arrange bytes that an already-started transport delivered after abandonment.
             firebase.request(
-                "http://127.0.0.1:9199/upload/storage/v1/b/${firebase.projectId}.appspot.com/o" +
+                "${firebase.storageEndpoint}/upload/storage/v1/b/" +
+                    "${firebase.projectId}.appspot.com/o" +
                     "?uploadType=media&name=images%2Flate%2Foriginal",
                 "POST",
                 "late-image",
@@ -338,7 +339,7 @@ class ImageRepositoryTest {
      */
     private fun blobExists(blobId: String): Boolean =
         firebase.request(
-            "http://127.0.0.1:9199/storage/v1/b/${firebase.projectId}.appspot.com/o/images%2F$blobId%2Foriginal",
+            "${firebase.storageEndpoint}/storage/v1/b/${firebase.projectId}.appspot.com/o/images%2F$blobId%2Foriginal",
         ) != null
 
     /**

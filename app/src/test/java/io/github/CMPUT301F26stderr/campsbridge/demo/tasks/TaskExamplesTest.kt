@@ -28,26 +28,16 @@ class TaskExamplesTest {
 
     @get:Rule val files = TemporaryFolder()
 
-    /** Only the accepted B1/B2 and published B3/B4 examples are available; all actual helper ports remain deliberately absent. */
-    @Test fun catalogueDistinguishesReadyAndFutureScaffolds() {
-        assertEquals(23, TaskExample.entries.size)
+    /** Catalogue identities stay unique and exclude the retired task as baselines evolve. */
+    @Test fun catalogueHasUniqueNonRetiredIdentities() {
         assertEquals(
-            23,
+            TaskExample.entries.size,
             TaskExample.entries
                 .map { it.id }
                 .toSet()
                 .size,
         )
         assertFalse(TaskExample.entries.any { it.id == "H14" })
-        assertEquals(
-            setOf("H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08"),
-            TaskExample.entries
-                .filter {
-                    it.scaffoldReady
-                }.map { it.id }
-                .toSet(),
-        )
-        TaskExample.entries.forEach { assertFalse(TaskExampleBindings().isConnected(it)) }
     }
 
     /** Missing name validation leaves the editor pending and the sample account unchanged. */

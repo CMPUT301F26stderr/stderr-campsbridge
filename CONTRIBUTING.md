@@ -77,7 +77,7 @@ Start an emulator in Android Studio and run the relevant tests under `app/src/an
 ANDROID_SERIAL=emulator-5554 bash scripts/check-android-ui.sh
 ```
 
-Replace `emulator-5554` with the device's serial from `adb devices`. Windows commands and Firebase tool prerequisites are in [Testing and demo](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo). The script fails if no tests execute or any test is skipped. Content tests do not require Firebase or production bootstrap.
+Replace `emulator-5554` with the device's serial from `adb devices`. Windows commands and Firebase tool prerequisites are in [Testing and demo](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo). The script fails if no tests execute or any test is skipped. Content tests do not require Firebase or production bootstrap. On the NixOS runners, omitting `ANDROID_SERIAL` creates a disposable AVD with randomly reserved console/device-ADB and gRPC ports. Each job targets its explicit device serial through the standard shared ADB server; cleanup stops only that run's emulator.
 
 ## Done means
 

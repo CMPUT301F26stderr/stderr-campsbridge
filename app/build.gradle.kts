@@ -177,6 +177,13 @@ tasks.register<Test>("firebaseIntegrationTest") {
     group = "verification"
     description = "Runs Kotlin repository contracts against the Firebase emulators."
     include("**/integration/firebase/**")
+    listOf(
+        "FIRESTORE_EMULATOR_HOST",
+        "FIREBASE_AUTH_EMULATOR_HOST",
+        "FIREBASE_STORAGE_EMULATOR_HOST",
+    ).forEach { variable ->
+        providers.environmentVariable(variable).orNull?.let { environment(variable, it) }
+    }
     maxParallelForks = 1
     maxHeapSize = "2g"
     outputs.upToDateWhen { false }
