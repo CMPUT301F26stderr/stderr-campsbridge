@@ -11,5 +11,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic
 fun matchesGuestCapacity(
     maxGuests: Long,
     requestedGuests: Long?,
-): Boolean =
-    false
+): Boolean {
+
+    require(maxGuests > 0) { "Capacity must be positive" }
+    return requestedGuests == null || requestedGuests in 1..maxGuests
+}
