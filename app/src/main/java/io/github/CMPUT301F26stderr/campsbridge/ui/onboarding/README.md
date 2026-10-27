@@ -16,9 +16,11 @@ The owner introduction shares informational content with the existing-account Pr
 
 ## Verification
 
+Run ViewModel tests from Android Studio or use the commands below. For device tests, start an Android Studio emulator and replace `emulator-5554` with its serial from `adb devices`. On Windows, use `gradlew.bat` for the unit-test command and run device tests from Android Studio.
+
 ```sh
-nix develop --command bash ./gradlew :app:testDebugUnitTest --tests '*OnboardingViewModelTest'
-nix develop .#ui --command bash scripts/check-android-ui.sh
+bash ./gradlew :app:testDebugUnitTest --tests '*OnboardingViewModelTest'
+ANDROID_SERIAL=emulator-5554 bash scripts/check-android-ui.sh
 ```
 
 ViewModel tests cover branching, profile/completion boundaries, retry identity, optional preferences, restoration, duplicate actions and cancellation. Content tests exercise controlled fields, feedback, native actions and enlarged text. Route tests use the real root/ViewModels with explicit dependency fakes. Activity recreation verifies navigation-owned draft retention. Firebase onboarding tests verify owner activation/completion and entrant preferences through real account repositories.
