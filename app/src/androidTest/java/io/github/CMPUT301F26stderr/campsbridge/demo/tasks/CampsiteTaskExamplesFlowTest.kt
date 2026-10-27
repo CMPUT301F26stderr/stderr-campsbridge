@@ -37,15 +37,15 @@ class CampsiteTaskExamplesFlowTest {
     }
 
     /** The real owner inventory keeps its original records visible and returns to the catalogue. */
-    @Test fun orderingExampleShowsActualRowsAndExplicitPendingOrdering() {
+    @Test fun orderingExampleShowsActualRowsWithConnectedOrdering() {
         ActivityScenario.launch(TaskExamplesActivity::class.java).use {
             compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H04"))
             compose.onNodeWithTag("H04").performClick()
             compose
                 .onNodeWithText(
                     "Alphabetical ordering is pending in this build.",
-                ).assertIsDisplayed()
-            compose.onNodeWithText("River Camp").assertIsDisplayed()
+                ).assertDoesNotExist()
+            compose.onNodeWithText("River Camp").performScrollTo().assertIsDisplayed()
             pressBack()
             compose.onNodeWithText("Task examples").assertIsDisplayed()
         }
