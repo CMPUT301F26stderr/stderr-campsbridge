@@ -281,6 +281,7 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
             "ui/components/calendar/MonthCellsKt.class",
             "ui/profile/logic/DisplayNameInputKt.class",
             "ui/campsites/logic/CampsiteOrderingKt.class",
+            "ui/discovery/logic/CampsiteTextMatchKt.class",
             "ui/lotteries/logic/LotteryWindowInputKt.class",
         ).forEach { path ->
             check(
@@ -306,6 +307,7 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 "**/ui/components/calendar/MonthCellsKt.class",
                 "**/ui/profile/logic/DisplayNameInputKt*.class",
                 "**/ui/campsites/logic/CampsiteOrderingKt*.class",
+                "**/ui/discovery/logic/CampsiteTextMatchKt*.class",
                 "**/ui/lotteries/logic/LotteryWindowInputKt*.class",
             )
         },
