@@ -9,12 +9,9 @@ import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
@@ -45,7 +42,6 @@ class TaskExampleSession(
         )
     private val campsites = TaskCampsiteRepository()
     private val lotteries = TaskLotteryRepository()
-    private val notifications = TaskNotificationRepository()
     private val bookings = DemoBookingRepository()
     private val images = DemoImageRepository(File(directory, UUID.randomUUID().toString()))
     var isClosed = false
@@ -133,66 +129,6 @@ class TaskExampleSession(
                 accounts,
                 SavedStateHandle(),
                 bindings.filterParticipants,
-            )
-        }
-
-    /** Isolates ordering or count while retaining actual event hydration and receipt actions. */
-    fun inbox(): InboxViewModel =
-        model(InboxViewModel::class.java) {
-            InboxViewModel(
-                TaskExampleData.ACCOUNT_ID,
-                notifications,
-                NotificationContentLoader(notifications, lotteries, bookings),
-                sortItems =
-                    if (example ==
-                        TaskExample.INBOX_ORDER
-                    ) {
-                        bindings.orderInbox
-                    } else {
-                        { it -> it }
-                    },
-                countUnread =
-                    if (example ==
-                        TaskExample.UNREAD_COUNT
-                    ) {
-                        bindings.countUnread
-                    } else {
-                        { _ -> 2 }
-                    },
-            )
-        }
-
-    /** Supplies an unused winning opportunity and actual shared date-selection owner. */
-    fun booking(): BookingViewModel =
-        model(BookingViewModel::class.java) {
-            BookingViewModel(
-                TaskExampleData.ACCOUNT_ID,
-                TaskExampleData.lottery.id,
-                TaskExampleData.sites[0].id,
-                lotteries,
-                campsites,
-                bookings,
-                images,
-                TaskExampleData.clock,
-                SavedStateHandle(),
-                bindings.availableNights,
-            )
-        }
-
-    /** Reads the actual saved lottery selected from a local Inbox row.
-     * @param id Referenced saved lottery identity.
-     */
-    fun lottery(id: String): LotteryDetailViewModel =
-        model(LotteryDetailViewModel::class.java, id) {
-            LotteryDetailViewModel(
-                TaskExampleData.ACCOUNT_ID,
-                id,
-                lotteries,
-                campsites,
-                TaskExampleData.clock,
-                bookings,
-                LotteryContext.ENTRANT,
-                accounts,
             )
         }
 
