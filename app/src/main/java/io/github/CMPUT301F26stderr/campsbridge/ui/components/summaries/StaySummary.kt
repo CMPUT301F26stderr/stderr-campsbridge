@@ -2,15 +2,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -43,60 +36,33 @@ fun StaySummary(
     require(checkOut > checkIn && guests > 0)
     val locale = LocalConfiguration.current.locales[0]
     val nights = ChronoUnit.DAYS.between(checkIn, checkOut)
-    OutlinedCard(
-        modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors =
-            CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
+        DetailRow(stringResource(R.string.campsite), name)
+        DetailRow(
+            stringResource(R.string.dates),
+            stringResource(
+                R.string.stay_dates,
+                formatDate(checkIn, locale),
+                formatDate(checkOut, locale),
             ),
-    ) {
-        Column(
-            Modifier.padding(Spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-        ) {
-            Text(name, style = MaterialTheme.typography.titleLarge)
-            DetailRow(
-                stringResource(R.string.dates),
-                stringResource(
-                    R.string.stay_dates,
-                    formatDate(checkIn, locale),
-                    formatDate(checkOut, locale),
-                ),
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.medium)) {
-                DetailRow(
-                    stringResource(R.string.stay),
-                    pluralStringResource(
-                        R.plurals.nights,
-                        nights.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
-                        nights,
-                    ),
-                    Modifier.weight(1f),
-                )
-                DetailRow(
-                    stringResource(R.string.guests),
-                    pluralStringResource(
-                        R.plurals.guests,
-                        guests.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
-                        guests,
-                    ),
-                    Modifier.weight(1f),
-                )
-            }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            FlowRow(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
-            ) {
-                Text(stringResource(R.string.total), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    formatCad(totalCents, locale),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
+        )
+        DetailRow(
+            stringResource(R.string.stay),
+            pluralStringResource(
+                R.plurals.nights,
+                nights.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                nights,
+            ),
+        )
+        DetailRow(
+            stringResource(R.string.guests),
+            pluralStringResource(
+                R.plurals.guests,
+                guests.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                guests,
+            ),
+        )
+        HorizontalDivider()
+        DetailRow(stringResource(R.string.total), formatCad(totalCents, locale))
     }
 }

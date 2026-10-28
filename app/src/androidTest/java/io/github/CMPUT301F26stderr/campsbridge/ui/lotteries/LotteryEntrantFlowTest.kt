@@ -7,7 +7,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.AcceptedTerms
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookedCampsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
@@ -91,34 +90,8 @@ class LotteryEntrantFlowTest {
         compose.onNodeWithText("History").performClick()
         compose.onNodeWithText(parent.title).performClick()
         compose.onNodeWithText("Reservation ${saved.id}").assertIsDisplayed()
-        compose.onNodeWithText("View reservation").performScrollTo().performClick()
-        compose.onNodeWithText(saved.id).assertIsDisplayed()
-        compose.runOnIdle {
-            host.campsites.records.value =
-                listOf(
-                    site.copy(
-                        details =
-                            site.details.copy(
-                                name = "Renamed live campsite",
-                                rules = "New current rules",
-                            ),
-                    ),
-                )
-        }
-        compose.onNodeWithText(saved.bookedCampsite.name).assertIsDisplayed()
-        compose.onNodeWithText("Renamed live campsite").assertDoesNotExist()
-        compose.onNodeWithText("Payment & refund").performScrollTo().performClick()
-        compose.onNodeWithText("Total paid").assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()
-        compose.onNodeWithText("Total paid").assertIsDisplayed()
-        compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithText("Accepted rules & policy").performScrollTo().performClick()
-        compose.onNodeWithText(saved.acceptedTerms.rules).assertIsDisplayed()
-        compose.onNodeWithText("New current rules").assertDoesNotExist()
-        compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Reservation ${saved.id}").assertIsDisplayed()
-        compose.runOnIdle { assertEquals(1, host.reservationDetailCreations) }
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("My lotteries").assertIsDisplayed()
         compose.onNodeWithText("History").assertIsSelected()

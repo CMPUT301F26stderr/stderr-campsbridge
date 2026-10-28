@@ -22,7 +22,6 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityPro
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -32,9 +31,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
@@ -44,8 +41,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
-import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -64,10 +59,6 @@ class TestAppHost : AutoCloseable {
     val lotteryAccounts = FakeAccountRepository()
     val lotteries = FakeLotteryRepository()
     val bookings = FakeBookingRepository()
-    var reservationDetailCreations = 0
-    val reservationDetailRequests = mutableListOf<Pair<String, ReservationContext>>()
-    val notifications = FakeNotificationRepository()
-    var inboxCreations = 0
     var lotteryListCreations = 0
     var lotteryDetailCreations = 0
     val reviews = FakeReviewRepository()
@@ -261,25 +252,6 @@ class TestAppHost : AutoCloseable {
                             Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                             createSavedStateHandle(),
                             campsiteId,
-                        )
-                    }
-                }
-            }, { accountId, id, context ->
-                viewModelFactory {
-                    initializer {
-                        reservationDetailCreations++
-                        reservationDetailRequests.add(id to context)
-                        ReservationDetailViewModel(accountId, id, context, bookings)
-                    }
-                }
-            }, { accountId ->
-                viewModelFactory {
-                    initializer {
-                        inboxCreations++
-                        InboxViewModel(
-                            accountId,
-                            notifications,
-                            NotificationContentLoader(notifications, lotteries, bookings),
                         )
                     }
                 }

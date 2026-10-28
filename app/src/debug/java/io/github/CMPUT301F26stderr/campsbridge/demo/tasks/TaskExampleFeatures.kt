@@ -11,14 +11,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.SearchFiltersRoute
-import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxRoute
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.ParticipantListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsScreen
@@ -94,10 +91,6 @@ internal fun TaskExampleFeature(
                 model::confirmDiscard,
                 discardPrompt = discard,
             )
-        }
-
-        TaskExample.INBOX_ORDER, TaskExample.UNREAD_COUNT -> {
-            InboxTaskExample(session, onBack)
         }
 
         else -> {
@@ -177,27 +170,5 @@ private fun DiscoveryTaskExample(
                 ExploreRoute(model, { filter = true }, { selected = it })
             }
         }
-    }
-}
-
-/** Reads the real saved target and acknowledges its local receipt independently.
- * @param session Current fixed event graph.
- * @param onBack Returns to the catalogue.
- */
-@Composable
-private fun InboxTaskExample(
-    session: TaskExampleSession,
-    onBack: () -> Unit,
-) {
-    var lottery by rememberSaveable { mutableStateOf<String?>(null) }
-    val id = lottery
-    if (id == null) {
-        AppScreen(stringResource(R.string.inbox_title), onBack = onBack) {
-            InboxRoute(session.inbox(), { request ->
-                if (request.subject.type == SubjectType.LOTTERY) lottery = request.subject.id
-            })
-        }
-    } else {
-        LotteryDetailRoute(session.lottery(id), { lottery = null }, { lottery = null })
     }
 }

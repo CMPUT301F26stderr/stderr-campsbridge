@@ -11,11 +11,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import java.time.Clock
 import java.time.Instant
@@ -121,28 +116,4 @@ object TaskExampleData {
                 },
             )
         }
-    val events = listOf(event("task-b", 0), event("task-new", 60), event("task-a", 0))
-    val receipts =
-        listOf(
-            InboxReceipt("task-b", null),
-            InboxReceipt("task-new", null),
-            InboxReceipt("task-a", now),
-        )
-
-    /** Builds a typed event pointing to the supplied saved lottery.
-     * @param id Stable event identity and ordering tie-breaker.
-     * @param offset Seconds after the common fixture event time.
-     */
-    private fun event(
-        id: String,
-        offset: Long,
-    ): Notification =
-        Notification(
-            id,
-            null,
-            NotificationType.LOTTERY_WON,
-            NotificationSubject(SubjectType.LOTTERY, lottery.id),
-            null,
-            now.minusSeconds(3600).plusSeconds(offset),
-        )
 }

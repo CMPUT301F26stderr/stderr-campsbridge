@@ -12,9 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
@@ -23,8 +21,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotter
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
-import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
-import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -277,54 +273,6 @@ fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
                 matchesCapacity = null,
                 sortCampsites = ::sortCampsitesByName,
                 clock = services.clock,
-            )
-        }
-    }
-
-/** Constructs one saved aggregate reader shared by overview, payment and exact accepted terms.
- * @param services Current host's repository interfaces.
- * @param accountId Ready actor identity.
- * @param reservationId Actual saved target.
- * @param context Explicit caller presentation.
- */
-fun reservationDetailViewModelFactory(
-    services: AppServices,
-    accountId: String,
-    reservationId: String,
-    context: ReservationContext,
-): ViewModelProvider.Factory =
-    viewModelFactory {
-        initializer {
-            ReservationDetailViewModel(
-                accountId,
-                reservationId,
-                context,
-                services.repositories.bookings,
-            )
-        }
-    }
-
-/** Constructs the account-root receipt owner; reserved ordering/count remain explicitly pending.
- * @param services Current host's repository interfaces.
- * @param accountId Ready recipient identity, independent of workspace selection.
- */
-fun inboxViewModelFactory(
-    services: AppServices,
-    accountId: String,
-): ViewModelProvider.Factory =
-    viewModelFactory {
-        initializer {
-            val repositories = services.repositories
-            InboxViewModel(
-                accountId,
-                repositories.notifications,
-                NotificationContentLoader(
-                    repositories.notifications,
-                    repositories.lotteries,
-                    repositories.bookings,
-                ),
-                sortItems = null,
-                countUnread = null,
             )
         }
     }
