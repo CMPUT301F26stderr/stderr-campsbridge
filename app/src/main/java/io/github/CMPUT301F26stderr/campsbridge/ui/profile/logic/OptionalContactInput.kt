@@ -13,16 +13,36 @@ sealed interface OptionalContactInput {
     data object Invalid : OptionalContactInput
 }
 
-/** Reserved F02 email parser; this unfinished handoff body currently rejects all input.
- * @param text Raw optional email; the task contract defines trimming and accepted input.
- * @return Task implementation must distinguish a cleared, accepted or invalid field.
+/** Parses an optional email, preserving accepted spelling after trimming surrounding whitespace.
+ * @param text Raw optional email input.
+ * @return Valid(null) for blank input, Valid with a single whitespace-free address, or Invalid.
  */
-fun parseOptionalEmail(text: String): OptionalContactInput =
-    OptionalContactInput.Invalid
+fun parseOptionalEmail(text: String): OptionalContactInput {
+    val value = text.trim()
+    if (value.isEmpty()) return OptionalContactInput.Valid(null)
+    val separator = value.indexOf('@')
+    val invalid =
+        separator <= 0 ||
+            separator == value.lastIndex ||
+            separator != value.lastIndexOf('@') ||
+            value.any { it.isWhitespace() }
+    return if (!invalid) {
+        OptionalContactInput.Valid(value)
+    } else {
+        OptionalContactInput.Invalid
+    }
+}
 
-/** Reserved F02 phone parser; this unfinished handoff body currently rejects all input.
- * @param text Raw optional phone; the task contract defines trimming and accepted characters.
- * @return Task implementation must distinguish a cleared, accepted or invalid field.
+/** Parses an optional phone without changing accepted digits, spaces or punctuation.
+ * @param text Raw optional phone input.
+ * @return Valid(null) for blank input, Valid for permitted text containing an ASCII digit, or Invalid.
  */
-fun parseOptionalPhone(text: String): OptionalContactInput =
-    OptionalContactInput.Invalid
+fun parseOptionalPhone(text: String): OptionalContactInput {
+    val value = text.trim()
+    if (value.isEmpty()) return OptionalContactInput.Valid(null)
+    return if (Regex("""\+?[0-9 ()-]*[0-9][0-9 ()-]*""").matches(value)) {
+        OptionalContactInput.Valid(value)
+    } else {
+        OptionalContactInput.Invalid
+    }
+}
