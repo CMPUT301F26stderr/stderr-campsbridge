@@ -15,6 +15,8 @@ import io.github.CMPUT301F26stderr.campsbridge.navigation.AppNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.OnboardingNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.SessionNavigationOwner
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
 /**
@@ -26,6 +28,13 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param campsiteDetailFactory Factory for a saved identity/context reader.
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Factory for a local setup parent.
+ * @param exploreFactory Factory for this account's discovery/filter graph.
+ * @param lotterySetupFactory Factory for this owner's new/saved lottery setup graph.
+ * @param lotteryDetailFactory Factory for this owner's saved lottery overview.
+ * @param lotteryListFactory Factory for the owner's primary or campsite-filtered list.
+ * @param reservationDetailFactory Factory for a saved aggregate, keyed by account/ID/context.
+ * @param inboxFactory Factory for the ready account receipt owner, independent of workspace.
+ * @param bookingFactory Factory for a winner wizard keyed by account, lottery and campsite IDs.
  */
 @Composable
 fun AppRoot(
@@ -36,6 +45,13 @@ fun AppRoot(
     campsiteDetailFactory: (String, String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     campsiteSetupFactory: (String, String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String, String) -> ViewModelProvider.Factory,
+    exploreFactory: () -> ViewModelProvider.Factory,
+    lotterySetupFactory: (String, String?) -> ViewModelProvider.Factory,
+    lotteryDetailFactory: (String, String, LotteryContext) -> ViewModelProvider.Factory,
+    lotteryListFactory: (String, LotteryContext, String?) -> ViewModelProvider.Factory,
+    reservationDetailFactory: (String, String, ReservationContext) -> ViewModelProvider.Factory,
+    inboxFactory: (String) -> ViewModelProvider.Factory,
+    bookingFactory: (String, String, String) -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -98,6 +114,27 @@ fun AppRoot(
                                 },
                                 { id -> campsiteSetupFactory(session.account.id, id) },
                                 { id -> availabilityFactory(session.account.id, id) },
+                                exploreFactory(),
+                                { id -> lotterySetupFactory(session.account.id, id) },
+                                {
+                                    id,
+                                    context,
+                                    ->
+                                    lotteryDetailFactory(session.account.id, id, context)
+                                },
+                                { context, campsiteId ->
+                                    lotteryListFactory(session.account.id, context, campsiteId)
+                                },
+                                {
+                                    id,
+                                    context,
+                                    ->
+                                    reservationDetailFactory(session.account.id, id, context)
+                                },
+                                inboxFactory(session.account.id),
+                                { lotteryId, campsiteId ->
+                                    bookingFactory(session.account.id, lotteryId, campsiteId)
+                                },
                             )
                         }
                     }

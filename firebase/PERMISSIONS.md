@@ -72,7 +72,6 @@ A removal request authorizes and records the first removal fact before cleanup s
 | Inbox read time | Recipient only; write once |
 | Upload intent/attachment | Target owner; removal/obsolete cleanup is also available to admin |
 | Removal jobs/cascades | Original self-removal actor or admin; immutable removal facts |
-| Migration records | Console/Admin SDK tooling only |
 
 `SessionPendingWork` discovers only the active account's owner lotteries and entrant/owner reservations through `FirestoreWorkSource`. It invokes the same draw and delivery owners used by explicit actions. `AdminMaintenance.resume(adminId)` separately authorizes global removal, draw, notification and image recovery. Ordinary startup never performs global administrative cleanup. Query rules are not filters: private collection queries must constrain account/owner/participant fields or run as an authorized admin.
 
@@ -83,9 +82,9 @@ Storage objects carry `attachmentId` metadata. Creation requires a matching, une
 ## Test and deploy
 
 ```sh
-nix develop --command bash scripts/check-firebase.sh
+bash scripts/check-firebase.sh
 
-nix develop --command firebase deploy --config firebase/firebase.json --project project-3bc1a00e-fb80-48ba-948 --only firestore:rules,storage
+firebase deploy --config firebase/firebase.json --project project-3bc1a00e-fb80-48ba-948 --only firestore:rules,storage
 ```
 
 `scripts/check-firebase.sh` starts disposable emulators and runs the unchanged rules cases followed by the Kotlin repository integration suite. Rules logs and evaluator coverage JSON/HTML are captured under `firebase/tooling/build/reports/` before shutdown and uploaded by CI. Expression-budget exhaustion fails verification even when a negative test received a permission denial. Expected ordinary denials remain part of the suite.

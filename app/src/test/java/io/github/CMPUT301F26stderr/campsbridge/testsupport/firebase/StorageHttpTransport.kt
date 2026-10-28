@@ -3,22 +3,26 @@ package io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase
 import com.google.firebase.storage.network.NetworkRequest
 import com.google.firebase.storage.network.connection.HttpURLConnectionFactory
 import java.net.HttpURLConnection
+import java.net.URI
 import java.util.TreeMap
 
 /**
  * Gives the Storage SDK Android's case-insensitive response headers on the JVM host.
  * All requests still use real HTTP, SDK authentication and emulator rules. The JDK's
  * case-sensitive header map otherwise hides the emulator's resumable-upload URL.
+ * @param storageEndpoint This run's loopback Storage service.
  * @return Scope restoring the SDK's original transport factory when closed.
  */
-fun installStorageHttpTransport(): AutoCloseable {
+fun installStorageHttpTransport(storageEndpoint: URI): AutoCloseable {
     val field = NetworkRequest::class.java.getDeclaredField("connectionFactory")
     field.isAccessible = true
     val original = field.get(null)
     field.set(
         null,
         HttpURLConnectionFactory { endpoint ->
-            require(endpoint.host == "127.0.0.1" && endpoint.port == 9199)
+            require(
+                endpoint.protocol == "http" && endpoint.authority == storageEndpoint.rawAuthority,
+            )
             AndroidHeaderConnection(endpoint.openConnection() as HttpURLConnection)
         },
     )

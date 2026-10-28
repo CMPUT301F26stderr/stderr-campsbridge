@@ -5,16 +5,138 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
+
+/** Constructs the actual winner wizard; F15 remains absent and explicitly pending by default.
+ * @param services Current host's source/clock dependencies.
+ * @param entrantId Ready account whose own win is required.
+ * @param lotteryId Saved lottery identity carried by navigation.
+ * @param campsiteId Saved selected allocation identity.
+ */
+fun bookingViewModelFactory(
+    services: AppServices,
+    entrantId: String,
+    lotteryId: String,
+    campsiteId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            BookingViewModel(
+                entrantId,
+                lotteryId,
+                campsiteId,
+                services.repositories.lotteries,
+                services.repositories.campsites,
+                services.repositories.bookings,
+                services.repositories.images,
+                services.clock,
+                createSavedStateHandle(),
+                availableNights = null,
+            )
+        }
+    }
+
+/** Constructs an explicitly scoped list and optional owner-management allocation filter.
+ * @param services Current host's scoped sources and clock.
+ * @param accountId Ready account identity.
+ * @param context Requested owner or entrant presentation.
+ * @param campsiteId Optional saved listing association.
+ */
+fun lotteryListViewModelFactory(
+    services: AppServices,
+    accountId: String,
+    context: LotteryContext,
+    campsiteId: String? = null,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotteryListViewModel(
+                accountId,
+                context,
+                services.repositories.lotteries,
+                services.repositories.bookings,
+                services.repositories.campsites,
+                services.clock,
+                createSavedStateHandle(),
+                campsiteId,
+            )
+        }
+    }
+
+/** Constructs the saved/new lottery form with the assigned F13 schedule validator.
+ * @param services Current host's repository interfaces and clock.
+ * @param ownerId Current account identity whose published sites are eligible.
+ * @param lotteryId Existing draft target, or null for a new local form.
+ */
+fun lotterySetupViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    lotteryId: String? = null,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotterySetupViewModel(
+                ownerId,
+                services.repositories.campsites,
+                services.repositories.lotteries,
+                services.clock,
+                createSavedStateHandle(),
+                validateWindows = ::validateLotteryWindows,
+                lotteryId = lotteryId,
+            )
+        }
+    }
+
+/** Constructs the saved context-qualified reader independently of setup's local state.
+ * @param services Current host's repository dependencies.
+ * @param accountId Ready account identity.
+ * @param lotteryId Actual saved target carried by navigation.
+ * @param context Explicit owner management or entrant presentation.
+ */
+fun lotteryDetailViewModelFactory(
+    services: AppServices,
+    accountId: String,
+    lotteryId: String,
+    context: LotteryContext,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            LotteryDetailViewModel(
+                accountId,
+                lotteryId,
+                services.repositories.lotteries,
+                services.repositories.campsites,
+                services.clock,
+                services.repositories.bookings,
+                context,
+                services.repositories.accounts,
+                createSavedStateHandle(),
+                filterParticipants = null,
+            )
+        }
+    }
 
 /**
  * Supplies explicit root dependencies; the ViewModel never receives a concrete container.
@@ -43,11 +165,11 @@ fun profileViewModelFactory(
                 services.repositories.accounts,
                 services.repositories.images,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
                 parseEmail = ::parseOptionalEmail,
                 parsePhone = ::parseOptionalPhone,
             )
-            // F01 name validation remains independently pending.
+            // Name and contact saves use their completed parser functions.
         }
     }
 
@@ -66,13 +188,13 @@ fun onboardingViewModelFactory(
                 services.repositories.accounts,
                 services.preferences,
                 createSavedStateHandle(),
-                parseName = null,
+                parseName = ::parseDisplayName,
             )
-            // Connect ::parseDisplayName here after the reserved task passes review.
+            // F01 handoff uses the same function as the personal-details editor.
         }
     }
 
-/** Constructs the inventory owner with F11 ordering explicitly pending.
+/** Constructs the inventory owner with the assigned F11 ordering function.
  * @param services Selected host's dependencies.
  * @param ownerId Confirmed owner identity.
  */
@@ -87,7 +209,7 @@ fun campsiteListViewModelFactory(
                 services.repositories.campsites,
                 services.repositories.images,
                 createSavedStateHandle(),
-                sortCampsites = null,
+                sortCampsites = ::sortCampsitesByName,
             )
         }
     }
@@ -112,6 +234,11 @@ fun campsiteDetailViewModelFactory(
                 context,
                 services.repositories.campsites,
                 services.repositories.images,
+                services.repositories.accounts,
+                services.repositories.reviews,
+                createSavedStateHandle(),
+                services.clock,
+                services.repositories.lotteries,
             )
         }
     }
@@ -163,6 +290,73 @@ fun availabilityViewModelFactory(
                 services.clock,
                 createSavedStateHandle(),
                 remainingAvailabilityEdits,
+            )
+        }
+    }
+
+/** Constructs the discovery owner with reserved matching dependencies explicitly pending.
+ * @param services Selected host's published listing, attachment and rating sources.
+ */
+fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            ExploreViewModel(
+                services.repositories.campsites,
+                services.repositories.images,
+                services.repositories.reviews,
+                createSavedStateHandle(),
+                matchesText = null,
+                matchesCapacity = null,
+                sortCampsites = ::sortCampsitesByName,
+                clock = services.clock,
+            )
+        }
+    }
+
+/** Constructs one saved aggregate reader shared by overview, payment and exact accepted terms.
+ * @param services Current host's repository interfaces.
+ * @param accountId Ready actor identity.
+ * @param reservationId Actual saved target.
+ * @param context Explicit caller presentation.
+ */
+fun reservationDetailViewModelFactory(
+    services: AppServices,
+    accountId: String,
+    reservationId: String,
+    context: ReservationContext,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            ReservationDetailViewModel(
+                accountId,
+                reservationId,
+                context,
+                services.repositories.bookings,
+            )
+        }
+    }
+
+/** Constructs the account-root receipt owner; reserved ordering/count remain explicitly pending.
+ * @param services Current host's repository interfaces.
+ * @param accountId Ready recipient identity, independent of workspace selection.
+ */
+fun inboxViewModelFactory(
+    services: AppServices,
+    accountId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            val repositories = services.repositories
+            InboxViewModel(
+                accountId,
+                repositories.notifications,
+                NotificationContentLoader(
+                    repositories.notifications,
+                    repositories.lotteries,
+                    repositories.bookings,
+                ),
+                sortItems = null,
+                countUnread = null,
             )
         }
     }

@@ -1,7 +1,9 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +23,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import java.util.Locale
 
 /**
@@ -32,6 +36,13 @@ import java.util.Locale
  * @param campsiteDetailFactory Saved reader dependencies keyed by identity/context.
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Local editor dependencies for a new/saved draft.
+ * @param exploreFactory Discovery/filter dependencies for the current account.
+ * @param lotterySetupFactory New/saved lottery-setup dependencies for the current owner.
+ * @param lotteryDetailFactory Saved owner-reader dependencies.
+ * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
+ * @param reservationDetailFactory Saved aggregate dependencies keyed by ID/context.
+ * @param inboxFactory One account receipt owner shared by both workspace primaries.
+ * @param bookingFactory One actual winner wizard keyed by saved lottery and campsite IDs.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -43,6 +54,13 @@ fun AppNavigation(
     campsiteDetailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     campsiteSetupFactory: (String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String) -> ViewModelProvider.Factory,
+    exploreFactory: ViewModelProvider.Factory,
+    lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
+    lotteryDetailFactory: (String, LotteryContext) -> ViewModelProvider.Factory,
+    lotteryListFactory: (LotteryContext, String?) -> ViewModelProvider.Factory,
+    reservationDetailFactory: (String, ReservationContext) -> ViewModelProvider.Factory,
+    inboxFactory: ViewModelProvider.Factory,
+    bookingFactory: (String, String) -> ViewModelProvider.Factory,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -56,13 +74,52 @@ fun AppNavigation(
                 Icons.Default.Home,
             ),
             WorkspaceNavigationItem(
+                AppDestination.OWNER_LOTTERIES,
+                stringResource(R.string.lotteries),
+                Icons.Default.DateRange,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.inbox(Role.OWNER),
+                stringResource(R.string.inbox_title),
+                Icons.Default.Notifications,
+            ),
+            WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.OWNER),
                 stringResource(R.string.profile_title),
                 Icons.Default.Person,
             ),
         )
+    val entrantItems =
+        listOf(
+            WorkspaceNavigationItem(
+                AppDestination.EXPLORE,
+                stringResource(R.string.discovery_title),
+                Icons.Default.Home,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.ENTRANT_LOTTERIES,
+                stringResource(R.string.lotteries),
+                Icons.Default.DateRange,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.inbox(Role.ENTRANT),
+                stringResource(R.string.inbox_title),
+                Icons.Default.Notifications,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.profileGraph(Role.ENTRANT),
+                stringResource(R.string.profile_title),
+                Icons.Default.Person,
+            ),
+        )
+    val selectedItems =
+        when (state.workspace) {
+            Role.OWNER -> ownerItems
+            Role.ENTRANT -> entrantItems
+            Role.ADMIN -> emptyList()
+        }
     val selectPrimary: (String) -> Unit = { destination ->
-        if (state.workspace == Role.OWNER && ownerItems.any { it.id == destination }) {
+        if (selectedItems.any { it.id == destination }) {
             selectedPrimaries = selectedPrimaries + (state.workspace.name to destination)
             if (controller.currentDestination?.hierarchy?.none { it.route == destination } ==
                 true
@@ -95,6 +152,53 @@ fun AppNavigation(
         }
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
+        lotterySetupGraph(controller, lotterySetupFactory)
+        inboxGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            ownerItems,
+            entrantItems,
+            selectPrimary,
+            inboxFactory,
+        )
+        reservationGraph(controller, reservationDetailFactory)
+        bookingGraph(controller, bookingFactory)
+        lotteryDetailGraph(controller, lotteryDetailFactory, onReservation = { id ->
+            controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
+                launchSingleTop = true
+            }
+        }, onCampsite = { campsiteId, context ->
+            val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
+            val presentation =
+                if (context ==
+                    LotteryContext.OWNER
+                ) {
+                    CampsiteDetailContext.PREVIEW
+                } else {
+                    CampsiteDetailContext.VIEW
+                }
+            controller.navigate(
+                "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
+            ) {
+                launchSingleTop =
+                    true
+            }
+        }, onBooking = { lotteryId, campsiteId ->
+            controller.navigate(AppDestination.booking(lotteryId, campsiteId)) {
+                launchSingleTop =
+                    true
+            }
+        })
+        lotteryListGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            ownerItems,
+            entrantItems,
+            selectPrimary,
+            lotteryListFactory,
+        )
         for (workspace in Role.entries) {
             profileGraph(
                 controller,
@@ -102,11 +206,30 @@ fun AppNavigation(
                 state,
                 onSelectWorkspace,
                 profileFactory,
-                if (workspace == Role.OWNER) ownerItems else emptyList(),
+                when (workspace) {
+                    Role.OWNER -> ownerItems
+                    Role.ENTRANT -> entrantItems
+                    Role.ADMIN -> emptyList()
+                },
                 selectPrimary,
                 { openWorkspace(Role.OWNER) },
             )
         }
+        campsiteReadGraph(
+            controller,
+            Role.ADMIN,
+            CampsiteDetailContext.INSPECT,
+            campsiteDetailFactory,
+        )
+        discoveryGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            entrantItems,
+            selectPrimary,
+            exploreFactory,
+            campsiteDetailFactory,
+        )
         campsiteGraph(
             controller,
             state,
@@ -136,10 +259,8 @@ fun AppNavigation(
  * @param workspace Confirmed selected workspace.
  */
 private fun defaultPrimary(workspace: Role): String =
-    if (workspace ==
-        Role.OWNER
-    ) {
-        AppDestination.ownerCampsites()
-    } else {
-        AppDestination.profileGraph(workspace)
+    when (workspace) {
+        Role.OWNER -> AppDestination.ownerCampsites()
+        Role.ENTRANT -> AppDestination.EXPLORE
+        Role.ADMIN -> AppDestination.profileGraph(workspace)
     }

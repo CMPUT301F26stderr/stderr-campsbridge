@@ -29,21 +29,21 @@ An Android campsite reservation app for CMPUT 301, built by a team of six. Entra
    .\gradlew.bat --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug
    ```
 
-The checks run Android Lint, local domain/schema/listener/controller tests, and a debug APK build. Run persistence integration tests separately:
+The checks run Android Lint, local domain/schema/listener/controller tests, and a debug APK build. For persistence integration tests, first complete the [Firebase test setup](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo#firebase-integration-checks), then run:
 
 ```bash
-nix develop --command bash scripts/check-firebase.sh
+bash scripts/check-firebase.sh
 ```
 
-This starts disposable Auth, Firestore, and Storage emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests remain separate:
+This starts disposable Auth, Firestore, and Storage emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests remain separate: start an emulator in Android Studio and run the relevant tests under `app/src/androidTest` with the green Run triangle. See [Testing and demo](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo) for terminal and coverage commands.
 
-```bash
-nix develop .#ui --command bash scripts/check-android-ui.sh
-```
+The default `debug` build uses local sample accounts and private cached photos. Profile display, workspace switching, Start hosting and photo selection/save/removal work locally. The camper workspace opens Explore, with Profile available as a tab and a working filter editor. Search and guest matching remain explicitly pending until their reserved helpers are integrated.
 
-This uses a disposable API 35 emulator and requires usable KVM on Linux. See [CONTRIBUTING.md](CONTRIBUTING.md#test-boundaries) for existing-device and coverage commands.
+Owner campsite lists and the eight-step setup are available; the offline demo does not save campsite changes. In the Firebase-enabled builds, a valid review can save details and staged photos under one retained draft ID, then publish after all requested work is confirmed. Saved listing detail provides About, stored-location Map, read-only Availability and current Rules/policy readers. Owner management opens a separate read-only preview and an independent availability editor. Date saving awaits the reserved availability-comparison helper; requested dates block saving and publishing until it is integrated.
 
-The default `debug` build uses local sample accounts and private cached photos. Profile display, workspace switching, Start hosting and photo selection/save/removal work locally. Owner campsite lists and the eight-step setup are available; the offline demo does not save campsite changes. In the Firebase-enabled builds, a valid review can save details and staged photos under one retained draft ID, then publish after all requested work is confirmed. A saved listing also opens an independent availability editor from management. Date saving awaits the reserved availability-comparison helper; requested dates block saving and publishing until it is integrated. The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name/contact fields are editable, while their submission remains blocked until the reserved teammate validators are integrated.
+The demo menu offers an existing entrant, an existing owner, a new account and screen previews. Scenario state survives activity recreation and resets when its host finishes or the process restarts. Name/contact fields are editable, while their submission remains blocked until the reserved teammate validators are integrated.
+
+Published campsite management opens a six-step lottery setup with one campsite, a working allocation calendar, native schedule inputs and unlimited registration. Input survives route recreation; allocation Back/Cancel leaves applied dates unchanged. The form saves and reopens drafts under one retained ID, reconciles offered nights and recovers uncertain publication before allowing further edits. Confirmed saves open the actual owner overview. The default factory keeps Save draft and Publish disabled until the reserved schedule validator is integrated.
 
 Select `firebaseDebug` in Android Studio for real account identity, Firestore and Storage, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.
 
@@ -81,6 +81,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses t
 
 ### Assigned helper examples
 
-In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors; H03 opens the availability editor and H04 the owner inventory. All use local sample records. Later examples remain labelled pending until their baselines are published. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
+In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors; H03 opens the availability editor and H04 the owner inventory. H05/H06 open independent text-search and guest-capacity examples using the real discovery controller and filter editor. All use local sample records. H07 opens schedule validation and H08 participant filtering with seeded lottery records. Later examples remain labelled pending until their baselines are published. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
 
 The shared baseline leaves assigned helper bindings disconnected. Follow the issue's prepared handoff to connect its real implementation and tests; a preview or pending example does not complete the task. Release and Firebase builds do not include the debug task host.

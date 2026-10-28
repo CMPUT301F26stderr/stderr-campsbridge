@@ -2,8 +2,8 @@ package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityUiState
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListUiState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -82,7 +82,7 @@ class CampsiteTaskExamplesTest {
                 val content = model.state.value as AvailabilityUiState.Content
                 assertTrue(content.saved)
                 val nights =
-                    (content.availability.inventory as CampsiteInventoryUiState.Content)
+                    (content.availability.inventory as CalendarInventoryRead.Content)
                         .nights
                 assertFalse(nights.single { it.date == date }.isOffered)
                 assertEquals("task-occupied", nights.single { it.date == booked }.reservationId)

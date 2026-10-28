@@ -28,7 +28,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 
-/** Registers implemented inventory and saved management routes; future editors add their own entries.
+/**
+ * Registers implemented inventory and saved management routes; future editors add their own
+ * entries.
  * @param controller Account-owned navigation host.
  * @param state Confirmed session.
  * @param onSelectWorkspace Root-owned capability-limited selection.
@@ -88,7 +90,19 @@ internal fun NavGraphBuilder.campsiteGraph(
                     viewModelStoreOwner = parent,
                     factory = detailFactory(id, context),
                 )
-            CampsiteDetailRoute(model, onAvailability = {
+            CampsiteDetailRoute(model, onCreateLottery = {
+                controller.navigate(AppDestination.LOTTERY_SETUP) { launchSingleTop = true }
+            }, onViewLotteries = {
+                controller.navigate(AppDestination.campsiteLotteries(id)) { launchSingleTop = true }
+            }, onPreview = {
+                controller.navigate(
+                    AppDestination.campsiteGraph(
+                        Role.OWNER,
+                        id,
+                        CampsiteDetailContext.PREVIEW,
+                    ),
+                ) { launchSingleTop = true }
+            }, onAvailability = {
                 controller.navigate(
                     AppDestination.availabilityEditor(id),
                 ) { launchSingleTop = true }
@@ -99,6 +113,7 @@ internal fun NavGraphBuilder.campsiteGraph(
             }) { controller.popBackStack() }
         }
     }
+    campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.PREVIEW, detailFactory)
     composable(
         AppDestination.AVAILABILITY_EDITOR,
         arguments =

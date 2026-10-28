@@ -6,6 +6,16 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import java.time.Clock
 import java.time.Instant
@@ -60,6 +70,43 @@ object TaskExampleData {
                 )
             },
         )
+    val lottery =
+        Lottery(
+            "task-draw",
+            OWNER_ID,
+            "May camping draw",
+            "Local sample records",
+            LotteryConfiguration(
+                now.minusSeconds(172800),
+                now.minusSeconds(86400),
+                now.minusSeconds(86400),
+                now.plusSeconds(864000),
+                1,
+                null,
+            ),
+            0,
+            now.minusSeconds(259200),
+            now.minusSeconds(172800),
+            now.minusSeconds(86400),
+        )
+    val offers = listOf(LotteryOffer(sites[0].id, (11..14).map { today.withDayOfMonth(it) }))
+    val entries =
+        listOf(
+            LotteryEntry(
+                lottery.id,
+                ACCOUNT_ID,
+                EntryState.OFFERED,
+                now.minusSeconds(172800),
+                now.minusSeconds(86400),
+            ),
+            LotteryEntry(
+                lottery.id,
+                "task-other-entrant",
+                EntryState.LOST,
+                now.minusSeconds(172800),
+                now.minusSeconds(86400),
+            ),
+        )
     val nights =
         (1..31).filter { it != 14 }.map { day ->
             CalendarNight(
@@ -74,4 +121,28 @@ object TaskExampleData {
                 },
             )
         }
+    val events = listOf(event("task-b", 0), event("task-new", 60), event("task-a", 0))
+    val receipts =
+        listOf(
+            InboxReceipt("task-b", null),
+            InboxReceipt("task-new", null),
+            InboxReceipt("task-a", now),
+        )
+
+    /** Builds a typed event pointing to the supplied saved lottery.
+     * @param id Stable event identity and ordering tie-breaker.
+     * @param offset Seconds after the common fixture event time.
+     */
+    private fun event(
+        id: String,
+        offset: Long,
+    ): Notification =
+        Notification(
+            id,
+            null,
+            NotificationType.LOTTERY_WON,
+            NotificationSubject(SubjectType.LOTTERY, lottery.id),
+            null,
+            now.minusSeconds(3600).plusSeconds(offset),
+        )
 }

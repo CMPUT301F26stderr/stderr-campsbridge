@@ -1,26 +1,10 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
-import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.SelectedPhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import java.time.YearMonth
-
-/** Confirmed visible-month inventory, independent of the local requested edits. */
-sealed interface CampsiteInventoryUiState {
-    /** The displayed range has not loaded, so absence is not known inventory. */
-    data object Loading : CampsiteInventoryUiState
-
-    /** The displayed range failed and can be retried without losing form input. */
-    data object Failure : CampsiteInventoryUiState
-
-    /** Successfully read range; missing dates are known unoffered nights.
-     * @param nights Confirmed records in the displayed month.
-     */
-    data class Content(
-        val nights: List<CalendarNight>,
-    ) : CampsiteInventoryUiState
-}
 
 /** Unsaved photo choice; upload is deferred until a real saved parent exists. */
 sealed interface CampsitePhotoIntent {
@@ -113,7 +97,7 @@ sealed interface CampsiteSetupUiState {
         val photoSelectionFailed: Boolean = false,
         val month: YearMonth,
         val discardPrompt: Boolean = false,
-        val inventory: CampsiteInventoryUiState = CampsiteInventoryUiState.Loading,
+        val inventory: CalendarInventoryRead = CalendarInventoryRead.Loading,
         val savePhase: CampsiteSavePhase = CampsiteSavePhase.IDLE,
         val saveFailure: CampsiteSaveFailure? = null,
         val photoRemovalPending: Boolean = false,

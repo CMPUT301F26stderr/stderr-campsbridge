@@ -1,7 +1,9 @@
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentDecodingException
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryOfferDocument
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
@@ -36,6 +38,122 @@ import org.robolectric.annotation.LooperMode
 @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
 class LotteryQueryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
+
+    /** A successful server query can confirm that an existing draft has no allocations. */
+    @Test(timeout = 60000)
+    fun serverOffersConfirmAnEmptyDraft() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.OWNER)
+            firebase.seed(
+                "lotteries/empty-draft",
+                LotteryDocument.encode(
+                    CampingFixtures.lottery("empty-draft", owner.id).copy(publishedAt = null),
+                ),
+            )
+            assertEquals(
+                emptyList<LotteryOffer>(),
+                owner.container.lotteries.getOffers("empty-draft"),
+            )
+        }
+
+    /** Reads stay scoped to one parent and observe server removals after an earlier cached read. */
+    @Test(timeout = 60000)
+    fun serverOffersIncludeEveryAllocationAndReflectRemoval() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.OWNER)
+            for (id in listOf("read-draft", "other")) {
+                firebase.seed(
+                    "lotteries/$id",
+                    LotteryDocument.encode(
+                        CampingFixtures.lottery(id, owner.id).copy(publishedAt = null),
+                    ),
+                )
+            }
+            val first = LotteryOffer("first", listOf(CampingFixtures.arrival))
+            val second = LotteryOffer("second", listOf(CampingFixtures.arrival.plusDays(1)))
+            for (offer in listOf(first, second)) {
+                firebase.seed(
+                    "lotteries/read-draft/offers/${offer.campsiteId}",
+                    LotteryOfferDocument.encode(offer),
+                )
+            }
+            firebase.seed("lotteries/other/offers/first", LotteryOfferDocument.encode(first))
+            val repository = owner.container.lotteries
+            assertEquals(
+                setOf(first, second),
+                repository.getOffers("read-draft").toSet(),
+            )
+            firebase.request(
+                "${firebase.firestoreEndpoint}/v1/projects/${firebase.projectId}" +
+                    "/databases/(default)/documents/lotteries/read-draft/offers/first",
+                "DELETE",
+            )
+            assertEquals(listOf(second), repository.getOffers("read-draft"))
+            firebase.request(
+                "${firebase.firestoreEndpoint}/v1/projects/${firebase.projectId}" +
+                    "/databases/(default)/documents/lotteries/read-draft/offers/second",
+                "DELETE",
+            )
+            assertEquals(emptyList<LotteryOffer>(), repository.getOffers("read-draft"))
+        }
+
+    /** An offline server read fails even when a previous successful read populated the cache. */
+    @Test(timeout = 60000)
+    fun serverOfferFailureDoesNotReturnCachedAllocations() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.OWNER)
+            firebase.seed(
+                "lotteries/cached-draft",
+                LotteryDocument.encode(
+                    CampingFixtures.lottery("cached-draft", owner.id).copy(publishedAt = null),
+                ),
+            )
+            val db = owner.clients.firestore
+            val offer = LotteryOffer("cached", listOf(CampingFixtures.arrival))
+            firebase.seed(
+                "lotteries/cached-draft/offers/cached",
+                LotteryOfferDocument.encode(offer),
+            )
+            db.collection("lotteries/cached-draft/offers").get(Source.SERVER).await()
+            db.disableNetwork().await()
+            try {
+                val failure =
+                    runCatching {
+                        owner.container.lotteries.getOffers("cached-draft")
+                    }.exceptionOrNull()
+                assertTrue(failure is FirebaseFirestoreException)
+                assertEquals(
+                    FirebaseFirestoreException.Code.UNAVAILABLE,
+                    (failure as FirebaseFirestoreException).code,
+                )
+            } finally {
+                db.enableNetwork().await()
+            }
+        }
+
+    /**
+     * Malformed allocations fail with document context instead of becoming a confirmed empty
+     * set.
+     */
+    @Test(timeout = 60000)
+    fun malformedServerOfferPreservesReadFailure() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.OWNER)
+            firebase.seed(
+                "lotteries/malformed-draft",
+                LotteryDocument.encode(
+                    CampingFixtures.lottery("malformed-draft", owner.id).copy(publishedAt = null),
+                ),
+            )
+            val path = "lotteries/malformed-draft/offers/broken"
+            firebase.seed(path, mapOf("campsiteId" to "broken", "nights" to "invalid"))
+            val failure =
+                runCatching {
+                    owner.container.lotteries.getOffers("malformed-draft")
+                }.exceptionOrNull()
+            assertTrue(failure is DocumentDecodingException)
+            assertEquals(path, (failure as DocumentDecodingException).documentPath)
+        }
 
     /** Reverse lookup supports multiple sites and excludes drafts, cancellation and other sites. */
     @Test(timeout = 60000)

@@ -10,11 +10,18 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
@@ -56,6 +63,33 @@ class MainActivity : ComponentActivity() {
                 },
                 { accountId, id -> campsiteSetupViewModelFactory(services, accountId, id) },
                 { accountId, id -> availabilityViewModelFactory(services, accountId, id) },
+                { exploreViewModelFactory(services) },
+                { ownerId, id -> lotterySetupViewModelFactory(services, ownerId, id) },
+                {
+                    accountId,
+                    id,
+                    context,
+                    ->
+                    lotteryDetailViewModelFactory(services, accountId, id, context)
+                },
+                {
+                    accountId,
+                    context,
+                    campsiteId,
+                    ->
+                    lotteryListViewModelFactory(services, accountId, context, campsiteId)
+                },
+                {
+                    accountId,
+                    id,
+                    context,
+                    ->
+                    reservationDetailViewModelFactory(services, accountId, id, context)
+                },
+                { accountId -> inboxViewModelFactory(services, accountId) },
+                { accountId, lotteryId, campsiteId ->
+                    bookingViewModelFactory(services, accountId, lotteryId, campsiteId)
+                },
             )
         }
     }

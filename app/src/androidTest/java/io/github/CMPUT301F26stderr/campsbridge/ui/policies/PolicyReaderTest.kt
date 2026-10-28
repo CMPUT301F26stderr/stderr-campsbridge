@@ -26,6 +26,7 @@ class PolicyReaderTest {
     /** Settings links readers and each Back returns to its actual menu. */
     @Test fun settingsReadersHaveCompleteCopyAndReturnToCaller() {
         compose.setContent { host.Content() }
+        compose.onNodeWithText("Profile").performClick()
         compose.onNodeWithText("Settings").performClick()
         compose.onNodeWithText("Policies").performClick()
         compose.onNodeWithText("Guidelines").performClick()

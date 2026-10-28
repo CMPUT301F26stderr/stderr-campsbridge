@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 MARKER = "<!-- campsbridge-ci-failure:{run_id}:{attempt} -->"
 BOT = "github-actions[bot]"
@@ -24,10 +25,22 @@ class GitHub:
             command += ["--allow-escape-sequences"]
         if data is not None:
             command += ["--input", "-"]
-        result = subprocess.run(
-            command, input=json.dumps(data) if data is not None else None,
-            capture_output=True, text=True, check=True,
-        )
+        try:
+            result = subprocess.run(
+                command, input=json.dumps(data) if data is not None else None,
+                capture_output=True, text=True, check=True,
+            )
+        except subprocess.CalledProcessError as failure:
+            print(f"GitHub API {method} {path} failed (exit {failure.returncode}).", file=sys.stderr)
+            for name, output in (("stderr", failure.stderr), ("response", failure.stdout)):
+                if not output:
+                    continue
+                for variable in ("GH_TOKEN", "GITHUB_TOKEN"):
+                    token = os.environ.get(variable)
+                    if token:
+                        output = output.replace(token, "[REDACTED]")
+                print(f"{name}: {output.rstrip()}", file=sys.stderr)
+            raise
         return result.stdout if text else json.loads(result.stdout or "null")
 
     def pages(self, path, key=None):
@@ -110,14 +123,15 @@ def render_comment(pr, run, failures):
         else:
             body += ["", "A useful log excerpt was unavailable; open the failed job above for details.", ""]
     body += ["Run the ordinary Android checks:", "", "```sh", "bash scripts/check.sh", "```", "",
+             "On Windows PowerShell: `./gradlew.bat --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug`.", "",
              "Optional: run `pre-commit install` once and `pre-commit run --all-files` "
              "to catch issues earlier. If hooks change files, include those fixes in your commit. "
              "The bot applies formatting after approval, so installing local hooks is not required."]
     names = {job["name"] for job, _ in failures}
     if "Firebase contracts" in names:
-        body += ["", "For Firebase failures: `nix develop --command bash scripts/check-firebase.sh`."]
+        body += ["", "For Firebase failures: `bash scripts/check-firebase.sh` after the [Firebase test setup](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo#firebase-integration-checks)."]
     if "Android UI checks" in names:
-        body += ["", "For device-test failures: `nix develop .#ui --command bash scripts/check-android-ui.sh`."]
+        body += ["", "For device-test failures, start an emulator in Android Studio and run the tests in `app/src/androidTest`. On macOS/Linux, set `ANDROID_SERIAL` to its serial from `adb devices` and run `bash scripts/check-android-ui.sh`."]
     body += ["", "For runner, dependency or setup failures, ask the team lead for help with the linked logs."]
     return "\n\n".join(body[:4]) + "\n" + "\n".join(body[4:])
 

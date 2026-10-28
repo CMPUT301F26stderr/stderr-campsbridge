@@ -1,9 +1,12 @@
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentDecodingException
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.Fields
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.activeAccount
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.atomic
@@ -42,6 +45,16 @@ internal class LotteryWrites(
      */
     private fun ref(id: String) =
         db.document(FirestorePaths.lottery(id))
+
+    /** Reads the required coordination counter; missing fields are malformed data.
+     * @param snapshot Current lottery snapshot from the server or transaction.
+     */
+    private fun requiredRevision(snapshot: DocumentSnapshot): Long =
+        Fields(
+            snapshot.reference.path,
+            snapshot.data
+                ?: throw DocumentDecodingException(snapshot.reference.path, "Missing lottery"),
+        ).long("_revision")
 
     /**
      * Creates one draft transactionally; retries preserve stored configuration and lifecycle.
@@ -123,7 +136,7 @@ internal class LotteryWrites(
             tx.set(
                 ref(id),
                 LotteryDocument.encode(changed) +
-                    ("_revision" to ((snapshot.getLong("_revision") ?: 0) + 1)),
+                    ("_revision" to (requiredRevision(snapshot) + 1)),
             )
         }
     }
@@ -192,7 +205,7 @@ internal class LotteryWrites(
                 db.document(FirestorePaths.offer(id, site.id)),
                 LotteryOfferDocument.encode(offer),
             )
-            tx.update(ref(id), "_revision", (snapshot.getLong("_revision") ?: 0) + 1)
+            tx.update(ref(id), "_revision", requiredRevision(snapshot) + 1)
         }
     }
 
@@ -213,7 +226,7 @@ internal class LotteryWrites(
             val snapshot = tx.get(ref(id))
             editable(LotteryDocument.decode(snapshot), ownerId)
             tx.delete(db.document(FirestorePaths.offer(id, campsiteId)))
-            tx.update(ref(id), "_revision", (snapshot.getLong("_revision") ?: 0) + 1)
+            tx.update(ref(id), "_revision", requiredRevision(snapshot) + 1)
         }
     }
 
@@ -231,7 +244,7 @@ internal class LotteryWrites(
         // Query membership outside the transaction, then guard it with the parent revision.
         val snapshot = ref(id).get(Source.SERVER).await()
         requireOperation(snapshot.exists(), NOT_FOUND, "Lottery missing")
-        val revision = snapshot.getLong("_revision") ?: 0
+        val revision = requiredRevision(snapshot)
         val offers = ref(id).collection("offers").read(LotteryOfferDocument)
         requireOperation(offers.isNotEmpty(), INVALID_STATE, "Lottery needs an offer")
         db.atomic { tx ->
@@ -239,7 +252,7 @@ internal class LotteryWrites(
             val current = tx.get(ref(id))
             val lottery = LotteryDocument.decode(current)
             requireOperation(
-                (current.getLong("_revision") ?: 0) == revision,
+                requiredRevision(current) == revision,
                 CONFLICT,
                 "Offers changed; retry publication",
             )
@@ -272,7 +285,13 @@ internal class LotteryWrites(
                     )
                 }
             }
-            tx.update(ref(id), "publishedAt", (lottery.publishedAt ?: clock.instant()).stored())
+            tx.update(
+                ref(id),
+                mapOf(
+                    "publishedAt" to (lottery.publishedAt ?: clock.instant()).stored(),
+                    "_revision" to (revision + 1),
+                ),
+            )
         }
     }
 }

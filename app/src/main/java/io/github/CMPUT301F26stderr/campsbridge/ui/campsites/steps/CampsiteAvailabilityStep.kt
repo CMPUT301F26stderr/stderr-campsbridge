@@ -4,8 +4,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteInventoryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.offeredNightCalendarState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -23,7 +23,7 @@ import java.time.YearMonth
 @Composable
 fun CampsiteAvailabilityStep(
     month: YearMonth,
-    inventory: CampsiteInventoryUiState,
+    inventory: CalendarInventoryRead,
     requested: Map<LocalDate, Boolean>,
     onMonth: (YearMonth) -> Unit,
     onDate: (LocalDate) -> Unit,
@@ -32,18 +32,18 @@ fun CampsiteAvailabilityStep(
     Text(stringResource(R.string.campsite_calendar_hint))
     CampsiteCalendar(offeredNightCalendarState(month, inventory, requested), onMonth, onDate)
     when (inventory) {
-        CampsiteInventoryUiState.Loading -> {
+        CalendarInventoryRead.Loading -> {
             LoadingContent()
         }
 
-        CampsiteInventoryUiState.Failure -> {
+        CalendarInventoryRead.Failure -> {
             FailureContent(
                 stringResource(R.string.campsite_calendar_failure),
                 onRetry,
             )
         }
 
-        is CampsiteInventoryUiState.Content -> {
+        is CalendarInventoryRead.Content -> {
             Unit
         }
     }

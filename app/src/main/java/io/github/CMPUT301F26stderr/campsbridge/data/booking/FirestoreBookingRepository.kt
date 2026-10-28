@@ -29,6 +29,16 @@ class FirestoreBookingRepository(
     override suspend fun get(id: String) =
         queries.get(id)
 
+    /** Confirms the complete saved stay or its absence at the server; failures propagate.
+     * @param lotteryId Saved lottery identity.
+     * @param entrantId Opportunity owner.
+     */
+    override suspend fun getForOpportunity(
+        lotteryId: String,
+        entrantId: String,
+    ): Reservation? =
+        queries.forOpportunity(lotteryId, entrantId)
+
     /**
      * Observes reservation and payment state through one document listener.
      * @param id Reservation document ID.

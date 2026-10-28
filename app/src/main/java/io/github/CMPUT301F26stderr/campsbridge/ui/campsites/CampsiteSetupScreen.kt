@@ -20,6 +20,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsitePhotoStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteReviewStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteRulesStep
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
@@ -417,7 +418,7 @@ internal class CampsiteSetupPreviewStates : PreviewParameterProvider<CampsiteSet
                         step = step,
                     ),
                 month = YearMonth.of(2027, 5),
-                inventory = CampsiteInventoryUiState.Content(emptyList()),
+                inventory = CalendarInventoryRead.Content(emptyList()),
             )
         }
 

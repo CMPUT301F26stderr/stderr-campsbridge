@@ -3,16 +3,116 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 import android.net.Uri
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.credits.BundledLicense
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import java.util.Locale
 
 /** Registered destinations only; add feature routes when their implementations exist. */
 object AppDestination {
     const val AVAILABILITY_EDITOR = "owner/campsites/{campsiteId}/availability/edit"
+    const val EXPLORE = "entrant/explore"
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
     const val CAMPSITE_SETUP_SAVED = "owner/campsite-setup/saved/{campsiteId}"
+    const val LOTTERY_SETUP = "owner/lottery-setup/new"
+    const val LOTTERY_SETUP_SAVED = "owner/lottery-setup/saved/{lotteryId}"
+    const val LOTTERY_DETAIL = "owner/lotteries/{lotteryId}/detail"
+    const val OWNER_LOTTERIES = "owner/lotteries"
+    const val ENTRANT_LOTTERIES = "entrant/lotteries"
+    const val ENTRANT_LOTTERY_DETAIL = "entrant/lotteries/{lotteryId}/detail"
+    const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
+    const val BOOKING = "entrant/booking/{lotteryId}/{campsiteId}"
+
+    /** Addresses one winning opportunity without copying source facts into navigation.
+     * @param lotteryId Actual saved lottery identity.
+     * @param campsiteId Actual selected allocation identity.
+     */
+    fun booking(
+        lotteryId: String,
+        campsiteId: String,
+    ): String =
+        "entrant/booking/${Uri.encode(lotteryId)}/${Uri.encode(campsiteId)}"
+
+    /** Addresses one workspace entry to the same account Inbox.
+     * @param workspace Actual entrant or owner primary presentation.
+     */
+    fun inbox(workspace: Role): String =
+        "${workspace.name.lowercase(Locale.ROOT)}/inbox"
+
+    /** Registers one saved reservation parent per caller presentation.
+     * @param context Explicit entrant or owner context.
+     */
+    fun reservationPattern(context: ReservationContext): String =
+        "${context.name.lowercase(Locale.ROOT)}/reservations/{reservationId}/detail"
+
+    /** Addresses only the saved identity, without copying booked facts into navigation.
+     * @param reservationId Actual ID from a saved reservation, Inbox or opportunity lookup.
+     * @param context Presentation belonging to the actual caller.
+     */
+    fun reservationDetail(
+        reservationId: String,
+        context: ReservationContext,
+    ): String =
+        reservationPattern(context).replace("{reservationId}", Uri.encode(reservationId))
+
+    /** Addresses the owner's allocation-filtered list from actual campsite management.
+     * @param campsiteId Saved listing identity; punctuation is encoded as one argument.
+     */
+    fun campsiteLotteries(campsiteId: String): String =
+        "owner/campsites/${Uri.encode(campsiteId)}/lotteries"
+
+    /** Addresses one new form or an existing draft without copying record state.
+     * @param lotteryId Actual saved target, or null for a new form.
+     */
+    fun lotterySetupGraph(lotteryId: String? = null): String =
+        if (lotteryId ==
+            null
+        ) {
+            LOTTERY_SETUP
+        } else {
+            "owner/lottery-setup/saved/${Uri.encode(lotteryId)}"
+        }
+
+    /** Selects one registered saved-reader parent per workspace context.
+     * @param context Explicit owner management or own entrant presentation.
+     */
+    fun lotteryDetailPattern(context: LotteryContext): String =
+        when (context) {
+            LotteryContext.OWNER -> LOTTERY_DETAIL
+            LotteryContext.ENTRANT -> ENTRANT_LOTTERY_DETAIL
+        }
+
+    /** Addresses an actual saved overview in its caller's context.
+     * @param lotteryId Saved identity returned by persistence or an owner list.
+     * @param context Explicit presentation; the repository still owns authorization.
+     */
+    fun lotteryDetail(
+        lotteryId: String,
+        context: LotteryContext = LotteryContext.OWNER,
+    ): String =
+        lotteryDetailPattern(context).replace("{lotteryId}", Uri.encode(lotteryId))
+
+    /** Addresses one read-only child under its actual context-qualified saved parent.
+     * @param lotteryId Saved parent identity.
+     * @param context Explicit owner or entrant presentation.
+     * @param section Registered reader child.
+     */
+    fun lotterySection(
+        lotteryId: String,
+        context: LotteryContext,
+        section: LotteryDetailSection,
+    ): String =
+        "${lotteryDetail(lotteryId, context)}/${section.routeKey}"
+
+    /** Opens the owner participant child under its actual saved parent.
+     * @param lotteryId Saved parent identity.
+     */
+    fun lotteryParticipants(lotteryId: String): String =
+        "${lotteryDetail(lotteryId)}/participants"
 
     /** Addresses a distinct local/new or saved-ID setup parent.
      * @param campsiteId Existing unpublished target, or null for a new form.
@@ -93,6 +193,28 @@ object AppDestination {
      */
     fun settings(workspace: Role): String =
         "${profileGraph(workspace)}/settings"
+
+    /** Addresses shared image/font credits and dependency notices.
+     * @param workspace Profile graph owning the caller's Back stack.
+     */
+    fun credits(workspace: Role): String =
+        "${settings(workspace)}/credits"
+
+    /** Registers the complete bundled license reader under credits.
+     * @param workspace Profile graph owning the caller's Back stack.
+     */
+    fun creditLicensePattern(workspace: Role): String =
+        "${credits(workspace)}/licenses/{license}"
+
+    /** Opens one exact bundled font or Java API license.
+     * @param workspace Profile graph owning the caller's Back stack.
+     * @param license Fixed packaged document identity.
+     */
+    fun creditLicense(
+        workspace: Role,
+        license: BundledLicense,
+    ): String =
+        "${credits(workspace)}/licenses/${license.routeKey}"
 
     /** Addresses the offline policy menu.
      * @param workspace Owning workspace.

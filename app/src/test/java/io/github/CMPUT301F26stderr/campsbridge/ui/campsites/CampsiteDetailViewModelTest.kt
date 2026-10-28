@@ -1,13 +1,17 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import kotlinx.coroutines.CompletableDeferred
@@ -20,6 +24,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
+import java.time.Clock
 import java.time.Instant
 
 /** Specifies saved record/attachment outcomes independently of future write controllers. */
@@ -147,5 +152,10 @@ class CampsiteDetailViewModelTest {
             CampsiteDetailContext.MANAGE,
             sites,
             images,
+            FakeAccountRepository(),
+            FakeReviewRepository(),
+            SavedStateHandle(),
+            Clock.systemUTC(),
+            FakeLotteryRepository(),
         ).also { store.put("detail", it) }
 }

@@ -41,7 +41,7 @@ class FormatApprovedPrTest(unittest.TestCase):
         subprocess.run(["git", "clone", "--quiet", str(self.remote), str(self.checkout)], check=True)
         self.git(self.checkout, "checkout", "--quiet", self.head)
         self.config = self.root / "trusted-hooks.yaml"
-        self.config.write_text("trusted fixture\n")
+        self.config.write_text((ROOT / ".pre-commit-config.yaml").read_text())
         self.pr = {
             "state": "open", "draft": False,
             "head": {"sha": self.head, "ref": "student/task", "repo": {"full_name": "team/app"}},

@@ -35,11 +35,13 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.pickerMillisToDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 
 /** Native Material date selection; changes remain temporary until Confirm.
  * @param value Previously applied date.
  * @param onConfirm Applies a nonnull date.
  * @param onDismiss Cancels without applying edits.
+ * @param initialMonth Caller-clock month when no previous date is selected.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,9 +49,18 @@ fun DateInputDialog(
     value: LocalDate?,
     onConfirm: (LocalDate) -> Unit,
     onDismiss: () -> Unit,
+    initialMonth: YearMonth? = null,
 ) {
     val state =
-        rememberDatePickerState(initialSelectedDateMillis = value?.let(::dateToPickerMillis))
+        rememberDatePickerState(
+            initialSelectedDateMillis = value?.let(::dateToPickerMillis),
+            initialDisplayedMonthMillis =
+                (
+                    value ?: initialMonth?.atDay(
+                        1,
+                    )
+                )?.let(::dateToPickerMillis),
+        )
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -69,6 +80,7 @@ fun DateInputDialog(
  * @param end Previously applied checkout, which must follow arrival.
  * @param onConfirm Applies a complete positive-length stay.
  * @param onDismiss Cancels without applying temporary changes.
+ * @param initialMonth Optional caller-clock month when no stay has been selected.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,12 +89,19 @@ fun DateRangeInputDialog(
     end: LocalDate?,
     onConfirm: (LocalDate, LocalDate) -> Unit,
     onDismiss: () -> Unit,
+    initialMonth: YearMonth? = null,
 ) {
     require((start == null && end == null) || (start != null && end != null && end > start))
     val state =
         rememberDateRangePickerState(
             initialSelectedStartDateMillis = start?.let(::dateToPickerMillis),
             initialSelectedEndDateMillis = end?.let(::dateToPickerMillis),
+            initialDisplayedMonthMillis =
+                (
+                    start ?: initialMonth?.atDay(
+                        1,
+                    )
+                )?.let(::dateToPickerMillis),
         )
     val from = pickerMillisToDate(state.selectedStartDateMillis)
     val until = pickerMillisToDate(state.selectedEndDateMillis)
