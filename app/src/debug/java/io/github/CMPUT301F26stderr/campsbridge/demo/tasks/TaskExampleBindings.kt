@@ -5,6 +5,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
@@ -56,6 +57,7 @@ fun taskExampleBindings(): TaskExampleBindings =
     TaskExampleBindings(
         parseName = ::parseDisplayName,
         orderCampsites = ::sortCampsitesByName,
+        matchesText = ::matchesCampsiteText,
         matchesGuests = ::matchesGuestCapacity,
         validateWindows = ::validateLotteryWindows,
     )

@@ -29,7 +29,7 @@ import java.time.YearMonth
  * @param savedState Small query/filter restoration values.
  * @param matchesText Text predicate; null keeps results pending.
  * @param matchesCapacity Guest-capacity predicate; null keeps results pending.
- * @param sortCampsites Stable display ordering; null keeps results pending.
+ * @param sortCampsites Stable ordering; null keeps the current order and marks ordering pending.
  * @param clock Date-picker opening month; no past-date filter is invented.
  */
 class ExploreViewModel(
