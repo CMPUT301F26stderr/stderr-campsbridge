@@ -23,6 +23,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotter
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -132,10 +134,9 @@ fun profileViewModelFactory(
                 services.repositories.images,
                 createSavedStateHandle(),
                 parseName = ::parseDisplayName,
-                parseEmail = null,
-                parsePhone = null,
+                parseEmail = ::parseOptionalEmail,
+                parsePhone = ::parseOptionalPhone,
             )
-            // F02 contacts remain independently pending.
         }
     }
 

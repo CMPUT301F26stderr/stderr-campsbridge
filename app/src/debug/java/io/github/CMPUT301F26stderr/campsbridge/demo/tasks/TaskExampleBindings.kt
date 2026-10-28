@@ -12,6 +12,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotter
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
 
 /** Real B1 parser ports; each handoff connects only its own functions.
  * @param parseName F01 display-name implementation.
@@ -56,6 +58,8 @@ data class TaskExampleBindings(
 fun taskExampleBindings(): TaskExampleBindings =
     TaskExampleBindings(
         parseName = ::parseDisplayName,
+        parseEmail = ::parseOptionalEmail,
+        parsePhone = ::parseOptionalPhone,
         orderCampsites = ::sortCampsitesByName,
         matchesText = ::matchesCampsiteText,
         matchesGuests = ::matchesGuestCapacity,
