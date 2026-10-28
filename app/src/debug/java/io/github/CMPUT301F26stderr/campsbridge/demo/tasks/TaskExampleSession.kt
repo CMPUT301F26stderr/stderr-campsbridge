@@ -9,7 +9,6 @@ import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
@@ -159,23 +158,6 @@ class TaskExampleSession(
                     } else {
                         { _ -> 2 }
                     },
-            )
-        }
-
-    /** Supplies an unused winning opportunity and actual shared date-selection owner. */
-    fun booking(): BookingViewModel =
-        model(BookingViewModel::class.java) {
-            BookingViewModel(
-                TaskExampleData.ACCOUNT_ID,
-                TaskExampleData.lottery.id,
-                TaskExampleData.sites[0].id,
-                lotteries,
-                campsites,
-                bookings,
-                images,
-                TaskExampleData.clock,
-                SavedStateHandle(),
-                bindings.availableNights,
             )
         }
 

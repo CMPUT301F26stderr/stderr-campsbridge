@@ -5,7 +5,6 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
@@ -26,35 +25,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
-
-/** Constructs the actual winner wizard; F15 remains absent and explicitly pending by default.
- * @param services Current host's source/clock dependencies.
- * @param entrantId Ready account whose own win is required.
- * @param lotteryId Saved lottery identity carried by navigation.
- * @param campsiteId Saved selected allocation identity.
- */
-fun bookingViewModelFactory(
-    services: AppServices,
-    entrantId: String,
-    lotteryId: String,
-    campsiteId: String,
-): ViewModelProvider.Factory =
-    viewModelFactory {
-        initializer {
-            BookingViewModel(
-                entrantId,
-                lotteryId,
-                campsiteId,
-                services.repositories.lotteries,
-                services.repositories.campsites,
-                services.repositories.bookings,
-                services.repositories.images,
-                services.clock,
-                createSavedStateHandle(),
-                availableNights = null,
-            )
-        }
-    }
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.

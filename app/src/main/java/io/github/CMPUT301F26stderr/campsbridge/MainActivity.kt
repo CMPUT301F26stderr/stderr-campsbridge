@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
-import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
@@ -87,9 +86,6 @@ class MainActivity : ComponentActivity() {
                     reservationDetailViewModelFactory(services, accountId, id, context)
                 },
                 { accountId -> inboxViewModelFactory(services, accountId) },
-                { accountId, lotteryId, campsiteId ->
-                    bookingViewModelFactory(services, accountId, lotteryId, campsiteId)
-                },
             )
         }
     }

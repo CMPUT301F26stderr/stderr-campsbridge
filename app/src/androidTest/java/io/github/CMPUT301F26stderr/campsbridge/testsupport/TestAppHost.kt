@@ -27,7 +27,6 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepos
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
@@ -281,22 +280,6 @@ class TestAppHost : AutoCloseable {
                             accountId,
                             notifications,
                             NotificationContentLoader(notifications, lotteries, bookings),
-                        )
-                    }
-                }
-            }, { accountId, lotteryId, campsiteId ->
-                viewModelFactory {
-                    initializer {
-                        BookingViewModel(
-                            accountId,
-                            lotteryId,
-                            campsiteId,
-                            lotteries,
-                            campsites,
-                            bookings,
-                            images,
-                            Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
-                            createSavedStateHandle(),
                         )
                     }
                 }

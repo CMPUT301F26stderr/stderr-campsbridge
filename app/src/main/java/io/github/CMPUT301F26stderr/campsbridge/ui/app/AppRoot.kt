@@ -34,7 +34,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param lotteryListFactory Factory for the owner's primary or campsite-filtered list.
  * @param reservationDetailFactory Factory for a saved aggregate, keyed by account/ID/context.
  * @param inboxFactory Factory for the ready account receipt owner, independent of workspace.
- * @param bookingFactory Factory for a winner wizard keyed by account, lottery and campsite IDs.
  */
 @Composable
 fun AppRoot(
@@ -51,7 +50,6 @@ fun AppRoot(
     lotteryListFactory: (String, LotteryContext, String?) -> ViewModelProvider.Factory,
     reservationDetailFactory: (String, String, ReservationContext) -> ViewModelProvider.Factory,
     inboxFactory: (String) -> ViewModelProvider.Factory,
-    bookingFactory: (String, String, String) -> ViewModelProvider.Factory,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val navigationOwner: SessionNavigationOwner = viewModel()
@@ -132,9 +130,6 @@ fun AppRoot(
                                     reservationDetailFactory(session.account.id, id, context)
                                 },
                                 inboxFactory(session.account.id),
-                                { lotteryId, campsiteId ->
-                                    bookingFactory(session.account.id, lotteryId, campsiteId)
-                                },
                             )
                         }
                     }
