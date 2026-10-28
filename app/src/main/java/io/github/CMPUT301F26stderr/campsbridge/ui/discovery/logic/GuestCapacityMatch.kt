@@ -1,7 +1,5 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic
 
-// Reserved F10 body: this isolated handoff intentionally fails its contract tests.
-
 /** Checks a positive listing capacity against an optional requested group size.
  * @param maxGuests Strictly positive listing capacity, validated before the request.
  * @param requestedGuests Optional group size; null imposes no guest filter.
@@ -12,7 +10,6 @@ fun matchesGuestCapacity(
     maxGuests: Long,
     requestedGuests: Long?,
 ): Boolean {
-
     require(maxGuests > 0) { "Capacity must be positive" }
     return requestedGuests == null || requestedGuests in 1..maxGuests
 }
