@@ -3,8 +3,6 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import java.util.Locale
 
-// Reserved F09 body: this isolated handoff intentionally fails its contract tests.
-
 /** Matches a trimmed query as a substring of the name, location label or description.
  * Blank input matches every campsite; case folding uses [Locale.ROOT]. Inputs remain unchanged.
  * @param campsite Listing facts to search, without repository reads.
@@ -15,12 +13,17 @@ fun matchesCampsiteText(
     campsite: Campsite,
     query: String,
 ): Boolean {
-
     if (query.isBlank()) return true
 
     val normalized = query.trim().lowercase(Locale.ROOT)
 
-    return campsite.details.name.lowercase(Locale.ROOT).contains(normalized) ||
-        campsite.details.locationLabel.lowercase(Locale.ROOT).contains(normalized) ||
-        campsite.details.description.lowercase(Locale.ROOT).contains(normalized)
+    return campsite.details.name
+        .lowercase(Locale.ROOT)
+        .contains(normalized) ||
+        campsite.details.locationLabel
+            .lowercase(Locale.ROOT)
+            .contains(normalized) ||
+        campsite.details.description
+            .lowercase(Locale.ROOT)
+            .contains(normalized)
 }

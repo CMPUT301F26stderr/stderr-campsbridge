@@ -7,6 +7,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifferen
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
@@ -56,4 +57,5 @@ fun taskExampleBindings(): TaskExampleBindings =
         parseName = ::parseDisplayName,
         orderCampsites = ::sortCampsitesByName,
         matchesText = ::matchesCampsiteText,
+        validateWindows = ::validateLotteryWindows,
     )

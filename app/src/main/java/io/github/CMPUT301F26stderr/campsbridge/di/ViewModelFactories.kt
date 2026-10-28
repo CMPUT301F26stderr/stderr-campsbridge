@@ -18,6 +18,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
@@ -49,7 +50,7 @@ fun lotteryListViewModelFactory(
         }
     }
 
-/** Constructs the saved/new lottery form; reserved F13 remains explicitly pending.
+/** Constructs the saved/new lottery form with the assigned F13 schedule validator.
  * @param services Current host's repository interfaces and clock.
  * @param ownerId Current account identity whose published sites are eligible.
  * @param lotteryId Existing draft target, or null for a new local form.
@@ -67,7 +68,7 @@ fun lotterySetupViewModelFactory(
                 services.repositories.lotteries,
                 services.clock,
                 createSavedStateHandle(),
-                validateWindows = null,
+                validateWindows = ::validateLotteryWindows,
                 lotteryId = lotteryId,
             )
         }
@@ -258,7 +259,7 @@ fun availabilityViewModelFactory(
         }
     }
 
-/** Constructs discovery with the assigned matching helper; the peer matcher stays pending.
+/** Constructs discovery with completed matching functions; unassigned predicates remain pending.
  * @param services Selected host's published listing, attachment and rating sources.
  */
 fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
