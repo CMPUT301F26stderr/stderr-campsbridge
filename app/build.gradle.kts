@@ -282,6 +282,7 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
             "ui/profile/logic/DisplayNameInputKt.class",
             "ui/campsites/logic/CampsiteOrderingKt.class",
             "ui/lotteries/logic/LotteryWindowInputKt.class",
+            "ui/lotteries/logic/ParticipantStateFilterKt.class",
         ).forEach { path ->
             check(
                 compiledSources
@@ -307,6 +308,7 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 "**/ui/profile/logic/DisplayNameInputKt*.class",
                 "**/ui/campsites/logic/CampsiteOrderingKt*.class",
                 "**/ui/lotteries/logic/LotteryWindowInputKt*.class",
+                "**/ui/lotteries/logic/ParticipantStateFilterKt*.class",
             )
         },
     )
