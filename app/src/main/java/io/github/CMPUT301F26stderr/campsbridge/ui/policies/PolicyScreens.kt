@@ -65,21 +65,29 @@ fun PolicyReaderScreen(
                 ).padding(vertical = Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.large),
         ) {
-            if (content == null) {
-                Text(stringResource(R.string.policy_unavailable_body))
-            } else {
-                for (section in content.sections) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
-                        Text(
-                            stringResource(section.title),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            stringResource(section.body),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                    }
-                }
+            PolicyDocumentContent(content)
+        }
+    }
+}
+
+/** Renders an exact packaged document inside its caller's existing scroll and screen host.
+ * @param content Resolved version, or null to show explicit unavailable-history feedback.
+ */
+@Composable
+fun PolicyDocumentContent(content: PolicyContent?) {
+    if (content == null) {
+        Text(stringResource(R.string.policy_unavailable_body))
+    } else {
+        for (section in content.sections) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                Text(
+                    stringResource(section.title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    stringResource(section.body),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
             }
         }
     }

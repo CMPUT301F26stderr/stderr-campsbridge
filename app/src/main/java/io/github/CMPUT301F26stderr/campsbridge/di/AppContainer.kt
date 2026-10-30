@@ -49,7 +49,7 @@ class AppContainer(
         FirebaseImageRepository(clients.firestore, clients.storage, clock)
     override val images: ImageRepository = imageImplementation
     override val reviews: ReviewRepository = FirestoreReviewRepository(clients.firestore, clock)
-    val notifications: NotificationRepository =
+    override val notifications: NotificationRepository =
         FirestoreNotificationRepository(clients.firestore, clock)
     val messages: MessageRepository = FirestoreMessageRepository(clients.firestore, clock)
     val moderation: ModerationRepository =

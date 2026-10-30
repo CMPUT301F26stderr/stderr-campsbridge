@@ -1,39 +1,41 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAppPreferences
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.di.AppRepositories
 import io.github.CMPUT301F26stderr.campsbridge.di.AppServices
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.PendingWork
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.WorkSession
 import io.github.CMPUT301F26stderr.campsbridge.platform.identity.IdentityProvider
 import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.LocalAccountProgress
 import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.SetupProgress
-import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
-import java.time.Instant
 import java.util.UUID
 
 /** Starting scenarios offered by the debug launcher's visible tools menu. */
-enum class DemoScenario { ENTRANT, OWNER, NEW_ACCOUNT }
+enum class DemoScenario { ENTRANT, OWNER, NEW_ACCOUNT, ADMIN }
 
 /** Owns one isolated in-memory graph and its root/navigation ViewModels.
  * @param scenario Starting account and progress.
@@ -44,26 +46,22 @@ class DemoSession(
     cacheDirectory: File,
 ) : ViewModelStoreOwner {
     override val viewModelStore = ViewModelStore()
+    val preview = DemoPreviewData(scenario)
     val services: AppServices
     val model: AppViewModel
+    val notificationEntries: NotificationEntryViewModel
 
     init {
         val id = "demo-account"
+        val data = preview
         val owner = scenario == DemoScenario.OWNER
         val account =
-            if (scenario == DemoScenario.NEW_ACCOUNT) {
+            if (scenario ==
+                DemoScenario.NEW_ACCOUNT
+            ) {
                 null
             } else {
-                Account(
-                    id,
-                    if (owner) "Jordan Lee" else "Alex Chen",
-                    "camper@example.com",
-                    null,
-                    if (owner) setOf(Role.ENTRANT, Role.OWNER) else setOf(Role.ENTRANT),
-                    Preferences(tags = setOf("lakeside")),
-                    AccountSettings(),
-                    Instant.parse("2026-10-01T12:00:00Z"),
-                )
+                data.accounts.single { it.id == id }
             }
         val local =
             if (account == null) {
@@ -71,16 +69,42 @@ class DemoSession(
             } else {
                 LocalAccountProgress(
                     SetupProgress.COMPLETED,
-                    if (owner) Role.OWNER else Role.ENTRANT,
+                    if (scenario ==
+                        DemoScenario.ADMIN
+                    ) {
+                        Role.ADMIN
+                    } else if (owner) {
+                        Role.OWNER
+                    } else {
+                        Role.ENTRANT
+                    },
                 )
             }
         services =
             AppServices(
-                DemoRepositories(account, File(cacheDirectory, UUID.randomUUID().toString())),
+                DemoRepositories(account, data, File(cacheDirectory, UUID.randomUUID().toString())),
                 DemoIdentity(id),
                 DemoAppPreferences(mapOf(id to local)),
+                data.clock,
             )
         model = ViewModelProvider(this, appViewModelFactory(services))[AppViewModel::class.java]
+        val notificationFactory =
+            viewModelFactory {
+                initializer {
+                    NotificationEntryViewModel(
+                        NotificationContentLoader(
+                            services.repositories.notifications,
+                            services.repositories.lotteries,
+                            services.repositories.bookings,
+                        ),
+                        SavedStateHandle(),
+                    )
+                }
+            }
+        notificationEntries =
+            ViewModelProvider(this, notificationFactory)[
+                NotificationEntryViewModel::class.java,
+            ]
     }
 }
 
@@ -121,30 +145,36 @@ private class DemoIdentity(
 
 /** Supplies only repositories required by implemented screens.
  * @param account Optional starting profile.
+ * @param data Coherent saved preview records and fixed clock.
  * @param directory Private photo cache for this scenario.
  */
 private class DemoRepositories(
     account: Account?,
+    data: DemoPreviewData,
     directory: File,
 ) : AppRepositories {
-    override val accounts = DemoAccountRepository(listOfNotNull(account))
-    override val images = DemoImageRepository(directory)
-    override val lotteries = DemoLotteryRepository()
-    override val bookings = DemoBookingRepository()
-    override val reviews = DemoReviewRepository()
-    override val campsites =
-        DemoCampsiteRepository(
-            if (account != null && Role.OWNER in account.roles) {
-                listOf(
-                    sampleCampsite("demo-river", account.id),
-                    sampleCampsite("demo-draft", account.id, published = false).let {
-                        it.copy(details = it.details.copy(name = "Forest clearing"))
-                    },
-                )
-            } else {
-                emptyList()
+    override val accounts =
+        DemoAccountRepository(
+            data.accounts.filterNot { it.id == "demo-account" } + listOfNotNull(account),
+        )
+    override val images =
+        DemoImageRepository(
+            directory,
+            data.clock,
+            data.photoReferences,
+        )
+    override val lotteries = DemoLotteryRepository(data.lotteries, data.offers, data.entries)
+    override val bookings =
+        DemoBookingRepository(
+            data.reservations,
+            data.campsites.associate {
+                it.id to
+                    it.ownerId
             },
         )
+    override val notifications = DemoNotificationRepository(data.events, data.inboxes, data.clock)
+    override val reviews = DemoReviewRepository()
+    override val campsites = DemoCampsiteRepository(data.campsites, data.calendars)
     override val pendingWork = DemoPendingWork()
 }
 

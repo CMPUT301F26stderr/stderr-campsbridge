@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reservation_view">View reservation</string>
+    <string name="reservations_title">Reservations</string>
+    <string name="my_reservations">My reservations</string>
+    <string name="reservation_view_list">View reservations</string>
+</resources>

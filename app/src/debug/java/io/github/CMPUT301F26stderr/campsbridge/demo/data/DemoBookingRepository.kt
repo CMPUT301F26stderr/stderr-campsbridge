@@ -7,15 +7,21 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-/** Empty offline reader; simulated payment/inventory transactions require the Firebase host. */
-class DemoBookingRepository : BookingRepository {
-    /** Returns no saved offline reservation.
+/** Saved offline booking snapshots; coordinated transactions require the Firebase host.
+ * @param records Supplied historical aggregates.
+ * @param owners Authoritative fixture campsite-to-owner relationships.
+ */
+class DemoBookingRepository(
+    private val records: List<Reservation> = emptyList(),
+    private val owners: Map<String, String> = emptyMap(),
+) : BookingRepository {
+    /** Returns the matching supplied reservation, or null.
      * @param id Requested identity.
      */
     override suspend fun get(id: String): Reservation? =
-        null
+        records.firstOrNull { it.id == id }
 
-    /** Returns absence from the intentionally empty offline dataset, without a Firebase call.
+    /** Returns a supplied consuming reservation without a Firebase call.
      * @param lotteryId Requested lottery.
      * @param entrantId Requested entrant.
      */
@@ -23,31 +29,31 @@ class DemoBookingRepository : BookingRepository {
         lotteryId: String,
         entrantId: String,
     ): Reservation? =
-        null
+        records.firstOrNull { it.lotteryId == lotteryId && it.entrantId == entrantId }
 
-    /** Emits confirmed absence in the empty local demo.
+    /** Emits the supplied aggregate, or confirmed fixture absence.
      * @param id Requested identity.
      */
     override fun observe(id: String): Flow<Reservation?> =
-        flowOf(null)
+        flowOf(records.firstOrNull { it.id == id })
 
-    /** Emits the demo's empty entrant history.
+    /** Emits only supplied reservations belonging to the requested entrant.
      * @param entrantId Requested account.
      */
     override fun observeForEntrant(entrantId: String): Flow<List<Reservation>> =
-        flowOf(emptyList())
+        flowOf(records.filter { it.entrantId == entrantId })
 
-    /** Emits the demo's empty campsite history.
+    /** Emits only supplied reservations associated with the requested campsite.
      * @param campsiteId Requested campsite.
      */
     override fun observeForCampsite(campsiteId: String): Flow<List<Reservation>> =
-        flowOf(emptyList())
+        flowOf(records.filter { it.campsiteId == campsiteId })
 
-    /** Emits the demo's empty owner history.
+    /** Emits reservations associated with the requested fixture owner.
      * @param ownerId Requested owner.
      */
     override fun observeForOwner(ownerId: String): Flow<List<Reservation>> =
-        flowOf(emptyList())
+        flowOf(records.filter { owners[it.campsiteId] == ownerId })
 
     /** Rejects distributed booking rather than simulating a confirmed transaction.
      * @param request Requested stay and accepted quote.

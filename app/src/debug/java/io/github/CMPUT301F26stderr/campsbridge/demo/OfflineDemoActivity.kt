@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,17 +39,21 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.demo.tasks.TaskExamplesActivity
+import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
-import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.notificationLogViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -82,7 +87,8 @@ class OfflineDemoActivity : ComponentActivity() {
                             startActivity(
                                 Intent(
                                     this@OfflineDemoActivity,
-                                    TaskExamplesActivity::class.java,
+                                    io.github.CMPUT301F26stderr.campsbridge.demo.tasks
+                                        .TaskExamplesActivity::class.java,
                                 ),
                             )
                         },
@@ -131,7 +137,7 @@ class OfflineDemoActivity : ComponentActivity() {
                                             id,
                                         )
                                     },
-                                    { exploreViewModelFactory(session.services) },
+                                    { demoExploreViewModelFactory(session.services) },
                                     {
                                         ownerId,
                                         id,
@@ -162,6 +168,42 @@ class OfflineDemoActivity : ComponentActivity() {
                                             campsiteId,
                                         )
                                     },
+                                    {
+                                        accountId,
+                                        id,
+                                        context,
+                                        ->
+                                        reservationDetailViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            id,
+                                            context,
+                                        )
+                                    },
+                                    { accountId ->
+                                        inboxViewModelFactory(session.services, accountId)
+                                    },
+                                    { accountId, lotteryId, campsiteId ->
+                                        bookingViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            lotteryId,
+                                            campsiteId,
+                                        )
+                                    },
+                                    { accountId, context, campsiteId ->
+                                        demoReservationListViewModelFactory(
+                                            session.services,
+                                            accountId,
+                                            context,
+                                            campsiteId,
+                                            session.preview.reservationCategories,
+                                        )
+                                    },
+                                    { adminBrowseViewModelFactory(session.services) },
+                                    { notificationLogViewModelFactory(session.services) },
+                                    AndroidNotificationPermission(this@OfflineDemoActivity),
+                                    session.notificationEntries,
                                 )
                             }
                         }
@@ -176,7 +218,7 @@ class OfflineDemoActivity : ComponentActivity() {
  * @param onScenario Replaces the local demo graph.
  * @param onReset Restores the currently selected starting scenario.
  * @param onGallery Opens the component gallery.
- * @param onTaskExamples Opens direct local examples for assigned helper tasks.
+ * @param onTaskExamples Opens direct local examples for individual teammate tasks.
  * @param onPreview Opens a passive onboarding state for inspection.
  */
 @Composable
@@ -189,16 +231,22 @@ private fun DemoToolbar(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var previews by remember { mutableStateOf(false) }
+    var about by remember { mutableStateOf(false) }
     Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = Spacing.screen),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                stringResource(R.string.demo_offline),
-                Modifier.weight(1f),
-                style = MaterialTheme.typography.labelLarge,
-            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.demo_offline),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Text(
+                    stringResource(R.string.demo_sample_label),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
             Box {
                 TextButton({ expanded = true }) { Text(stringResource(R.string.demo_tools)) }
                 DropdownMenu(expanded, { expanded = false }) {
@@ -211,6 +259,13 @@ private fun DemoToolbar(
                             },
                         )
                     }
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.demo_about)) },
+                        onClick = {
+                            expanded = false
+                            about = true
+                        },
+                    )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.demo_reset)) },
                         onClick = {
@@ -243,6 +298,21 @@ private fun DemoToolbar(
             }
         }
     }
+    if (about) {
+        AlertDialog(
+            onDismissRequest = { about = false },
+            title = { Text(stringResource(R.string.demo_about)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                    Text(stringResource(R.string.demo_sample_explanation))
+                    Text(stringResource(R.string.demo_sample_ordering))
+                }
+            },
+            confirmButton = {
+                TextButton({ about = false }) { Text(stringResource(R.string.onboarding_close)) }
+            },
+        )
+    }
     if (previews) {
         AlertDialog(
             onDismissRequest = { previews = false },
@@ -273,6 +343,7 @@ private fun DemoScenario.label(): Int =
         DemoScenario.ENTRANT -> R.string.demo_entrant
         DemoScenario.OWNER -> R.string.demo_owner
         DemoScenario.NEW_ACCOUNT -> R.string.demo_new_account
+        DemoScenario.ADMIN -> R.string.demo_admin
     }
 
 /** Resolves the localized onboarding preview name. */

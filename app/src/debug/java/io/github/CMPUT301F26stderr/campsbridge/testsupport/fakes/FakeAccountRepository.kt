@@ -48,6 +48,8 @@ class FakeAccountRepository(
     var ownerGate: CompletableDeferred<Unit>? = null
     var ownerHandler: (suspend (String) -> Unit)? = null
     val ownerIds = mutableListOf<String>()
+    val settingsRequests = mutableListOf<Pair<String, AccountSettings>>()
+    var settingsHandler: (suspend (String, AccountSettings) -> Unit)? = null
 
     /**
      * Returns controlled data without accessing Firebase.
@@ -136,7 +138,7 @@ class FakeAccountRepository(
             current.copy(name = profile.name, email = profile.email, phone = profile.phone)
     }
 
-    /** Rejects unexpected settings mutation.
+    /** Requires a configured settings result and records the exact requested replacement.
      * @param id Requested account ID.
      * @param settings Requested settings.
      */
@@ -144,7 +146,9 @@ class FakeAccountRepository(
         id: String,
         settings: AccountSettings,
     ) {
-        unexpectedWrite()
+        settingsRequests.add(id to settings)
+        val handler = settingsHandler ?: unexpectedWrite()
+        handler(id, settings)
     }
 
     /** Replaces controlled interests when mutations are explicitly enabled.

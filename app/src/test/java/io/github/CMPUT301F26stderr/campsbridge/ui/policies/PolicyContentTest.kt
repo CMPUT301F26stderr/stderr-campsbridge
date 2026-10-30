@@ -75,6 +75,22 @@ class PolicyContentTest {
         assertEquals(guidelines, refund)
     }
 
+    /** Both current readers retain the complete prototype's simulation/full-refund statement. */
+    @Test fun sharedPaymentTextIncludesTheFullRefundContract() {
+        val context = RuntimeEnvironment.getApplication()
+        for (id in PolicyId.entries) {
+            val section =
+                checkNotNull(policyContent(id)).sections.single {
+                    it.id ==
+                        PolicySectionId.PAYMENTS_AND_REFUNDS
+                }
+            assertEquals(
+                "Payments are simulated. Cancelling or rejecting a reservation returns the full simulated payment.",
+                context.getString(section.body),
+            )
+        }
+    }
+
     /** Confirms every required heading/body is available as actual nonblank packaged text.
      * @param content Exact resolved version under test.
      */

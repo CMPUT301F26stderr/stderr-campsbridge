@@ -2,16 +2,50 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import android.net.Uri
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.credits.BundledLicense
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import java.util.Locale
 
 /** Registered destinations only; add feature routes when their implementations exist. */
 object AppDestination {
     const val AVAILABILITY_EDITOR = "owner/campsites/{campsiteId}/availability/edit"
+    const val ADMIN_BROWSE = "admin/browse"
+    const val ADMIN_LOGS = "admin/logs"
+    const val ADMIN_NOTIFICATION = "admin/logs/events/{notificationId}"
+    const val ADMIN_NOTIFICATION_AUDIENCE = "admin/logs/events/{notificationId}/audience"
+
+    /** Opens recipient inspection using only the current original event identity.
+     * @param id Actual saved event identity, encoded as one route argument.
+     */
+    fun notificationAudience(id: String): String =
+        "${adminNotification(id)}/audience"
+
+    /** Addresses one immutable event without copying content or Inbox receipt state.
+     * @param id Actual saved event identity, encoded as one route argument.
+     */
+    fun adminNotification(id: String): String =
+        "admin/logs/events/${Uri.encode(id)}"
+
+    const val ADMIN_PROFILE = "admin/browse/profiles/{accountId}"
+    const val ADMIN_IMAGE = "admin/browse/images/{targetType}/{targetId}"
+
+    /** Addresses only a saved account identity within the shared Browse parent.
+     * @param id Actual profile ID, encoded as one route argument.
+     */
+    fun adminProfile(id: String): String =
+        "admin/browse/profiles/${Uri.encode(id)}"
+
+    /** Addresses a current attachment slot without persisting its uploaded blob identity.
+     * @param target Actual account/campsite relationship.
+     */
+    fun adminImage(target: ImageTarget): String =
+        "admin/browse/images/${target.type.name}/${Uri.encode(target.id)}"
+
     const val EXPLORE = "entrant/explore"
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
@@ -24,6 +58,52 @@ object AppDestination {
     const val ENTRANT_LOTTERIES = "entrant/lotteries"
     const val ENTRANT_LOTTERY_DETAIL = "entrant/lotteries/{lotteryId}/detail"
     const val CAMPSITE_LOTTERIES = "owner/campsites/{campsiteId}/lotteries"
+    const val BOOKING = "entrant/booking/{lotteryId}/{campsiteId}"
+    const val CAMPSITE_RESERVATIONS = "owner/campsites/{campsiteId}/reservations"
+
+    /** Addresses one actual Reservations primary in its caller's workspace.
+     * @param context Entrant or owner presentation.
+     */
+    fun reservations(context: ReservationContext): String =
+        "${context.name.lowercase(Locale.ROOT)}/reservations"
+
+    /** Opens an owner list filtered by saved identity, without copying listing facts.
+     * @param campsiteId Actual saved campsite identity.
+     */
+    fun campsiteReservations(campsiteId: String): String =
+        "owner/campsites/${Uri.encode(campsiteId)}/reservations"
+
+    /** Addresses one winning opportunity without copying source facts into navigation.
+     * @param lotteryId Actual saved lottery identity.
+     * @param campsiteId Actual selected allocation identity.
+     */
+    fun booking(
+        lotteryId: String,
+        campsiteId: String,
+    ): String =
+        "entrant/booking/${Uri.encode(lotteryId)}/${Uri.encode(campsiteId)}"
+
+    /** Addresses one workspace entry to the same account Inbox.
+     * @param workspace Actual entrant or owner primary presentation.
+     */
+    fun inbox(workspace: Role): String =
+        "${workspace.name.lowercase(Locale.ROOT)}/inbox"
+
+    /** Registers one saved reservation parent per caller presentation.
+     * @param context Explicit entrant or owner context.
+     */
+    fun reservationPattern(context: ReservationContext): String =
+        "${context.name.lowercase(Locale.ROOT)}/reservations/{reservationId}/detail"
+
+    /** Addresses only the saved identity, without copying booked facts into navigation.
+     * @param reservationId Actual ID from a saved reservation, Inbox or opportunity lookup.
+     * @param context Presentation belonging to the actual caller.
+     */
+    fun reservationDetail(
+        reservationId: String,
+        context: ReservationContext,
+    ): String =
+        reservationPattern(context).replace("{reservationId}", Uri.encode(reservationId))
 
     /** Addresses the owner's allocation-filtered list from actual campsite management.
      * @param campsiteId Saved listing identity; punctuation is encoded as one argument.
@@ -181,6 +261,12 @@ object AppDestination {
         license: BundledLicense,
     ): String =
         "${credits(workspace)}/licenses/${license.routeKey}"
+
+    /** Returns the workspace-owned notification preference/device-status child.
+     * @param workspace Actual owning profile graph.
+     */
+    fun notificationSettings(workspace: Role): String =
+        "${profileGraph(workspace)}/settings/notifications"
 
     /** Addresses the offline policy menu.
      * @param workspace Owning workspace.

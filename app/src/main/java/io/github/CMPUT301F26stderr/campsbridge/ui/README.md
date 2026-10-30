@@ -31,7 +31,7 @@ Use `AppScreen` for app bars, system/keyboard insets, gutters, optional bottom a
 
 The normal `debug` build opens `demo.OfflineDemoActivity`, which supplies local repositories to the real root, onboarding and profile controllers. Its **Demo tools** menu switches/reset scenarios and opens onboarding previews or the component gallery. `firebaseDebug` retains the Firebase launcher.
 
-The debug-only `demo.DemoActivity` gallery hosts two offline pages: **Controls** for input, choices, picker dialogs, actions and feedback; **Content** for feature cards, stay summaries, navigation, photos and calendar. Interactions modify local example state; they never construct repositories or write shared data. The campsite photo is bundled in debug assets from the approved prototype.
+The debug-only `demo.DemoActivity` gallery hosts two offline pages: **Controls** for input, choices, picker dialogs, actions and feedback; **Content** for feature cards, stay summaries, navigation, photos and calendar. Interactions modify local example state; they never construct repositories or write shared data. The gallery uses the shared credited scenery assets.
 
 After installing a debug APK, open the gallery with:
 
@@ -40,7 +40,7 @@ adb shell am start -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActivity
 adb shell am start -S -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActivity --ei page 1
 ```
 
-`--ez large true` starts with enlarged app typography/controls; system font scaling remains independent. `--ei section N` opens a zero-based section for visual review. The page tabs and Large text action are also interactive. Themed normal/enlarged previews are colocated with the gallery. This activity, example data and photo are absent from release builds.
+`--ez large true` starts with enlarged app typography/controls; system font scaling remains independent. `--ei section N` opens a zero-based section for visual review. The page tabs and Large text action are also interactive. Themed normal/enlarged previews are colocated with the gallery. This activity and its example state are absent from release builds.
 
 ## Shared component ownership
 
@@ -48,7 +48,7 @@ adb shell am start -S -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActiv
 | --- | --- |
 | `components/layout` | `AppScreen`, `StepScaffold`, `StepProgress`: frame, insets, optional header/footer, wizard progress/actions. |
 | `components/actions` | `AppActionButton`, `ActionStyle`: shared submission blocking and Material action hierarchy. |
-| `components/forms` | `AppTextField`, `CountStepper`: controlled fields, bounds, helper/error precedence, units and keyboard behavior. |
+| `components/forms` | `AppTextField`, `CountInput`, `CountStepper`: controlled fields, bounds, helper/error precedence, units and keyboard behavior. |
 | `components/selection` | `ChoiceRow`, `SwitchRow`, `CheckboxRow`, `PreferenceChips`, `DropdownField`: caller-owned selection and one action per row. |
 | `components/rows`, `components/summaries` | `NavigationRow`, `DetailRow`, `StaySummary`: repeated menu and fact layouts. |
 | `components/pickers` | `PickerField` and date/range/time dialogs: temporary selection applied only on Confirm. |
@@ -59,7 +59,7 @@ adb shell am start -S -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActiv
 
 Routes connect controllers, lifecycle collection, navigation and Android launchers. Screens arrange supplied state and callbacks; feature components compose shared controls; shared controls compose Material. Callbacks report explicit user intent. Selection components do not implement preference mutation, filtering or eligibility rules. Keep those decisions in their existing owner, including reserved teammate functions.
 
-`WorkspaceScaffold` accepts the current title and registered peer destinations from its caller; `WorkspaceNavigation` renders those items and reports IDs. The workspace graph currently registers Profile only; unfinished setup enters its own single-entry onboarding graph. See [onboarding](onboarding/README.md) for the reserved validation boundary. Do not present gallery destinations as implemented production routes. Primary workspace content uses the workspace frame; details and wizard flows own their appropriate frame. Apply system insets once and avoid stacking app bars.
+`WorkspaceScaffold` accepts the current title and registered peer destinations from its caller; `WorkspaceNavigation` renders those items and reports IDs. The workspace graph registers discovery, campsite and lottery flows, plus pending entry points for reservations, Inbox and admin inspection. Unfinished setup enters its own single-entry onboarding graph. See [onboarding](onboarding/README.md) for the reserved validation boundary. Do not present gallery destinations as implemented production routes. Primary workspace content uses the workspace frame; details and wizard flows own their appropriate frame. Apply system insets once and avoid stacking app bars.
 
 Use Material controls directly when a wrapper would add no behavior. Add small parameters or content slots for real variants; keep feature-only details beside the feature. An image slot can accept caller geometry, while compact card photos use the same loader with a missing/error placeholder. Business models may be passed directly when appropriate; avoid duplicate UI models without an actual assembly need.
 

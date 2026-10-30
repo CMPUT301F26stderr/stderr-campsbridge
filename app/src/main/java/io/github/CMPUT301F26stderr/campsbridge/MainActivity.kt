@@ -8,20 +8,30 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.notificationEntryViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.notificationLogViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.bindNotificationEntries
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.workSession
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -37,8 +47,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val services = (application as CampsbridgeApplication).services
         val model = ViewModelProvider(this, appViewModelFactory(services))[AppViewModel::class.java]
+        val entries =
+            ViewModelProvider(this, notificationEntryViewModelFactory(services))[
+                NotificationEntryViewModel::class.java,
+            ]
+        bindNotificationEntries(entries::accept)
         lifecycleScope.launch {
-            ForegroundWorkRunner(services.repositories.pendingWork) { failure ->
+            ForegroundWorkRunner(services.foregroundWork) { failure ->
                 Log.w("PendingWork", "Foreground persistence operation will retry", failure)
             }.run(
                 model.state.map { it.workSession() },
@@ -76,6 +91,24 @@ class MainActivity : ComponentActivity() {
                     ->
                     lotteryListViewModelFactory(services, accountId, context, campsiteId)
                 },
+                {
+                    accountId,
+                    id,
+                    context,
+                    ->
+                    reservationDetailViewModelFactory(services, accountId, id, context)
+                },
+                { accountId -> inboxViewModelFactory(services, accountId) },
+                { accountId, lotteryId, campsiteId ->
+                    bookingViewModelFactory(services, accountId, lotteryId, campsiteId)
+                },
+                { accountId, context, campsiteId ->
+                    reservationListViewModelFactory(services, accountId, context, campsiteId)
+                },
+                { adminBrowseViewModelFactory(services) },
+                { notificationLogViewModelFactory(services) },
+                AndroidNotificationPermission(this@MainActivity),
+                entries,
             )
         }
     }

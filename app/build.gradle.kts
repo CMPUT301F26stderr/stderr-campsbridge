@@ -232,6 +232,37 @@ tasks.register<JacocoReport>("unitCoverageReport") {
                     "io/github/CMPUT301F26stderr/campsbridge/domain/shared/TypesKt.class",
                 ).asFile.isFile,
         ) { "The measured production guard is missing" }
+        // A helper joins the same coverage gate when its local handoff is implemented.
+        mapOf(
+            "domain/booking/AvailableBookingNights.kt" to
+                "domain/booking/AvailableBookingNightsKt.class",
+            "domain/booking/ReservationCategory.kt" to "domain/booking/ReservationCategoryKt.class",
+            "ui/reservations/logic/ReservationOrdering.kt" to
+                "ui/reservations/logic/ReservationOrderingKt.class",
+            "ui/inbox/logic/InboxOrdering.kt" to "ui/inbox/logic/InboxOrderingKt.class",
+            "ui/inbox/logic/UnreadInboxCount.kt" to "ui/inbox/logic/UnreadInboxCountKt.class",
+            "ui/administration/logic/ProfileRoleFilter.kt" to
+                "ui/administration/logic/ProfileRoleFilterKt.class",
+            "ui/administration/logic/ProfileTextMatch.kt" to
+                "ui/administration/logic/ProfileTextMatchKt.class",
+            "ui/campsites/logic/PendingAvailabilityEdits.kt" to
+                "ui/campsites/logic/PendingAvailabilityEditsKt.class",
+            "ui/lotteries/logic/ParticipantStateFilter.kt" to
+                "ui/lotteries/logic/ParticipantStateFilterKt.class",
+        ).forEach { (source, compiled) ->
+            val sourceFile = file("src/main/java/io/github/CMPUT301F26stderr/campsbridge/$source")
+            if (sourceFile.isFile && sourceFile.readText().contains("fun ")) {
+                check(
+                    compiledSources
+                        .get()
+                        .file(
+                            "io/github/CMPUT301F26stderr/campsbridge/$compiled",
+                        ).asFile.isFile,
+                ) {
+                    "The measured helper is missing: $compiled"
+                }
+            }
+        }
         true
     }
     classDirectories.from(
@@ -252,6 +283,10 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
     executionData(unitExecution)
     val executionFile = unitExecution
     val compiledSources = debugClasses
+    val helperSourceDirectory =
+        layout.projectDirectory.dir(
+            "src/main/java/io/github/CMPUT301F26stderr/campsbridge",
+        )
     setOnlyIf {
         check(executionFile.get().asFile.isFile) { "Unit coverage data is missing" }
         check(
@@ -296,6 +331,37 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 "The measured calendar/input rule is missing: $path"
             }
         }
+        // A helper joins the same coverage gate when its local handoff is implemented.
+        mapOf(
+            "domain/booking/AvailableBookingNights.kt" to
+                "domain/booking/AvailableBookingNightsKt.class",
+            "domain/booking/ReservationCategory.kt" to "domain/booking/ReservationCategoryKt.class",
+            "ui/reservations/logic/ReservationOrdering.kt" to
+                "ui/reservations/logic/ReservationOrderingKt.class",
+            "ui/inbox/logic/InboxOrdering.kt" to "ui/inbox/logic/InboxOrderingKt.class",
+            "ui/inbox/logic/UnreadInboxCount.kt" to "ui/inbox/logic/UnreadInboxCountKt.class",
+            "ui/administration/logic/ProfileRoleFilter.kt" to
+                "ui/administration/logic/ProfileRoleFilterKt.class",
+            "ui/administration/logic/ProfileTextMatch.kt" to
+                "ui/administration/logic/ProfileTextMatchKt.class",
+            "ui/campsites/logic/PendingAvailabilityEdits.kt" to
+                "ui/campsites/logic/PendingAvailabilityEditsKt.class",
+            "ui/lotteries/logic/ParticipantStateFilter.kt" to
+                "ui/lotteries/logic/ParticipantStateFilterKt.class",
+        ).forEach { (source, compiled) ->
+            val sourceFile = helperSourceDirectory.file(source).asFile
+            if (sourceFile.isFile && sourceFile.readText().contains("fun ")) {
+                check(
+                    compiledSources
+                        .get()
+                        .file(
+                            "io/github/CMPUT301F26stderr/campsbridge/$compiled",
+                        ).asFile.isFile,
+                ) {
+                    "The measured helper is missing: $compiled"
+                }
+            }
+        }
         true
     }
     classDirectories.from(
@@ -313,6 +379,15 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 "**/ui/discovery/logic/CampsiteTextMatchKt*.class",
                 "**/ui/discovery/logic/GuestCapacityMatchKt*.class",
                 "**/ui/lotteries/logic/LotteryWindowInputKt*.class",
+                "**/domain/booking/AvailableBookingNightsKt*.class",
+                "**/domain/booking/ReservationCategoryKt*.class",
+                "**/ui/reservations/logic/ReservationOrderingKt*.class",
+                "**/ui/inbox/logic/InboxOrderingKt*.class",
+                "**/ui/inbox/logic/UnreadInboxCountKt*.class",
+                "**/ui/administration/logic/ProfileRoleFilterKt*.class",
+                "**/ui/administration/logic/ProfileTextMatchKt*.class",
+                "**/ui/campsites/logic/PendingAvailabilityEditsKt*.class",
+                "**/ui/lotteries/logic/ParticipantStateFilterKt*.class",
             )
         },
     )

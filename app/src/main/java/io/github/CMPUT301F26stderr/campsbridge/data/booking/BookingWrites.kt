@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationReques
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Payment
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.canCancelBeforeCheckout
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.stayNights
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.ALREADY_USED
@@ -38,6 +39,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import kotlinx.coroutines.flow.map
 import java.time.Clock
 import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * Owns reservation/payment, inventory and notification writes as coordinated transactions.
@@ -156,8 +158,8 @@ internal class BookingWrites(
 
     /**
      * Authorizes the requested actor role and atomically cancels/refunds the stay, releases
-     * inventory, and queues notification. Already cancelled stays are unchanged; the win
-     * stays consumed.
+     * inventory, and queues notification before booked-local checkout. Authorized already-cancelled
+     * retries remain unchanged after the cutoff; the win stays consumed.
      *
      * @param request Actor, role, and reason for cancellation.
      */
@@ -178,7 +180,17 @@ internal class BookingWrites(
                     Role.ADMIN -> true
                 }
             requireOperation(allowed, NOT_ALLOWED, "Not a participant or administrator")
-            cancelReservationInTransaction(db, tx, reservation, request, clock.instant())
+            if (reservation.cancellation != null) return@atomic
+            val now = clock.instant()
+            requireOperation(
+                canCancelBeforeCheckout(
+                    reservation,
+                    LocalDate.ofInstant(now, ZoneId.of(reservation.bookedCampsite.timeZone)),
+                ),
+                WINDOW_CLOSED,
+                "Cancellation must be before the booked checkout date",
+            )
+            cancelReservationInTransaction(db, tx, reservation, request, now)
         }
     }
 }

@@ -16,10 +16,22 @@ class FakeBookingRepository(
     initial: List<Reservation> = emptyList(),
 ) : BookingRepository {
     val records = MutableStateFlow(initial)
+    val getRequests = mutableListOf<String>()
+    var getHandler: (suspend (String) -> Reservation?)? = null
     val entrantFailure = MutableStateFlow<Exception?>(null)
     val entrantRequests = mutableListOf<String>()
+    var entrantHandler: ((String) -> Flow<List<Reservation>>)? = null
+    var ownerHandler: ((String) -> Flow<List<Reservation>>)? = null
+    val ownerRequests = mutableListOf<String>()
+    var activeOwnerObservers = 0
+        private set
     val opportunityRequests = mutableListOf<Pair<String, String>>()
     var opportunityHandler: (suspend (String, String) -> Reservation?)? = null
+    val reserveRequests = mutableListOf<BookingRequest>()
+    var reserveHandler: (suspend (BookingRequest) -> String)? = null
+    val cancellationRequests = mutableListOf<CancellationRequest>()
+    var cancelHandler: (suspend (CancellationRequest) -> Unit)? = null
+    var observeHandler: ((String) -> Flow<Reservation?>)? = null
     val recordFailure = MutableStateFlow<Exception?>(null)
     val observedRecordIds = mutableListOf<String>()
     var activeRecordObservers = 0
@@ -35,6 +47,11 @@ class FakeBookingRepository(
             entrantRequests.add(entrantId)
             activeEntrantObservers++
             try {
+                val handler = entrantHandler
+                if (handler != null) {
+                    handler(entrantId).collect { emit(it) }
+                    return@flow
+                }
                 combine(records, entrantFailure) { rows, failure ->
                     failure?.let { throw it }
                     rows.filter { it.entrantId == entrantId }
@@ -44,11 +61,14 @@ class FakeBookingRepository(
             }
         }
 
-    /** Rejects unconfigured single-record reads.
+    /** Reads controlled complete saved facts, including confirmed absence.
      * @param id Requested target.
      */
-    override suspend fun get(id: String): Reservation? =
-        unsupported()
+    override suspend fun get(id: String): Reservation? {
+        getRequests.add(id)
+        val handler = getHandler
+        return if (handler != null) handler(id) else records.value.firstOrNull { it.id == id }
+    }
 
     /** Reads exact controlled opportunity facts without deriving a persistence key in UI.
      * @param lotteryId Requested lottery.
@@ -75,6 +95,11 @@ class FakeBookingRepository(
             observedRecordIds.add(id)
             activeRecordObservers++
             try {
+                val handler = observeHandler
+                if (handler != null) {
+                    handler(id).collect { emit(it) }
+                    return@flow
+                }
                 combine(records, recordFailure) { rows, failure ->
                     failure?.let { throw it }
                     rows.firstOrNull { it.id == id }
@@ -90,23 +115,38 @@ class FakeBookingRepository(
     override fun observeForCampsite(campsiteId: String): Flow<List<Reservation>> =
         unsupported()
 
-    /** Rejects unconfigured owner aggregates.
+    /** Observes only an explicitly configured owner aggregate and records its lifetime.
      * @param ownerId Requested owner.
      */
     override fun observeForOwner(ownerId: String): Flow<List<Reservation>> =
-        unsupported()
+        flow {
+            ownerRequests.add(ownerId)
+            activeOwnerObservers++
+            try {
+                val handler = ownerHandler ?: unsupported()
+                handler(ownerId).collect { emit(it) }
+            } finally {
+                activeOwnerObservers--
+            }
+        }
 
-    /** Rejects unconfigured booking writes.
+    /** Records exact booking input and requires an explicit configured outcome.
      * @param request Exact reservation attempt.
      */
-    override suspend fun reserve(request: BookingRequest): String =
-        unsupported()
+    override suspend fun reserve(request: BookingRequest): String {
+        reserveRequests.add(request)
+        val handler = reserveHandler ?: unsupported()
+        return handler(request)
+    }
 
-    /** Rejects unconfigured cancellation writes.
+    /** Records exact cancellation input and requires a deliberately configured outcome.
      * @param request Exact cancellation attempt.
      */
-    override suspend fun cancel(request: CancellationRequest): Unit =
-        unsupported()
+    override suspend fun cancel(request: CancellationRequest) {
+        cancellationRequests.add(request)
+        val handler = cancelHandler ?: unsupported()
+        handler(request)
+    }
 
     /** Requires a deliberate outcome for each newly consumed operation. */
     private fun unsupported(): Nothing =

@@ -94,6 +94,11 @@ internal fun NavGraphBuilder.campsiteGraph(
                 controller.navigate(AppDestination.LOTTERY_SETUP) { launchSingleTop = true }
             }, onViewLotteries = {
                 controller.navigate(AppDestination.campsiteLotteries(id)) { launchSingleTop = true }
+            }, onViewReservations = {
+                controller.navigate(AppDestination.campsiteReservations(id)) {
+                    launchSingleTop =
+                        true
+                }
             }, onPreview = {
                 controller.navigate(
                     AppDestination.campsiteGraph(
