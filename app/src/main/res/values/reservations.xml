@@ -26,4 +26,9 @@
     <string name="reservation_full_refund">Full simulated refund</string>
     <string name="reservation_refunded_amount">Amount refunded</string>
     <string name="reservation_refunded_at">Refunded at</string>
+    <string name="reservation_acceptance_record">Acceptance record</string>
+    <string name="reservation_refund_policy">Refund policy</string>
+    <string name="reservation_accepted_at">Accepted at</string>
+    <string name="reservation_policy_version">Policy version</string>
+    <string name="reservation_no_saved_rules">No campsite rules were recorded.</string>
 </resources>
