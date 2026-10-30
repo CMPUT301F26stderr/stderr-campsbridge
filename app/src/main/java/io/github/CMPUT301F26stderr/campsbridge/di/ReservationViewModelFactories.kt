@@ -1,10 +1,12 @@
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 
-/** Keeps this factory contract available until the feature is implemented.
+/** Supplies the single saved reader with the current host's booking source.
  * @param services Current host's repository interfaces.
  * @param accountId Ready actor identity.
  * @param reservationId Actual saved target.
@@ -16,7 +18,17 @@ fun reservationDetailViewModelFactory(
     reservationId: String,
     context: ReservationContext,
 ): ViewModelProvider.Factory =
-    viewModelFactory {}
+    viewModelFactory {
+        initializer {
+            ReservationDetailViewModel(
+                accountId,
+                reservationId,
+                context,
+                services.repositories.bookings,
+                services.clock,
+            )
+        }
+    }
 
 /** Keeps this factory contract available until the feature is implemented.
  * @param services Current repository interfaces and application clock.
