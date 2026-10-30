@@ -41,6 +41,14 @@ After `CI ready` passes, main pushes and manual main runs publish that run's APK
 
 Firebase deployment and AI review are not part of the current workflow.
 
+## Reopened issues
+
+The Project's built-in rule moves closed issues to Done. [`issue-author-close.yml`](workflows/issue-author-close.yml) moves open Done cards back to Todo when an issue is reopened, including when the author-approval action reopens it. It leaves other statuses and archived cards alone. Queued events recheck the current issue and card before writing. A scheduled repair runs every 15 minutes to catch delayed Project close updates.
+
+Set the repository secret `PROJECT_AUTOMATION_TOKEN` to a maintainer token with repository access and the `project` scope. The repository's `GITHUB_TOKEN` can't update organization Projects. Rotate the secret when its token changes. The workflow targets Project 3; change the script's `--project` argument if the active Project changes.
+
+Run **Issue author approval** manually with an issue number to repair one card, or leave it empty to repair all open Done cards in this repository. A reopened issue returns to Todo so its readiness can be checked again.
+
 ## Runner and toolchain maintenance
 
 All jobs require a Linux x64 self-hosted runner with the `self-hosted`, `linux`, and `x64` labels. The runner needs Nix, Bash, Git, access to the Nix daemon, a writable home/cache, and network access for downloads. Jobs wait when no matching runner is online.
