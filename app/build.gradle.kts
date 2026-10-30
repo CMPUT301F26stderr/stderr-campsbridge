@@ -223,6 +223,10 @@ tasks.register<JacocoReport>("unitCoverageReport") {
     executionData(unitExecution)
     val executionFile = unitExecution
     val compiledSources = debugClasses
+    val helperSourceDirectory =
+        layout.projectDirectory.dir(
+            "src/main/java/io/github/CMPUT301F26stderr/campsbridge",
+        )
     setOnlyIf {
         check(executionFile.get().asFile.isFile) { "Unit coverage data is missing" }
         check(
@@ -250,7 +254,7 @@ tasks.register<JacocoReport>("unitCoverageReport") {
             "ui/lotteries/logic/ParticipantStateFilter.kt" to
                 "ui/lotteries/logic/ParticipantStateFilterKt.class",
         ).forEach { (source, compiled) ->
-            val sourceFile = file("src/main/java/io/github/CMPUT301F26stderr/campsbridge/$source")
+            val sourceFile = helperSourceDirectory.file(source).asFile
             if (sourceFile.isFile && sourceFile.readText().contains("fun ")) {
                 check(
                     compiledSources
