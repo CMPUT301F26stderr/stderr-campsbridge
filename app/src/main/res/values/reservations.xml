@@ -19,4 +19,11 @@
     <string name="reservation_stay_details">Stay details</string>
     <string name="reservation_payment">Payment &amp; refund</string>
     <string name="reservation_accepted_terms">Accepted rules &amp; policy</string>
+    <string name="reservation_payment_record">Payment record</string>
+    <string name="reservation_total_paid">Total paid</string>
+    <string name="reservation_simulated_payment">Simulated payment. No banking information is collected.</string>
+    <string name="reservation_paid_at">Paid at</string>
+    <string name="reservation_full_refund">Full simulated refund</string>
+    <string name="reservation_refunded_amount">Amount refunded</string>
+    <string name="reservation_refunded_at">Refunded at</string>
 </resources>
