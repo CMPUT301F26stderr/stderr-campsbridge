@@ -39,7 +39,7 @@ This starts disposable Auth, Firestore, and Storage emulators, runs the rules an
 
 The default `debug` build opens a populated offline scenario without Firebase setup. Demo tools switches between entrant, owner, administrator and new-account scenarios, resets records, and opens previews or Task examples. Profile editing, workspace switching and private cached photo changes work locally. Discovery and lottery readers use related sample records and a fixed clock; preview search results are labelled sample behavior.
 
-Owner campsite setup, saved listing details, availability and lottery flows use the existing application code. In Firebase-enabled builds, explicit actions save through the repositories. Accepted name/contact, campsite search/capacity/ordering and lottery-window helpers remain connected. Availability editing and exact participant filtering still await their assigned functions.
+Owner campsite setup, saved listing details, availability and lottery flows use the existing application code. In Firebase-enabled builds, explicit actions save through the repositories. Accepted name/contact, campsite search/capacity/ordering and lottery-window helpers remain connected. Availability editing and participant filtering use their implemented helpers.
 
 Shared repositories, notification/image readers, Android alert adapters and separate feature graph/factory contracts are available. Booking, saved reservation pages/lists/actions, Inbox, notification settings and admin inspection show pending feedback until their feature implementations arrive. Sample records do not make those screens complete. The offline adapters do not simulate distributed campsite, lottery, booking or refund transactions.
 
