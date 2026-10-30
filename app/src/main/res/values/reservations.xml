@@ -16,4 +16,7 @@
     <string name="reservation_cancellation">Cancellation</string>
     <string name="reservation_cancelled_at">Cancelled at</string>
     <string name="reservation_reason">Reason</string>
+    <string name="reservation_stay_details">Stay details</string>
+    <string name="reservation_payment">Payment &amp; refund</string>
+    <string name="reservation_accepted_terms">Accepted rules &amp; policy</string>
 </resources>
