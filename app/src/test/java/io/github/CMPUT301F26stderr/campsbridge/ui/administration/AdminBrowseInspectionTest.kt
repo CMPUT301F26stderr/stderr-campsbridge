@@ -78,3 +78,67 @@ class AdminBrowseInspectionTest {
                 f.saved.keys(),
             )
             f.model.closeSelection(AdminInspectionTarget.Image(target))
+            runCurrent()
+            assertEquals(AdminInspectionUiState.None, f.model.inspection.value)
+            assertEquals(0, f.accounts.writes + f.sites.writeCalls)
+        }
+
+    /** Clearing the actual parent store retires selected and Browse reads together. */
+    @Test fun clearedBrowseParentRejectsLaterSelectedActions() =
+        scenario { f ->
+            f.model.openProfile("account-1")
+            runCurrent()
+            assertTrue(f.model.inspection.value is AdminInspectionUiState.Profile)
+            assertEquals(1, f.accounts.activeObservers)
+            f.store.clear()
+            runCurrent()
+            f.model.openProfile("account-1")
+            f.model.openImage(ImageTarget(ImageTargetType.ACCOUNT, "account-1"))
+            f.model.retryProfile()
+            f.model.retryProfileCampsites()
+            f.model.retryInspectionPhoto()
+            f.model.retryImageParent()
+            runCurrent()
+            assertEquals(AdminInspectionUiState.None, f.model.inspection.value)
+            assertEquals(
+                0,
+                f.accounts.activeObservers + f.sites.activeObservers + f.images.activeObservers,
+            )
+            assertEquals(1, f.accounts.observations)
+            assertEquals(0, f.images.replaceCalls + f.images.deleteCalls)
+        }
+
+    /** Releases the actual parent model and its readers after one fixed scenario.
+     * @param block Parent ownership interaction under test.
+     */
+    private fun scenario(block: suspend TestScope.(Fixture) -> Unit) =
+        runTest(main.dispatcher) {
+            val f = Fixture()
+            try {
+                block(f)
+            } finally {
+                f.store.clear()
+                runCurrent()
+            }
+        }
+
+    /** Supplies real parent creation and existing controlled repository boundaries. */
+    private class Fixture {
+        val accounts = FakeAccountRepository(sampleAccount())
+        val sites = FakeCampsiteRepository(listOf(sampleCampsite()))
+        val images = FakeImageRepository()
+        val saved = SavedStateHandle()
+        val store = ViewModelStore()
+        val owner =
+            object : ViewModelStoreOwner {
+                override val viewModelStore = store
+            }
+        val model =
+            ViewModelProvider(
+                owner,
+                viewModelFactory {
+                    initializer { AdminBrowseViewModel(sites, accounts, images, saved) }
+                },
+            )[AdminBrowseViewModel::class.java]
+    }
+}
