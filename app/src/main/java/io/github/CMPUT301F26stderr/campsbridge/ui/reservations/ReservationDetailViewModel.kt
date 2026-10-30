@@ -38,7 +38,7 @@ class ReservationDetailViewModel(
 
     /** Restarts a failed source once; active and confirmed-absent sources remain observed. */
     fun retry() {
-        // Observation retries are implemented in the next reader step.
+        if (state.value == ReservationDetailUiState.Failure) observeRecord()
     }
 
     /** Rejects other identities and unrelated entrant history without substituting records.
