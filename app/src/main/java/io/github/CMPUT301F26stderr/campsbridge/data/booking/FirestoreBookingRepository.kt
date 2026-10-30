@@ -68,7 +68,8 @@ class FirestoreBookingRepository(
         writes.reserve(request)
 
     /**
-     * Authorizes and atomically refunds/releases a stay; retries preserve the first cancellation.
+     * Authorizes and atomically refunds/releases a stay before booked-local checkout.
+     * Authorized retries preserve the first cancellation even after the cutoff.
      * @param request Actor, role and cancellation reason.
      */
     override suspend fun cancel(request: CancellationRequest) =

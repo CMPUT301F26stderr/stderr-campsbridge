@@ -5,6 +5,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
@@ -12,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
@@ -53,7 +55,7 @@ fun lotteryListViewModelFactory(
         }
     }
 
-/** Constructs the saved/new lottery form with the assigned F13 schedule validator.
+/** Constructs the saved/new lottery form with the accepted schedule validator.
  * @param services Current host's repository interfaces and clock.
  * @param ownerId Current account identity whose published sites are eligible.
  * @param lotteryId Existing draft target, or null for a new local form.
@@ -117,6 +119,24 @@ fun appViewModelFactory(services: AppServices): ViewModelProvider.Factory =
         }
     }
 
+/** Supplies the Activity-owned typed tap resolver using the same repository read contracts.
+ * @param services Current host's existing dependencies; construction starts no reads or delivery.
+ */
+fun notificationEntryViewModelFactory(services: AppServices): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            val repositories = services.repositories
+            NotificationEntryViewModel(
+                NotificationContentLoader(
+                    repositories.notifications,
+                    repositories.lotteries,
+                    repositories.bookings,
+                ),
+                createSavedStateHandle(),
+            )
+        }
+    }
+
 /**
  * Constructs a graph-owned profile model with stable identity and repository interfaces.
  * @param services Application-scoped services.
@@ -157,11 +177,10 @@ fun onboardingViewModelFactory(
                 createSavedStateHandle(),
                 parseName = ::parseDisplayName,
             )
-            // F01 handoff uses the same function as the personal-details editor.
         }
     }
 
-/** Constructs the inventory owner with the assigned F11 ordering function.
+/** Constructs the inventory owner with the accepted ordering function.
  * @param services Selected host's dependencies.
  * @param ownerId Confirmed owner identity.
  */
@@ -261,7 +280,7 @@ fun availabilityViewModelFactory(
         }
     }
 
-/** Constructs discovery with the completed text and guest-capacity predicates.
+/** Constructs discovery with the accepted matching and ordering functions.
  * @param services Selected host's published listing, attachment and rating sources.
  */
 fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =

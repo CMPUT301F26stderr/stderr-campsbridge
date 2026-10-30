@@ -58,8 +58,9 @@ interface BookingRepository {
 
     /**
      * Authorizes the requested actor role and atomically cancels/refunds the stay, releases
-     * inventory, and queues notification. Already cancelled stays are unchanged; the win
-     * stays consumed.
+     * inventory, and queues notification. New cancellation/rejection must be before checkout
+     * in the saved booked-campsite timezone. Authorized already-cancelled retries are unchanged,
+     * including after that cutoff; the win stays consumed.
      *
      * @param request Actor, role, and reason for cancellation.
      */

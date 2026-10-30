@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_results_channel">Results and reservations</string>
+    <string name="notification_results_description">Lottery results and reservation updates.</string>
+</resources>

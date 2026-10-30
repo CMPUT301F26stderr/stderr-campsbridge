@@ -15,6 +15,21 @@ interface NotificationRepository {
     suspend fun get(id: String): Notification?
 
     /**
+     * Reads confirmed current inbox receipts from the server, including a confirmed empty result.
+     * Failures propagate; cached snapshots cannot establish an alert history baseline.
+     *
+     * @param accountId Account whose saved receipt history is requested.
+     */
+    suspend fun getInbox(accountId: String): List<InboxReceipt>
+
+    /** Reads intended/Inbox-delivered audience facts without changing delivery or receipts.
+     * Missing information differs from a captured empty set. Required server/decoding failures
+     * propagate for retry; the result is assembled across reads, not a database snapshot.
+     * @param notificationId Original immutable event identity.
+     */
+    suspend fun getAudience(notificationId: String): NotificationAudience
+
+    /**
      * Observes account-specific inbox receipts; shared event content is fetched separately.
      *
      * @param accountId Account ID whose participation or data is addressed.

@@ -1,0 +1,9 @@
+<resources>
+    <string name="notification_entry_title">Notification</string>
+    <string name="notification_entry_loading">Opening notification</string>
+    <string name="notification_entry_failure">Could not open this notification.</string>
+    <string name="notification_entry_unavailable">This notification\'s saved target is unavailable.</string>
+    <string name="notification_entry_wrong_account">This notification belongs to another account.</string>
+    <string name="notification_entry_workspace_failure">Could not switch workspaces to open this notification.</string>
+    <string name="notification_entry_close">Close</string>
+</resources>

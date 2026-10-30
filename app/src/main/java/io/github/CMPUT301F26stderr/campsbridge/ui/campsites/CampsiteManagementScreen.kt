@@ -54,6 +54,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onPreview Opens the separate read-only owner preview graph.
  * @param onCreateLottery Opens the registered local lottery setup from a published listing.
  * @param onViewLotteries Opens the registered allocation-filtered owner list.
+ * @param onViewReservations Opens the registered saved-site reservation list.
  */
 @Composable
 fun CampsiteManagementScreen(
@@ -68,6 +69,7 @@ fun CampsiteManagementScreen(
     onPreview: (() -> Unit)? = null,
     onCreateLottery: (() -> Unit)? = null,
     onViewLotteries: (() -> Unit)? = null,
+    onViewReservations: (() -> Unit)? = null,
 ) {
     AppScreen(stringResource(R.string.manage_campsite), modifier, onBack = onBack) {
         when (state) {
@@ -199,7 +201,13 @@ fun CampsiteManagementScreen(
                                 icon = Icons.Default.Add,
                             )
                         }
-
+                        if (onViewReservations != null) {
+                            NavigationRow(
+                                stringResource(R.string.reservation_view_list),
+                                onViewReservations,
+                                icon = Icons.Default.CheckCircle,
+                            )
+                        }
                         if (onPreview != null) {
                             NavigationRow(
                                 stringResource(R.string.campsite_preview),
@@ -230,6 +238,7 @@ private fun CampsiteManagementPreview() {
             onPreview = {},
             onCreateLottery = {},
             onViewLotteries = {},
+            onViewReservations = {},
         )
     }
 }

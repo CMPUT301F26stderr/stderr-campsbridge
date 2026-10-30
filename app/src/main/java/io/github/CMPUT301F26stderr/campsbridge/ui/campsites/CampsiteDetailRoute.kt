@@ -20,6 +20,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
  * @param onPreview Opens the separate owner preview graph.
  * @param onCreateLottery Opens new single-site lottery setup for a published owned listing.
  * @param onViewLotteries Opens the real owner list scoped to this listing's allocations.
+ * @param onViewReservations Opens the registered reservation list filtered by this saved site.
  * @param onOpenLottery Opens an actual entrant lottery detail; absent in preview/inspection.
  */
 @Composable
@@ -33,6 +34,7 @@ fun CampsiteDetailRoute(
     onPreview: (() -> Unit)? = null,
     onCreateLottery: (() -> Unit)? = null,
     onViewLotteries: (() -> Unit)? = null,
+    onViewReservations: (() -> Unit)? = null,
     onOpenLottery: ((String) -> Unit)? = null,
     onBack: () -> Unit,
 ) {
@@ -158,5 +160,6 @@ fun CampsiteDetailRoute(
         onPreview = onPreview,
         onCreateLottery = onCreateLottery,
         onViewLotteries = onViewLotteries,
+        onViewReservations = onViewReservations,
     )
 }

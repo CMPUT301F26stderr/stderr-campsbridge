@@ -11,9 +11,11 @@ import java.time.LocalDate
 
 /** Read-only campsite snapshots for the offline demo; no Firebase or write simulation.
  * @param records Scenario-owned campsite snapshots to expose to demo screens.
+ * @param calendars Fixed inventory keyed by campsite identity; empty for isolated fixtures.
  */
 class DemoCampsiteRepository(
     private val records: List<Campsite> = emptyList(),
+    private val calendars: Map<String, List<CalendarNight>> = emptyMap(),
 ) : CampsiteRepository {
     /** Returns one supplied campsite snapshot, or null when its ID is absent.
      * @param id Requested campsite identity.
@@ -80,7 +82,7 @@ class DemoCampsiteRepository(
     ): Unit =
         throw unavailableChange()
 
-    /** Emits no inventory because demo snapshots do not include campsite calendar data.
+    /** Emits only the supplied inventory in the requested half-open local date range.
      * @param id Campsite identity whose calendar was requested.
      * @param start Inclusive first local date in the requested range.
      * @param endExclusive Exclusive end of the requested range.
@@ -90,7 +92,7 @@ class DemoCampsiteRepository(
         start: LocalDate,
         endExclusive: LocalDate,
     ): Flow<List<CalendarNight>> =
-        flowOf(emptyList())
+        flowOf(calendars[id].orEmpty().filter { it.date >= start && it.date < endExclusive })
 
     /** Rejects inventory edits because this demo adapter has no campsite write behavior.
      * @param id Campsite identity whose inventory was requested.

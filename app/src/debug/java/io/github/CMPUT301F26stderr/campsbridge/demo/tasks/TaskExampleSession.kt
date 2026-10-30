@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
-import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
@@ -40,10 +39,11 @@ class TaskExampleSession(
                 TaskExampleData.account.copy(id = "task-other-entrant", name = "Morgan Park"),
             ),
         )
-    private val campsites = TaskCampsiteRepository()
-    private val lotteries = TaskLotteryRepository()
-    private val bookings = DemoBookingRepository()
-    private val images = DemoImageRepository(File(directory, UUID.randomUUID().toString()))
+    internal val images = DemoImageRepository(File(directory, UUID.randomUUID().toString()))
+    internal val campsites = TaskCampsiteRepository()
+    internal val lotteries = TaskLotteryRepository()
+    internal val bookings = TaskBookingRepository()
+    internal val notifications = TaskNotificationRepository()
     var isClosed = false
         private set
 
@@ -132,12 +132,29 @@ class TaskExampleSession(
             )
         }
 
+    /** Reads the supplied saved lottery selected by Inbox.
+     * @param id Actual sample draw identity.
+     */
+    fun lottery(id: String): LotteryDetailViewModel =
+        model(LotteryDetailViewModel::class.java, id) {
+            LotteryDetailViewModel(
+                TaskExampleData.ACCOUNT_ID,
+                id,
+                lotteries,
+                campsites,
+                TaskExampleData.clock,
+                bookings,
+                LotteryContext.ENTRANT,
+                accounts,
+            )
+        }
+
     /** Retains each real owner and releases its coroutine/listener scope on reset.
      * @param type Requested ViewModel class.
      * @param key Optional record identity within the task.
      * @param create Constructor using only this session's dependencies.
      */
-    private fun <T : ViewModel> model(
+    internal fun <T : ViewModel> model(
         type: Class<T>,
         key: String = type.name,
         create: () -> T,
