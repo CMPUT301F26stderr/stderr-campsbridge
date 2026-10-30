@@ -60,3 +60,76 @@ class AdminBrowseViewModelTest {
             assertTrue(f.accountBase.readIds.isEmpty())
         }
 
+    /** Restoration keeps tab-specific raw input and role using only primitive saved values. */
+    @Test fun restoresTabQueriesAndProfileRole() =
+        scenario { f ->
+            f.model.editQuery("  site input  ")
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            f.model.editQuery("  profile input  ")
+            f.model.selectRole(Role.OWNER)
+            f.model.selectTab(AdminBrowseTab.IMAGES)
+            f.model.editQuery("  image input  ")
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            runCurrent()
+            val values = f.snapshot()
+            assertTrue(values.isNotEmpty())
+            assertTrue(values.values.all { it is String })
+            f.recreate(values)
+            runCurrent()
+            assertEquals(AdminBrowseTab.PROFILES, f.model.state.value.tab)
+            assertEquals("  profile input  ", f.model.state.value.query)
+            assertEquals(Role.OWNER, f.model.state.value.role)
+            f.model.selectTab(AdminBrowseTab.IMAGES)
+            assertEquals("  image input  ", f.model.state.value.query)
+            assertEquals(null, f.model.state.value.role)
+            f.model.selectTab(AdminBrowseTab.CAMPSITES)
+            assertEquals("  site input  ", f.model.state.value.query)
+        }
+
+    /** Unknown enums and wrong primitive types cannot crash restoration or select foreign data. */
+    @Test fun malformedSavedValuesUseSafeDefaults() =
+        scenario(
+            saved =
+                SavedStateHandle(
+                    mapOf(
+                        "adminBrowseTab" to 42,
+                        "adminBrowseQueryCAMPSITES" to listOf("wrong type"),
+                        "adminBrowseProfileRole" to "NOT_A_ROLE",
+                    ),
+                ),
+        ) { f ->
+            runCurrent()
+            assertEquals(AdminBrowseTab.CAMPSITES, f.model.state.value.tab)
+            assertEquals("", f.model.state.value.query)
+            assertEquals(null, f.model.state.value.role)
+            assertEquals(AdminBrowseContent.Campsites(f.siteRows), f.model.state.value.content)
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            assertEquals(null, f.model.state.value.role)
+        }
+
+    /** Switching retires the previous observer and brings back only the selected tab's inputs. */
+    @Test fun switchingTabsReleasesOldSourceAndRetainsEachQuery() =
+        scenario { f ->
+            runCurrent()
+            f.model.editQuery("campsite query")
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            assertEquals(AdminBrowseContent.Loading, f.model.state.value.content)
+            runCurrent()
+            assertEquals(0, f.sites.active)
+            assertEquals(1, f.profiles.active)
+            f.model.editQuery("profile query")
+            f.model.selectRole(Role.ENTRANT)
+            f.model.selectTab(AdminBrowseTab.IMAGES)
+            runCurrent()
+            assertEquals(0, f.profiles.active)
+            assertEquals(1, f.attachments.active)
+            f.model.editQuery("image query")
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            runCurrent()
+            assertEquals("profile query", f.model.state.value.query)
+            assertEquals(Role.ENTRANT, f.model.state.value.role)
+            assertEquals(0, f.attachments.active)
+            f.model.selectTab(AdminBrowseTab.CAMPSITES)
+            assertEquals("campsite query", f.model.state.value.query)
+        }
+
