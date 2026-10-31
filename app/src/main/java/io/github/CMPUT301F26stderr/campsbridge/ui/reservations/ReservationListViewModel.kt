@@ -9,7 +9,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategory
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.VisibleImageSlots
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -36,7 +37,6 @@ import java.time.ZoneId
  * @param classify Date-category dependency, absent while integration is pending.
  * @param order Arrival-order dependency, absent while integration is pending.
  */
-@Suppress("UNUSED_PARAMETER")
 class ReservationListViewModel(
     private val accountId: String,
     val context: ReservationContext,
@@ -61,7 +61,9 @@ class ReservationListViewModel(
             },
         )
     val campsiteId = selectedCampsite.asStateFlow()
-    val photos = MutableStateFlow<Map<ImageTarget, ImageSlotState>>(emptyMap()).asStateFlow()
+    private val photoReader = VisibleImageSlots(images, viewModelScope)
+    val photos = photoReader.state
+    private var visibleIds = emptySet<String>()
     private var records: List<Reservation>? = null
     private var sourceFailed = false
     private var sourceJob: Job? = null
@@ -118,17 +120,37 @@ class ReservationListViewModel(
         publish()
     }
 
-    /** Reports visible saved rows.
-     * @param ids Displayed reservation identities.
+    /** Bounds photos to visible rows still permitted by the current list.
+     * @param ids Visible reservation identities, or empty when leaving the route.
      */
-    fun showVisibleReservations(ids: Set<String>) =
-        Unit
+    fun showVisibleReservations(ids: Set<String>) {
+        if (closed) return
+        val permitted = currentItems().map { it.reservation.id }.toSet()
+        val selected = ids intersect permitted
+        if (visibleIds == selected) return
+        visibleIds = selected
+        updatePhotos()
+    }
 
-    /** Retries a visible current photo.
-     * @param campsiteId Photo target identity.
+    /** Retries one visible photo independently of saved stay and name reads.
+     * @param campsiteId Current campsite photo target.
      */
-    fun retryPhoto(campsiteId: String) =
-        Unit
+    fun retryPhoto(campsiteId: String) {
+        if (!closed) photoReader.retry(ImageTarget(ImageTargetType.CAMPSITE, campsiteId))
+    }
+
+    /** Deduplicates campsite photos and releases targets that leave the displayed rows. */
+    private fun updatePhotos() {
+        val rows = currentItems()
+        visibleIds = visibleIds intersect rows.map { it.reservation.id }.toSet()
+        photoReader.show(
+            rows
+                .filter { it.reservation.id in visibleIds }
+                .map {
+                    ImageTarget(ImageTargetType.CAMPSITE, it.reservation.campsiteId)
+                }.toSet(),
+        )
+    }
 
     /** Installs the replacement identity guard before starting a potentially synchronous flow. */
     private fun observe() {
@@ -181,6 +203,7 @@ class ReservationListViewModel(
             prepareNames(emptySet(), emptySet())
             mutableState.value =
                 if (sourceFailed) ReservationListUiState.Failure else ReservationListUiState.Loading
+            updatePhotos()
             scheduleDateRefresh(emptyList())
             return
         }
@@ -223,6 +246,7 @@ class ReservationListViewModel(
                 classificationPending = classify == null,
                 orderingPending = order == null,
             )
+        updatePhotos()
         scheduleDateRefresh(current)
         pendingNames.forEach { it.start() }
     }
@@ -328,9 +352,11 @@ class ReservationListViewModel(
         nameTokens.clear()
         nameJobs.values.forEach { it.cancel() }
         nameJobs.clear()
+        photoReader.close()
         super.onCleared()
     }
 
+    /** Only the small owner filter is retained across recreation. */
     private companion object {
         const val FILTER_KEY = "reservationCampsite"
     }
