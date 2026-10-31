@@ -12,14 +12,13 @@ enum class StaySelectionInput {
     VALID,
 }
 
-/** Checks missing endpoints, positive duration and a nonpast campsite-local arrival in order.
+/** Checks endpoints, positive duration, nonpast arrival and every occupied night in order.
  * @param checkIn Inclusive arrival, or null before selection.
  * @param checkOut Exclusive departure, or null before selection.
  * @param eligibleNights Confirmed eligible occupied dates; checkout need not be included.
  * @param today Current campsite-local date supplied by the caller.
- * @return First date error; occupied-night validation remains pending.
+ * @return First failing condition or VALID, without changing inputs or reading a clock.
  */
-@Suppress("UNUSED_PARAMETER")
 fun validateStaySelection(
     checkIn: LocalDate?,
     checkOut: LocalDate?,
@@ -30,5 +29,10 @@ fun validateStaySelection(
     if (checkOut == null) return StaySelectionInput.MISSING_CHECK_OUT
     if (checkOut <= checkIn) return StaySelectionInput.INVALID_RANGE
     if (checkIn < today) return StaySelectionInput.PAST_CHECK_IN
-    return StaySelectionInput.UNAVAILABLE_NIGHTS
+    var night: LocalDate = checkIn
+    while (night < checkOut) {
+        if (night !in eligibleNights) return StaySelectionInput.UNAVAILABLE_NIGHTS
+        night = night.plusDays(1)
+    }
+    return StaySelectionInput.VALID
 }
