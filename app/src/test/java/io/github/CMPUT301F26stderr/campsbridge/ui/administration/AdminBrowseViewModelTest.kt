@@ -133,3 +133,69 @@ class AdminBrowseViewModelTest {
             assertEquals("campsite query", f.model.state.value.query)
         }
 
+    /** Repeated selections/input and role actions outside Profiles do not acquire new sources. */
+    @Test fun unchangedActionsDoNotResubscribe() =
+        scenario { f ->
+            runCurrent()
+            repeat(3) {
+                f.model.selectTab(AdminBrowseTab.CAMPSITES)
+                f.model.editQuery("")
+                f.model.selectRole(Role.ADMIN)
+            }
+            runCurrent()
+            assertEquals(1, f.sites.requests)
+            assertEquals(0, f.profiles.requests)
+            assertEquals(null, f.model.state.value.role)
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            runCurrent()
+            repeat(3) {
+                f.model.selectTab(AdminBrowseTab.PROFILES)
+                f.model.selectRole(null)
+                f.model.editQuery("")
+            }
+            runCurrent()
+            assertEquals(1, f.profiles.requests)
+        }
+
+    /** Held loading, confirmed emptiness and a later source exception remain distinct outcomes. */
+    @Test fun loadingEmptyAndFailureRemainDistinct() =
+        scenario { f ->
+            val loaded = CompletableDeferred<Unit>()
+            val failed = CompletableDeferred<Unit>()
+            f.sites.handler = { collector ->
+                loaded.await()
+                collector.emit(emptyList())
+                failed.await()
+                throw IOException("all-record read failed")
+            }
+            try {
+                runCurrent()
+                assertEquals(AdminBrowseContent.Loading, f.model.state.value.content)
+                assertEquals(1, f.sites.active)
+                loaded.complete(Unit)
+                runCurrent()
+                assertEquals(AdminBrowseContent.Campsites(emptyList()), f.model.state.value.content)
+                failed.complete(Unit)
+                runCurrent()
+                assertEquals(AdminBrowseContent.Failure, f.model.state.value.content)
+            } finally {
+                loaded.complete(Unit)
+                failed.complete(Unit)
+            }
+        }
+
+    /** Failed-source retry keeps input and sets its loading guard before starting another read. */
+    @Test fun explicitRetryIsGuardedAndPreservesInput() =
+        scenario(
+            matchesSite = { _, _ -> true },
+        ) { f ->
+            f.sites.rows.value = Result.failure(IOException("first read"))
+            f.model.editQuery("  retained  ")
+            runCurrent()
+            assertEquals(AdminBrowseContent.Failure, f.model.state.value.content)
+            val gate = CompletableDeferred<Unit>()
+            f.sites.handler = { collector ->
+                gate.await()
+                collector.emit(f.siteRows)
+                awaitCancellation()
+            }
