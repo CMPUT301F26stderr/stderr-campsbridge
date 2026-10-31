@@ -91,4 +91,20 @@ class BookingQuoteTest {
             bookingQuote(arrival, arrival.plusDays(3), Long.MAX_VALUE),
         )
     }
+
+    /** The full date range uses a Long night count and keeps zero/excessive rates exact. */
+    @Test fun fullLocalDateRangeUsesLongNightCountAndCheckedCents() {
+        assertEquals(
+            BookingQuote.Value(730_484_999_633L),
+            bookingQuote(LocalDate.MIN, LocalDate.MAX, 1),
+        )
+        assertEquals(
+            BookingQuote.Value(0),
+            bookingQuote(LocalDate.MIN, LocalDate.MAX, 0),
+        )
+        assertEquals(
+            BookingQuote.Overflow,
+            bookingQuote(LocalDate.MIN, LocalDate.MAX, Long.MAX_VALUE),
+        )
+    }
 }
