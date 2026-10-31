@@ -146,3 +146,83 @@ class AdminInspectionControllerTest {
             assertEquals(2, f.profileSource.requests)
         }
 
+    /** Missing parent state clears dependent facts, then confirmed reappearance starts new reads. */
+    @Test fun disappearedProfileRetiresAndReappearingRestartsDependents() =
+        scenario { f ->
+            f.photoBase.attachment.value = f.attachment
+            f.model.openProfile(f.profile.id)
+            runCurrent()
+            assertEquals(1, f.ownedSource.active)
+            f.profileSource.values.value = Result.success(null)
+            runCurrent()
+            assertEquals(AdminRead.Unavailable, f.profile().account)
+            assertEquals(AdminRead.Loading, f.profile().campsites)
+            assertNull(f.profile().photo.attachment)
+            assertEquals(0, f.ownedSource.active + f.photoBase.activeObservers)
+            f.profileSource.values.value = Result.success(f.profile)
+            runCurrent()
+            assertEquals(AdminRead.Content(listOf(f.site)), f.profile().campsites)
+            assertEquals(2, f.ownedSource.requests)
+            assertEquals(1, f.ownedSource.active)
+        }
+
+    /** Scoped rows preserve original order and reject foreign-owner results as failed data. */
+    @Test fun ownerRowsPreserveDraftsAndRemovalWithoutAcceptingForeignOwnership() =
+        scenario { f ->
+            val draft = f.site.copy(id = "draft", publishedAt = null)
+            val retained = f.site.copy(id = "removed", removal = Removal(Instant.MAX, "admin"))
+            val rows = listOf(draft, retained, f.site)
+            f.ownedSource.values.value = Result.success(rows)
+            f.model.openProfile(f.profile.id)
+            runCurrent()
+            assertEquals(AdminRead.Content(rows), f.profile().campsites)
+            f.ownedSource.values.value = Result.success(listOf(f.site.copy(ownerId = "foreign")))
+            runCurrent()
+            assertEquals(AdminRead.Failure, f.profile().campsites)
+            assertEquals(AdminRead.Content(f.profile), f.profile().account)
+        }
+
+    /** Same selection is stable and noncooperative previous reads cannot publish under a new ID. */
+    @Test fun unchangedSelectionAndLateReplacedProfileDoNotRestartOrOverwrite() =
+        scenario { f ->
+            val late = CompletableDeferred<Account?>()
+            f.profileSource.late = late
+            f.model.openProfile(f.profile.id)
+            runCurrent()
+            f.model.openProfile(f.profile.id)
+            runCurrent()
+            assertEquals(1, f.profileSource.requests)
+            f.model.openProfile(f.other.id)
+            runCurrent()
+            late.complete(f.profile)
+            runCurrent()
+            assertEquals(f.other.id, f.profile().id)
+            assertEquals(AdminRead.Content(f.other), f.profile().account)
+            assertEquals(0, f.profileSource.active)
+        }
+
+    /** An account attachment resolves only the corresponding account and no owned-site rows. */
+    @Test fun accountImageUsesItsExactProfileParent() =
+        scenario { f ->
+            f.photoBase.attachment.value = f.attachment
+            f.model.openImage(f.accountTarget)
+            runCurrent()
+            assertEquals(f.accountTarget, f.image().target)
+            assertEquals(AdminRead.Content(AdminImageParent.Profile(f.profile)), f.image().parent)
+            assertEquals(f.attachment, f.image().photo.attachment)
+            assertEquals(1, f.profileSource.requests)
+            assertEquals(0, f.siteSource.requests + f.ownedSource.requests)
+        }
+
+    /** A campsite attachment resolves its actual saved listing without account-source reads. */
+    @Test fun campsiteImageUsesItsExactSiteParent() =
+        scenario { f ->
+            f.photoBase.attachment.value = f.attachment.copy(target = f.siteTarget)
+            f.model.openImage(f.siteTarget)
+            runCurrent()
+            assertEquals(AdminRead.Content(AdminImageParent.Site(f.site)), f.image().parent)
+            assertEquals(1, f.siteSource.requests)
+            assertEquals(0, f.profileSource.requests + f.ownedSource.requests)
+            assertEquals(listOf(f.siteTarget), f.photoBase.observedTargets)
+        }
+
