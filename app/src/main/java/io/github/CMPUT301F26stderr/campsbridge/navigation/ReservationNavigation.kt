@@ -1,9 +1,9 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -17,6 +17,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailPage
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 
 /** Registers saved overview/payment/terms beneath one aggregate owner per actual ID/context.
  * @param controller Current account's navigation host.
@@ -29,21 +32,42 @@ internal fun NavGraphBuilder.reservationGraph(
     for (context in ReservationContext.entries) {
         val pattern = AppDestination.reservationPattern(context)
         navigation(
-            startDestination = "$pattern/overview",
+            startDestination = "$pattern/${ReservationDetailPage.OVERVIEW.routeKey}",
             route = pattern,
             arguments = listOf(navArgument("reservationId") {}),
         ) {
-            for (page in listOf("overview", "payment", "terms")) {
-                composable("$pattern/$page") {
-                    AppScreen(stringResource(R.string.my_reservations), onBack = {
-                        if (page ==
-                            "overview"
-                        ) {
-                            controller.popBackStack(pattern, true)
-                        } else {
-                            controller.popBackStack()
-                        }
-                    }) { EmptyContent(stringResource(R.string.feature_pending)) }
+            for (page in ReservationDetailPage.entries) {
+                composable("$pattern/${page.routeKey}") { entry ->
+                    val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                    val id = requireNotNull(parent.arguments?.getString("reservationId"))
+                    val model: ReservationDetailViewModel =
+                        viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
+                    val savedRoute = AppDestination.reservationDetail(id, context)
+                    ReservationDetailRoute(
+                        model,
+                        page,
+                        onBack = {
+                            if (page == ReservationDetailPage.OVERVIEW) {
+                                controller.popBackStack(pattern, inclusive = true)
+                            } else {
+                                controller.popBackStack()
+                            }
+                        },
+                        onPayment = {
+                            controller.navigate(
+                                "$savedRoute/${ReservationDetailPage.PAYMENT.routeKey}",
+                            ) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onTerms = {
+                            controller.navigate(
+                                "$savedRoute/${ReservationDetailPage.TERMS.routeKey}",
+                            ) {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
                 }
             }
         }
