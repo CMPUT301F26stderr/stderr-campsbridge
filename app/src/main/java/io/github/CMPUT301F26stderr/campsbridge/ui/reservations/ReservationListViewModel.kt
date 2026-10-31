@@ -10,6 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategor
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -65,6 +67,8 @@ class ReservationListViewModel(
     private var sourceJob: Job? = null
     private var sourceVersion = 0L
     private var closed = false
+    private var dateJob: Job? = null
+    private var nextMidnight: Instant? = null
 
     init {
         observe()
@@ -163,6 +167,7 @@ class ReservationListViewModel(
         if (current == null) {
             mutableState.value =
                 if (sourceFailed) ReservationListUiState.Failure else ReservationListUiState.Loading
+            scheduleDateRefresh(emptyList())
             return
         }
         val categories =
@@ -194,6 +199,7 @@ class ReservationListViewModel(
                 classificationPending = classify == null,
                 orderingPending = order == null,
             )
+        scheduleDateRefresh(current)
     }
 
     /** Uses the zone recorded at booking time rather than the device or a current listing.
@@ -202,11 +208,37 @@ class ReservationListViewModel(
     private fun localToday(record: Reservation): LocalDate =
         clock.instant().atZone(ZoneId.of(record.bookedCampsite.timeZone)).toLocalDate()
 
+    /** Waits once for the earliest midnight among saved campsite zones.
+     * @param current Confirmed stays whose local dates may change.
+     */
+    private fun scheduleDateRefresh(current: List<Reservation>) {
+        val next =
+            current
+                .map {
+                    val zone = ZoneId.of(it.bookedCampsite.timeZone)
+                    localToday(it).plusDays(1).atStartOfDay(zone).toInstant()
+                }.minOrNull()
+        if (next == nextMidnight && dateJob?.isActive == true) return
+        dateJob?.cancel()
+        dateJob = null
+        nextMidnight = next
+        if (next == null) return
+        dateJob =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                awaitDeadline(clock, next)
+                dateJob = null
+                nextMidnight = null
+                publish()
+            }
+        dateJob?.start()
+    }
+
     /** Retires source callbacks before cancelling their work. */
     override fun onCleared() {
         closed = true
         sourceVersion++
         sourceJob?.cancel()
+        dateJob?.cancel()
         super.onCleared()
     }
 
