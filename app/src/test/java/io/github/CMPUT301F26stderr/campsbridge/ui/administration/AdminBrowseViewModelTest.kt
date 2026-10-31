@@ -424,3 +424,64 @@ class AdminBrowseViewModelTest {
             }
         }
 
+    /** Cleared owners reject late reads/actions without acquiring sources or mutating records. */
+    @Test fun clearingOwnerRetiresLateWorkAndActions() =
+        scenario { f ->
+            val gate = CompletableDeferred<Unit>()
+            f.sites.handler = { collector ->
+                withContext(NonCancellable) {
+                    gate.await()
+                    collector.emit(f.siteRows)
+                }
+            }
+            try {
+                runCurrent()
+                val state = f.model.state.value
+                val saved = f.snapshot()
+                f.store.clear()
+                f.model.selectTab(AdminBrowseTab.IMAGES)
+                f.model.editQuery("ignored")
+                f.model.selectRole(Role.ADMIN)
+                f.model.retry()
+                gate.complete(Unit)
+                runCurrent()
+                assertEquals(state, f.model.state.value)
+                assertEquals(saved, f.snapshot())
+                assertEquals(1, f.sites.requests)
+                assertEquals(0, f.sites.active)
+                assertEquals(0, f.profiles.requests)
+                assertEquals(0, f.attachments.requests)
+                assertEquals(0, f.siteBase.writeCalls)
+                assertEquals(0, f.accountBase.writes)
+                assertEquals(0, f.imageBase.replaceCalls)
+                assertEquals(0, f.imageBase.deleteCalls)
+            } finally {
+                gate.complete(Unit)
+            }
+        }
+
+    /** Creates isolated repository boundaries and clears their owner before test draining.
+     * @param saved Primitive restoration fixture.
+     * @param matchesSite Fixed shared F09 result dependency; never a production implementation.
+     * @param filterProfiles Fixed F12 role result dependency.
+     * @param matchesProfile Fixed profile text result dependency.
+     * @param block One fixed browse scenario.
+     */
+    private fun scenario(
+        saved: SavedStateHandle = SavedStateHandle(),
+        matchesSite: ((Campsite, String) -> Boolean)? = null,
+        filterProfiles: ((List<Account>, Role?) -> List<Account>)? = null,
+        matchesProfile: ((Account, String) -> Boolean)? = null,
+        block: suspend TestScope.(BrowseFixture) -> Unit,
+    ) =
+        runTest {
+            val fixture = BrowseFixture(saved, matchesSite, filterProfiles, matchesProfile)
+            try {
+                block(fixture)
+            } finally {
+                fixture.store.clear()
+                runCurrent()
+            }
+        }
+}
+
