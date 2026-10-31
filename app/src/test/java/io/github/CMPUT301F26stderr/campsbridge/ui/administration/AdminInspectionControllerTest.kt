@@ -293,3 +293,80 @@ class AdminInspectionControllerTest {
             assertNull(f.image().photo.displayUrl)
         }
 
+    /** Retrying attachment/URL failures never touches writes or the independent parent. */
+    @Test fun photoRetryIsReadOnlyAndSectional() =
+        scenario { f ->
+            f.photoBase.streamFailure.value = IOException("attachment offline")
+            f.photoBase.attachment.value = f.attachment
+            f.model.openImage(f.accountTarget)
+            runCurrent()
+            assertEquals(ImageLoadState.FAILED, f.image().photo.loadState)
+            f.photoBase.streamFailure.value = null
+            f.photoBase.urlFailures["blob-1"] = IOException("bytes offline")
+            f.model.retryPhoto()
+            runCurrent()
+            assertTrue(f.image().photo.displayFailed)
+            assertEquals(f.attachment, f.image().photo.attachment)
+            f.photoBase.urlFailures.clear()
+            f.model.retryPhoto()
+            runCurrent()
+            assertFalse(f.image().photo.displayFailed)
+            assertEquals(1, f.profileSource.requests)
+            assertEquals(0, f.photoBase.replaceCalls + f.photoBase.deleteCalls)
+        }
+
+    /** An outgoing target cannot close its replacement; matching close releases every reader. */
+    @Test fun closeSelectionIsTargetQualifiedAndReleasesReaders() =
+        scenario { f ->
+            f.model.openProfile(f.profile.id)
+            runCurrent()
+            f.model.openImage(f.siteTarget)
+            runCurrent()
+            f.model.closeSelection(AdminInspectionTarget.Profile(f.profile.id))
+            assertEquals(f.siteTarget, f.image().target)
+            f.model.closeSelection(AdminInspectionTarget.Image(f.siteTarget))
+            runCurrent()
+            assertEquals(AdminInspectionUiState.None, f.model.state.value)
+            assertEquals(0, f.siteSource.active + f.profileSource.active + f.ownedSource.active)
+            assertEquals(0, f.photoBase.activeObservers)
+        }
+
+    /** An account profile and its image are separate scopes despite sharing the same raw ID. */
+    @Test fun profileAndAccountImageHaveDistinctSelectionIdentity() =
+        scenario { f ->
+            f.model.openProfile(f.profile.id)
+            runCurrent()
+            assertEquals(1, f.ownedSource.active)
+            f.model.openImage(f.accountTarget)
+            runCurrent()
+            assertEquals(f.accountTarget, f.image().target)
+            assertEquals(0, f.ownedSource.active)
+            assertEquals(2, f.profileSource.requests)
+            f.model.openImage(f.accountTarget)
+            runCurrent()
+            assertEquals(2, f.profileSource.requests)
+        }
+
+    /** Retired owners reject late reads and later actions without leaking a source or mutation. */
+    @Test fun retirementRejectsLateCallbacksAndActions() =
+        scenario { f ->
+            val late = CompletableDeferred<Account?>()
+            f.profileSource.late = late
+            f.model.openProfile(f.profile.id)
+            runCurrent()
+            f.model.close()
+            late.complete(f.profile)
+            runCurrent()
+            f.model.openProfile(f.other.id)
+            f.model.openImage(f.siteTarget)
+            f.model.retryProfile()
+            f.model.retryParent()
+            f.model.retryPhoto()
+            f.model.retryCampsites()
+            runCurrent()
+            assertEquals(AdminInspectionUiState.None, f.model.state.value)
+            assertEquals(1, f.profileSource.requests)
+            assertEquals(0, f.otherSource.requests + f.siteSource.requests + f.ownedSource.requests)
+            assertTrue(f.photoBase.observedTargets.isEmpty())
+        }
+
