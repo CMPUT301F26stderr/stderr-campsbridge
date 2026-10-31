@@ -226,3 +226,70 @@ class AdminInspectionControllerTest {
             assertEquals(listOf(f.siteTarget), f.photoBase.observedTargets)
         }
 
+    /** Missing/failed image parents do not erase the independently current attachment. */
+    @Test fun parentAbsenceAndFailurePreserveImageAndRetryOnlyParent() =
+        scenario { f ->
+            f.photoBase.attachment.value = f.attachment
+            f.profileSource.values.value = Result.success(null)
+            f.model.openImage(f.accountTarget)
+            runCurrent()
+            assertEquals(AdminRead.Unavailable, f.image().parent)
+            assertEquals(f.attachment, f.image().photo.attachment)
+            f.profileSource.values.value = Result.failure(IOException("parent offline"))
+            runCurrent()
+            assertEquals(AdminRead.Failure, f.image().parent)
+            f.profileSource.values.value = Result.success(f.profile)
+            f.model.retryParent()
+            f.model.retryParent()
+            runCurrent()
+            assertEquals(AdminRead.Content(AdminImageParent.Profile(f.profile)), f.image().parent)
+            assertEquals(2, f.profileSource.requests)
+            assertEquals(1, f.photoBase.observedTargets.size)
+        }
+
+    /** Confirmed empty slots can receive a live attachment without reloading their parent. */
+    @Test fun missingAttachmentCanAppearLive() =
+        scenario { f ->
+            f.model.openImage(f.accountTarget)
+            runCurrent()
+            assertEquals(ImageLoadState.READY, f.image().photo.loadState)
+            assertNull(f.image().photo.attachment)
+            f.photoBase.attachment.value = f.attachment
+            runCurrent()
+            assertEquals(f.attachment, f.image().photo.attachment)
+            assertEquals(1, f.profileSource.requests)
+            assertEquals(listOf("blob-1"), f.photoBase.downloads)
+        }
+
+    /** Replacement/removal invalidate obsolete references, including noncooperative URL work. */
+    @Test fun replacementAndRemovalCannotExposeThePreviousBlobUrl() =
+        scenario { f ->
+            val held = CompletableDeferred<String>()
+            f.urlGates.add(held)
+            f.urlHandler = { blob ->
+                if (blob ==
+                    "blob-1"
+                ) {
+                    withContext(NonCancellable) { held.await() }
+                } else {
+                    "file:///new"
+                }
+            }
+            f.photoBase.attachment.value = f.attachment
+            f.model.openImage(f.accountTarget)
+            runCurrent()
+            assertTrue(f.image().photo.isResolvingUrl)
+            val replacement = f.attachment.copy(blobId = "blob-2")
+            f.photoBase.attachment.value = replacement
+            runCurrent()
+            assertEquals(replacement, f.image().photo.attachment)
+            assertEquals("file:///new", f.image().photo.displayUrl)
+            held.complete("file:///old")
+            runCurrent()
+            assertEquals("file:///new", f.image().photo.displayUrl)
+            f.photoBase.attachment.value = null
+            runCurrent()
+            assertNull(f.image().photo.attachment)
+            assertNull(f.image().photo.displayUrl)
+        }
+
