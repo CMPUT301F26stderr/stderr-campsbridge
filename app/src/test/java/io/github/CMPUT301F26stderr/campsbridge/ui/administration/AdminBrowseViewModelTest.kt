@@ -485,3 +485,76 @@ class AdminBrowseViewModelTest {
         }
 }
 
+/** Original saved records and individually controlled all-record sources.
+ * @param saved Primitive state for one current/recreated owner.
+ * @param matchesSite Optional fixed F09 outcome.
+ * @param filterProfiles Optional fixed F12 outcome.
+ * @param matchesProfile Optional fixed profile-text outcome.
+ */
+private class BrowseFixture(
+    var saved: SavedStateHandle,
+    private val matchesSite: ((Campsite, String) -> Boolean)?,
+    private val filterProfiles: ((List<Account>, Role?) -> List<Account>)?,
+    private val matchesProfile: ((Account, String) -> Boolean)?,
+) {
+    private val now = Instant.parse("2027-05-01T12:00:00Z")
+    val siteRows =
+        listOf(
+            sampleCampsite("site/one"),
+            sampleCampsite("site/two", published = false),
+            sampleCampsite(
+                "retained",
+            ).copy(removal = Removal(now.plusSeconds(7200), "admin", "Retained record")),
+        )
+    val profileRows =
+        listOf(
+            sampleAccount(setOf(Role.OWNER)).copy(id = "owner", name = "Owner"),
+            sampleAccount(
+                setOf(Role.OWNER, Role.ENTRANT),
+            ).copy(id = "dual", name = "Dual", email = null),
+            sampleAccount(setOf(Role.ENTRANT)).copy(id = "entrant", name = "Entrant"),
+        )
+    val imageRows =
+        listOf(
+            ImageAttachment(
+                ImageTarget(ImageTargetType.ACCOUNT, "Camper/日本 ?"),
+                "hidden-blob",
+                now,
+            ),
+            ImageAttachment(ImageTarget(ImageTargetType.CAMPSITE, "Site/α ?"), "another-blob", now),
+        )
+    val sites = RowSource(siteRows)
+    val profiles = RowSource(profileRows)
+    val attachments = RowSource(imageRows)
+    val siteBase = FakeCampsiteRepository()
+    val accountBase = FakeAccountRepository()
+    val imageBase = FakeImageRepository()
+    private val campsites =
+        object : CampsiteRepository by siteBase {
+            /** Supplies only this fixture's tracked all-record source. */
+            override fun observeAll(): Flow<List<Campsite>> =
+                sites.observe()
+        }
+    private val accounts =
+        object : AccountRepository by accountBase {
+            /** Supplies only this fixture's tracked all-profile source. */
+            override fun observeAll(): Flow<List<Account>> =
+                profiles.observe()
+        }
+    private val images =
+        object : ImageRepository by imageBase {
+            /** Supplies attachment metadata without invoking individual-slot reads or writes. */
+            override fun observeAll(): Flow<List<ImageAttachment>> =
+                attachments.observe()
+        }
+    val store = ViewModelStore()
+    private val owner =
+        object : ViewModelStoreOwner {
+            override val viewModelStore = store
+        }
+    var model = createModel()
+
+    /** Captures only the primitive values that the Android owner can restore. */
+    fun snapshot(): Map<String, Any?> =
+        saved.keys().associateWith { saved.get<Any?>(it) }
+
