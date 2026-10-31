@@ -27,7 +27,7 @@ import java.time.ZoneOffset
 class ReservationListPhotosTest {
     @get:Rule val main = MainDispatcherRule()
     private val store = ViewModelStore()
-    private val bookings = FakeBookingRepository()
+    private val bookings = FakeBookingRepository().apply { ownerHandler = { records } }
     private val images = FakeImageRepository()
     private val record = CampingFixtures.reservation()
     private val target = ImageTarget(ImageTargetType.CAMPSITE, record.campsiteId)
