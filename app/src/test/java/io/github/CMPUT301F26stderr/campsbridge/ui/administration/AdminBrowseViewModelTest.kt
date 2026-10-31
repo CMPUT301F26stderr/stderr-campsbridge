@@ -351,3 +351,76 @@ class AdminBrowseViewModelTest {
             assertEquals(1, f.profiles.requests)
         }
 
+    /** Image search inspects target type/ID only, including case, blanks and punctuation. */
+    @Test fun imageSearchNeverLoadsMetadataOrUrls() =
+        scenario { f ->
+            f.model.selectTab(AdminBrowseTab.IMAGES)
+            runCurrent()
+            assertEquals(AdminBrowseContent.Images(f.imageRows), f.model.state.value.content)
+            f.model.editQuery("  aCcOuNt  ")
+            assertEquals(
+                AdminBrowseContent.Images(listOf(f.imageRows[0])),
+                f.model.state.value.content,
+            )
+            f.model.editQuery("  sItE/α ?  ")
+            assertEquals(
+                AdminBrowseContent.Images(listOf(f.imageRows[1])),
+                f.model.state.value.content,
+            )
+            f.model.editQuery("  ")
+            assertEquals(AdminBrowseContent.Images(f.imageRows), f.model.state.value.content)
+            f.model.editQuery("hidden-blob")
+            assertEquals(AdminBrowseContent.Images(emptyList()), f.model.state.value.content)
+            assertEquals(1, f.attachments.requests)
+            assertEquals(0, f.imageBase.getCalls)
+            assertTrue(f.imageBase.observedTargets.isEmpty())
+            assertTrue(f.imageBase.downloads.isEmpty())
+        }
+
+    /** Updated same-ID facts replace the previous projection instead of leaving stale cards. */
+    @Test fun liveSourceUpdatesReplaceProjectedFacts() =
+        scenario { f ->
+            runCurrent()
+            val original = f.siteRows[0]
+            val latest = original.copy(details = original.details.copy(name = "Updated campsite"))
+            f.sites.rows.value = Result.success(listOf(latest))
+            runCurrent()
+            assertEquals(AdminBrowseContent.Campsites(listOf(latest)), f.model.state.value.content)
+            assertEquals(1, f.sites.requests)
+        }
+
+    /** Returning to the same tab cannot let its retired noncooperative source replace new facts. */
+    @Test fun retiredSourceCannotOverwriteNewTabGeneration() =
+        scenario { f ->
+            val gate = CompletableDeferred<Unit>()
+            f.sites.handler = { collector ->
+                withContext(NonCancellable) {
+                    gate.await()
+                    collector.emit(f.siteRows)
+                }
+            }
+            try {
+                runCurrent()
+                assertEquals(1, f.sites.active)
+                f.model.selectTab(AdminBrowseTab.PROFILES)
+                runCurrent()
+                assertEquals(
+                    AdminBrowseContent.Profiles(f.profileRows),
+                    f.model.state.value.content,
+                )
+                f.sites.handler = null
+                val latest = listOf(f.siteRows[1])
+                f.sites.rows.value = Result.success(latest)
+                f.model.selectTab(AdminBrowseTab.CAMPSITES)
+                runCurrent()
+                assertEquals(AdminBrowseContent.Campsites(latest), f.model.state.value.content)
+                gate.complete(Unit)
+                runCurrent()
+                assertEquals(AdminBrowseContent.Campsites(latest), f.model.state.value.content)
+                assertEquals(1, f.sites.active)
+                assertEquals(0, f.profiles.active)
+            } finally {
+                gate.complete(Unit)
+            }
+        }
+
