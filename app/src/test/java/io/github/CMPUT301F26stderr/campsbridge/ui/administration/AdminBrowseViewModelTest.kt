@@ -558,3 +558,66 @@ private class BrowseFixture(
     fun snapshot(): Map<String, Any?> =
         saved.keys().associateWith { saved.get<Any?>(it) }
 
+    /** Reconstructs a fresh controller after retiring its former source.
+     * @param values Saved primitive snapshot, without any copied records.
+     */
+    fun recreate(values: Map<String, Any?>) {
+        store.clear()
+        saved = SavedStateHandle(values)
+        model = createModel()
+    }
+
+    /** Uses public lifecycle creation while preserving the same supplied boundary contracts. */
+    private fun createModel(): AdminBrowseViewModel =
+        ViewModelProvider(
+            owner,
+            viewModelFactory {
+                initializer {
+                    AdminBrowseViewModel(
+                        campsites,
+                        accounts,
+                        images,
+                        saved,
+                        matchesSite,
+                        filterProfiles,
+                        matchesProfile,
+                    )
+                }
+            },
+        )[AdminBrowseViewModel::class.java]
+}
+
+/** Counts real observation lifetimes, including deliberately noncooperative late emission.
+ * @param initial Immutable rows returned by the ordinary source.
+ */
+@OptIn(InternalCoroutinesApi::class)
+private class RowSource<T>(
+    initial: List<T>,
+) {
+    val rows = MutableStateFlow<Result<List<T>>>(Result.success(initial))
+    var requests = 0
+    var active = 0
+    var handler: (suspend (FlowCollector<List<T>>) -> Unit)? = null
+
+    /** Emits ordinary controlled outcomes or an explicitly gated legacy callback sequence. */
+    fun observe(): Flow<List<T>> =
+        object : Flow<List<T>> {
+            /** Tracks the complete source lifetime even when a handler ignores cancellation.
+             * @param collector Current consumer; retired callbacks remain its responsibility.
+             */
+            override suspend fun collect(collector: FlowCollector<List<T>>) {
+                requests++
+                active++
+                try {
+                    val controlled = handler
+                    if (controlled != null) {
+                        controlled(collector)
+                    } else {
+                        rows.collect { collector.emit(it.getOrThrow()) }
+                    }
+                } finally {
+                    active--
+                }
+            }
+        }
+}
