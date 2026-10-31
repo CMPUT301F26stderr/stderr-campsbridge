@@ -142,4 +142,31 @@ class StaySelectionInputTest {
         )
         assertEquals(original, nights)
     }
+
+    /** Extreme endpoints stay safe, and a missing night rejects even a very large range. */
+    @Test fun supportsFullLocalDateRangeWithoutExpandingTheStay() {
+        val lastNight = LocalDate.MAX.minusDays(1)
+        assertEquals(
+            StaySelectionInput.VALID,
+            validateStaySelection(lastNight, LocalDate.MAX, setOf(lastNight), lastNight),
+        )
+        assertEquals(
+            StaySelectionInput.VALID,
+            validateStaySelection(
+                LocalDate.MIN,
+                LocalDate.MIN.plusDays(1),
+                setOf(LocalDate.MIN),
+                LocalDate.MIN,
+            ),
+        )
+        assertEquals(
+            StaySelectionInput.UNAVAILABLE_NIGHTS,
+            validateStaySelection(
+                LocalDate.MIN,
+                LocalDate.MAX,
+                setOf(LocalDate.MIN),
+                LocalDate.MIN,
+            ),
+        )
+    }
 }
