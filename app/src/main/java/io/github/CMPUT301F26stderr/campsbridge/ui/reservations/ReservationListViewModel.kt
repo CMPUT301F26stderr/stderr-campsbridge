@@ -69,6 +69,10 @@ class ReservationListViewModel(
     private var closed = false
     private var dateJob: Job? = null
     private var nextMidnight: Instant? = null
+    private val names = mutableMapOf<String, ReservationEntrantName>()
+    private val nameJobs = mutableMapOf<String, Job>()
+    private val nameTokens = mutableMapOf<String, Long>()
+    private var nextNameToken = 0L
 
     init {
         observe()
@@ -101,9 +105,18 @@ class ReservationListViewModel(
         }
     }
 
-    /** Retries failed owner labels. */
-    fun retryNames() =
-        Unit
+    /** Retries failed or interrupted names without replacing the booking source. */
+    fun retryNames() {
+        if (closed || context != ReservationContext.OWNER) return
+        for (id in currentItems().map { it.reservation.entrantId }.toSet()) {
+            if (names[id] == ReservationEntrantName.Failure ||
+                (names[id] == ReservationEntrantName.Loading && nameJobs[id]?.isActive != true)
+            ) {
+                retireName(id, forget = true)
+            }
+        }
+        publish()
+    }
 
     /** Reports visible saved rows.
      * @param ids Displayed reservation identities.
@@ -165,6 +178,7 @@ class ReservationListViewModel(
         if (closed) return
         val current = records
         if (current == null) {
+            prepareNames(emptySet(), emptySet())
             mutableState.value =
                 if (sourceFailed) ReservationListUiState.Failure else ReservationListUiState.Loading
             scheduleDateRefresh(emptyList())
@@ -184,6 +198,13 @@ class ReservationListViewModel(
                     (campsiteId.value == null || it.campsiteId == campsiteId.value)
             }
         val ordered = order?.invoke(active) ?: active
+        val displayedNames =
+            if (context == ReservationContext.OWNER) {
+                ordered.map { it.entrantId }.toSet()
+            } else {
+                emptySet()
+            }
+        val pendingNames = prepareNames(displayedNames, current.map { it.entrantId }.toSet())
         val choices =
             if (context == ReservationContext.OWNER) {
                 current.groupBy { it.campsiteId }.map { (id, stays) ->
@@ -194,12 +215,77 @@ class ReservationListViewModel(
             }
         mutableState.value =
             ReservationListUiState.Content(
-                items = ordered.map { ReservationListItem(it, categories.getValue(it.id)) },
+                items =
+                    ordered.map {
+                        ReservationListItem(it, categories.getValue(it.id), names[it.entrantId])
+                    },
                 campsites = choices,
                 classificationPending = classify == null,
                 orderingPending = order == null,
             )
         scheduleDateRefresh(current)
+        pendingNames.forEach { it.start() }
+    }
+
+    /** Returns only the currently confirmed displayed rows. */
+    private fun currentItems(): List<ReservationListItem> =
+        (state.value as? ReservationListUiState.Content)?.items.orEmpty()
+
+    /** Installs name jobs before publication so immediate completions cannot duplicate reads.
+     * @param displayed Entrants referenced by visible list membership.
+     * @param retained Entrants still present in the full scoped source.
+     * @return New jobs to start after publishing Loading labels.
+     */
+    private fun prepareNames(
+        displayed: Set<String>,
+        retained: Set<String>,
+    ): List<Job> {
+        for (id in names.keys.toList()) {
+            if (id !in displayed) retireName(id, forget = id !in retained)
+        }
+        return displayed.filter { it !in names }.map { id ->
+            names[id] = ReservationEntrantName.Loading
+            val token = ++nextNameToken
+            nameTokens[id] = token
+            viewModelScope
+                .launch(start = CoroutineStart.LAZY) {
+                    try {
+                        val account = accounts.get(id)
+                        currentCoroutineContext().ensureActive()
+                        if (closed || nameTokens[id] != token) return@launch
+                        names[id] =
+                            if (account != null && account.id == id && account.isActive) {
+                                ReservationEntrantName.Available(account.name)
+                            } else {
+                                ReservationEntrantName.Unavailable
+                            }
+                        publish()
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        currentCoroutineContext().ensureActive()
+                        if (!closed && nameTokens[id] == token) {
+                            names[id] = ReservationEntrantName.Failure
+                            publish()
+                        }
+                    } finally {
+                        if (nameTokens[id] == token) nameJobs.remove(id)
+                    }
+                }.also { nameJobs[id] = it }
+        }
+    }
+
+    /** Invalidates a label before cancelling its potentially late read.
+     * @param id Entrant whose label left the displayed rows.
+     * @param forget Whether a completed label is no longer relevant.
+     */
+    private fun retireName(
+        id: String,
+        forget: Boolean,
+    ) {
+        nameTokens.remove(id)
+        nameJobs.remove(id)?.cancel()
+        if (forget || names[id] == ReservationEntrantName.Loading) names.remove(id)
     }
 
     /** Uses the zone recorded at booking time rather than the device or a current listing.
@@ -239,6 +325,9 @@ class ReservationListViewModel(
         sourceVersion++
         sourceJob?.cancel()
         dateJob?.cancel()
+        nameTokens.clear()
+        nameJobs.values.forEach { it.cancel() }
+        nameJobs.clear()
         super.onCleared()
     }
 
