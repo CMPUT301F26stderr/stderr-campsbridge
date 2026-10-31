@@ -40,7 +40,7 @@ internal fun TaskExampleSession.reservations(): ReservationListViewModel =
                 ) {
                     bindings.orderReservations
                 } else {
-                    it
+                    { rows -> rows }
                 },
         )
     }
