@@ -199,3 +199,76 @@ class AdminBrowseViewModelTest {
                 collector.emit(f.siteRows)
                 awaitCancellation()
             }
+            try {
+                f.model.retry()
+                assertEquals(AdminBrowseContent.Loading, f.model.state.value.content)
+                f.model.retry()
+                runCurrent()
+                assertEquals(2, f.sites.requests)
+                assertEquals("  retained  ", f.model.state.value.query)
+                gate.complete(Unit)
+                runCurrent()
+                assertEquals(AdminBrowseContent.Campsites(f.siteRows), f.model.state.value.content)
+                f.model.retry()
+                runCurrent()
+                assertEquals(2, f.sites.requests)
+            } finally {
+                gate.complete(Unit)
+            }
+        }
+
+    /** Missing predicates cannot hide the fact that the selected repository read failed. */
+    @Test fun sourceFailurePrecedesPendingFilter() =
+        scenario { f ->
+            f.profiles.rows.value = Result.failure(IOException("profiles unavailable"))
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            f.model.editQuery("requested text")
+            f.model.selectRole(Role.OWNER)
+            runCurrent()
+            assertEquals(AdminBrowseContent.Failure, f.model.state.value.content)
+            f.profiles.rows.value = Result.success(f.profileRows)
+            f.model.retry()
+            runCurrent()
+            assertEquals(AdminBrowseContent.Pending, f.model.state.value.content)
+        }
+
+    /** Passes original sites and raw text to supplied search without another subscription. */
+    @Test fun campsiteSearchUsesSuppliedPredicateOnly() {
+        val calls = mutableListOf<Pair<Campsite, String>>()
+        scenario(matchesSite = { site, raw ->
+            calls.add(site to raw)
+            when (raw) {
+                "  first  " -> site.id == "site/one"
+                "second" -> site.id == "site/two"
+                else -> error("Unexpected fixed query")
+            }
+        }) { f ->
+            runCurrent()
+            assertTrue(calls.isEmpty())
+            f.model.editQuery("  first  ")
+            assertEquals(f.siteRows.map { it to "  first  " }, calls)
+            assertEquals(
+                AdminBrowseContent.Campsites(listOf(f.siteRows[0])),
+                f.model.state.value.content,
+            )
+            f.model.editQuery("second")
+            assertEquals(
+                AdminBrowseContent.Campsites(listOf(f.siteRows[1])),
+                f.model.state.value.content,
+            )
+            runCurrent()
+            assertEquals(1, f.sites.requests)
+        }
+    }
+
+    /** Missing site search stays pending only while requested, with no alternate matcher. */
+    @Test fun missingCampsitePredicateIsExplicitUntilCleared() =
+        scenario { f ->
+            runCurrent()
+            f.model.editQuery("River")
+            assertEquals(AdminBrowseContent.Pending, f.model.state.value.content)
+            f.model.editQuery("   ")
+            assertEquals(AdminBrowseContent.Campsites(f.siteRows), f.model.state.value.content)
+            assertEquals(1, f.sites.requests)
+        }
+
