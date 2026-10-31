@@ -15,16 +15,19 @@ sealed interface BookingQuote {
     ) : BookingQuote
 }
 
-/** Declares the BK1 quote contract before implementing checked arithmetic.
+/** Validates the local stay and source rate before deriving the quote.
  * @param checkIn Inclusive local arrival.
  * @param checkOut Exclusive local departure, strictly after arrival.
  * @param pricePerNightCents Nonnegative current rate in integer CAD cents.
  * @return Placeholder zero quote until the supplied contracts are implemented.
+ * @throws IllegalArgumentException For a nonpositive stay or negative source rate.
  */
-@Suppress("UNUSED_PARAMETER")
 fun bookingQuote(
     checkIn: LocalDate,
     checkOut: LocalDate,
     pricePerNightCents: Long,
-): BookingQuote =
-    BookingQuote.Value(0)
+): BookingQuote {
+    require(checkOut > checkIn)
+    require(pricePerNightCents >= 0)
+    return BookingQuote.Value(0)
+}
