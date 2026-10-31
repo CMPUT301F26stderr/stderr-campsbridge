@@ -31,4 +31,21 @@
     <string name="reservation_accepted_at">Accepted at</string>
     <string name="reservation_policy_version">Policy version</string>
     <string name="reservation_no_saved_rules">No campsite rules were recorded.</string>
+    <string name="reservation_active">Active</string>
+    <string name="reservation_upcoming">Upcoming</string>
+    <string name="reservation_in_progress">In progress</string>
+    <string name="reservation_list_loading">Loading reservations…</string>
+    <string name="reservation_list_failed">Could not load reservations.</string>
+    <string name="reservation_list_empty">No active reservations.</string>
+    <string name="reservation_filtered_empty">No active reservations for this campsite.</string>
+    <string name="reservation_all_campsites">All campsites</string>
+    <string name="reservation_categories">Reservation categories</string>
+    <string name="reservation_classification_pending">Reservation categories are awaiting implementation.</string>
+    <string name="reservation_ordering">Reservation ordering</string>
+    <string name="reservation_ordering_pending">Reservation ordering is awaiting implementation.</string>
+    <string name="reservation_camper_unavailable">Camper unavailable.</string>
+    <string name="reservation_camper_failed">Could not load camper.</string>
+    <string name="reservation_camper_loading">Loading camper…</string>
+    <string name="reservation_retry_names">Retry camper names</string>
+    <string name="reservation_retry_photo">Retry photo</string>
 </resources>
