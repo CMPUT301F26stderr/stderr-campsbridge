@@ -272,3 +272,82 @@ class AdminBrowseViewModelTest {
             assertEquals(1, f.sites.requests)
         }
 
+    /** Profile role filtering uses its supplied result; missing requested capability is pending. */
+    @Test fun profileRoleUsesSuppliedFilterOrExplicitPending() {
+        val calls = mutableListOf<Pair<List<Account>, Role?>>()
+        scenario(filterProfiles = { records, role ->
+            calls.add(records to role)
+            listOf(records[0], records[1])
+        }) { f ->
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            runCurrent()
+            assertTrue(calls.isEmpty())
+            f.model.selectRole(Role.OWNER)
+            assertEquals(listOf(f.profileRows to Role.OWNER), calls)
+            assertEquals(
+                AdminBrowseContent.Profiles(f.profileRows.take(2)),
+                f.model.state.value.content,
+            )
+            f.model.selectRole(null)
+            assertEquals(AdminBrowseContent.Profiles(f.profileRows), f.model.state.value.content)
+            assertEquals(1, f.profiles.requests)
+        }
+        scenario { f ->
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            runCurrent()
+            f.model.selectRole(Role.OWNER)
+            assertEquals(AdminBrowseContent.Pending, f.model.state.value.content)
+            f.model.selectRole(null)
+            assertEquals(AdminBrowseContent.Profiles(f.profileRows), f.model.state.value.content)
+        }
+    }
+
+    /** Passes complete profiles and raw text to supplied search; missing search stays pending. */
+    @Test fun profileTextUsesSuppliedPredicateOrExplicitPending() {
+        val calls = mutableListOf<Pair<Account, String>>()
+        scenario(matchesProfile = { account, raw ->
+            calls.add(account to raw)
+            account.id == "dual"
+        }) { f ->
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            runCurrent()
+            f.model.editQuery("  raw query  ")
+            assertEquals(f.profileRows.map { it to "  raw query  " }, calls)
+            assertEquals(
+                AdminBrowseContent.Profiles(listOf(f.profileRows[1])),
+                f.model.state.value.content,
+            )
+            assertEquals(null, calls[1].first.email)
+            assertEquals(1, f.profiles.requests)
+        }
+        scenario { f ->
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            runCurrent()
+            f.model.editQuery("Alex")
+            assertEquals(AdminBrowseContent.Pending, f.model.state.value.content)
+            f.model.editQuery("")
+            assertEquals(AdminBrowseContent.Profiles(f.profileRows), f.model.state.value.content)
+        }
+    }
+
+    /** Composed predicates use latest saved records and preserve the supplied role-result order. */
+    @Test fun profilePredicatesComposeAgainstLiveRecords() =
+        scenario(
+            filterProfiles = { records, _ -> listOf(records[0], records[1]) },
+            matchesProfile = { account, _ -> account.id == "dual" },
+        ) { f ->
+            f.model.selectTab(AdminBrowseTab.PROFILES)
+            f.model.selectRole(Role.OWNER)
+            f.model.editQuery("fixed query")
+            runCurrent()
+            assertEquals(
+                AdminBrowseContent.Profiles(listOf(f.profileRows[1])),
+                f.model.state.value.content,
+            )
+            val latest = f.profileRows[1].copy(name = "Latest saved name")
+            f.profiles.rows.value = Result.success(listOf(latest, f.profileRows[0]))
+            runCurrent()
+            assertEquals(AdminBrowseContent.Profiles(listOf(latest)), f.model.state.value.content)
+            assertEquals(1, f.profiles.requests)
+        }
+
