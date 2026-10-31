@@ -10,10 +10,11 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
-/** Contains only implemented settings destinations; notification controls arrive with M4a.
+/** Links the shared policy reader and notification preference/device settings.
  * @param onPolicies Opens the shared policy menu.
  * @param onBack Returns to the current workspace's profile menu.
- * @param onCredits Opens packaged asset and dependency notices.
+ * @param onNotifications Opens saved preference and Android permission/status settings.
+ * @param onCredits Opens bundled image/font credits and dependency licenses.
  * @param modifier Caller layout.
  */
 @Composable
@@ -21,10 +22,12 @@ fun SettingsScreen(
     onPolicies: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onNotifications: () -> Unit = {},
     onCredits: () -> Unit = {},
 ) {
     BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.settings_title), modifier, onBack) {
+        NavigationRow(stringResource(R.string.notification_settings_title), onNotifications)
         NavigationRow(stringResource(R.string.policies_title), onPolicies)
         NavigationRow(stringResource(R.string.credits_title), onCredits)
     }

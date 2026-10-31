@@ -8,7 +8,14 @@ import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirebaseClients
 import io.github.CMPUT301F26stderr.campsbridge.platform.identity.FirebaseIdentityProvider
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPublisher
+import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.DataStoreAlertDeliveryStore
 import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.DataStoreAppPreferences
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.ForegroundSessionWork
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationAlertCoordinator
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationText
 import java.time.Clock
 
 /**
@@ -68,11 +75,26 @@ class AppContainerFactory(
                 )
             }
         val clock = Clock.systemUTC()
+        val repositories = AppContainer(clients, clock)
+        val alerts =
+            NotificationAlertCoordinator(
+                repositories.notifications,
+                repositories.accounts,
+                NotificationContentLoader(
+                    repositories.notifications,
+                    repositories.lotteries,
+                    repositories.bookings,
+                ),
+                AndroidNotificationPermission(context),
+                DataStoreAlertDeliveryStore(store),
+                AndroidNotificationPublisher(context),
+            ) { notificationText(context, it) }
         return AppServices(
-            AppContainer(clients, clock),
+            repositories,
             FirebaseIdentityProvider(auth),
             DataStoreAppPreferences(store),
             clock,
+            ForegroundSessionWork(repositories.pendingWork, alerts),
         )
     }
 }

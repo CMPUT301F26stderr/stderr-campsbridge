@@ -21,8 +21,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileUiState
 
-/** Shows implemented task content; pending baselines are handled by the catalogue host.
- * @param session Current local fixture graph.
+/** Dispatches only implemented feature owners; future baselines never fabricate a feature screen.
+ * @param session Current fixture graph and actual handoff bindings.
  * @param onBack Returns to the task catalogue.
  */
 @Composable
@@ -33,14 +33,6 @@ internal fun TaskExampleFeature(
     when (session.example) {
         TaskExample.DISPLAY_NAME, TaskExample.CONTACT -> {
             ProfileTaskExample(session, onBack)
-        }
-
-        TaskExample.LOTTERY_WINDOWS -> {
-            LotteryWindowTaskExample(session.bindings, onBack)
-        }
-
-        TaskExample.PARTICIPANTS -> {
-            ParticipantListRoute(session.participants(), onBack)
         }
 
         TaskExample.TEXT_MATCH, TaskExample.GUEST_MATCH -> {
@@ -91,6 +83,26 @@ internal fun TaskExampleFeature(
                 model::confirmDiscard,
                 discardPrompt = discard,
             )
+        }
+
+        TaskExample.LOTTERY_WINDOWS -> {
+            LotteryWindowTaskExample(session.bindings, onBack)
+        }
+
+        TaskExample.PARTICIPANTS -> {
+            ParticipantListRoute(session.participants(), onBack)
+        }
+
+        TaskExample.INBOX_ORDER, TaskExample.UNREAD_COUNT -> {
+            InboxTaskExample(session, onBack)
+        }
+
+        TaskExample.BOOKING_NIGHTS -> {
+            BookingDatesTaskExample(session, onBack)
+        }
+
+        TaskExample.RESERVATION_CATEGORY, TaskExample.RESERVATION_ORDER -> {
+            ReservationsTaskExample(session, onBack)
         }
 
         else -> {

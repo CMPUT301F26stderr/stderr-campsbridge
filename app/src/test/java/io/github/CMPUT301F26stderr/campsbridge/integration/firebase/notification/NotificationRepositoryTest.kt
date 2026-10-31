@@ -1,5 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.notification
 
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentDecodingException
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
@@ -422,5 +423,96 @@ class NotificationRepositoryTest {
                     it.id
                 },
             )
+        }
+
+    /** An existing account with no receipts has a confirmed empty server history. */
+    @Test(timeout = 60000)
+    fun serverInboxConfirmsEmptyHistory() =
+        runBlocking {
+            val recipient = firebase.registeredActor(Role.ENTRANT)
+            assertEquals(
+                emptyList<InboxReceipt>(),
+                recipient.container.notifications.getInbox(recipient.id),
+            )
+        }
+
+    /** All receipt facts belong to one account and reflect server changes after caching. */
+    @Test(timeout = 60000)
+    fun serverInboxKeepsAccountScopeAndCurrentReceiptFacts() =
+        runBlocking {
+            val recipient = firebase.registeredActor(Role.ENTRANT)
+            val other = firebase.registeredActor(Role.ENTRANT)
+            val first = InboxReceipt("first", firebase.clock.instant().minusSeconds(60))
+            val second = InboxReceipt("second", null)
+            for (receipt in listOf(first, second)) {
+                firebase.seed(
+                    "accounts/${recipient.id}/inbox/${receipt.notificationId}",
+                    InboxReceiptDocument.encode(receipt),
+                )
+            }
+            firebase.seed(
+                "accounts/${other.id}/inbox/foreign",
+                InboxReceiptDocument.encode(InboxReceipt("foreign", null)),
+            )
+            val repository = recipient.container.notifications
+            assertEquals(setOf(first, second), repository.getInbox(recipient.id).toSet())
+            val updated = first.copy(readAt = firebase.clock.instant())
+            firebase.seed(
+                "accounts/${recipient.id}/inbox/first",
+                InboxReceiptDocument.encode(updated),
+            )
+            firebase.request(
+                "${firebase.firestoreEndpoint}/v1/projects/${firebase.projectId}" +
+                    "/databases/(default)/documents/accounts/${recipient.id}/inbox/second",
+                "DELETE",
+            )
+            assertEquals(listOf(updated), repository.getInbox(recipient.id))
+        }
+
+    /** Neither cached receipts nor cached empty history may satisfy a failed server baseline. */
+    @Test(timeout = 60000)
+    fun serverInboxFailureNeverReturnsCachedPresenceOrEmptyHistory() =
+        runBlocking {
+            val recipient = firebase.registeredActor(Role.ENTRANT)
+            val db = recipient.clients.firestore
+            val collection = db.collection("accounts/${recipient.id}/inbox")
+            for (populated in listOf(false, true)) {
+                if (populated) {
+                    firebase.seed(
+                        "accounts/${recipient.id}/inbox/cached",
+                        InboxReceiptDocument.encode(InboxReceipt("cached", null)),
+                    )
+                }
+                collection.get(Source.SERVER).await()
+                db.disableNetwork().await()
+                try {
+                    val failure =
+                        runCatching {
+                            recipient.container.notifications.getInbox(recipient.id)
+                        }.exceptionOrNull()
+                    assertTrue(failure is FirebaseFirestoreException)
+                    assertEquals(
+                        FirebaseFirestoreException.Code.UNAVAILABLE,
+                        (failure as FirebaseFirestoreException).code,
+                    )
+                } finally {
+                    db.enableNetwork().await()
+                }
+            }
+        }
+
+    /** Invalid receipt data fails with document context, never a successful partial baseline. */
+    @Test(timeout = 60000)
+    fun malformedServerInboxRetainsDocumentFailure() =
+        runBlocking {
+            val recipient = firebase.registeredActor(Role.ENTRANT)
+            val path = "accounts/${recipient.id}/inbox/broken"
+            firebase.seed(path, mapOf("readAt" to "not a timestamp"))
+            val failure =
+                runCatching {
+                    recipient.container.notifications.getInbox(recipient.id)
+                }.exceptionOrNull()
+            assertTrue(failure is DocumentDecodingException)
+            assertEquals(path, (failure as DocumentDecodingException).documentPath)
         }
 }

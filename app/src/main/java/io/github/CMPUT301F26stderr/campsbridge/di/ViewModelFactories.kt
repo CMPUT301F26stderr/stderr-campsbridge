@@ -5,6 +5,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
@@ -12,15 +13,21 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -49,7 +56,7 @@ fun lotteryListViewModelFactory(
         }
     }
 
-/** Constructs the saved/new lottery form; reserved F13 remains explicitly pending.
+/** Constructs the saved/new lottery form with the accepted schedule validator.
  * @param services Current host's repository interfaces and clock.
  * @param ownerId Current account identity whose published sites are eligible.
  * @param lotteryId Existing draft target, or null for a new local form.
@@ -67,7 +74,7 @@ fun lotterySetupViewModelFactory(
                 services.repositories.lotteries,
                 services.clock,
                 createSavedStateHandle(),
-                validateWindows = null,
+                validateWindows = ::validateLotteryWindows,
                 lotteryId = lotteryId,
             )
         }
@@ -113,6 +120,24 @@ fun appViewModelFactory(services: AppServices): ViewModelProvider.Factory =
         }
     }
 
+/** Supplies the Activity-owned typed tap resolver using the same repository read contracts.
+ * @param services Current host's existing dependencies; construction starts no reads or delivery.
+ */
+fun notificationEntryViewModelFactory(services: AppServices): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            val repositories = services.repositories
+            NotificationEntryViewModel(
+                NotificationContentLoader(
+                    repositories.notifications,
+                    repositories.lotteries,
+                    repositories.bookings,
+                ),
+                createSavedStateHandle(),
+            )
+        }
+    }
+
 /**
  * Constructs a graph-owned profile model with stable identity and repository interfaces.
  * @param services Application-scoped services.
@@ -130,10 +155,9 @@ fun profileViewModelFactory(
                 services.repositories.images,
                 createSavedStateHandle(),
                 parseName = ::parseDisplayName,
-                parseEmail = null,
-                parsePhone = null,
+                parseEmail = ::parseOptionalEmail,
+                parsePhone = ::parseOptionalPhone,
             )
-            // F02 contacts remain independently pending.
         }
     }
 
@@ -154,11 +178,10 @@ fun onboardingViewModelFactory(
                 createSavedStateHandle(),
                 parseName = ::parseDisplayName,
             )
-            // F01 handoff uses the same function as the personal-details editor.
         }
     }
 
-/** Constructs the inventory owner with the assigned F11 ordering function.
+/** Constructs the inventory owner with the accepted ordering function.
  * @param services Selected host's dependencies.
  * @param ownerId Confirmed owner identity.
  */
@@ -258,7 +281,7 @@ fun availabilityViewModelFactory(
         }
     }
 
-/** Constructs the discovery owner with reserved matching dependencies explicitly pending.
+/** Constructs discovery with the accepted matching and ordering functions.
  * @param services Selected host's published listing, attachment and rating sources.
  */
 fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
@@ -269,8 +292,8 @@ fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
                 services.repositories.images,
                 services.repositories.reviews,
                 createSavedStateHandle(),
-                matchesText = null,
-                matchesCapacity = null,
+                matchesText = ::matchesCampsiteText,
+                matchesCapacity = ::matchesGuestCapacity,
                 sortCampsites = ::sortCampsitesByName,
                 clock = services.clock,
             )

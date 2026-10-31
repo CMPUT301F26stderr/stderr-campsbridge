@@ -9,4 +9,9 @@
     <string name="demo_preview_explanation">Inspect sample screen states. These previews do not save or advance.</string>
     <string name="demo_gallery">Component gallery</string>
     <string name="demo_welcome">Welcome</string>
+    <string name="demo_admin">Administrator</string>
+    <string name="demo_sample_label">Fixed sample results · May 2027</string>
+    <string name="demo_about">About sample data</string>
+    <string name="demo_sample_explanation">Explore, lotteries, reservations, Inbox and admin use connected sample records. Search, guest matching and reservation categories use fixed preview outcomes. Name/contact validation and other reserved helpers remain pending. Profile photos and Inbox read marks change locally; reset restores the sample records. Booking, payments, lottery changes and campsite saves require the Firebase build.</string>
+    <string name="demo_sample_ordering">Lists retain the sample order; production ordering helpers remain pending.</string>
 </resources>

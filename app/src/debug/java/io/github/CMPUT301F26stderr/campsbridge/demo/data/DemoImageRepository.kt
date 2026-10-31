@@ -21,12 +21,24 @@ import java.util.UUID
 /** Saves demo photos in a private cache directory; attachment relationships stay in memory.
  * @param directory Scenario-owned private cache directory; bytes are never uploaded.
  * @param clock Timestamp source for local attachments.
+ * @param samples Packaged read-only photo URLs keyed by their fixture slots.
  */
 class DemoImageRepository(
     private val directory: File,
     private val clock: Clock = Clock.systemUTC(),
+    samples: Map<ImageTarget, String> = emptyMap(),
 ) : ImageRepository {
-    private val attachments = MutableStateFlow(emptyMap<ImageTarget, ImageAttachment>())
+    private val sampleAttachments =
+        samples.keys.associateWith {
+            ImageAttachment(it, "sample-${it.type}-${it.id}", clock.instant())
+        }
+    private val sampleUrls =
+        sampleAttachments
+            .map { (target, attachment) ->
+                attachment.blobId to
+                    samples.getValue(target)
+            }.toMap()
+    private val attachments = MutableStateFlow(sampleAttachments)
     private val lock = Mutex()
 
     /** Returns the current local attachment.
@@ -69,7 +81,11 @@ class DemoImageRepository(
                 val attachment = ImageAttachment(target, file.name, clock.instant())
                 val old = attachments.value[target]
                 attachments.value = attachments.value + (target to attachment)
-                val obsolete = old?.blobId?.takeUnless { File(directory, it).delete() }
+                val obsolete =
+                    old?.blobId?.takeUnless {
+                        it in sampleUrls ||
+                            File(directory, it).delete()
+                    }
                 ImageUpdateResult(attachment, obsolete)
             }
         }
@@ -82,7 +98,11 @@ class DemoImageRepository(
             withContext(Dispatchers.IO) {
                 val old = attachments.value[target]
                 attachments.value = attachments.value - target
-                val obsolete = old?.blobId?.takeUnless { File(directory, it).delete() }
+                val obsolete =
+                    old?.blobId?.takeUnless {
+                        it in sampleUrls ||
+                            File(directory, it).delete()
+                    }
                 ImageUpdateResult(null, obsolete)
             }
         }
@@ -92,9 +112,11 @@ class DemoImageRepository(
      */
     override suspend fun downloadUrl(blobId: String): String =
         withContext(Dispatchers.IO) {
-            val file = File(directory, blobId)
-            check(file.isFile)
-            file.toURI().toString()
+            sampleUrls[blobId] ?: run {
+                val file = File(directory, blobId)
+                check(file.isFile)
+                file.toURI().toString()
+            }
         }
 
     /** Deletes only an unattached demo blob.
@@ -104,8 +126,10 @@ class DemoImageRepository(
         lock.withLock {
             withContext(Dispatchers.IO) {
                 check(attachments.value.values.none { it.blobId == blobId })
-                val file = File(directory, blobId)
-                check(!file.exists() || file.delete())
+                if (blobId !in sampleUrls) {
+                    val file = File(directory, blobId)
+                    check(!file.exists() || file.delete())
+                }
             }
         }
 }

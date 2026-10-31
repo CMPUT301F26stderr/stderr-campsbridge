@@ -1,8 +1,10 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,10 +21,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationEntry
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import java.util.Locale
 
 /**
@@ -38,6 +44,17 @@ import java.util.Locale
  * @param lotterySetupFactory New/saved lottery-setup dependencies for the current owner.
  * @param lotteryDetailFactory Saved owner-reader dependencies.
  * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
+ * @param reservationDetailFactory Saved aggregate dependencies keyed by ID/context.
+ * @param inboxFactory One account receipt owner shared by both workspace primaries.
+ * @param bookingFactory One actual winner wizard keyed by saved lottery and campsite IDs.
+ * @param reservationListFactory Active-list dependencies keyed by actor context and filter.
+ * @param adminBrowseFactory All-record read dependencies with explicitly pending predicates.
+ * @param notificationLogFactory Read-only all-event and selected-content dependencies.
+ * @param notificationPermission Host-owned Android inspection/settings dependency.
+ * @param notificationEntry Immutable root tap outcome; receipt arrival never sets it.
+ * @param onRetryNotificationEntry Explicit event/context retry.
+ * @param onDismissNotificationEntry Retires the pending root tap.
+ * @param onConsumeNotificationEntry Acknowledges an actually opened saved target.
  * @param modifier Host layout; child screens own their own insets.
  */
 @Composable
@@ -53,6 +70,17 @@ fun AppNavigation(
     lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
     lotteryDetailFactory: (String, LotteryContext) -> ViewModelProvider.Factory,
     lotteryListFactory: (LotteryContext, String?) -> ViewModelProvider.Factory,
+    reservationDetailFactory: (String, ReservationContext) -> ViewModelProvider.Factory,
+    inboxFactory: ViewModelProvider.Factory,
+    bookingFactory: (String, String) -> ViewModelProvider.Factory,
+    reservationListFactory: (ReservationContext, String?) -> ViewModelProvider.Factory,
+    adminBrowseFactory: ViewModelProvider.Factory,
+    notificationLogFactory: ViewModelProvider.Factory,
+    notificationPermission: NotificationPermission,
+    notificationEntry: NotificationEntryUiState,
+    onRetryNotificationEntry: () -> Unit,
+    onDismissNotificationEntry: () -> Unit,
+    onConsumeNotificationEntry: (NotificationEntry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val controller = rememberNavController()
@@ -69,6 +97,16 @@ fun AppNavigation(
                 AppDestination.OWNER_LOTTERIES,
                 stringResource(R.string.lotteries),
                 Icons.Default.DateRange,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.reservations(ReservationContext.OWNER),
+                stringResource(R.string.reservations_title),
+                Icons.Default.CheckCircle,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.inbox(Role.OWNER),
+                stringResource(R.string.inbox_title),
+                Icons.Default.Notifications,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.OWNER),
@@ -89,7 +127,35 @@ fun AppNavigation(
                 Icons.Default.DateRange,
             ),
             WorkspaceNavigationItem(
+                AppDestination.reservations(ReservationContext.ENTRANT),
+                stringResource(R.string.reservations_title),
+                Icons.Default.CheckCircle,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.inbox(Role.ENTRANT),
+                stringResource(R.string.inbox_title),
+                Icons.Default.Notifications,
+            ),
+            WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.ENTRANT),
+                stringResource(R.string.profile_title),
+                Icons.Default.Person,
+            ),
+        )
+    val adminItems =
+        listOf(
+            WorkspaceNavigationItem(
+                AppDestination.ADMIN_BROWSE,
+                stringResource(R.string.admin_browse),
+                Icons.Default.Home,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.ADMIN_LOGS,
+                stringResource(R.string.admin_logs),
+                Icons.Default.Notifications,
+            ),
+            WorkspaceNavigationItem(
+                AppDestination.profileGraph(Role.ADMIN),
                 stringResource(R.string.profile_title),
                 Icons.Default.Person,
             ),
@@ -98,7 +164,7 @@ fun AppNavigation(
         when (state.workspace) {
             Role.OWNER -> ownerItems
             Role.ENTRANT -> entrantItems
-            Role.ADMIN -> emptyList()
+            Role.ADMIN -> adminItems
         }
     val selectPrimary: (String) -> Unit = { destination ->
         if (selectedItems.any { it.id == destination }) {
@@ -134,8 +200,54 @@ fun AppNavigation(
         }
     }
     NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
+        administrationGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            adminItems,
+            selectPrimary,
+            adminBrowseFactory,
+        )
+        notificationLogGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            adminItems,
+            selectPrimary,
+            notificationLogFactory,
+        )
         lotterySetupGraph(controller, lotterySetupFactory)
-        lotteryDetailGraph(controller, lotteryDetailFactory, onCampsite = { campsiteId, context ->
+        inboxGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            ownerItems,
+            entrantItems,
+            selectPrimary,
+            inboxFactory,
+        )
+        reservationGraph(controller, reservationDetailFactory)
+        reservationListGraph(
+            controller,
+            state,
+            onSelectWorkspace,
+            ownerItems,
+            entrantItems,
+            selectPrimary,
+            reservationListFactory,
+        )
+        bookingGraph(controller, bookingFactory)
+        lotteryDetailGraph(controller, lotteryDetailFactory, onReservation = { id ->
+            controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
+                launchSingleTop =
+                    true
+            }
+        }, onBooking = { lotteryId, campsiteId ->
+            controller.navigate(AppDestination.booking(lotteryId, campsiteId)) {
+                launchSingleTop =
+                    true
+            }
+        }, onCampsite = { campsiteId, context ->
             val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
             val presentation =
                 if (context ==
@@ -148,8 +260,7 @@ fun AppNavigation(
             controller.navigate(
                 "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
             ) {
-                launchSingleTop =
-                    true
+                launchSingleTop = true
             }
         })
         lotteryListGraph(
@@ -171,10 +282,11 @@ fun AppNavigation(
                 when (workspace) {
                     Role.OWNER -> ownerItems
                     Role.ENTRANT -> entrantItems
-                    Role.ADMIN -> emptyList()
+                    Role.ADMIN -> adminItems
                 },
                 selectPrimary,
                 { openWorkspace(Role.OWNER) },
+                notificationPermission,
             )
         }
         campsiteReadGraph(
@@ -204,8 +316,27 @@ fun AppNavigation(
             availabilityFactory,
         )
     }
-    LaunchedEffect(state.workspace, state.isSelectingWorkspace) {
-        if (state.isSelectingWorkspace) return@LaunchedEffect
+    NotificationLogSelectionBinding(controller, notificationLogFactory)
+    NotificationEntryNavigation(
+        controller,
+        state,
+        notificationEntry,
+        onSelectWorkspace,
+        onOpenInbox = { workspace ->
+            val inbox = AppDestination.inbox(workspace)
+            controller.navigate(inbox) {
+                popUpTo(controller.graph.id) { saveState = true }
+                launchSingleTop = true
+            }
+        },
+        onRetryNotificationEntry,
+        onDismissNotificationEntry,
+        onConsumeNotificationEntry,
+    )
+    LaunchedEffect(state.workspace, state.isSelectingWorkspace, notificationEntry) {
+        if (state.isSelectingWorkspace || notificationEntry is NotificationEntryUiState.Ready) {
+            return@LaunchedEffect
+        }
         // The introduction consumes its request and removes itself before saving the old stack.
         val hostingIntroduction =
             Role.entries.any {
@@ -224,5 +355,5 @@ private fun defaultPrimary(workspace: Role): String =
     when (workspace) {
         Role.OWNER -> AppDestination.ownerCampsites()
         Role.ENTRANT -> AppDestination.EXPLORE
-        Role.ADMIN -> AppDestination.profileGraph(workspace)
+        Role.ADMIN -> AppDestination.ADMIN_BROWSE
     }

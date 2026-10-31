@@ -3,6 +3,8 @@ package io.github.CMPUT301F26stderr.campsbridge.demo
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.ProfileUpdate
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,10 +37,12 @@ class DemoSessionTest {
                 assertEquals("Alex Chen", ready.account.name)
                 assertEquals(Role.ENTRANT, ready.workspace)
                 assertNull(
-                    host.session.value.services.repositories.images
-                        .observeAll()
-                        .first()
-                        .firstOrNull(),
+                    host.session.value.services.repositories.images.get(
+                        ImageTarget(
+                            ImageTargetType.ACCOUNT,
+                            "demo-account",
+                        ),
+                    ),
                 )
             } finally {
                 store.clear()

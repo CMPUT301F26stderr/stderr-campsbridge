@@ -9,15 +9,23 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-/** Empty offline reader; distributed lottery mutations are unavailable in the demo. */
-class DemoLotteryRepository : LotteryRepository {
+/** Fixed offline records; distributed lottery mutations remain unavailable.
+ * @param records Supplied parent records.
+ * @param offers Allocations grouped by their parent identity.
+ * @param entries Supplied membership facts.
+ */
+class DemoLotteryRepository(
+    private val records: List<Lottery> = emptyList(),
+    private val offers: Map<String, List<LotteryOffer>> = emptyMap(),
+    private val entries: List<LotteryEntry> = emptyList(),
+) : LotteryRepository {
     /**
      * Returns the lottery record, or null when absent.
      *
      * @param id Lottery document ID.
      */
     override suspend fun get(id: String): Lottery? =
-        null
+        records.firstOrNull { it.id == id }
 
     /**
      * Observes one lottery, emitting null when its document is absent.
@@ -25,13 +33,13 @@ class DemoLotteryRepository : LotteryRepository {
      * @param id Lottery document ID.
      */
     override fun observe(id: String): Flow<Lottery?> =
-        flowOf(null)
+        flowOf(records.firstOrNull { it.id == id })
 
     /**
      * Observes all readable lotteries, including drafts and historical records.
      */
     override fun observeAll(): Flow<List<Lottery>> =
-        flowOf(emptyList())
+        flowOf(records)
 
     /**
      * Observes lotteries created by the specified owner.
@@ -39,7 +47,7 @@ class DemoLotteryRepository : LotteryRepository {
      * @param ownerId Account ID of the campsite or lottery owner.
      */
     override fun observeForOwner(ownerId: String): Flow<List<Lottery>> =
-        flowOf(emptyList())
+        flowOf(records.filter { it.ownerId == ownerId })
 
     /**
      * Observes the campsite/night allocations belonging to a lottery.
@@ -47,17 +55,15 @@ class DemoLotteryRepository : LotteryRepository {
      * @param id Lottery document ID.
      */
     override fun observeOffers(id: String): Flow<List<LotteryOffer>> =
-        flowOf(emptyList())
+        flowOf(offers[id].orEmpty())
 
     /**
-     * Reads current allocations from the server for draft restoration and write recovery.
-     * A confirmed empty result is distinct from a failed read; cached absence is insufficient.
+     * Reads supplied local allocations for draft inspection; performs no server request.
      * @param id Lottery document ID.
-     * @return All confirmed offers, in unspecified order; empty when none exist.
-     * @throws Exception When the server read or a stored allocation's decoding fails.
+     * @return Supplied allocations; empty when the fixture has none.
      */
     override suspend fun getOffers(id: String): List<LotteryOffer> =
-        emptyList()
+        offers[id].orEmpty()
 
     /**
      * Observes participation records; callers show draw outcomes only after draw completion.
@@ -65,7 +71,7 @@ class DemoLotteryRepository : LotteryRepository {
      * @param id Lottery document ID.
      */
     override fun observeEntries(id: String): Flow<List<LotteryEntry>> =
-        flowOf(emptyList())
+        flowOf(entries.filter { it.lotteryId == id })
 
     /**
      * Observes an account’s entries across lotteries using the queryable account ID.
@@ -73,7 +79,7 @@ class DemoLotteryRepository : LotteryRepository {
      * @param accountId Account ID whose participation or data is addressed.
      */
     override fun observeForEntrant(accountId: String): Flow<List<LotteryEntry>> =
-        flowOf(emptyList())
+        flowOf(entries.filter { it.accountId == accountId })
 
     /**
      * Rejects this distributed operation in the offline demo.
@@ -214,7 +220,12 @@ class DemoLotteryRepository : LotteryRepository {
      * @param campsiteId Published campsite whose lottery memberships are requested.
      */
     override fun observePublishedForCampsite(campsiteId: String): Flow<List<Lottery>> =
-        flowOf(emptyList())
+        flowOf(
+            records.filter {
+                it.publishedAt != null && it.cancellation == null &&
+                    offers[it.id].orEmpty().any { offer -> offer.campsiteId == campsiteId }
+            },
+        )
 
     /** Rejects distributed operations rather than pretending that the demo persisted them. */
     private fun unavailable(): Nothing =

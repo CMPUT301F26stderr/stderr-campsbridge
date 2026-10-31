@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inbox_announcement">Lottery announcement</string>
+    <string name="inbox_context_failed">Could not load the linked record.</string>
+    <string name="inbox_context_unavailable">The linked record is unavailable.</string>
+    <string name="inbox_context_unsupported">This notification has no supported destination in this build.</string>
+    <string name="inbox_loser">You were not selected in the lottery.</string>
+    <string name="inbox_message">Message notification</string>
+    <string name="inbox_reservation_cancelled">Reservation cancelled</string>
+    <string name="inbox_reservation_confirmed">Reservation confirmed</string>
+    <string name="inbox_winner">You were selected in the lottery.</string>
+</resources>

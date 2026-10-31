@@ -1,13 +1,19 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**
  * Separates confirmation, explicit cancellation, and outside/Back dismissal.
@@ -19,6 +25,8 @@ import io.github.CMPUT301F26stderr.campsbridge.R
  * @param isSubmitting Blocks dismissal and repeated actions while pending.
  * @param confirmLabel Localized action, defaulting to a generic confirmation.
  * @param destructive Uses the shared error emphasis for destructive confirmation.
+ * @param cancelLabel Explicit nonmutating alternative, defaulting to Cancel.
+ * @param supportingContent Optional caller-owned input/feedback below the consequence.
  */
 @Composable
 fun ConfirmationDialog(
@@ -30,6 +38,8 @@ fun ConfirmationDialog(
     isSubmitting: Boolean = false,
     confirmLabel: String = stringResource(R.string.confirm),
     destructive: Boolean = false,
+    cancelLabel: String = stringResource(R.string.cancel),
+    supportingContent: (@Composable () -> Unit)? = null,
 ) {
     val confirmColor =
         if (destructive) {
@@ -40,7 +50,15 @@ fun ConfirmationDialog(
     AlertDialog(
         onDismissRequest = { if (!isSubmitting) onDismiss() },
         title = { Text(title) },
-        text = { Text(description) },
+        text = {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            ) {
+                Text(description)
+                supportingContent?.invoke()
+            }
+        },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
@@ -57,7 +75,7 @@ fun ConfirmationDialog(
             TextButton(
                 onClick = onCancel,
                 enabled = !isSubmitting,
-            ) { Text(stringResource(R.string.cancel)) }
+            ) { Text(cancelLabel) }
         },
     )
 }

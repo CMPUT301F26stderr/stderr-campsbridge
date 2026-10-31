@@ -13,6 +13,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceMenu
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
@@ -27,6 +28,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ContactDetailsRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.profile.NotificationSettingsRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.OwnerIntroductionRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileDetailsRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileRoute
@@ -42,6 +44,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.SettingsScreen
  * @param navigationItems Registered peer destinations only.
  * @param onSelectDestination Parent-owned primary navigation.
  * @param onOwnerWorkspaceReady Opens the selected owner primary after removing the introduction.
+ * @param notificationPermission Explicit platform inspection/settings dependency.
  */
 internal fun NavGraphBuilder.profileGraph(
     controller: NavHostController,
@@ -52,6 +55,7 @@ internal fun NavGraphBuilder.profileGraph(
     navigationItems: List<WorkspaceNavigationItem>,
     onSelectDestination: (String) -> Unit,
     onOwnerWorkspaceReady: () -> Unit,
+    notificationPermission: NotificationPermission,
 ) {
     navigation(
         AppDestination.profileMenu(workspace),
@@ -133,6 +137,12 @@ internal fun NavGraphBuilder.profileGraph(
                 controller.popBackStack()
             }
         }
+        composable(AppDestination.notificationSettings(workspace)) { entry ->
+            NotificationSettingsRoute(
+                profileGraphModel(controller, entry, workspace, profileFactory),
+                notificationPermission,
+            ) { controller.popBackStack() }
+        }
         composable(AppDestination.settings(workspace)) {
             SettingsScreen(
                 onPolicies = {
@@ -142,11 +152,15 @@ internal fun NavGraphBuilder.profileGraph(
                     }
                 },
                 onBack = { controller.popBackStack() },
-                onCredits = {
-                    controller.navigate(AppDestination.credits(workspace)) {
-                        launchSingleTop =
-                            true
+                onNotifications = {
+                    controller.navigate(AppDestination.notificationSettings(workspace)) {
+                        launchSingleTop = true
                     }
+                },
+                onCredits = {
+                    controller.navigate(
+                        AppDestination.credits(workspace),
+                    ) { launchSingleTop = true }
                 },
             )
         }

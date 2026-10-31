@@ -1,11 +1,11 @@
 <resources>
     <string name="task_examples">Task examples</string>
     <string name="task_examples_description">Local examples use real feature controllers and fixed sample records. Choose your task, implement its helper, rebuild debug, and reopen the example. No Firebase setup is needed.</string>
-    <string name="task_unfinished_features">This baseline supplies the display-name and contact examples. Other examples become available with their feature baselines.</string>
+    <string name="task_unfinished_features">Feature examples pending: cancellation/rejection actions (B7), Android alerts and notification entry (B8), and administration (B9). These paths are not simulated here.</string>
     <string name="task_label">%1$s · %2$s</string>
     <string name="task_ready">Feature scaffold available · %1$s</string>
     <string name="task_pending">Helper not connected. The lead connects the real function in the task handoff. This example does not supply its answer.</string>
-    <string name="task_connected">Assigned function connected. This example calls the real handoff function; peer helpers may remain pending.</string>
+    <string name="task_connected">Assigned function connected. Other unfinished helpers use fixed fixture outcomes in this example only.</string>
     <string name="task_placeholder">Example pending baseline %1$s. Its feature or handoff contract is still in progress.</string>
     <string name="task_future">This task is a planning placeholder. Instructions and a working example will be supplied with its baseline.</string>
     <string name="task_reset">Reset example</string>

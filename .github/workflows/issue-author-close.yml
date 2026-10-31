@@ -2,22 +2,37 @@ name: Issue author approval
 
 on:
   issues:
-    types: [closed]
+    types: [closed, reopened]
+  # Catch delayed Project close updates that arrive after a reopen run finishes.
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue to reset, or leave empty to repair all open Done cards
+        type: string
+        required: false
 
 permissions:
+  contents: read
   issues: write
 
 concurrency:
-  group: issue-author-close-${{ github.event.issue.number }}
+  group: issue-author-close-${{ github.event.issue.number || inputs.issue_number || 'repair' }}
   cancel-in-progress: false
+
+env:
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
 
 jobs:
   enforce-author-close:
-    name: Require the issue author's closure
+    name: Check issue closure and Project status
     runs-on: [self-hosted, linux, x64]
     timeout-minutes: 5
     steps:
       - name: Reopen closures made without the issue author
+        if: github.event_name == 'issues' && github.event.action == 'closed'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
@@ -47,3 +62,25 @@ jobs:
               ...params,
               body: `@${closer.login}, this issue was automatically reopened because only its original author, @${issue.user.login}, may close it. Please ask the author to review the work and close the issue when it is accepted.`,
             });
+      - name: Check out the status reset script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      # GITHUB_TOKEN reopen events don't trigger another workflow; reset in this run too.
+      - name: Move reopened issues out of Done
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo 'PROJECT_AUTOMATION_TOKEN is required to update the organization Project.' >&2
+            exit 1
+          fi
+          if [[ -n "$ISSUE_NUMBER" ]]; then
+            nix develop .#repository --no-update-lock-file --command \
+              python3 scripts/reset-project-status.py --issue "$ISSUE_NUMBER"
+          else
+            nix develop .#repository --no-update-lock-file --command \
+              python3 scripts/reset-project-status.py --all
+          fi

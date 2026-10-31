@@ -13,7 +13,9 @@ import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudience
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
@@ -40,6 +42,18 @@ class FirestoreNotificationRepository(
      */
     override suspend fun get(id: String) =
         db.document(FirestorePaths.notification(id)).read(NotificationDocument)
+
+    /** Reads one account's confirmed server history without changing receipts or event content.
+     * @param accountId Saved receipt owner.
+     */
+    override suspend fun getInbox(accountId: String): List<InboxReceipt> =
+        db.collection("${FirestorePaths.account(accountId)}/inbox").read(InboxReceiptDocument)
+
+    /** Reads existing intended/receipt facts without invoking fan-out or acknowledgements.
+     * @param notificationId Original immutable event identity.
+     */
+    override suspend fun getAudience(notificationId: String): NotificationAudience =
+        NotificationAudienceQueries(db).get(notificationId)
 
     /**
      * Observes account-specific inbox receipts; shared event content is fetched separately.
