@@ -263,7 +263,9 @@ class BookingScreenTest {
         assertEquals(listOf(BookingStep.TERMS), next)
     }
 
-    /** Supplies presentation-only reviewed facts; no repository is constructed. */
+    /** Supplies reviewed facts without a repository.
+     * @param step Wizard page to display.
+     */
     private fun ready(step: BookingStep): BookingUiState.Content =
         previewBooking(step).copy(canConfirm = step == BookingStep.REVIEW)
 
@@ -320,6 +322,7 @@ class BookingScreenTest {
         }
     }
 
+    /** Shared label for the agreement control in interaction checks. */
     private companion object {
         const val AGREEMENT = "I have read and accept these rules and the reservation policy."
     }

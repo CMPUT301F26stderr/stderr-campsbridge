@@ -87,10 +87,10 @@ sealed interface BookingUiState {
      * @param month Parent-owned displayed month.
      * @param today Current campsite-local date from the injected clock.
      * @param calendar Actual visible/selected range outcomes; null scopes were not requested.
-     * @param eligibilityPending Reserved F15 is absent, so date-dependent continuation is pending.
-     * @param visibleEligibleNights F15 result for known visible inventory, or null while unknown.
-     * @param selectedEligibleNights Confirmed F15 stay/departure dates, or null while unknown.
-     * @param stayValidation Ordered date feedback; null when required inventory/F15 is unknown.
+     * @param eligibilityPending Eligibility is not connected, so date selection remains pending.
+     * @param visibleEligibleNights Eligible displayed-month nights, or null while unknown.
+     * @param selectedEligibleNights Eligible stay/checkout-support nights, or null while unknown.
+     * @param stayValidation Ordered date feedback; null while inventory or eligibility is unknown.
      * @param quote Checked current amount for positive date ranges, or null before a range exists.
      * @param error Feedback from the latest explicit step/approval action.
      * @param guestCount Positive parsed guest input for display, independent of capacity feedback.

@@ -18,7 +18,7 @@ data class BookingAgreement(
  * @param checkIn Inclusive local arrival, or null before selection.
  * @param checkOut Exclusive local departure, or null before selection.
  * @param guestInput Raw positive-count input retained through read failure and recreation.
- * @param step Current validated wizard position.
+ * @param step Current wizard page.
  * @param returnToReview Whether Next returns from an explicit review edit.
  * @param agreement Exact terms acknowledged, or null before acceptance/after invalidation.
  * @param reviewedTotalCents Current displayed amount reviewed, or null after price/date changes.
