@@ -324,6 +324,7 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
             "ui/discovery/logic/CampsiteTextMatchKt.class",
             "ui/discovery/logic/GuestCapacityMatchKt.class",
             "ui/lotteries/logic/LotteryWindowInputKt.class",
+            "ui/lotteries/logic/ParticipantStateFilterKt.class",
         ).forEach { path ->
             check(
                 compiledSources
