@@ -8,6 +8,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -364,6 +365,84 @@ class BookingCalendarReaderTest {
             runCurrent()
             assertEquals(BookingCalendarReadState(), reader.state.value)
             assertEquals(1, sites.observedCalendars.size)
+            assertEquals(0, sites.activeCalendarObservers)
+        }
+
+    /** Browsing beyond an incomplete arrival reads only the preceding checkout-support night. */
+    @Test fun laterMonthReadsItsPrecedingNightForAnIncompleteStay() =
+        runTest {
+            val reader = reader(backgroundScope)
+            val visible = month.plusMonths(2)
+            reader.update(visible, start)
+            runCurrent()
+            assertEquals(
+                setOf(
+                    Triple("site", visible.atDay(1), visible.plusMonths(1).atDay(1)),
+                    Triple("site", visible.atDay(1).minusDays(1), visible.atDay(1)),
+                ),
+                sites.observedCalendars.toSet(),
+            )
+            assertEquals(CalendarInventoryRead.Content(emptyList()), reader.state.value.selected)
+            assertEquals(2, sites.activeCalendarObservers)
+        }
+
+    /** Moving an offscreen selection into the loaded month retires its independent listener. */
+    @Test fun returningToCoveredSelectionRetiresItsIndependentReader() =
+        runTest {
+            val reader = reader(backgroundScope)
+            reader.update(month, start, start.plusDays(2))
+            runCurrent()
+            assertEquals(2, sites.activeCalendarObservers)
+            reader.update(month, inside, inside.plusDays(2))
+            runCurrent()
+            assertEquals(reader.state.value.visible, reader.state.value.selected)
+            assertEquals(2, sites.observedCalendars.size)
+            assertEquals(1, sites.activeCalendarObservers)
+        }
+
+    /** A retired visible query cannot replace a newly confirmed month after delayed completion. */
+    @Test fun lateVisibleRangeCannotReplaceTheCurrentMonth() =
+        runTest {
+            val gate = CompletableDeferred<Unit>()
+            sites.calendarHandler = { _, first, _ ->
+                if (first == month.atDay(1)) {
+                    flow {
+                        withContext(NonCancellable) { gate.await() }
+                        emit(monthRows)
+                    }
+                } else {
+                    MutableStateFlow(emptyList())
+                }
+            }
+            val reader = reader(backgroundScope)
+            try {
+                reader.update(month)
+                runCurrent()
+                reader.update(month.plusMonths(1))
+                runCurrent()
+                val confirmed = BookingCalendarReadState(CalendarInventoryRead.Content(emptyList()))
+                assertEquals(confirmed, reader.state.value)
+                gate.complete(Unit)
+                runCurrent()
+                assertEquals(confirmed, reader.state.value)
+                assertEquals(1, sites.activeCalendarObservers)
+            } finally {
+                gate.complete(Unit)
+            }
+        }
+
+    /** A cancelled parent's stale callbacks cannot install even a queued inventory query. */
+    @Test fun cancelledParentCannotStartNewQueries() =
+        runTest {
+            val owner = Job(backgroundScope.coroutineContext[Job])
+            val reader = reader(CoroutineScope(backgroundScope.coroutineContext + owner))
+            owner.cancel()
+            reader.update(month, start, start.plusDays(2))
+            reader.retryVisible()
+            reader.retrySelection()
+            runCurrent()
+            assertEquals(BookingCalendarReadState(), reader.state.value)
+            assertEquals(0, sites.observedCalendars.size)
             assertEquals(0, sites.activeCalendarObservers)
         }
 
