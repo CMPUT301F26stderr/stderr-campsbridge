@@ -199,9 +199,7 @@ fun BookingScreen(
                         )
                     }
 
-                    is BookingUiState.Content -> {
-                        Unit
-                    }
+                    is BookingUiState.Content -> {}
                 }
             }
         }

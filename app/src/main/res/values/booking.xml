@@ -15,7 +15,7 @@
     <string name="booking_range_invalid">Checkout must follow arrival.</string>
     <string name="booking_past_arrival">Arrival cannot be before today at the campsite.</string>
     <string name="booking_nights_unavailable">Some selected nights are unavailable. Choose another stay.</string>
-    <string name="booking_eligibility_pending">Date selection is pending the available-night rule.</string>
+    <string name="booking_eligibility_pending">Date selection is not available yet.</string>
     <string name="booking_inventory_unknown">Wait for selected nights to load, or retry the failed calendar.</string>
     <string name="booking_inventory_failed">Could not load these nights.</string>
     <string name="booking_selected_inventory_failed">Could not confirm the selected stay.</string>
