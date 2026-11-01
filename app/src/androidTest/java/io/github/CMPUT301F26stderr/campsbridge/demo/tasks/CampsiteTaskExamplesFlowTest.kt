@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -25,19 +26,22 @@ class CampsiteTaskExamplesFlowTest {
             compose.onNodeWithTag("H03").performClick()
             compose.onNodeWithText("May 2027").assertIsDisplayed()
             compose.onNodeWithTag("calendar-date-2027-05-13").performScrollTo().assertIsNotEnabled()
+            compose.onNodeWithTag("calendar-date-2027-05-11").performScrollTo().performClick()
+            compose.onNodeWithText("Withdraw nights").performScrollTo().performClick()
+            compose.onNodeWithText("Save changes").assertIsEnabled()
         }
     }
 
     /** The real owner inventory keeps its original records visible and returns to the catalogue. */
-    @Test fun orderingExampleShowsActualRowsWithConnectedOrdering() {
+    @Test fun orderingExampleShowsActualRowsAndExplicitPendingOrdering() {
         ActivityScenario.launch(TaskExamplesActivity::class.java).use {
             compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H04"))
             compose.onNodeWithTag("H04").performClick()
             compose
                 .onNodeWithText(
                     "Alphabetical ordering is pending in this build.",
-                ).assertDoesNotExist()
-            compose.onNodeWithText("River Camp").performScrollTo().assertIsDisplayed()
+                ).assertIsDisplayed()
+            compose.onNodeWithText("River Camp").assertIsDisplayed()
             pressBack()
             compose.onNodeWithText("Task examples").assertIsDisplayed()
         }
