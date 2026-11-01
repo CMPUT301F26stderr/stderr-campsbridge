@@ -8,6 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
@@ -84,6 +85,7 @@ fun taskExampleBindings(): TaskExampleBindings =
         parseName = ::parseDisplayName,
         parseEmail = ::parseOptionalEmail,
         parsePhone = ::parseOptionalPhone,
+        remainingEdits = ::remainingAvailabilityEdits,
         orderCampsites = ::sortCampsitesByName,
         matchesText = ::matchesCampsiteText,
         matchesGuests = ::matchesGuestCapacity,
