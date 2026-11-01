@@ -70,3 +70,37 @@ class ProfileTextMatchTest {
         }
     }
 
+    /** Only the agreed fields participate, each independently rather than as concatenated text. */
+    @Test fun phonePreferencesAndCrossFieldTextAreNotSearchable() {
+        assertFalse(matchesProfileText(account, "0199"))
+        assertFalse(matchesProfileText(account, "solar"))
+        assertFalse(
+            matchesProfileText(
+                account.copy(name = "Alex", email = "river@example.ca"),
+                "alexriver",
+            ),
+        )
+    }
+
+    /** Removed/scrubbed profiles still have searchable stable identities. */
+    @Test fun removedProfileCanStillMatchItsIdentity() {
+        val scrubbed =
+            account.copy(
+                name = "",
+                email = null,
+                roles = emptySet(),
+                removal = Removal(Instant.EPOCH, "admin"),
+            )
+        assertTrue(matchesProfileText(scrubbed, "日本?"))
+        assertFalse(matchesProfileText(scrubbed, "Alex"))
+    }
+
+    /** Absent text does not match, and searching never normalizes stored account values. */
+    @Test fun missingTextIsFalseAndStoredFieldsStayUnchanged() {
+        val original = account.copy(name = "  Alex River  ", email = "Alex@Example.CA")
+        val before = original.copy()
+        assertFalse(matchesProfileText(original, "not present"))
+        assertTrue(matchesProfileText(original, "alex@EXAMPLE.ca"))
+        assertEquals(before, original)
+    }
+}
