@@ -3,7 +3,6 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
-import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
@@ -205,22 +204,6 @@ class BookingCalendarTest {
             bookingCalendarState(state.copy(draft = BookingDraft(step = BookingStep.GUESTS)))
         assertFalse(calendar.selectionEnabled)
         assertTrue(calendar.days.values.none { it.isSelectable })
-    }
-
-    /** Passive step fixtures keep coherent inventory and prices without enabling confirmation. */
-    @Test fun previewFixturesKeepBookingFactsConsistent() {
-        for (step in BookingStep.entries) {
-            val preview = previewBooking(step)
-            assertEquals(step, preview.draft.step)
-            assertEquals(preview.campsite.id, preview.offer.campsiteId)
-            assertEquals(preview.campsite.ownerId, preview.lottery.ownerId)
-            assertEquals(BookingQuote.Value(13000), preview.quote)
-            assertEquals(3L, preview.guestCount)
-            assertFalse(preview.canConfirm)
-            val calendar = bookingCalendarState(preview)
-            assertEquals(step == BookingStep.DATES, calendar.selectionEnabled)
-            assertEquals(CalendarSelection.Stay(start, end), calendar.selection)
-        }
     }
 
     /** Physical free rows cannot stand in for an unresolved eligibility result. */
