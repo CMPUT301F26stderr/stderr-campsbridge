@@ -222,4 +222,39 @@ class BookingCalendarTest {
             assertEquals(CalendarSelection.Stay(start, end), calendar.selection)
         }
     }
+
+    /** Physical free rows cannot stand in for an unresolved eligibility result. */
+    @Test fun missingEligibilityResultNeverEnablesKnownFreeInventory() {
+        val calendar = bookingCalendarState(state.copy(visibleEligibleNights = null))
+        assertFalse(calendar.selectionEnabled)
+        assertTrue(calendar.days.isEmpty())
+    }
+
+    /** Stale selected-date eligibility cannot enable departure while its range is unknown. */
+    @Test fun unknownSelectedInventoryCannotEnableAnOffscreenCheckout() {
+        val arrival = month.atDay(1).minusDays(1)
+        for (outcome in listOf(
+            null,
+            CalendarInventoryRead.Loading,
+            CalendarInventoryRead.Failure,
+        )) {
+            val calendar =
+                bookingCalendarState(
+                    state.copy(
+                        draft = BookingDraft(checkIn = arrival),
+                        calendar =
+                            BookingCalendarReadState(
+                                CalendarInventoryRead.Content(emptyList()),
+                                outcome,
+                            ),
+                        today = arrival,
+                        visibleEligibleNights = emptySet(),
+                        selectedEligibleNights = setOf(arrival),
+                    ),
+                )
+            assertTrue(calendar.selectionEnabled)
+            assertTrue(calendar.days.values.none { it.isSelectable })
+            assertEquals(CalendarDayStatus.UNAVAILABLE, calendar.days[month.atDay(1)]?.status)
+        }
+    }
 }
