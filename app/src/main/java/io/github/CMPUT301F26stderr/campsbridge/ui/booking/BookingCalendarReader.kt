@@ -86,13 +86,29 @@ internal class BookingCalendarReader(
         selectedJob?.start()
     }
 
-    /** Declares the visible-source retry action. */
-    fun retryVisible() =
-        Unit
+    /** Retries only a failed month, exposing Loading before any immediate source callback. */
+    fun retryVisible() {
+        if (closed || !scope.isActive ||
+            visibleQuery.result != CalendarInventoryRead.Failure
+        ) {
+            return
+        }
+        val pending = visibleQuery.install(visibleQuery.range, force = true)
+        publish()
+        pending?.start()
+    }
 
-    /** Declares the selected-source retry action. */
-    fun retrySelection() =
-        Unit
+    /** Retries only failed selection inventory, sharing a retry when the month covers it. */
+    fun retrySelection() {
+        if (closed || !scope.isActive) return
+        if (selectionUsesVisible) {
+            retryVisible()
+        } else if (selectedQuery.result == CalendarInventoryRead.Failure) {
+            val pending = selectedQuery.install(selectedQuery.range, force = true)
+            publish()
+            pending?.start()
+        }
+    }
 
     /** Releases inventory without permanently retiring this parent-owned reader. */
     fun stop() {
