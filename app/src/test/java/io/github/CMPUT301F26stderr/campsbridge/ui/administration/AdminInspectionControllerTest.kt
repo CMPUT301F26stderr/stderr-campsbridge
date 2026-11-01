@@ -370,3 +370,80 @@ class AdminInspectionControllerTest {
             assertTrue(f.photoBase.observedTargets.isEmpty())
         }
 
+    /** Runs a fixed contract with deterministic dispatcher and guaranteed scope cleanup.
+     * @param block One predeclared scenario; helper predicates are not implemented here.
+     */
+    private fun scenario(block: suspend TestScope.(Fixture) -> Unit) =
+        runTest(main.dispatcher) {
+            val f = Fixture(CoroutineScope(SupervisorJob() + main.dispatcher))
+            try {
+                block(f)
+            } finally {
+                f.model.close()
+                f.urlGates.forEach { it.complete("file:///released") }
+                f.scope.cancel()
+                f.profileSource.late?.complete(f.profile)
+                f.otherSource.late?.complete(f.other)
+                f.profileSource.gate?.complete(Unit)
+                runCurrent()
+                assertEquals(0, f.accountBase.writes + f.siteBase.writeCalls)
+                assertEquals(0, f.photoBase.replaceCalls + f.photoBase.deleteCalls)
+            }
+        }
+
+    /** Exact saved sources and delegated mutation-rejecting repositories.
+     * @param scope Lifetime explicitly cancelled by the scenario.
+     */
+    private class Fixture(
+        val scope: CoroutineScope,
+    ) {
+        val profile = sampleAccount().copy(id = "camper/α ?")
+        val other = profile.copy(id = "other", name = "Taylor")
+        val site = sampleCampsite("site/one", profile.id)
+        val accountTarget = ImageTarget(ImageTargetType.ACCOUNT, profile.id)
+        val siteTarget = ImageTarget(ImageTargetType.CAMPSITE, site.id)
+        val attachment = ImageAttachment(accountTarget, "blob-1", Instant.EPOCH)
+        val profileSource = Stream<Account?>(profile)
+        val otherSource = Stream<Account?>(other)
+        val siteSource = Stream<Campsite?>(site)
+        val ownedSource = Stream(listOf(site))
+        val accountBase = FakeAccountRepository()
+        val siteBase = FakeCampsiteRepository()
+        val photoBase = FakeImageRepository()
+        val urlGates = mutableListOf<CompletableDeferred<String>>()
+        var urlHandler: (suspend (String) -> String)? = null
+        val accounts =
+            object : AccountRepository by accountBase {
+                /** Supplies only the exact requested saved profile.
+                 * @param id Actual selected account.
+                 */
+                override fun observe(id: String): Flow<Account?> =
+                    if (id == profile.id) profileSource else otherSource
+            }
+        val sites =
+            object : CampsiteRepository by siteBase {
+                /** Supplies one actual saved listing.
+                 * @param id Actual selected campsite.
+                 */
+                override fun observe(id: String): Flow<Campsite?> =
+                    siteSource
+
+                /** Supplies controlled owner-scoped rows without inventing a hidden filter.
+                 * @param ownerId Requested account.
+                 */
+                override fun observeForOwner(ownerId: String): Flow<List<Campsite>> =
+                    ownedSource
+            }
+        val photos =
+            object : ImageRepository by photoBase {
+                /** Supports explicit noncooperative URL completion while recording real read IDs.
+                 * @param blobId Current attachment's immutable blob.
+                 */
+                override suspend fun downloadUrl(blobId: String): String {
+                    val handler = urlHandler ?: return photoBase.downloadUrl(blobId)
+                    photoBase.downloads.add(blobId)
+                    return handler(blobId)
+                }
+            }
+        val model = AdminInspectionController(accounts, sites, photos, scope)
+
