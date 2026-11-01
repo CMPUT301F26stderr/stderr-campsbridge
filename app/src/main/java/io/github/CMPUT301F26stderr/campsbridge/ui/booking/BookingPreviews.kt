@@ -15,20 +15,18 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
 /** Passive examples of four steps, unknown/failed sources, changed review and long text. */
 internal class BookingPreviewProvider : PreviewParameterProvider<BookingUiState> {
+    /** Supplies inert states for the wizard and its source/validation feedback. */
     override val values: Sequence<BookingUiState>
         get() {
             val dates = previewBooking()
             val review = previewBooking(BookingStep.REVIEW).copy(canConfirm = true)
             val occupied = dates.offer.nights.map { CalendarNight(it, true, "another-reservation") }
             val conflictNights =
-                dates.offer.nights.map {
+                dates.offer.nights.map { night ->
                     CalendarNight(
-                        it,
+                        night,
                         true,
-                        "another-reservation".takeIf { _ ->
-                            it ==
-                                dates.draft.checkIn
-                        },
+                        "another-reservation".takeIf { night == dates.draft.checkIn },
                     )
                 }
             val conflictInventory = CalendarInventoryRead.Content(conflictNights)
@@ -96,10 +94,10 @@ internal class BookingPreviewProvider : PreviewParameterProvider<BookingUiState>
                                 dates.campsite.details.copy(
                                     name = "Pine Creek Riverside family and group camping",
                                     rules =
-                                        "Quiet hours after 10 pm. Pack out litter and respect neighbouring campsites.\n"
-                                            .repeat(
-                                                16,
-                                            ),
+                                        (
+                                            "Quiet hours after 10 pm. Pack out litter " +
+                                                "and respect neighbouring campsites.\n"
+                                        ).repeat(16),
                                 ),
                         ),
                 ),
@@ -109,7 +107,15 @@ internal class BookingPreviewProvider : PreviewParameterProvider<BookingUiState>
                     selectedEligibleNights = null,
                     stayValidation = null,
                 ),
-                review.copy(quote = BookingQuote.Overflow, canConfirm = false),
+                review.copy(
+                    campsite =
+                        review.campsite.copy(
+                            details =
+                                review.campsite.details.copy(nightlyPriceCents = Long.MAX_VALUE),
+                        ),
+                    quote = BookingQuote.Overflow,
+                    canConfirm = false,
+                ),
             )
         }
 }
