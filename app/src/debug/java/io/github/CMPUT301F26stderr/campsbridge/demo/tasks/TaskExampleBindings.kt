@@ -13,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsit
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
@@ -87,4 +88,5 @@ fun taskExampleBindings(): TaskExampleBindings =
         matchesText = ::matchesCampsiteText,
         matchesGuests = ::matchesGuestCapacity,
         validateWindows = ::validateLotteryWindows,
+        filterParticipants = ::filterParticipantsByState,
     )

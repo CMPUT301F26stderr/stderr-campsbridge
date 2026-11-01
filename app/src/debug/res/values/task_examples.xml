@@ -42,7 +42,7 @@
     <string name="task_search_steps">Search for “river”: only River Camp should remain. “quiet” matches its description. Clear search to see all three listings. Guest matching and ordering use supplied outcomes here.</string>
     <string name="task_guests_steps">Open Filters. Apply 5 guests: River Camp and Forest Clearing remain. Apply 9: no listings remain. Text matching uses a fixed match here.</string>
     <string name="task_windows_steps">Try Valid, Registration reversed, Booking overlaps, and Booking reversed. These are supplied instants; the real validator produces the result below. This example does not save or publish a lottery.</string>
-    <string name="task_participants_steps">Choose All, Offered, or Lost. The two supplied entries should be filtered by exact state. Both belong to the displayed completed draw.</string>
+    <string name="task_participants_steps">Choose All participants, Selected, or Not selected. The two supplied entries should be filtered by exact state. Both belong to the displayed completed draw.</string>
     <string name="task_inbox_steps">Three events start shuffled. The newest is “task-new”; “task-a” and “task-b” share a time and sort by ID. Tap a row to inspect its supplied saved record.</string>
     <string name="task_unread_steps">Three receipts contain two unread entries. Open either unread event: its local receipt becomes read and the count drops. Ordering uses the supplied fixture order.</string>
     <string name="task_booking_steps">A winning entrant is already loaded. In May 2027, May 11–12 are offered and free; May 13 is booked; May 14 has no calendar record. Inspect date selection here. Booking submission is outside this example.</string>
