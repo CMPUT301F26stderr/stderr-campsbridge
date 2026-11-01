@@ -37,24 +37,53 @@ internal class BookingCalendarReader(
     private val mutableState = MutableStateFlow(BookingCalendarReadState())
     val state = mutableState.asStateFlow()
     private var closed = false
+    private var selectionUsesVisible = false
     private val visibleQuery = Query(campsiteId, campsites, scope, ::publish)
+    private val selectedQuery = Query(campsiteId, campsites, scope, ::publish)
 
-    /** Reconciles visible inventory; selection reads are implemented separately.
+    /** Reconciles exact display and selection scopes without restarting identical reads.
      * @param visibleMonth Displayed month, or null while hidden.
      * @param checkIn Inclusive arrival, or null before selection.
-     * @param checkOut Exclusive departure, or null before selection is complete.
+     * @param checkOut Exclusive departure; without it, read arrival or checkout's preceding night.
      */
-    @Suppress("UNUSED_PARAMETER")
     fun update(
         visibleMonth: YearMonth?,
         checkIn: LocalDate? = null,
         checkOut: LocalDate? = null,
     ) {
         if (closed || !scope.isActive) return
-        val range = visibleMonth?.let { DateRange(it.atDay(1), it.plusMonths(1).atDay(1)) }
-        val pending = visibleQuery.install(range)
+        val visibleRange = visibleMonth?.let { DateRange(it.atDay(1), it.plusMonths(1).atDay(1)) }
+        val selectedRange =
+            when {
+                checkIn == null -> {
+                    null
+                }
+
+                checkOut != null -> {
+                    if (checkOut > checkIn) DateRange(checkIn, checkOut) else null
+                }
+
+                checkIn == LocalDate.MAX -> {
+                    null
+                }
+
+                visibleRange != null && checkIn < visibleRange.start -> {
+                    DateRange(visibleRange.start.minusDays(1), visibleRange.start)
+                }
+
+                else -> {
+                    DateRange(checkIn, checkIn.plusDays(1))
+                }
+            }
+        selectionUsesVisible = selectedRange != null && visibleRange != null &&
+            selectedRange.start >= visibleRange.start &&
+            selectedRange.endExclusive <= visibleRange.endExclusive
+        // Install both lazy jobs before an immediate emission can retire this parent.
+        val visibleJob = visibleQuery.install(visibleRange)
+        val selectedJob = selectedQuery.install(if (selectionUsesVisible) null else selectedRange)
         publish()
-        pending?.start()
+        visibleJob?.start()
+        selectedJob?.start()
     }
 
     /** Declares the visible-source retry action. */
@@ -75,12 +104,19 @@ internal class BookingCalendarReader(
         if (closed) return
         closed = true
         visibleQuery.install(null)
+        selectedQuery.install(null)
         mutableState.value = BookingCalendarReadState()
     }
 
-    /** Publishes only the active source slot's accepted outcome. */
+    /** Shares the authoritative visible result only when it covers the selected query. */
     private fun publish() {
-        if (!closed) mutableState.value = BookingCalendarReadState(visible = visibleQuery.result)
+        if (!closed) {
+            mutableState.value =
+                BookingCalendarReadState(
+                    visibleQuery.result,
+                    if (selectionUsesVisible) visibleQuery.result else selectedQuery.result,
+                )
+        }
     }
 
     /** One exact half-open query key.
