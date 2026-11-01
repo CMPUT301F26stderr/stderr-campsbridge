@@ -12,4 +12,6 @@ fun remainingAvailabilityEdits(
     requested: Map<LocalDate, Boolean>,
     confirmed: Map<LocalDate, Boolean>,
 ): Map<LocalDate, Boolean> =
-    throw NotImplementedError("F08: implement the pure comparison")
+    requested.filter { (date, requestedValue) ->
+        requestedValue != (confirmed[date] ?: false)
+    }
