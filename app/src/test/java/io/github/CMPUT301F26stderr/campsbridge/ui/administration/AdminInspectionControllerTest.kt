@@ -447,3 +447,49 @@ class AdminInspectionControllerTest {
             }
         val model = AdminInspectionController(accounts, sites, photos, scope)
 
+        /** Requires actual Profile presentation before accessing its independent sections. */
+        fun profile(): AdminInspectionUiState.Profile {
+            assertTrue(model.state.value is AdminInspectionUiState.Profile)
+            return model.state.value as AdminInspectionUiState.Profile
+        }
+
+        /** Requires actual Image presentation before accessing its independent sections. */
+        fun image(): AdminInspectionUiState.Image {
+            assertTrue(model.state.value is AdminInspectionUiState.Image)
+            return model.state.value as AdminInspectionUiState.Image
+        }
+    }
+
+    /** Tracks controllable source lifetime, including deliberately noncooperative completions.
+     * @param initial Initial actual repository fact.
+     */
+    @OptIn(InternalCoroutinesApi::class)
+    private class Stream<T>(
+        initial: T,
+    ) : Flow<T> {
+        val values = MutableStateFlow(Result.success(initial))
+        var gate: CompletableDeferred<Unit>? = null
+        var late: CompletableDeferred<T>? = null
+        var requests = 0
+        var active = 0
+
+        /** Emits controlled facts and reliably records cancellation cleanup.
+         * @param collector Actual consumer callback under test.
+         */
+        override suspend fun collect(collector: FlowCollector<T>) {
+            requests++
+            active++
+            try {
+                val delayed = late
+                if (delayed != null) {
+                    withContext(NonCancellable) { collector.emit(delayed.await()) }
+                } else {
+                    gate?.await()
+                    values.collect { collector.emit(it.getOrThrow()) }
+                }
+            } finally {
+                active--
+            }
+        }
+    }
+}
