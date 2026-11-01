@@ -23,8 +23,30 @@ class TaskExamplesTest {
 
     @get:Rule val files = TemporaryFolder()
 
-    /** Exercises one search binding independently of its unfinished peers. */
-    @Test fun discoverySearchIsIsolatedFromCapacityAndOrdering() =
+    /** Only the accepted B1/B2 examples are available; all actual helper ports remain deliberately absent. */
+    @Test fun catalogueDistinguishesReadyAndFutureScaffolds() {
+        assertEquals(23, TaskExample.entries.size)
+        assertEquals(
+            23,
+            TaskExample.entries
+                .map { it.id }
+                .toSet()
+                .size,
+        )
+        assertFalse(TaskExample.entries.any { it.id == "H14" })
+        assertEquals(
+            setOf("H01", "H02", "H03", "H04"),
+            TaskExample.entries
+                .filter {
+                    it.scaffoldReady
+                }.map { it.id }
+                .toSet(),
+        )
+        TaskExample.entries.forEach { assertFalse(taskExampleBindings().isConnected(it)) }
+    }
+
+    /** Missing name validation leaves the editor pending and the sample account unchanged. */
+    @Test fun missingNameLeavesOnlyItsSavePending() =
         runTest {
             val calls = mutableListOf<String>()
             val session =

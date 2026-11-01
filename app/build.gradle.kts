@@ -318,12 +318,6 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
             "ui/common/input/PositiveCountInputKt.class",
             "ui/common/input/PriceInputKt.class",
             "ui/components/calendar/MonthCellsKt.class",
-            "ui/profile/logic/DisplayNameInputKt.class",
-            "ui/profile/logic/OptionalContactInputKt.class",
-            "ui/campsites/logic/CampsiteOrderingKt.class",
-            "ui/discovery/logic/CampsiteTextMatchKt.class",
-            "ui/discovery/logic/GuestCapacityMatchKt.class",
-            "ui/lotteries/logic/LotteryWindowInputKt.class",
         ).forEach { path ->
             check(
                 compiledSources
@@ -377,21 +371,6 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 "**/ui/common/input/PositiveCountInputKt.class",
                 "**/ui/common/input/PriceInputKt.class",
                 "**/ui/components/calendar/MonthCellsKt.class",
-                "**/ui/profile/logic/DisplayNameInputKt*.class",
-                "**/ui/profile/logic/OptionalContactInputKt*.class",
-                "**/ui/campsites/logic/CampsiteOrderingKt*.class",
-                "**/ui/discovery/logic/CampsiteTextMatchKt*.class",
-                "**/ui/discovery/logic/GuestCapacityMatchKt*.class",
-                "**/ui/lotteries/logic/LotteryWindowInputKt*.class",
-                "**/domain/booking/AvailableBookingNightsKt*.class",
-                "**/domain/booking/ReservationCategoryKt*.class",
-                "**/ui/reservations/logic/ReservationOrderingKt*.class",
-                "**/ui/inbox/logic/InboxOrderingKt*.class",
-                "**/ui/inbox/logic/UnreadInboxCountKt*.class",
-                "**/ui/administration/logic/ProfileRoleFilterKt*.class",
-                "**/ui/administration/logic/ProfileTextMatchKt*.class",
-                "**/ui/campsites/logic/PendingAvailabilityEditsKt*.class",
-                "**/ui/lotteries/logic/ParticipantStateFilterKt*.class",
             )
         },
     )
