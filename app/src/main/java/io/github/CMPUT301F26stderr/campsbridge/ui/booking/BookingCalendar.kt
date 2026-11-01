@@ -6,7 +6,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDa
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarState
 
-/** Projects confirmed inventory and supplied eligibility without approving or changing a stay.
+/** Projects confirmed inventory and eligibility, separating checkout permission from occupancy.
+ * A selectable departure does not validate the intervening nights or change the draft.
  * @param state Source-backed dates-page facts.
  */
 internal fun bookingCalendarState(state: BookingUiState.Content): CalendarState {
@@ -26,9 +27,22 @@ internal fun bookingCalendarState(state: BookingUiState.Content): CalendarState 
         return CalendarState(state.month, selection = selection)
     }
     val nights = known.nights.associateBy { it.date }
+    val selected =
+        state.selectedEligibleNights
+            .takeIf { state.calendar.selected is CalendarInventoryRead.Content }
+            .orEmpty()
+    val checkoutPredecessors = eligible + selected
+    val choosingArrival = start == null || end != null || start < state.today
     val days =
         (1..state.month.lengthOfMonth()).associate { number ->
             val date = state.month.atDay(number)
+            val selectable =
+                date >= state.today &&
+                    when {
+                        choosingArrival -> date in eligible
+                        date <= checkNotNull(start) -> date in eligible
+                        else -> date.minusDays(1) in checkoutPredecessors
+                    }
             date to
                 CalendarDayState(
                     status =
@@ -37,7 +51,7 @@ internal fun bookingCalendarState(state: BookingUiState.Content): CalendarState 
                             date in eligible -> CalendarDayStatus.AVAILABLE
                             else -> CalendarDayStatus.UNAVAILABLE
                         },
-                    isSelectable = date >= state.today && date in eligible,
+                    isSelectable = selectable,
                 )
         }
     return CalendarState(state.month, days, selection, selectionEnabled = true)
