@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -87,15 +88,18 @@ class BookingPreviewsTest {
                 if (state is BookingUiState.Content && state.draft.step == BookingStep.REVIEW) {
                     compose
                         .onNodeWithText(
-                            "Simulated payment. No banking information is collected.",
+                            context.getString(R.string.reservation_simulated_payment),
                         ).performScrollTo()
                         .assertIsDisplayed()
                     capture(File(directory, "state-$index-bottom-font-${scale.toInt()}.png"))
                 }
-                if (index == 13) {
+                if (state is BookingUiState.Content &&
+                    state.draft.step == BookingStep.TERMS &&
+                    '\n' in state.campsite.details.rules
+                ) {
                     compose
                         .onNodeWithText(
-                            "I have read and accept these rules and the reservation policy.",
+                            context.getString(R.string.booking_agreement),
                         ).performScrollTo()
                         .assertIsDisplayed()
                     capture(File(directory, "long-rules-bottom-font-${scale.toInt()}.png"))
