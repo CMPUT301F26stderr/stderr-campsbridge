@@ -1,14 +1,9 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreResult
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest

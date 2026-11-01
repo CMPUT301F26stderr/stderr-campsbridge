@@ -85,6 +85,7 @@ fun taskExampleBindings(): TaskExampleBindings =
         parseName = ::parseDisplayName,
         parseEmail = ::parseOptionalEmail,
         parsePhone = ::parseOptionalPhone,
+        remainingEdits = ::remainingAvailabilityEdits,
         orderCampsites = ::sortCampsitesByName,
         matchesText = ::matchesCampsiteText,
         matchesGuests = ::matchesGuestCapacity,
