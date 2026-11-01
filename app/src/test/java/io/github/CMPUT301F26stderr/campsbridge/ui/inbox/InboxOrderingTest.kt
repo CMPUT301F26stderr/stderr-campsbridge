@@ -10,12 +10,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
 
+/** Inbox row ordering. */
 class InboxOrderingTest {
+    /** No rows stay no rows. */
     @Test
     fun returnsEmptyListForEmptyInput() {
         assertEquals(emptyList<InboxItem>(), sortInboxItems(emptyList()))
     }
 
+    /** Newest events come first, and equal times fall back to the event ID. */
     @Test
     fun sortsNewestEventTimeThenIdAscending() {
         val t1 = Instant.ofEpochSecond(100)
@@ -29,15 +32,23 @@ class InboxOrderingTest {
         assertEquals(listOf(item2, item3, item1), sorted)
     }
 
-    private fun inboxItem(id: String, createdAt: Instant): InboxItem {
-        val notification = Notification(
-            id = id,
-            senderId = null,
-            type = NotificationType.LOTTERY_WON,
-            subject = NotificationSubject(SubjectType.LOTTERY, "lottery-1"),
-            announcement = null,
-            createdAt = createdAt,
-        )
+    /** Builds a row with a known ID and event time.
+     * @param id Event ID.
+     * @param createdAt Event time.
+     */
+    private fun inboxItem(
+        id: String,
+        createdAt: Instant,
+    ): InboxItem {
+        val notification =
+            Notification(
+                id = id,
+                senderId = null,
+                type = NotificationType.LOTTERY_WON,
+                subject = NotificationSubject(SubjectType.LOTTERY, "lottery-1"),
+                announcement = null,
+                createdAt = createdAt,
+            )
         return InboxItem(
             notification = notification,
             readAt = null,
