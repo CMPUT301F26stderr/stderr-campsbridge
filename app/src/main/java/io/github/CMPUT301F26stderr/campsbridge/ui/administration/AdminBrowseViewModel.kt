@@ -75,3 +75,51 @@ class AdminBrowseViewModel(
             } catch (_: Exception) { if (valid(token)) { raw = AdminBrowseContent.Failure; project() } }
         }
     }
+    private fun valid(token: Int) = !closed && token == generation
+    private fun project() {
+        val query = queries[tab].orEmpty()
+        val content = when (val rows = raw) {
+            is AdminBrowseContent.Campsites -> if (query.isBlank()) rows else matchesSite?.let { match -> AdminBrowseContent.Campsites(rows.rows.filter { match(it, query) }) } ?: AdminBrowseContent.Pending
+            is AdminBrowseContent.Profiles -> {
+                if ((role != null && filterProfiles == null) || (query.isNotBlank() && matchesProfile == null)) AdminBrowseContent.Pending
+                else {
+                    val selected = if (role == null) rows.rows else filterProfiles!!.invoke(rows.rows, role)
+                    AdminBrowseContent.Profiles(if (query.isBlank()) selected else selected.filter { matchesProfile!!.invoke(it, query) })
+                }
+            }
+            is AdminBrowseContent.Images -> {
+                val needle = query.trim().lowercase(Locale.ROOT)
+                AdminBrowseContent.Images(rows.rows.filter { it.target.id.lowercase(Locale.ROOT).contains(needle) || it.target.type.name.lowercase(Locale.ROOT).contains(needle) })
+            }
+            else -> rows
+        }
+        mutableState.value = AdminBrowseUiState(tab, query, if (tab == AdminBrowseTab.PROFILES) role else null, content)
+        setVisibleTargets(visible)
+    }
+    fun setVisibleTargets(targets: Set<ImageTarget>) {
+        if (closed) return
+        visible = targets
+        val allowed = when (val content = state.value.content) {
+            is AdminBrowseContent.Campsites -> content.rows.map { ImageTarget(ImageTargetType.CAMPSITE, it.id) }
+            is AdminBrowseContent.Profiles -> content.rows.map { ImageTarget(ImageTargetType.ACCOUNT, it.id) }
+            is AdminBrowseContent.Images -> content.rows.map { it.target }
+            else -> emptyList()
+        }
+        thumbnails.show(targets intersect allowed.toSet())
+    }
+    fun retryThumbnail(target: ImageTarget) { if (!closed) thumbnails.retry(target) }
+    fun openProfile(id: String) = reader.openProfile(id)
+    fun openImage(target: ImageTarget) = reader.openImage(target)
+    fun closeSelection(target: AdminInspectionTarget) = reader.closeSelection(target)
+    fun retryProfile() = reader.retryProfile()
+    fun retryProfileCampsites() = reader.retryCampsites()
+    fun retryInspectionPhoto() = reader.retryPhoto()
+    fun retryImageParent() = reader.retryParent()
+    override fun onCleared() {
+        closed = true
+        generation++
+        source?.cancel()
+        thumbnails.close()
+        reader.close()
+    }
+}
