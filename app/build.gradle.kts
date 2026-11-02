@@ -324,6 +324,7 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
             "ui/discovery/logic/CampsiteTextMatchKt.class",
             "ui/discovery/logic/GuestCapacityMatchKt.class",
             "ui/lotteries/logic/LotteryWindowInputKt.class",
+            "ui/campsites/logic/PendingAvailabilityEditsKt.class",
             "ui/lotteries/logic/ParticipantStateFilterKt.class",
         ).forEach { path ->
             check(
