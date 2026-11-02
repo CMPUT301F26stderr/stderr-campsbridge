@@ -300,6 +300,7 @@ class BookingFlowTest {
     @Test fun realLotteryReaderOpensTheRegisteredWinnerGraph() {
         val actual = TestAppHost().also { host = it }
         actual.campsites.records.value = listOf(site)
+        actual.campsites.calendarNights.value = sites.calendarNights.value
         actual.lotteries.records.value = listOf(draw)
         actual.lotteries.liveOffers.value = mapOf(draw.id to listOf(offer))
         actual.lotteries.entries.value =
@@ -329,7 +330,7 @@ class BookingFlowTest {
         start(restoration)
         review()
         compose.onNodeWithText("Confirm reservation").assertIsEnabled().performClick()
-        compose.onNodeWithText("Confirming your reservation…").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Confirming your reservation…").assertIsDisplayed()
         compose.onNodeWithText("Confirming your reservation…").assertIsNotEnabled()
         compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
         compose.onNodeWithText("Cancel").assertIsNotEnabled()
