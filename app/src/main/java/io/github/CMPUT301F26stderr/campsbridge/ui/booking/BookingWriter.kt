@@ -36,23 +36,60 @@ sealed interface BookingWriteResult {
 class BookingWriter(
     private val bookings: BookingRepository,
 ) {
-    /** Declares one explicit submission for the prepared contract tests.
-     * @param request Frozen stay to submit.
-     * @param onRecovering Signals read-only resolution.
+    /** Reserves once; an uncertain response triggers only a read of consuming history.
+     * Cancellation propagates and cannot become a rejected/absent/saved result.
+     * @param request Immutable currently reviewed input frozen by the parent.
+     * @param onRecovering Synchronous phase signal before the recovery read starts.
      */
     suspend fun submit(
         request: BookingRequest,
         onRecovering: () -> Unit = {},
-    ): BookingWriteResult =
-        BookingWriteResult.Unknown
+    ): BookingWriteResult {
+        currentCoroutineContext().ensureActive()
+        try {
+            val id = bookings.reserve(request)
+            currentCoroutineContext().ensureActive()
+            if (id.isNotBlank()) return BookingWriteResult.Saved(id)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: PersistenceFailure) {
+            currentCoroutineContext().ensureActive()
+            if (failure.reason != PersistenceFailure.Reason.ALREADY_USED) {
+                return BookingWriteResult.Rejected(failure.reason)
+            }
+        } catch (_: Exception) {
+            currentCoroutineContext().ensureActive()
+        }
+        onRecovering()
+        return recover(request.lotteryId, request.entrantId)
+    }
 
-    /** Declares the server-only opportunity lookup.
-     * @param lotteryId Winning draw identity.
-     * @param entrantId Winning account identity.
+    /** Resolves uncertain consumption by identity without rebuilding or resubmitting input.
+     * Does not depend on current lottery/entry status; cancelled history remains a consumed win.
+     * @param lotteryId Actual winning lottery identity.
+     * @param entrantId Account whose opportunity may already be consumed.
      */
     suspend fun recover(
         lotteryId: String,
         entrantId: String,
-    ): BookingWriteResult =
-        BookingWriteResult.Unknown
+    ): BookingWriteResult {
+        currentCoroutineContext().ensureActive()
+        return try {
+            val record = bookings.getForOpportunity(lotteryId, entrantId)
+            currentCoroutineContext().ensureActive()
+            when {
+                record == null -> BookingWriteResult.Absent
+
+                record.id.isBlank() || record.lotteryId != lotteryId ||
+                    record.entrantId != entrantId -> BookingWriteResult.Unknown
+
+                else -> BookingWriteResult.Saved(record.id)
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            currentCoroutineContext().ensureActive()
+            BookingWriteResult.Unknown
+        }
+    }
 }
