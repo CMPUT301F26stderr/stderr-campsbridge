@@ -1141,7 +1141,7 @@ class BookingViewModel(
         pending.start()
     }
 
-    /** Saves only raw date/guest primitives, independently of transient source outcomes. */
+    /** Stores draft input and approval primitives independently of source outcomes. */
     private fun saveDraft() {
         savedState["bookingCheckIn"] = draft.checkIn?.toString()
         savedState["bookingCheckOut"] = draft.checkOut?.toString()
