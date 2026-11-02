@@ -8,11 +8,15 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxItem
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.sortInboxItems
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.unreadInboxCount
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
@@ -83,8 +87,12 @@ fun taskExampleBindings(): TaskExampleBindings =
         parseName = ::parseDisplayName,
         parseEmail = ::parseOptionalEmail,
         parsePhone = ::parseOptionalPhone,
+        remainingEdits = ::remainingAvailabilityEdits,
         orderCampsites = ::sortCampsitesByName,
         matchesText = ::matchesCampsiteText,
         matchesGuests = ::matchesGuestCapacity,
         validateWindows = ::validateLotteryWindows,
+        filterParticipants = ::filterParticipantsByState,
+        orderInbox = ::sortInboxItems,
+        countUnread = ::unreadInboxCount,
     )

@@ -21,12 +21,14 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits as pendingAvailabilityEdits
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -103,7 +105,7 @@ fun lotteryDetailViewModelFactory(
                 context,
                 services.repositories.accounts,
                 createSavedStateHandle(),
-                filterParticipants = null,
+                filterParticipants = ::filterParticipantsByState,
             )
         }
     }
@@ -233,13 +235,13 @@ fun campsiteDetailViewModelFactory(
  * @param services Selected host's dependencies and clock.
  * @param ownerId Confirmed owner identity.
  * @param campsiteId Actual saved draft identity, or null for a new local form.
- * @param remainingAvailabilityEdits Reserved F08 integration; null keeps requested dates pending.
+ * @param remainingAvailabilityEdits Finds dates still to save; null keeps requested dates pending.
  */
 fun campsiteSetupViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String?,
-    remainingAvailabilityEdits: AvailabilityDifference? = null,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::pendingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
@@ -259,13 +261,13 @@ fun campsiteSetupViewModelFactory(
  * @param services Selected host's repository and clock.
  * @param ownerId Confirmed owner identity.
  * @param campsiteId Actual saved listing identity.
- * @param remainingAvailabilityEdits Reserved F08 integration; null keeps requested dates pending.
+ * @param remainingAvailabilityEdits Finds dates still to save; null keeps requested dates pending.
  */
 fun availabilityViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String,
-    remainingAvailabilityEdits: AvailabilityDifference? = null,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::pendingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
