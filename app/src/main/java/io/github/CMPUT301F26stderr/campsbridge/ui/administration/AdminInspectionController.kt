@@ -74,3 +74,80 @@ class AdminInspectionController(
             }
         }
     }
+    private fun observeSites(id: String) {
+        val token = generation
+        val attempt = ++dependentGeneration
+        sitesJob?.cancel()
+        updateProfile { it.copy(campsites = AdminRead.Loading) }
+        sitesJob = scope.launch {
+            try {
+                campsites.observeForOwner(id).collect { rows ->
+                    if (valid(token) && dependentGeneration == attempt) updateProfile {
+                        it.copy(campsites = if (rows.any { row -> row.ownerId != id }) AdminRead.Failure else AdminRead.Content(rows))
+                    }
+                }
+            } catch (cancelled: CancellationException) { throw cancelled
+            } catch (_: Exception) { if (valid(token) && dependentGeneration == attempt) updateProfile { it.copy(campsites = AdminRead.Failure) } }
+        }
+    }
+    private fun observeParent(target: ImageTarget) {
+        val token = generation
+        val attempt = ++parentGeneration
+        parentJob?.cancel()
+        updateImage { it.copy(parent = AdminRead.Loading) }
+        parentJob = scope.launch {
+            try {
+                when (target.type) {
+                    ImageTargetType.ACCOUNT -> accounts.observe(target.id).collect { account ->
+                        if (valid(token) && parentGeneration == attempt) updateImage {
+                            it.copy(parent = if (account == null || account.id != target.id) AdminRead.Unavailable else AdminRead.Content(AdminImageParent.Profile(account)))
+                        }
+                    }
+                    ImageTargetType.CAMPSITE -> campsites.observe(target.id).collect { site ->
+                        if (valid(token) && parentGeneration == attempt) updateImage {
+                            it.copy(parent = if (site == null || site.id != target.id) AdminRead.Unavailable else AdminRead.Content(AdminImageParent.Site(site)))
+                        }
+                    }
+                }
+            } catch (cancelled: CancellationException) { throw cancelled
+            } catch (_: Exception) { if (valid(token) && parentGeneration == attempt) updateImage { it.copy(parent = AdminRead.Failure) } }
+        }
+    }
+    private fun startPhoto(target: ImageTarget) {
+        val token = generation
+        photoJob?.cancel()
+        photo?.close()
+        val slot = ImageSlotController(images, target, scope)
+        photo = slot
+        photoJob = scope.launch {
+            slot.state.collect { value ->
+                if (valid(token) && photo === slot) {
+                    updateProfile { it.copy(photo = value) }
+                    updateImage { it.copy(photo = value) }
+                }
+            }
+        }
+    }
+    private fun updateProfile(change: (AdminInspectionUiState.Profile) -> AdminInspectionUiState.Profile) {
+        val current = state.value as? AdminInspectionUiState.Profile ?: return
+        mutableState.value = change(current)
+    }
+    private fun updateImage(change: (AdminInspectionUiState.Image) -> AdminInspectionUiState.Image) {
+        val current = state.value as? AdminInspectionUiState.Image ?: return
+        mutableState.value = change(current)
+    }
+    fun retryProfile() {
+        if (closed) return
+        val current = state.value as? AdminInspectionUiState.Profile ?: return
+        if (current.account == AdminRead.Failure) observeProfile(current.id)
+    }
+    fun retryCampsites() {
+        if (closed) return
+        val current = state.value as? AdminInspectionUiState.Profile ?: return
+        if (current.account is AdminRead.Content && current.campsites == AdminRead.Failure) observeSites(current.id)
+    }
+    fun retryParent() {
+        if (closed) return
+        val current = state.value as? AdminInspectionUiState.Image ?: return
+        if (current.parent == AdminRead.Failure) observeParent(current.target)
+    }
