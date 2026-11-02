@@ -12,4 +12,6 @@ fun availableBookingNights(
     offered: Set<LocalDate>,
     calendar: List<CalendarNight>,
 ): Set<LocalDate> =
-    emptySet()
+    calendar
+        .filter { it.date in offered && it.isFree }
+        .mapTo(mutableSetOf()) { it.date }
