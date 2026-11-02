@@ -151,3 +151,26 @@ class AdminInspectionController(
         val current = state.value as? AdminInspectionUiState.Image ?: return
         if (current.parent == AdminRead.Failure) observeParent(current.target)
     }
+    fun retryPhoto() { if (!closed) photo?.retryDisplay() }
+    fun closeSelection(target: AdminInspectionTarget) { if (!closed && selection == target) retire() }
+    private fun stopDependents() {
+        dependentGeneration++
+        sitesJob?.cancel()
+        sitesJob = null
+        photoJob?.cancel()
+        photoJob = null
+        photo?.close()
+        photo = null
+        dependents = false
+    }
+    private fun retire() {
+        generation++
+        parentGeneration++
+        parentJob?.cancel()
+        parentJob = null
+        stopDependents()
+        selection = null
+        mutableState.value = AdminInspectionUiState.None
+    }
+    fun close() { if (!closed) { retire(); closed = true } }
+}
