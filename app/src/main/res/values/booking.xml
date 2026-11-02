@@ -60,4 +60,10 @@
     <string name="booking_quote_missing">Select dates to see the total.</string>
     <string name="booking_dates_summary">%1$s · %2$s</string>
     <string name="booking_total_updated">Updated total</string>
+    <string name="booking_recovering">Checking your reservation…</string>
+    <string name="booking_recovery_unknown">The result is not confirmed. Check before trying again.</string>
+    <string name="booking_check_result">Check reservation</string>
+    <string name="booking_recovery_absent">No reservation was found. Review your stay before confirming again.</string>
+    <string name="booking_rejected_quote">The price or rules changed. Review and accept the current details.</string>
+    <string name="booking_rejected">The reservation was not made. Review your stay and try again.</string>
 </resources>
