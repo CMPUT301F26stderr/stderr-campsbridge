@@ -7,10 +7,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailPage
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationListRoute
 
 /** Opens the real saved pages against the task's existing local aggregate.
  * @param session Current task's local graph.
@@ -39,7 +39,7 @@ internal fun SavedTaskReservation(
     )
 }
 
-/** Keeps the local example reachable while this feature is pending.
+/** Connects the active-list example to its saved reservation pages.
  * @param session Current task's local graph.
  * @param onBack Returns to the task catalogue.
  */
@@ -48,7 +48,13 @@ internal fun ReservationsTaskExample(
     session: TaskExampleSession,
     onBack: () -> Unit,
 ) {
-    AppScreen(stringResource(session.example.title), onBack = onBack) {
-        EmptyContent(stringResource(R.string.feature_pending))
+    var selected by rememberSaveable { mutableStateOf<String?>(null) }
+    val id = selected
+    if (id == null) {
+        AppScreen(stringResource(session.example.title), onBack = onBack) {
+            ReservationListRoute(session.reservations()) { selected = it }
+        }
+    } else {
+        SavedTaskReservation(session, id) { selected = null }
     }
 }
