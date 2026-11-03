@@ -10,6 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -42,12 +47,19 @@ internal fun ReservationRecordScreen(
     feedback: @Composable () -> Unit = {},
     content: @Composable ColumnScope.(Reservation) -> Unit,
 ) {
+    val scrollState = rememberScrollState()
+    val cancellation = (state as? ReservationDetailUiState.Content)?.reservation?.cancellation
+    var hadCancellation by remember { mutableStateOf(cancellation != null) }
+    LaunchedEffect(cancellation) {
+        if (cancellation != null && !hadCancellation) scrollState.scrollTo(0)
+        hadCancellation = cancellation != null
+    }
     BackHandler { if (backEnabled) onBack() }
     AppScreen(stringResource(title), modifier, onBack, backEnabled = backEnabled) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(vertical = Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
