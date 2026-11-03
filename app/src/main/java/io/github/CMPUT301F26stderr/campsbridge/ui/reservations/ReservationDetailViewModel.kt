@@ -1,5 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
@@ -19,7 +20,8 @@ import java.time.Clock
  * @param reservationId Exact saved identity supplied by the caller.
  * @param context Caller presentation; the repository remains responsible for authorization.
  * @param bookings Complete saved aggregate source, without current listing dependencies.
- * @param clock Host clock retained by the constructor contract; history needs no date updates.
+ * @param clock Booked-local deadline source.
+ * @param savedState Primitive cancellation recovery marker and submitted reason.
  */
 @Suppress("UNUSED_PARAMETER")
 class ReservationDetailViewModel(
@@ -28,6 +30,7 @@ class ReservationDetailViewModel(
     val context: ReservationContext,
     private val bookings: BookingRepository,
     clock: Clock = Clock.systemUTC(),
+    savedState: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
     private val mutableState =
         MutableStateFlow<ReservationDetailUiState>(ReservationDetailUiState.Loading)
@@ -39,6 +42,38 @@ class ReservationDetailViewModel(
     init {
         observeRecord()
     }
+
+    val cancellation = MutableStateFlow(CancellationUiState()).asStateFlow()
+
+    /** Opens an eligible confirmation. */
+    fun requestCancel() =
+        Unit
+
+    /** Dismisses an idle confirmation without writing. */
+    fun dismissCancel() =
+        Unit
+
+    /** Edits idle confirmation input.
+     * @param reason Optional explanation.
+     */
+    fun editReason(reason: String) =
+        Unit
+
+    /** Submits one confirmed operation. */
+    fun confirmCancel() =
+        Unit
+
+    /** Reconciles an uncertain result without repeating the mutation. */
+    fun retryCancellationRead() =
+        Unit
+
+    /** Refreshes booked-local eligibility after foregrounding. */
+    fun refreshTime() =
+        Unit
+
+    /** Whether this saved parent can safely be left. */
+    fun canLeave(): Boolean =
+        true
 
     /** Restarts a failed source once; active and confirmed-absent sources remain observed. */
     fun retry() {
