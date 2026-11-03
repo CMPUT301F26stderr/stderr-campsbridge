@@ -29,9 +29,12 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+
+private const val METADATA_SEPARATOR = " · "
 
 /** Admin browse tabs, search and rows; the route owns the ViewModel and navigation.
  * @param state Selected tab, its inputs and the source outcome.
@@ -85,7 +88,15 @@ fun AdminBrowseScreen(
                     FilterChip(
                         selected = state.role == role,
                         onClick = { onRole(role) },
-                        label = { Text(role?.name ?: stringResource(R.string.admin_all_roles)) },
+                        label = {
+                            Text(
+                                role?.let {
+                                    roleLabel(
+                                        it,
+                                    )
+                                } ?: stringResource(R.string.admin_all_roles),
+                            )
+                        },
                     )
                 }
             }
@@ -114,9 +125,15 @@ fun AdminBrowseScreen(
                                     account.id,
                                     account.email.orEmpty(),
                                     account.phone.orEmpty(),
-                                    account.roles.joinToString(),
-                                    if (account.isActive) "Active" else "Removed",
-                                ).filter { it.isNotBlank() }.joinToString(" · "),
+                                    account.roles.map { roleLabel(it) }.joinToString(),
+                                    stringResource(
+                                        if (account.isActive) {
+                                            R.string.admin_account_active
+                                        } else {
+                                            R.string.admin_account_removed
+                                        },
+                                    ),
+                                ).filter { it.isNotBlank() }.joinToString(METADATA_SEPARATOR),
                                 photos[target] ?: ImageSlotState(),
                                 { onRetryThumbnail(target) },
                                 { onProfile(account.id) },
@@ -133,7 +150,11 @@ fun AdminBrowseScreen(
                             val target = ImageTarget(ImageTargetType.CAMPSITE, campsite.id)
                             BrowseRow(
                                 campsite.details.name,
-                                "${campsite.id} · ${campsite.details.locationLabel} · ${campsite.ownerId}",
+                                listOf(
+                                    campsite.id,
+                                    campsite.details.locationLabel,
+                                    campsite.ownerId,
+                                ).joinToString(METADATA_SEPARATOR),
                                 photos[target] ?: ImageSlotState(),
                                 { onRetryThumbnail(target) },
                                 { onImage(target) },

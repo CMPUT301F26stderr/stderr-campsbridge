@@ -12,11 +12,17 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+import java.time.ZoneId
 
 /** Metadata membership belongs to the observed source, independently of thumbnail success. */
 @Composable
@@ -27,6 +33,7 @@ fun AdminImageGallery(
     retry: (ImageTarget) -> Unit,
     open: (ImageTarget) -> Unit,
 ) {
+    val locale = LocalConfiguration.current.locales[0]
     LazyVerticalGrid(columns = GridCells.Adaptive(160.dp), state = grid) {
         items(rows, key = { "${it.target.type}:${it.target.id}" }) { image ->
             Column(Modifier.padding(8.dp).clickable { open(image.target) }) {
@@ -36,9 +43,19 @@ fun AdminImageGallery(
                     { retry(image.target) },
                     Modifier.fillMaxWidth().height(120.dp),
                 )
-                Text("${image.target.type} | ${image.target.id}")
-                Text(image.blobId)
-                Text(image.uploadedAt.toString())
+                Text(
+                    stringResource(
+                        R.string.admin_image_target,
+                        stringResource(
+                            when (image.target.type) {
+                                ImageTargetType.ACCOUNT -> R.string.admin_target_account
+                                ImageTargetType.CAMPSITE -> R.string.admin_target_campsite
+                            },
+                        ),
+                        image.target.id,
+                    ),
+                )
+                Text(formatDateTime(image.uploadedAt, ZoneId.systemDefault(), locale))
             }
         }
     }

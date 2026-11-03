@@ -8,4 +8,9 @@
     <string name="admin_all_roles">All roles</string>
     <string name="admin_no_results">No matching records</string>
     <string name="admin_source_failed">Could not load records</string>
+    <string name="admin_account_active">Active</string>
+    <string name="admin_account_removed">Removed</string>
+    <string name="admin_target_account">Profile</string>
+    <string name="admin_target_campsite">Campsite</string>
+    <string name="admin_image_target">%1$s · %2$s</string>
 </resources>
