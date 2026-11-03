@@ -156,7 +156,7 @@ internal class BookingDraftState(
         }
     }
 
-    /** Stores value input and approval primitives independently of source outcomes. */
+    /** Stores draft input and approval primitives independently of source outcomes. */
     fun save() {
         savedState["bookingCheckIn"] = value.checkIn?.toString()
         savedState["bookingCheckOut"] = value.checkOut?.toString()
