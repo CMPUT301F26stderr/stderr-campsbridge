@@ -12,7 +12,11 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-/** Binds graph-owned inputs and only the currently visible thumbnail readers. */
+/** Binds graph-owned inputs and only the currently visible thumbnail readers.
+ * @param model Browse state owned by the admin graph.
+ * @param onProfile Opens a profile by account ID.
+ * @param onImage Opens an image slot.
+ */
 @Composable
 fun AdminBrowseRoute(
     model: AdminBrowseViewModel,

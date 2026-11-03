@@ -14,7 +14,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Read-only selected record lifetime; section failures and retries never replace siblings. */
+/** Read-only selected record lifetime; section failures and retries never replace siblings.
+ * @param accounts Source for inspected profiles and account image parents.
+ * @param campsites Source for a profile's campsites and campsite image parents.
+ * @param images Source for the inspected photo.
+ * @param scope Scope that owns every read until [close].
+ */
 class AdminInspectionController(
     private val accounts: AccountRepository,
     private val campsites: CampsiteRepository,
@@ -34,6 +39,9 @@ class AdminInspectionController(
     private var photo: ImageSlotController? = null
     private var dependents = false
 
+    /** Replaces the selection with one profile; reopening the same one keeps its reads.
+     * @param id Account ID to inspect.
+     */
     fun openProfile(id: String) {
         if (closed || id.isBlank() || selection == AdminInspectionTarget.Profile(id)) return
         retire()
@@ -42,6 +50,9 @@ class AdminInspectionController(
         observeProfile(id)
     }
 
+    /** Replaces the selection with one image slot; reopening the same one keeps its reads.
+     * @param target Image slot to inspect.
+     */
     fun openImage(target: ImageTarget) {
         if (closed || target.id.isBlank() ||
             selection == AdminInspectionTarget.Image(target)
@@ -55,9 +66,15 @@ class AdminInspectionController(
         observeParent(target)
     }
 
+    /** Reports whether a result still belongs to the current selection.
+     * @param token Generation the read started with.
+     */
     private fun valid(token: Int) =
         !closed && generation == token
 
+    /** Observes a profile, starting its campsites and photo only once the account exists.
+     * @param id Account ID to read.
+     */
     private fun observeProfile(id: String) {
         val token = generation
         val attempt = ++parentGeneration
@@ -104,6 +121,9 @@ class AdminInspectionController(
             }
     }
 
+    /** Observes a profile's campsites, treating a row from another owner as a failure.
+     * @param id Owner account ID.
+     */
     private fun observeSites(id: String) {
         val token = generation
         val attempt = ++dependentGeneration
@@ -141,6 +161,9 @@ class AdminInspectionController(
             }
     }
 
+    /** Observes the account or campsite that owns an image slot.
+     * @param target Image slot whose parent is read.
+     */
     private fun observeParent(target: ImageTarget) {
         val token = generation
         val attempt = ++parentGeneration
@@ -202,6 +225,9 @@ class AdminInspectionController(
             }
     }
 
+    /** Replaces the photo reader for the current selection.
+     * @param target Image slot to read.
+     */
     private fun startPhoto(target: ImageTarget) {
         val token = generation
         photoJob?.cancel()
@@ -219,6 +245,9 @@ class AdminInspectionController(
             }
     }
 
+    /** Changes the state only while a profile is selected.
+     * @param change Produces the updated profile state.
+     */
     private fun updateProfile(
         change: (AdminInspectionUiState.Profile) -> AdminInspectionUiState.Profile,
     ) {
@@ -226,6 +255,9 @@ class AdminInspectionController(
         mutableState.value = change(current)
     }
 
+    /** Changes the state only while an image is selected.
+     * @param change Produces the updated image state.
+     */
     private fun updateImage(
         change: (AdminInspectionUiState.Image) -> AdminInspectionUiState.Image,
     ) {
@@ -233,12 +265,14 @@ class AdminInspectionController(
         mutableState.value = change(current)
     }
 
+    /** Rereads the selected profile after a failure. */
     fun retryProfile() {
         if (closed) return
         val current = state.value as? AdminInspectionUiState.Profile ?: return
         if (current.account == AdminRead.Failure) observeProfile(current.id)
     }
 
+    /** Rereads a loaded profile's campsites after a failure. */
     fun retryCampsites() {
         if (closed) return
         val current = state.value as? AdminInspectionUiState.Profile ?: return
@@ -249,16 +283,21 @@ class AdminInspectionController(
         }
     }
 
+    /** Rereads the selected image's parent after a failure. */
     fun retryParent() {
         if (closed) return
         val current = state.value as? AdminInspectionUiState.Image ?: return
         if (current.parent == AdminRead.Failure) observeParent(current.target)
     }
 
+    /** Retries showing the selected photo. */
     fun retryPhoto() {
         if (!closed) photo?.retryDisplay()
     }
 
+    /** Stops the selection only if it's still the given one.
+     * @param target Selection owned by the screen that's leaving.
+     */
     fun closeSelection(target: AdminInspectionTarget) {
         if (!closed &&
             selection == target
@@ -267,6 +306,7 @@ class AdminInspectionController(
         }
     }
 
+    /** Stops the campsite and photo reads that depend on the parent record. */
     private fun stopDependents() {
         dependentGeneration++
         sitesJob?.cancel()
@@ -278,6 +318,7 @@ class AdminInspectionController(
         dependents = false
     }
 
+    /** Stops every read for the selection and clears the state. */
     private fun retire() {
         generation++
         parentGeneration++
@@ -288,6 +329,7 @@ class AdminInspectionController(
         mutableState.value = AdminInspectionUiState.None
     }
 
+    /** Stops everything and ignores later calls. */
     fun close() {
         if (!closed) {
             retire()

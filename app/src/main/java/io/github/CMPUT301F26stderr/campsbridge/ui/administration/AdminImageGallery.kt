@@ -25,7 +25,13 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentIm
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.ZoneId
 
-/** Metadata membership belongs to the observed source, independently of thumbnail success. */
+/** Metadata membership belongs to the observed source, independently of thumbnail success.
+ * @param rows Attachments to show.
+ * @param photos Thumbnail states for on-screen rows.
+ * @param grid Scroll position owned by the route.
+ * @param retry Retries one failed thumbnail.
+ * @param open Opens one image slot.
+ */
 @Composable
 fun AdminImageGallery(
     rows: List<ImageAttachment>,

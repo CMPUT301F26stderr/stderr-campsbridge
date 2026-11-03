@@ -19,7 +19,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-/** Parent graph owns browse inputs, the selected reader and visible thumbnails independently. */
+/** Parent graph owns browse inputs, the selected reader and visible thumbnails independently.
+ * @param campsites Source for the Campsites tab.
+ * @param accounts Source for the Profiles tab.
+ * @param images Source for the Images tab and thumbnails.
+ * @param saved Keeps the tab, each tab's search and the role filter through restoration.
+ * @param matchesSite Campsite text search; null leaves a search pending.
+ * @param filterProfiles Profile role filter; null leaves a selected role pending.
+ * @param matchesProfile Profile text search; null leaves a search pending.
+ */
 class AdminBrowseViewModel(
     private val campsites: CampsiteRepository,
     private val accounts: AccountRepository,
@@ -29,6 +37,9 @@ class AdminBrowseViewModel(
     private val filterProfiles: ((List<Account>, Role?) -> List<Account>)? = null,
     private val matchesProfile: ((Account, String) -> Boolean)? = null,
 ) : ViewModel() {
+    /** Reads a saved string, ignoring a value of any other type.
+     * @param key Saved-state key.
+     */
     private fun savedString(key: String) =
         saved.get<Any?>(key) as? String
 
@@ -70,6 +81,9 @@ class AdminBrowseViewModel(
         observe()
     }
 
+    /** Switches tabs, restoring that tab's search and observing its source.
+     * @param value Tab to show.
+     */
     fun selectTab(value: AdminBrowseTab) {
         if (closed || tab == value) return
         tab = value
@@ -78,6 +92,9 @@ class AdminBrowseViewModel(
         observe()
     }
 
+    /** Saves the selected tab's search text and filters the loaded rows.
+     * @param value Raw text, kept as typed.
+     */
     fun editQuery(value: String) {
         if (closed || queries[tab] == value) return
         queries[tab] = value
@@ -85,6 +102,9 @@ class AdminBrowseViewModel(
         project()
     }
 
+    /** Saves the profile role filter; ignored on other tabs.
+     * @param value Role to show, or null for every role.
+     */
     fun selectRole(value: Role?) {
         if (closed || tab != AdminBrowseTab.PROFILES || role == value) return
         role = value
@@ -92,10 +112,12 @@ class AdminBrowseViewModel(
         project()
     }
 
+    /** Restarts the selected source after a failure. */
     fun retry() {
         if (!closed && raw == AdminBrowseContent.Failure) observe()
     }
 
+    /** Replaces the source observation for the selected tab, ignoring late results from the old one. */
     private fun observe() {
         val token = ++generation
         source?.cancel()
@@ -148,9 +170,13 @@ class AdminBrowseViewModel(
             }
     }
 
+    /** Reports whether a source result still belongs to the current observation.
+     * @param token Generation the observation started with.
+     */
     private fun valid(token: Int) =
         !closed && token == generation
 
+    /** Publishes the loaded rows after applying the selected tab's search and filter. */
     private fun project() {
         val query = queries[tab].orEmpty()
         val content =
@@ -226,6 +252,9 @@ class AdminBrowseViewModel(
         setVisibleTargets(visible)
     }
 
+    /** Loads thumbnails only for on-screen rows that are still in the results.
+     * @param targets Image slots the route reports as visible.
+     */
     fun setVisibleTargets(targets: Set<ImageTarget>) {
         if (closed) return
         visible = targets
@@ -260,31 +289,48 @@ class AdminBrowseViewModel(
         thumbnails.show(targets intersect allowed.toSet())
     }
 
+    /** Retries one failed thumbnail.
+     * @param target Image slot to reload.
+     */
     fun retryThumbnail(target: ImageTarget) {
         if (!closed) thumbnails.retry(target)
     }
 
+    /** Starts reading one profile for inspection.
+     * @param id Account ID to inspect.
+     */
     fun openProfile(id: String) =
         reader.openProfile(id)
 
+    /** Starts reading one image slot and its parent record for inspection.
+     * @param target Image slot to inspect.
+     */
     fun openImage(target: ImageTarget) =
         reader.openImage(target)
 
+    /** Stops an inspection when its screen leaves.
+     * @param target Selection that screen owned; a newer selection is left alone.
+     */
     fun closeSelection(target: AdminInspectionTarget) =
         reader.closeSelection(target)
 
+    /** Retries the selected profile after a failed read. */
     fun retryProfile() =
         reader.retryProfile()
 
+    /** Retries the selected profile's campsites. */
     fun retryProfileCampsites() =
         reader.retryCampsites()
 
+    /** Retries the inspected photo. */
     fun retryInspectionPhoto() =
         reader.retryPhoto()
 
+    /** Retries the inspected image's parent record. */
     fun retryImageParent() =
         reader.retryParent()
 
+    /** Stops the source, thumbnails and inspection when the graph is removed. */
     override fun onCleared() {
         closed = true
         generation++
