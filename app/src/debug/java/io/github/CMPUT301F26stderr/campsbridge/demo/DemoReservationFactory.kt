@@ -1,12 +1,15 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.AppServices
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategory
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationListViewModel
 
-/** Keeps the local reservation factory contract while its list screen is pending.
+/** Supplies populated local list examples with fixed preview categories.
  * @param services Local record sources.
  * @param accountId Actor whose sample records are requested.
  * @param context Owner or entrant presentation.
@@ -20,4 +23,19 @@ fun demoReservationListViewModelFactory(
     campsiteId: String?,
     categories: Map<String, ReservationCategory>,
 ): ViewModelProvider.Factory =
-    viewModelFactory {}
+    viewModelFactory {
+        initializer {
+            ReservationListViewModel(
+                accountId,
+                context,
+                services.repositories.bookings,
+                services.repositories.accounts,
+                services.repositories.images,
+                services.clock,
+                createSavedStateHandle(),
+                campsiteId,
+                classify = { record, _ -> categories.getValue(record.id) },
+                order = { it },
+            )
+        }
+    }

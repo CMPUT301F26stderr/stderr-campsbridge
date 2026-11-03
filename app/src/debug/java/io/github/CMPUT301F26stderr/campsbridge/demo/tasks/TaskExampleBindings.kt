@@ -13,6 +13,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesB
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxItem
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.sortInboxItems
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.unreadInboxCount
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
@@ -91,4 +93,6 @@ fun taskExampleBindings(): TaskExampleBindings =
         matchesGuests = ::matchesGuestCapacity,
         validateWindows = ::validateLotteryWindows,
         filterParticipants = ::filterParticipantsByState,
+        orderInbox = ::sortInboxItems,
+        countUnread = ::unreadInboxCount,
     )
