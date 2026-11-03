@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,6 +33,8 @@ fun InboxScreen(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
+
+
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = Spacing.medium),
@@ -75,12 +78,14 @@ fun InboxScreen(
                                 Text("Unavailable notifications", style = MaterialTheme.typography.titleMedium)
                             }
                             items(state.unavailable, key = { it.receipt.notificationId }) { unavail ->
-                                NavigationRow(
-                                    title = "Notification unavailable",
-                                    onClick = {},
-                                    enabled = false,
-                                    modifier = Modifier.testTag("inbox-receipt-${unavail.receipt.notificationId}"),
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(Spacing.medium)
+                                        .testTag("inbox-receipt-${unavail.receipt.notificationId}")
+                                ) {
+                                    Text("Notification unavailable", style = MaterialTheme.typography.bodyLarge)
+                                }
                             }
                             item {
                                 Button(onClick = onRetry) { Text("Retry notification") }

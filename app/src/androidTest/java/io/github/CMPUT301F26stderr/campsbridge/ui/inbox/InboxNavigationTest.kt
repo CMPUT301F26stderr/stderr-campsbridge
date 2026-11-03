@@ -227,7 +227,7 @@ class InboxNavigationTest {
         ownerWorkspace()
         start()
         compose.onNodeWithContentDescription("Switch workspace").performClick()
-        compose.onNodeWithText("Camper").performClick()
+        compose.onNode(hasText("Camper") and hasClickAction()).performClick()
         compose.onNodeWithText("Inbox").performClick()
         compose.onNodeWithText("No notifications yet.").assertIsDisplayed()
         compose.runOnIdle {
@@ -348,3 +348,6 @@ class InboxNavigationTest {
         compose.onNodeWithText("Inbox").performClick()
     }
 }
+
+
+
