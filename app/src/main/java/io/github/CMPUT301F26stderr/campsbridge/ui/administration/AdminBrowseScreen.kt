@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -23,18 +25,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsitePhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
+import java.time.Instant
 
 private const val METADATA_SEPARATOR = " · "
 
@@ -185,7 +197,9 @@ fun AdminBrowseScreen(
     }
 }
 
-/** Resolves a tab's visible label. */
+/** Resolves a tab's visible label.
+ * @return String resource for this tab.
+ */
 private fun AdminBrowseTab.label(): Int =
     when (this) {
         AdminBrowseTab.PROFILES -> R.string.admin_profiles
@@ -239,3 +253,111 @@ private fun BrowseRow(
         HorizontalDivider()
     }
 }
+
+/** Shows campsite rows with a loaded thumbnail. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminBrowseCampsitesPreview() {
+    AdminBrowsePreviewFrame(
+        AdminBrowseUiState(content = AdminBrowseContent.Campsites(listOf(previewCampsite()))),
+        mapOf(
+            ImageTarget(ImageTargetType.CAMPSITE, previewCampsite().id) to previewCampsitePhoto(),
+        ),
+    )
+}
+
+/** Checks the role chips and profile metadata, including at larger text sizes. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Preview(name = "Large text", showBackground = true, widthDp = 360, fontScale = 2f)
+@Composable
+private fun AdminBrowseProfilesPreview() {
+    AdminBrowsePreviewFrame(
+        AdminBrowseUiState(
+            AdminBrowseTab.PROFILES,
+            role = Role.OWNER,
+            content = AdminBrowseContent.Profiles(listOf(previewAccount())),
+        ),
+    )
+}
+
+/** Shows the gallery with a loaded thumbnail. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminBrowseImagesPreview() {
+    val target = ImageTarget(ImageTargetType.CAMPSITE, previewCampsite().id)
+    AdminBrowsePreviewFrame(
+        AdminBrowseUiState(
+            AdminBrowseTab.IMAGES,
+            content =
+                AdminBrowseContent.Images(
+                    listOf(ImageAttachment(target, "preview-jasper", Instant.EPOCH)),
+                ),
+        ),
+        mapOf(target to previewCampsitePhoto()),
+    )
+}
+
+/** Shows the source still loading. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminBrowseLoadingPreview() {
+    AdminBrowsePreviewFrame(AdminBrowseUiState())
+}
+
+/** Shows a search with no matches, which is still a successful read. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminBrowseEmptyPreview() {
+    AdminBrowsePreviewFrame(
+        AdminBrowseUiState(query = "nothing", content = AdminBrowseContent.Campsites(emptyList())),
+    )
+}
+
+/** Shows a failed source with its retry action. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminBrowseFailurePreview() {
+    AdminBrowsePreviewFrame(AdminBrowseUiState(content = AdminBrowseContent.Failure))
+}
+
+/** Frames a preview state without repositories or navigation.
+ * @param state State to show.
+ * @param photos Thumbnail states to show.
+ */
+@Composable
+private fun AdminBrowsePreviewFrame(
+    state: AdminBrowseUiState,
+    photos: Map<ImageTarget, ImageSlotState> = emptyMap(),
+) {
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.admin_browse)) {
+            AdminBrowseScreen(
+                state,
+                photos,
+                rememberLazyListState(),
+                rememberLazyListState(),
+                rememberLazyGridState(),
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+            )
+        }
+    }
+}
+
+/** Stable account used only by previews. */
+private fun previewAccount(): Account =
+    Account(
+        "preview-account",
+        "Jordan Lee",
+        "jordan@example.com",
+        "780-555-0199",
+        setOf(Role.ENTRANT, Role.OWNER),
+        Preferences(),
+        AccountSettings(),
+        Instant.EPOCH,
+    )
