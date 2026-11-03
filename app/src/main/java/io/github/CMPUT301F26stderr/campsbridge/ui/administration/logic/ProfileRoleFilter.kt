@@ -5,3 +5,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 
 /** A null role includes every account; capabilities may coexist. */
 fun matchesProfileRole(account: Account, role: Role?): Boolean = role == null || role in account.roles
+
+/** Filters actual capability membership while preserving source order and records. */
+fun filterProfilesByRole(accounts: List<Account>, role: Role?): List<Account> = accounts.filter { matchesProfileRole(it, role) }

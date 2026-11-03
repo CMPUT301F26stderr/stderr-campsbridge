@@ -12,9 +12,10 @@ internal fun TestAppHost.adminBrowseFactory(): () -> ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
             adminBrowseCreations++
-            AdminBrowseViewModel(adminAccounts, adminCampsites, adminImages, createSavedStateHandle(),
-                { account, role -> filterProfiles?.invoke(listOf(account), role)?.contains(account) ?: matchesProfileRole(account, role) },
-                { account, query -> matchesProfile?.invoke(account, query) ?: matchesProfileText(account, query) })
+            AdminBrowseViewModel(adminCampsites, adminAccounts, adminImages, createSavedStateHandle(),
+                { site, query -> io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText(site, query) },
+                filterProfiles ?: ::filterProfilesByRole,
+                matchesProfile ?: ::matchesProfileText)
         }
     }
 }

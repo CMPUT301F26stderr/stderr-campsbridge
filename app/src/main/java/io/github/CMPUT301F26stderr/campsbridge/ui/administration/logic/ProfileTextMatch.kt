@@ -6,6 +6,6 @@ import java.util.Locale
 /** Searches current identity and contact fields locally, including retained records. */
 fun matchesProfileText(account: Account, query: String): Boolean {
     val needle = query.trim().lowercase(Locale.ROOT)
-    return listOf(account.id, account.name, account.email.orEmpty(), account.phone.orEmpty())
+    return listOf(account.id, account.name, account.email.orEmpty())
         .any { it.lowercase(Locale.ROOT).contains(needle) }
 }

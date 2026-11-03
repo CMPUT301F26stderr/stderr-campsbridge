@@ -1,20 +1,25 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.*
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 
-/** Independent local searches and independently confirmed source results. */
-enum class AdminBrowseTab { PROFILES, CAMPSITES, IMAGES }
+/** Tabs retain independent raw queries under their graph owner. */
+enum class AdminBrowseTab { CAMPSITES, PROFILES, IMAGES }
+
+/** Source outcomes remain separate from confirmed empty results and unbound filters. */
+sealed interface AdminBrowseContent {
+    data object Loading : AdminBrowseContent
+    data object Failure : AdminBrowseContent
+    data object Pending : AdminBrowseContent
+    data class Campsites(val rows: List<Campsite>) : AdminBrowseContent
+    data class Profiles(val rows: List<Account>) : AdminBrowseContent
+    data class Images(val rows: List<ImageAttachment>) : AdminBrowseContent
+}
 
 data class AdminBrowseUiState(
-    val tab: AdminBrowseTab = AdminBrowseTab.PROFILES,
-    val queries: Map<AdminBrowseTab, String> = emptyMap(),
+    val tab: AdminBrowseTab = AdminBrowseTab.CAMPSITES,
+    val query: String = "",
     val role: Role? = null,
-    val profiles: AdminRead<List<Account>> = AdminRead.Loading,
-    val campsites: AdminRead<List<Campsite>> = AdminRead.Loading,
-    val images: AdminRead<List<ImageAttachment>> = AdminRead.Loading,
-) {
-    val query: String get() = queries[tab].orEmpty()
-}
+    val content: AdminBrowseContent = AdminBrowseContent.Loading,
+)
