@@ -41,7 +41,16 @@ internal class BookingDraftState(
         savedState.get<String>("bookingMonth")?.let {
             runCatching { YearMonth.parse(it) }.getOrNull()
         }
+        private set
     var error: BookingStepError? = null
+
+    /** Retains the visible month without changing the chosen arrival or departure.
+     * @param selected Month displayed by the date picker.
+     */
+    fun selectMonth(selected: YearMonth) {
+        month = selected
+        savedState["bookingMonth"] = selected.toString()
+    }
 
     /** Validates the requested step using current source-backed facts and existing parsers.
      * @param current Confirmed editable opportunity at this action boundary.

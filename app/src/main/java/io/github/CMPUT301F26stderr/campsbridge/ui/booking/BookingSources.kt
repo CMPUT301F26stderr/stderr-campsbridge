@@ -276,8 +276,7 @@ internal class BookingSources(
                 }
             }
         opportunityJob = pending
-        syncCalendar()
-        render()
+        onChanged()
         pending.start()
     }
 
