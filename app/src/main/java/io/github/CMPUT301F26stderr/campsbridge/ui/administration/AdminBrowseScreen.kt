@@ -3,7 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,6 +33,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 private const val METADATA_SEPARATOR = " · "
 
@@ -83,7 +84,10 @@ fun AdminBrowseScreen(
             singleLine = true,
         )
         if (state.tab == AdminBrowseTab.PROFILES) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            FlowRow(
+                Modifier.fillMaxWidth().padding(horizontal = Spacing.medium),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
                 (listOf<Role?>(null) + Role.entries).forEach { role ->
                     FilterChip(
                         selected = state.role == role,
