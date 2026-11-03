@@ -1,9 +1,9 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -11,12 +11,13 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 
 /** Registers Browse and its read-only profile/image children beneath one shared parent owner.
  * @param controller Current account navigation host.
@@ -38,7 +39,10 @@ internal fun NavGraphBuilder.administrationGraph(
         startDestination = "${AppDestination.ADMIN_BROWSE}/list",
         route = AppDestination.ADMIN_BROWSE,
     ) {
-        composable("${AppDestination.ADMIN_BROWSE}/list") {
+        composable("${AppDestination.ADMIN_BROWSE}/list") { entry ->
+            val parent =
+                remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_BROWSE) }
+            val model: AdminBrowseViewModel = viewModel(parent, factory = factory)
             WorkspaceScaffold(
                 state,
                 onSelectWorkspace,
@@ -46,7 +50,13 @@ internal fun NavGraphBuilder.administrationGraph(
                 items,
                 AppDestination.ADMIN_BROWSE,
                 onSelectDestination,
-            ) { EmptyContent(stringResource(R.string.feature_pending)) }
+            ) {
+                AdminBrowseRoute(
+                    model,
+                    onProfile = { controller.navigate(AppDestination.adminProfile(it)) },
+                    onImage = { controller.navigate(AppDestination.adminImage(it)) },
+                )
+            }
         }
         composable(AppDestination.ADMIN_PROFILE, arguments = listOf(navArgument("accountId") {})) {
             AppScreen(stringResource(R.string.admin_browse), onBack = {
