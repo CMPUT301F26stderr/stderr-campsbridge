@@ -1,21 +1,18 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 
 /** Registers one ID-scoped winner parent with four steps and its packaged-policy child.
@@ -32,18 +29,35 @@ internal fun NavGraphBuilder.bookingGraph(
         route = graph,
         arguments = listOf(navArgument("lotteryId") {}, navArgument("campsiteId") {}),
     ) {
-        for (page in listOf("steps", "policy")) {
-            composable("$graph/$page") {
-                AppScreen(stringResource(R.string.feature_pending), onBack = {
-                    if (page ==
-                        "steps"
-                    ) {
-                        controller.popBackStack(graph, true)
-                    } else {
-                        controller.popBackStack()
+        composable("$graph/steps") { entry ->
+            val parent = remember(entry) { controller.getBackStackEntry(graph) }
+            val drawId = requireNotNull(parent.arguments?.getString("lotteryId"))
+            val siteId = requireNotNull(parent.arguments?.getString("campsiteId"))
+            val model: BookingViewModel =
+                viewModel(
+                    viewModelStoreOwner = parent,
+                    factory = factory(drawId, siteId),
+                )
+            BookingRoute(
+                model,
+                { controller.popBackStack(graph, inclusive = true) },
+                {
+                    controller.navigate("${AppDestination.booking(drawId, siteId)}/policy") {
+                        launchSingleTop = true
                     }
-                }) { EmptyContent(stringResource(R.string.feature_pending)) }
-            }
+                },
+                { savedId ->
+                    controller.popBackStack(graph, inclusive = true)
+                    controller.navigate(
+                        AppDestination.reservationDetail(savedId, ReservationContext.ENTRANT),
+                    ) {
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+        composable("$graph/policy") {
+            PolicyReaderScreen(policyContent(PolicyId.REFUND), { controller.popBackStack() })
         }
     }
 }
