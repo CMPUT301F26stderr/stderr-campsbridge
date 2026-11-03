@@ -22,6 +22,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.ZoneId
 
 /** Metadata membership belongs to the observed source, independently of thumbnail success. */
@@ -36,7 +37,7 @@ fun AdminImageGallery(
     val locale = LocalConfiguration.current.locales[0]
     LazyVerticalGrid(columns = GridCells.Adaptive(160.dp), state = grid) {
         items(rows, key = { "${it.target.type}:${it.target.id}" }) { image ->
-            Column(Modifier.padding(8.dp).clickable { open(image.target) }) {
+            Column(Modifier.padding(Spacing.small).clickable { open(image.target) }) {
                 AttachmentImage(
                     photos[image.target] ?: ImageSlotState(),
                     image.target.id,

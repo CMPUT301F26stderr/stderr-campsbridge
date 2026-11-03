@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +32,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -79,7 +80,7 @@ fun AdminBrowseScreen(
         OutlinedTextField(
             state.query,
             onQuery,
-            Modifier.fillMaxWidth().padding(16.dp),
+            Modifier.fillMaxWidth().padding(Spacing.medium),
             label = { Text(stringResource(R.string.admin_search)) },
             singleLine = true,
         )
@@ -107,15 +108,20 @@ fun AdminBrowseScreen(
         }
         when (val content = state.content) {
             AdminBrowseContent.Loading -> {
-                CircularProgressIndicator()
+                BrowseFeedback { LoadingContent() }
             }
 
             AdminBrowseContent.Failure -> {
-                FailureContent(stringResource(R.string.admin_source_failed), onRetry)
+                BrowseFeedback {
+                    FailureContent(
+                        stringResource(R.string.admin_source_failed),
+                        onRetry,
+                    )
+                }
             }
 
             AdminBrowseContent.Pending -> {
-                EmptyContent(stringResource(R.string.feature_pending))
+                BrowseFeedback { EmptyContent(stringResource(R.string.feature_pending)) }
             }
 
             is AdminBrowseContent.Profiles -> {
@@ -194,7 +200,19 @@ private fun <T> BrowseRows(
     rows: List<T>,
     content: @Composable (List<T>) -> Unit,
 ) {
-    if (rows.isEmpty()) EmptyContent(stringResource(R.string.admin_no_results)) else content(rows)
+    if (rows.isEmpty()) {
+        BrowseFeedback { EmptyContent(stringResource(R.string.admin_no_results)) }
+    } else {
+        content(rows)
+    }
+}
+
+/** Lines status messages up with the search field.
+ * @param content Loading, failure or empty message.
+ */
+@Composable
+private fun BrowseFeedback(content: @Composable () -> Unit) {
+    Box(Modifier.padding(Spacing.medium)) { content() }
 }
 
 /** One record row; a failed thumbnail stays inside its slot and keeps the metadata visible.
@@ -212,7 +230,7 @@ private fun BrowseRow(
     retry: () -> Unit,
     open: () -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().clickable(onClick = open).padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().clickable(onClick = open).padding(Spacing.medium)) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         Text(metadata)
         AttachmentImage(photo, title, retry, Modifier.size(96.dp))
