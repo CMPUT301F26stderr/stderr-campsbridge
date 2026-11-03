@@ -41,7 +41,8 @@ private const val METADATA_SEPARATOR = " · "
 /** Admin browse tabs, search and rows; the route owns the ViewModel and navigation.
  * @param state Selected tab, its inputs and the source outcome.
  * @param photos Thumbnail states for the rows currently on screen.
- * @param listState Scroll position of the profile and campsite lists.
+ * @param campsiteListState Scroll position of the campsite list.
+ * @param profileListState Scroll position of the profile list.
  * @param gridState Scroll position of the image gallery.
  * @param onSelectTab Switches to another record type.
  * @param onQuery Edits the selected tab's search text.
@@ -56,7 +57,8 @@ private const val METADATA_SEPARATOR = " · "
 fun AdminBrowseScreen(
     state: AdminBrowseUiState,
     photos: Map<ImageTarget, ImageSlotState>,
-    listState: LazyListState,
+    campsiteListState: LazyListState,
+    profileListState: LazyListState,
     gridState: LazyGridState,
     onSelectTab: (AdminBrowseTab) -> Unit,
     onQuery: (String) -> Unit,
@@ -126,7 +128,7 @@ fun AdminBrowseScreen(
 
             is AdminBrowseContent.Profiles -> {
                 BrowseRows(content.rows) { rows ->
-                    LazyColumn(state = listState) {
+                    LazyColumn(state = profileListState) {
                         items(rows, key = { "ACCOUNT:${it.id}" }) { account ->
                             val target = ImageTarget(ImageTargetType.ACCOUNT, account.id)
                             BrowseRow(
@@ -155,7 +157,7 @@ fun AdminBrowseScreen(
 
             is AdminBrowseContent.Campsites -> {
                 BrowseRows(content.rows) { rows ->
-                    LazyColumn(state = listState) {
+                    LazyColumn(state = campsiteListState) {
                         items(rows, key = { "CAMPSITE:${it.id}" }) { campsite ->
                             val target = ImageTarget(ImageTargetType.CAMPSITE, campsite.id)
                             BrowseRow(

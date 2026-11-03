@@ -21,7 +21,8 @@ fun AdminBrowseRoute(
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val photos by model.photos.collectAsStateWithLifecycle()
-    val list = rememberLazyListState()
+    val campsiteList = rememberLazyListState()
+    val profileList = rememberLazyListState()
     val grid = rememberLazyGridState()
     val targets =
         when (val content = state.content) {
@@ -41,24 +42,35 @@ fun AdminBrowseRoute(
                 emptyList()
             }
         }.associateBy { "${it.type}:${it.id}" }
-    LaunchedEffect(model, state.tab, targets, list, grid) {
+    LaunchedEffect(model, state.tab, targets, campsiteList, profileList, grid) {
         snapshotFlow {
-            if (state.tab == AdminBrowseTab.IMAGES) {
-                grid.layoutInfo.visibleItemsInfo
-                    .mapNotNull { targets[it.key] }
-                    .toSet()
-            } else {
-                list.layoutInfo.visibleItemsInfo
-                    .mapNotNull { targets[it.key] }
-                    .toSet()
-            }
+            val keys =
+                when (state.tab) {
+                    AdminBrowseTab.CAMPSITES -> {
+                        campsiteList.layoutInfo.visibleItemsInfo.map {
+                            it.key
+                        }
+                    }
+
+                    AdminBrowseTab.PROFILES -> {
+                        profileList.layoutInfo.visibleItemsInfo.map {
+                            it.key
+                        }
+                    }
+
+                    AdminBrowseTab.IMAGES -> {
+                        grid.layoutInfo.visibleItemsInfo.map { it.key }
+                    }
+                }
+            keys.mapNotNull { targets[it] }.toSet()
         }.distinctUntilChanged().collect(model::setVisibleTargets)
     }
     DisposableEffect(model) { onDispose { model.setVisibleTargets(emptySet()) } }
     AdminBrowseScreen(
         state,
         photos,
-        list,
+        campsiteList,
+        profileList,
         grid,
         onSelectTab = model::selectTab,
         onQuery = model::editQuery,
