@@ -44,7 +44,7 @@ import java.time.Instant
 class AdminInspectionControllerTest {
     @get:Rule val main = MainDispatcherRule()
 
-    /** Unselected and blank destinations cannot start global or selected reads. */
+    /** Unselected and blank destinations cannot start global or selected reads */
     @Test fun idleAndBlankSelectionAreReadFree() =
         scenario { f ->
             f.model.openProfile("")
