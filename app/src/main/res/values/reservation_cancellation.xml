@@ -8,6 +8,7 @@
     <string name="reservation_reason_label">Reason (optional)</string>
     <string name="reservation_cancel_consequence">This win remains used. You cannot book another stay with it.</string>
     <string name="reservation_reject_consequence">Reject the saved stay for camper %1$s. Their win remains used.</string>
+    <string name="reservation_reject_without_record">Reject this saved stay. The camper cannot reuse this win.</string>
     <string name="reservation_refund_consequence">Full simulated refund will be recorded if cancellation is confirmed.</string>
     <string name="reservation_cancelling">Cancelling reservation…</string>
     <string name="reservation_rejecting">Rejecting reservation…</string>
