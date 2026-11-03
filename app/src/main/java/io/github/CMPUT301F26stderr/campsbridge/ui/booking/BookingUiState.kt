@@ -95,6 +95,8 @@ sealed interface BookingUiState {
      * @param error Feedback from the latest explicit step/approval action.
      * @param guestCount Positive parsed guest input for display, independent of capacity feedback.
      * @param canConfirm Current validated review/terms/amount permits an explicit attempt.
+     * @param isCheckingReservation A background consumption check is still pending.
+     * @param reservationCheckFailed The last background check failed; retry before confirming.
      */
     data class Content(
         val lottery: Lottery,
@@ -112,5 +114,7 @@ sealed interface BookingUiState {
         val error: BookingStepError? = null,
         val guestCount: Long? = null,
         val canConfirm: Boolean = false,
+        val isCheckingReservation: Boolean = false,
+        val reservationCheckFailed: Boolean = false,
     ) : BookingUiState
 }

@@ -13,7 +13,7 @@ sealed interface BookingSubmission {
     /** A read-only lookup is resolving whether the previous attempt consumed this win. */
     data object Recovering : BookingSubmission
 
-    /** Lookup failed; editing/exits stay blocked while an explicit recovery retry is available. */
+    /** Lookup failed; another save is blocked, but the user may retry the check or leave. */
     data object Unknown : BookingSubmission
 
     /** Known rejection permits correction of the retained draft.

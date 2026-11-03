@@ -90,7 +90,10 @@ fun BookingScreen(
         submitting || submission == BookingSubmission.Recovering ||
             submission == BookingSubmission.Unknown
     val enabled = !blocked && !discardPrompt && !exitPending
-    BackHandler { if (enabled) onBack() }
+    val exitsEnabled =
+        !submitting && submission != BookingSubmission.Recovering &&
+            !discardPrompt && !exitPending
+    BackHandler { if (exitsEnabled) onBack() }
     if (state is BookingUiState.Content) {
         val step = state.draft.step
         val review = step == BookingStep.REVIEW
@@ -127,9 +130,18 @@ fun BookingScreen(
                 ),
             steps = StepProgress(step.ordinal + 1, BookingStep.entries.size),
             onCancel = onCancel,
-            exitEnabled = enabled,
+            exitEnabled = exitsEnabled,
         ) {
             BookingSubmissionFeedback(submission, onRecover)
+            if (state.isCheckingReservation) {
+                LoadingContent(stringResource(R.string.booking_recovering))
+            } else if (state.reservationCheckFailed) {
+                FailureContent(
+                    stringResource(R.string.booking_recheck_failed),
+                    { onRetry(BookingReadSource.OPPORTUNITY) },
+                    enabled,
+                )
+            }
             if (!review) {
                 Text(
                     state.campsite.details.name,
@@ -180,7 +192,7 @@ fun BookingScreen(
             stringResource(R.string.booking_title),
             modifier,
             onBack = onBack,
-            backEnabled = enabled,
+            backEnabled = exitsEnabled,
         ) {
             if (submitting) {
                 LoadingContent(stringResource(R.string.booking_submitting))
@@ -225,7 +237,7 @@ fun BookingScreen(
             onConfirmDiscard,
             onDismissDiscard,
             onDismissDiscard,
-            isSubmitting = blocked,
+            isSubmitting = submitting || submission == BookingSubmission.Recovering,
             confirmLabel = stringResource(R.string.booking_discard),
             cancelLabel = stringResource(R.string.booking_keep_draft),
         )

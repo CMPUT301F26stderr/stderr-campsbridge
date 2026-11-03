@@ -356,8 +356,8 @@ class BookingFlowTest {
         compose.runOnIdle { assertEquals(1, bookings.reserveRequests.size) }
     }
 
-    /** Unknown results allow only recovery, including cancelled saved history. */
-    @Test fun failedConfirmationRecoveryBlocksBackAndRetriesOnlyTheHistoryRead() {
+    /** Unknown results allow leaving or checking again without replaying the save. */
+    @Test fun failedConfirmationRecoveryAllowsBackAndRetriesOnlyTheHistoryRead() {
         bookings.reserveHandler = { throw IOException("Lost acknowledgement") }
         val saved =
             savedBooking().let {
@@ -383,9 +383,10 @@ class BookingFlowTest {
             .performScrollTo()
             .assertIsDisplayed()
         compose.onNodeWithText("Confirm reservation").assertIsNotEnabled()
-        compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Back").assertIsEnabled()
         pressBack()
-        compose.onNodeWithText("Discard this booking draft?").assertDoesNotExist()
+        compose.onNodeWithText("Discard this booking draft?").assertIsDisplayed()
+        compose.onNodeWithText("Keep draft").performClick()
         compose.runOnIdle {
             assertEquals(1, bookings.reserveRequests.size)
             bookings.records.value = listOf(saved)

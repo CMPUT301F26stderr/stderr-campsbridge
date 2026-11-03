@@ -216,7 +216,7 @@ class BookingViewModel(
 
     /** Revalidates a reviewed stay and starts one guarded reservation attempt. */
     fun confirm() {
-        if (!canEdit(BookingStep.REVIEW)) return
+        if (!canEdit(BookingStep.REVIEW) || opportunityInFlight || opportunityFailed) return
         reconcile()
         var current = state.value as? BookingUiState.Content ?: return
         error = null
@@ -248,6 +248,7 @@ class BookingViewModel(
     /** Retries only read-only confirmation of an unresolved attempt, without another reserve. */
     fun retryRecovery() {
         if (closed || knownReservationId != null || !recoveryRequired ||
+            mutableDiscardPrompt.value || mutableExitRequested.value ||
             mutableSubmission.value != BookingSubmission.Unknown
         ) {
             return
@@ -388,6 +389,29 @@ class BookingViewModel(
             else -> false
         }
 
+    /** Only an active save or recovery read temporarily holds navigation. */
+    private fun submissionBlocksExit(): Boolean =
+        mutableSubmission.value == BookingSubmission.Submitting ||
+            mutableSubmission.value == BookingSubmission.Recovering
+
+    /** Saves an explicit edit and clears feedback about the previous draft only when it changes.
+     * @param updated New user-entered values or approvals.
+     */
+    private fun updateDraft(updated: BookingDraft) {
+        if (updated != draft &&
+            (
+                mutableSubmission.value is BookingSubmission.Rejected ||
+                    mutableSubmission.value == BookingSubmission.Absent
+            )
+        ) {
+            mutableSubmission.value = BookingSubmission.Idle
+        }
+        draft = updated
+        error = null
+        saveDraft()
+        reconcile()
+    }
+
     /** Validates the displayed step and enters the next step or returns to review.
      * @param displayedStep Step whose footer was actually displayed; rejects queued old actions.
      */
@@ -414,12 +438,14 @@ class BookingViewModel(
 
     /** Moves within this wizard or requests explicit abandonment from its first step. */
     fun back() {
-        if (closed || submissionBlocksEditing() || mutableDiscardPrompt.value ||
+        if (closed || submissionBlocksExit() || mutableDiscardPrompt.value ||
             mutableExitRequested.value
         ) {
             return
         }
-        if (state.value !is BookingUiState.Content || draft.step == BookingStep.DATES) {
+        if (mutableSubmission.value == BookingSubmission.Unknown ||
+            state.value !is BookingUiState.Content || draft.step == BookingStep.DATES
+        ) {
             requestExit()
             return
         }
@@ -468,11 +494,9 @@ class BookingViewModel(
             render()
             return
         }
-        draft =
-            draft.copy(agreement = if (accepted) BookingAgreement(rules, policyVersion) else null)
-        error = null
-        saveDraft()
-        render()
+        updateDraft(
+            draft.copy(agreement = if (accepted) BookingAgreement(rules, policyVersion) else null),
+        )
     }
 
     /** Approves only a currently displayed exact amount after a quote change.
@@ -482,15 +506,12 @@ class BookingViewModel(
         if (!canEdit() || draft.step != BookingStep.REVIEW) return
         val quote = (state.value as BookingUiState.Content).quote as? BookingQuote.Value ?: return
         if (quote.totalCents != totalCents) return
-        draft = draft.copy(reviewedTotalCents = totalCents)
-        error = null
-        saveDraft()
-        render()
+        updateDraft(draft.copy(reviewedTotalCents = totalCents))
     }
 
     /** Requests abandonment independently of current source success or failure. */
     fun requestExit() {
-        if (closed || submissionBlocksEditing() || mutableExitRequested.value ||
+        if (closed || submissionBlocksExit() || mutableExitRequested.value ||
             mutableDiscardPrompt.value
         ) {
             return
@@ -508,7 +529,7 @@ class BookingViewModel(
 
     /** Requests route navigation after explicit abandonment; performs no persistence write. */
     fun confirmDiscard() {
-        if (closed || submissionBlocksEditing() || !mutableDiscardPrompt.value) return
+        if (closed || submissionBlocksExit() || !mutableDiscardPrompt.value) return
         mutableDiscardPrompt.value = false
         mutableExitRequested.value = true
     }
@@ -656,10 +677,7 @@ class BookingViewModel(
      */
     fun selectCheckIn(date: LocalDate?) {
         if (!canEdit(BookingStep.DATES) || date == draft.checkIn) return
-        draft = draft.copy(checkIn = date, checkOut = null, reviewedTotalCents = null)
-        error = null
-        saveDraft()
-        reconcile()
+        updateDraft(draft.copy(checkIn = date, checkOut = null, reviewedTotalCents = null))
     }
 
     /** Retains departure for ordered feedback without constructing a domain request.
@@ -667,10 +685,7 @@ class BookingViewModel(
      */
     fun selectCheckOut(date: LocalDate?) {
         if (!canEdit(BookingStep.DATES)) return
-        draft = draft.copy(checkOut = date, reviewedTotalCents = null)
-        error = null
-        saveDraft()
-        reconcile()
+        updateDraft(draft.copy(checkOut = date, reviewedTotalCents = null))
     }
 
     /** Applies only a currently selectable displayed cell as arrival or excluded checkout.
@@ -692,10 +707,7 @@ class BookingViewModel(
     /** Clears a partial/complete/invalid selection only from its owning dates step. */
     fun clearDates() {
         if (!canEdit(BookingStep.DATES)) return
-        draft = draft.copy(checkIn = null, checkOut = null, reviewedTotalCents = null)
-        error = null
-        saveDraft()
-        reconcile()
+        updateDraft(draft.copy(checkIn = null, checkOut = null, reviewedTotalCents = null))
     }
 
     /** Keeps raw guest text rather than silently coercing incomplete input.
@@ -703,10 +715,7 @@ class BookingViewModel(
      */
     fun editGuests(text: String) {
         if (!canEdit(BookingStep.GUESTS)) return
-        draft = draft.copy(guestInput = text)
-        error = null
-        saveDraft()
-        render()
+        updateDraft(draft.copy(guestInput = text))
     }
 
     /** Retries a failed/interrupted source without duplicating an active read.
@@ -715,7 +724,11 @@ class BookingViewModel(
     fun retry(source: BookingReadSource) {
         if (closed || submissionBlocksEditing() || knownReservationId != null) return
         if (source == BookingReadSource.OPPORTUNITY) {
-            if (!opportunityInFlight && !opportunityUnused && hasOwnDrawnWin()) loadOpportunity()
+            if (!opportunityInFlight && (!opportunityUnused || opportunityFailed) &&
+                hasOwnDrawnWin()
+            ) {
+                loadOpportunity()
+            }
             return
         }
         if (source !in failed && !sourceWasInterrupted(source)) return
@@ -884,7 +897,6 @@ class BookingViewModel(
         opportunityJob?.cancel()
         opportunityAttempted = true
         opportunityInFlight = true
-        opportunityUnused = false
         opportunityFailed = false
         val pending =
             viewModelScope.launch(start = CoroutineStart.LAZY) {
@@ -995,7 +1007,11 @@ class BookingViewModel(
         if (ownEntry?.state != EntryState.OFFERED) {
             return BookingUiState.Unavailable(BookingUnavailableReason.NOT_A_WINNER)
         }
-        if (opportunityFailed) return BookingUiState.Failure(BookingReadSource.OPPORTUNITY)
+        if (opportunityFailed &&
+            !opportunityUnused
+        ) {
+            return BookingUiState.Failure(BookingReadSource.OPPORTUNITY)
+        }
         if (!opportunityUnused) return BookingUiState.Loading
         if (draw.cancellation != null) {
             return BookingUiState.Unavailable(BookingUnavailableReason.LOTTERY_CANCELLED)
@@ -1023,6 +1039,8 @@ class BookingViewModel(
             draft,
             checkNotNull(month),
             localToday(site),
+            isCheckingReservation = opportunityInFlight,
+            reservationCheckFailed = opportunityFailed,
         )
     }
 
@@ -1088,7 +1106,8 @@ class BookingViewModel(
                 val amount = (quote as? BookingQuote.Value)?.totalCents
                 content.copy(
                     canConfirm =
-                        draft.step == BookingStep.REVIEW && amount != null &&
+                        draft.step == BookingStep.REVIEW && !opportunityInFlight &&
+                            !opportunityFailed && amount != null &&
                             draft.reviewedTotalCents == amount &&
                             listOf(BookingStep.DATES, BookingStep.GUESTS, BookingStep.TERMS).all {
                                 stepError(content, it) == null

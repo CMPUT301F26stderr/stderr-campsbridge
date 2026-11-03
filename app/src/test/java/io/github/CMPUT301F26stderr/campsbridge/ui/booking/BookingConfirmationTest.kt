@@ -326,7 +326,7 @@ class BookingConfirmationTest {
             assertTrue(bookings.observedRecordIds.isEmpty())
         }
 
-    /** Recovery progress/failure remains an independent lock until an explicit read-only retry. */
+    /** Unknown results block another write but allow leaving or retrying the history read. */
     @Test fun failedRecoveryBlocksBlindResubmissionAndRetriesOnlyItsLookup() =
         runBookingTest {
             val saved = SavedStateHandle()
@@ -353,7 +353,8 @@ class BookingConfirmationTest {
             model.editStep(BookingStep.DATES)
             assertFalse(model.canReadPolicy())
             assertFalse(model.exitRequested.value)
-            assertFalse(model.discardPrompt.value)
+            assertTrue(model.discardPrompt.value)
+            model.dismissDiscard()
             bookings.opportunityHandler = { _, _ -> record }
             model.retryRecovery()
             model.retryRecovery()
