@@ -1,11 +1,9 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseViewModel
-import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseRoute
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -13,6 +11,8 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
@@ -40,7 +40,8 @@ internal fun NavGraphBuilder.administrationGraph(
         route = AppDestination.ADMIN_BROWSE,
     ) {
         composable("${AppDestination.ADMIN_BROWSE}/list") { entry ->
-            val parent = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_BROWSE) }
+            val parent =
+                remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_BROWSE) }
             val model: AdminBrowseViewModel = viewModel(parent, factory = factory)
             WorkspaceScaffold(
                 state,
@@ -50,9 +51,11 @@ internal fun NavGraphBuilder.administrationGraph(
                 AppDestination.ADMIN_BROWSE,
                 onSelectDestination,
             ) {
-                AdminBrowseRoute(model,
+                AdminBrowseRoute(
+                    model,
                     onProfile = { controller.navigate(AppDestination.adminProfile(it)) },
-                    onImage = { controller.navigate(AppDestination.adminImage(it)) })
+                    onImage = { controller.navigate(AppDestination.adminImage(it)) },
+                )
             }
         }
         composable(AppDestination.ADMIN_PROFILE, arguments = listOf(navArgument("accountId") {})) {
