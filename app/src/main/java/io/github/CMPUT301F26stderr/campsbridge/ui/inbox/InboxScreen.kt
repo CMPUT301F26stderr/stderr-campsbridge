@@ -4,26 +4,115 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InboxScreen (
+fun InboxScreen(
     state: InboxUiState,
+    onOpenItem: (InboxItem) -> Unit,
     onRetry: () -> Unit,
+    onRetryMarkRead: () -> Unit,
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState(),
-    onCreate: (() -> Unit)? = null,
 ) {
+    Column(modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(vertical = Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            when (state) {
+                InboxUiState.Loading -> {
+                    item { LoadingContent() }
+                }
 
+                InboxUiState.Failure -> {
+                    item {
+                        Column {
+                            FailureContent("Could not refresh notifications.", onRetry)
+                            Button(onClick = onRetry) { Text("Retry") }
+                        }
+                    }
+                }
 
+                InboxUiState.Unavailable -> {
+                    item { EmptyContent("No notifications yet.") }
+                }
+
+                is InboxUiState.Content -> {
+                    if (state.saveFailed) {
+                        item {
+                            Column(Modifier.padding(Spacing.medium)) {
+                                Text("Could not mark this notification as read.")
+                                Text("Unread")
+                                Button(onClick = onRetryMarkRead) {
+                                    Text("Retry read acknowledgement")
+                                }
+                            }
+                        }
+                    }
+                    if (state.items.isEmpty() && state.unavailable.isEmpty()) {
+                        item { EmptyContent("No notifications yet.") }
+                    } else {
+                        if (state.unavailable.isNotEmpty()) {
+                            item {
+                                Text("Unavailable notifications", style = MaterialTheme.typography.titleMedium)
+                            }
+                            items(state.unavailable, key = { it.receipt.notificationId }) { unavail ->
+                                NavigationRow(
+                                    title = "Notification unavailable",
+                                    onClick = {},
+                                    enabled = false,
+                                    modifier = Modifier.testTag("inbox-receipt-${unavail.receipt.notificationId}"),
+                                )
+                            }
+                            item {
+                                Button(onClick = onRetry) { Text("Retry notification") }
+                            }
+                        }
+                        items(state.items, key = { it.notification.id }) { item ->
+                            val title = stringResource(notificationTitleResource(item.notification.type))
+                            val subtitle = when (val subject = item.subject) {
+                                is NotificationSubjectContent.LotteryContent -> subject.lottery.title
+                                is NotificationSubjectContent.ReservationContent -> subject.reservation.bookedCampsite.name
+                                else -> ""
+                            }
+                            val isUnsupported = item.subject == NotificationSubjectContent.Unsupported
+                            val readStatus = if (item.readAt != null) "Read" else "Unread"
+
+                            if (isUnsupported) {
+                                Column(Modifier.padding(Spacing.medium).testTag("inbox-event-${item.notification.id}")) {
+                                    Text(title)
+                                    Text("This notification has no supported destination in this build.")
+                                }
+                            } else {
+                                NavigationRow(
+                                    title = title,
+                                    onClick = { onOpenItem(item) },
+                                    supportingText = "$subtitle • $readStatus",
+                                    modifier = Modifier.testTag("inbox-event-${item.notification.id}"),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
-

@@ -78,6 +78,7 @@ class InboxViewModelTest {
         runTest {
             val notifications = repository("n-1", "n-2")
             notifications.receipts.value = mapOf("account-1" to listOf(InboxReceipt("n-1", null)))
+            notifications.markReadHandler = { _, _ -> }
             val viewModel = viewModel(notifications)
             runCurrent()
             val item = (viewModel.state.value as InboxUiState.Content).items.single()
