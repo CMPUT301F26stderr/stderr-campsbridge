@@ -47,6 +47,8 @@ internal fun CancellationPromptDialog(
         description =
             if (owner && record != null) {
                 stringResource(R.string.reservation_reject_consequence, record.entrantId)
+            } else if (owner) {
+                stringResource(R.string.reservation_reject_without_record)
             } else {
                 stringResource(R.string.reservation_cancel_consequence)
             },
