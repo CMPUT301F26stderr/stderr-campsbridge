@@ -81,22 +81,21 @@ class BookingViewModel(
     private var submissionVersion = 0L
     private var submissionSnapshot: BookingUiState.Content? = null
     private var closed = false
-    private var lottery: Lottery? = null
-    private var ownEntry: LotteryEntry? = null
-    private var offers = emptyList<LotteryOffer>()
-    private var campsite: Campsite? = null
-    private val loaded = mutableSetOf<BookingReadSource>()
-    private val failed = mutableSetOf<BookingReadSource>()
-    private val jobs = mutableMapOf<BookingReadSource, Job>()
-    private val versions = mutableMapOf<BookingReadSource, Long>()
-    private var opportunityJob: Job? = null
-    private var opportunityVersion = 0L
-    private var opportunityAttempted = false
-    private var opportunityInFlight = false
-    private var opportunityUnused = false
-    private var opportunityFailed = false
-    private var timeJob: Job? = null
-    private var timeDeadline: Instant? = null
+    private val sources =
+        BookingSources(
+            entrantId,
+            lotteryId,
+            campsiteId,
+            lotteries,
+            campsites,
+            bookings,
+            clock,
+            viewModelScope,
+            isReserved = { knownReservationId != null },
+            editingBlocked = ::submissionBlocksEditing,
+            onChanged = ::reconcile,
+            onReservation = ::rememberReservation,
+        )
     private val calendar = BookingCalendarReader(campsiteId, campsites, viewModelScope)
     private val mutableState = MutableStateFlow<BookingUiState>(BookingUiState.Loading)
     val state = mutableState.asStateFlow()
@@ -131,25 +130,7 @@ class BookingViewModel(
     init {
         calendarJob.start()
         if (knownReservationId == null) {
-            observeSource(BookingReadSource.LOTTERY, { lotteries.observe(lotteryId) }) {
-                lottery =
-                    it
-            }
-            observeSource(
-                BookingReadSource.MEMBERSHIP,
-                { lotteries.observeForEntrant(entrantId) },
-            ) { rows ->
-                ownEntry =
-                    rows.firstOrNull { it.accountId == entrantId && it.lotteryId == lotteryId }
-            }
-            observeSource(BookingReadSource.OFFERS, { lotteries.observeOffers(lotteryId) }) {
-                offers =
-                    it
-            }
-            observeSource(BookingReadSource.CAMPSITE, { campsites.observe(campsiteId) }) {
-                campsite =
-                    it
-            }
+            sources.start()
         } else {
             setRecoveryRequired(false)
             render()
@@ -192,7 +173,7 @@ class BookingViewModel(
 
     /** Revalidates a reviewed stay and starts one guarded reservation attempt. */
     fun confirm() {
-        if (!canEdit(BookingStep.REVIEW) || opportunityInFlight || opportunityFailed) return
+        if (!canEdit(BookingStep.REVIEW) || !sources.canReserve) return
         reconcile()
         var current = state.value as? BookingUiState.Content ?: return
         draftState.error = null
@@ -295,9 +276,7 @@ class BookingViewModel(
                 setRecoveryRequired(false)
                 submissionSnapshot = null
                 mutableSubmission.value = BookingSubmission.Absent
-                opportunityAttempted = true
-                opportunityUnused = true
-                opportunityFailed = false
+                sources.confirmUnused()
                 calendar.stop()
                 reconcile()
             }
@@ -625,41 +604,14 @@ class BookingViewModel(
         updateDraft(draftState.value.copy(guestInput = text))
     }
 
-    /** Retries a failed/interrupted source without duplicating an active read.
-     * @param source Exact failed or cancelled source.
+    /** Retries only the selected fixed source without replacing the draft.
+     * @param source Failed or interrupted observation to restart.
      */
     fun retry(source: BookingReadSource) {
-        if (closed || submissionBlocksEditing() || knownReservationId != null) return
-        if (source == BookingReadSource.OPPORTUNITY) {
-            if (!opportunityInFlight && (!opportunityUnused || opportunityFailed) &&
-                hasOwnDrawnWin()
-            ) {
-                loadOpportunity()
-            }
-            return
-        }
-        if (source !in failed && !sourceWasInterrupted(source)) return
-        when (source) {
-            BookingReadSource.LOTTERY -> {
-                observeSource(source, { lotteries.observe(lotteryId) }) { lottery = it }
-            }
-
-            BookingReadSource.MEMBERSHIP -> {
-                observeSource(source, { lotteries.observeForEntrant(entrantId) }) { rows ->
-                    ownEntry =
-                        rows.firstOrNull { it.accountId == entrantId && it.lotteryId == lotteryId }
-                }
-            }
-
-            BookingReadSource.OFFERS -> {
-                observeSource(source, { lotteries.observeOffers(lotteryId) }) { offers = it }
-            }
-
-            BookingReadSource.CAMPSITE -> {
-                observeSource(source, { campsites.observe(campsiteId) }) { campsite = it }
-            }
-
-            BookingReadSource.OPPORTUNITY -> {}
+        if (!closed && !submissionBlocksEditing() &&
+            knownReservationId == null
+        ) {
+            sources.retry(source)
         }
     }
 
@@ -675,151 +627,21 @@ class BookingViewModel(
 
     /** Rechecks windows/local today and unused consumption after foreground return. */
     fun refreshTime() {
-        if (closed || knownReservationId != null) return
-        if (submissionBlocksEditing()) {
-            reconcile()
-            return
-        }
-        jobs.keys
-            .toList()
-            .filter(::sourceWasInterrupted)
-            .forEach(::retry)
-        reconcile()
-        if (!opportunityInFlight && !opportunityFailed && hasOwnDrawnWin()) loadOpportunity()
+        if (!closed && knownReservationId == null) sources.refreshTime()
     }
-
-    /** Recognizes a cancelled unknown source; failed reads keep their explicit failure action.
-     * @param source Fixed observation slot to inspect.
-     */
-    private fun sourceWasInterrupted(source: BookingReadSource): Boolean =
-        source !in loaded && source !in failed && jobs[source]?.isCompleted == true
-
-    /** Owns one fixed source with consistent lazy installation and late-callback rejection.
-     * @param source Independent read slot; OPPORTUNITY uses its explicit server lookup instead.
-     * @param observe Creates the repository observation only when the installed job starts.
-     * @param accept Retains only the current source's actual typed facts.
-     */
-    private fun <T> observeSource(
-        source: BookingReadSource,
-        observe: () -> Flow<T>,
-        accept: (T) -> Unit,
-    ) {
-        if (closed || knownReservationId != null) return
-        val version = (versions[source] ?: 0) + 1
-        versions[source] = version
-        jobs.remove(source)?.cancel()
-        loaded.remove(source)
-        failed.remove(source)
-        val pending =
-            viewModelScope.launch(start = CoroutineStart.LAZY) {
-                try {
-                    observe().collect { value ->
-                        currentCoroutineContext().ensureActive()
-                        if (versions[source] != version) return@collect
-                        accept(value)
-                        loaded.add(source)
-                        failed.remove(source)
-                        reconcile()
-                    }
-                } catch (cancelled: CancellationException) {
-                    if (!closed && versions[source] == version) {
-                        loaded.remove(source)
-                        reconcile()
-                    }
-                    throw cancelled
-                } catch (_: Exception) {
-                    currentCoroutineContext().ensureActive()
-                    if (versions[source] == version) {
-                        loaded.remove(source)
-                        failed.add(source)
-                        reconcile()
-                    }
-                }
-            }
-        jobs[source] = pending
-        reconcile()
-        pending.start()
-    }
-
-    /** Uses only completed parent and exact own membership facts to authorize consumption reads. */
-    private fun hasOwnDrawnWin(): Boolean =
-        BookingReadSource.LOTTERY in loaded && BookingReadSource.MEMBERSHIP in loaded &&
-            lottery?.let { it.id == lotteryId && it.publishedAt != null && it.drawnAt != null } ==
-            true &&
-            ownEntry?.state == EntryState.OFFERED
 
     /** Reconciles dependent reads and projects current facts without starting writes. */
     private fun reconcile() {
         if (closed) return
-        if (draftState.month == null && BookingReadSource.CAMPSITE in loaded) {
-            campsite?.takeIf { it.id == campsiteId }?.let { site ->
-                draftState.month = YearMonth.from(draftState.value.checkIn ?: localToday(site))
-                savedState["bookingMonth"] = draftState.month.toString()
-            }
+        val site = sources.confirmedCampsite
+        if (draftState.month == null && site != null) {
+            draftState.month = YearMonth.from(draftState.value.checkIn ?: sources.localToday(site))
+            savedState["bookingMonth"] = draftState.month.toString()
         }
-        if (knownReservationId == null) {
-            if (!hasOwnDrawnWin()) {
-                stopOpportunity()
-            } else if (!opportunityAttempted && !submissionBlocksEditing()) {
-                loadOpportunity()
-            }
-        }
-        campsite
-            ?.takeIf { BookingReadSource.CAMPSITE in loaded && it.id == campsiteId }
-            ?.let(draftState::reconcileApproval)
+        sources.reconcileOpportunity()
+        site?.let(draftState::reconcileApproval)
         syncCalendar()
         render()
-    }
-
-    /** Server-confirms consuming history before edits; UI never derives the stored key. */
-    private fun loadOpportunity() {
-        if (closed || submissionBlocksEditing() || opportunityInFlight ||
-            knownReservationId != null || !hasOwnDrawnWin()
-        ) {
-            return
-        }
-        val version = ++opportunityVersion
-        opportunityJob?.cancel()
-        opportunityAttempted = true
-        opportunityInFlight = true
-        opportunityFailed = false
-        val pending =
-            viewModelScope.launch(start = CoroutineStart.LAZY) {
-                try {
-                    val reservation = bookings.getForOpportunity(lotteryId, entrantId)
-                    currentCoroutineContext().ensureActive()
-                    if (version != opportunityVersion) return@launch
-                    check(
-                        reservation == null || (
-                            reservation.id.isNotBlank() &&
-                                reservation.lotteryId == lotteryId &&
-                                reservation.entrantId == entrantId
-                        ),
-                    )
-                    opportunityInFlight = false
-                    opportunityUnused = reservation == null
-                    if (reservation != null) {
-                        rememberReservation(reservation.id)
-                    } else {
-                        reconcile()
-                    }
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    currentCoroutineContext().ensureActive()
-                    if (version == opportunityVersion) {
-                        opportunityInFlight = false
-                        opportunityFailed = true
-                        reconcile()
-                    }
-                } finally {
-                    if (version == opportunityVersion) opportunityInFlight = false
-                }
-            }
-        opportunityJob = pending
-        syncCalendar()
-        render()
-        pending.start()
     }
 
     /** Shares consuming identity between ordinary entry and submission recovery.
@@ -833,18 +655,6 @@ class BookingViewModel(
         mutableSubmission.value = BookingSubmission.Idle
         reconcile()
         complete(id)
-    }
-
-    /** Invalidates unknown/unused lookup evidence when the required own-winning facts retire. */
-    private fun stopOpportunity() {
-        if (!opportunityAttempted) return
-        opportunityVersion++
-        opportunityJob?.cancel()
-        opportunityJob = null
-        opportunityAttempted = false
-        opportunityInFlight = false
-        opportunityUnused = false
-        opportunityFailed = false
     }
 
     /** Supplies exactly the visible month and chosen range while current facts permit editing. */
@@ -867,69 +677,10 @@ class BookingViewModel(
         }
     }
 
-    /** Resolves source, identity, consumption and window prerequisites before date-dependent UI. */
-    private fun readOutcome(): BookingUiState {
-        knownReservationId?.let { return BookingUiState.Reserved(it) }
-        failed.firstOrNull()?.let { return BookingUiState.Failure(it) }
-        if (!loaded.containsAll(
-                listOf(
-                    BookingReadSource.LOTTERY,
-                    BookingReadSource.MEMBERSHIP,
-                    BookingReadSource.OFFERS,
-                    BookingReadSource.CAMPSITE,
-                ),
-            )
-        ) {
-            return BookingUiState.Loading
-        }
-        val draw = lottery
-        if (draw == null || draw.id != lotteryId || draw.publishedAt == null) {
-            return BookingUiState.Unavailable(BookingUnavailableReason.LOTTERY_UNAVAILABLE)
-        }
-        if (draw.drawnAt ==
-            null
-        ) {
-            return BookingUiState.Unavailable(BookingUnavailableReason.DRAW_PENDING)
-        }
-        if (ownEntry?.state != EntryState.OFFERED) {
-            return BookingUiState.Unavailable(BookingUnavailableReason.NOT_A_WINNER)
-        }
-        if (opportunityFailed &&
-            !opportunityUnused
-        ) {
-            return BookingUiState.Failure(BookingReadSource.OPPORTUNITY)
-        }
-        if (!opportunityUnused) return BookingUiState.Loading
-        if (draw.cancellation != null) {
-            return BookingUiState.Unavailable(BookingUnavailableReason.LOTTERY_CANCELLED)
-        }
-        val site = campsite
-        if (site == null || site.id != campsiteId || !site.isPublished ||
-            site.ownerId != draw.ownerId
-        ) {
-            return BookingUiState.Unavailable(BookingUnavailableReason.CAMPSITE_UNAVAILABLE)
-        }
-        val offer =
-            offers.firstOrNull { it.campsiteId == campsiteId }
-                ?: return BookingUiState.Unavailable(BookingUnavailableReason.OFFER_UNAVAILABLE)
-        val now = clock.instant()
-        if (now < draw.configuration.bookingOpensAt) {
-            return BookingUiState.Unavailable(BookingUnavailableReason.BOOKING_NOT_OPEN)
-        }
-        if (now >= draw.configuration.bookingClosesAt) {
-            return BookingUiState.Unavailable(BookingUnavailableReason.BOOKING_CLOSED)
-        }
-        return BookingUiState.Content(
-            draw,
-            site,
-            offer,
-            draftState.value,
-            checkNotNull(draftState.month),
-            localToday(site),
-            isCheckingReservation = opportunityInFlight,
-            reservationCheckFailed = opportunityFailed,
-        )
-    }
+    /** Known consuming history takes precedence over later ordinary read outcomes. */
+    private fun readOutcome(): BookingUiState =
+        knownReservationId?.let(BookingUiState::Reserved)
+            ?: sources.readOutcome(draftState.value, draftState.month)
 
     /** Projects inventory, eligibility and price without changing the calendar subscription. */
     private fun render() {
@@ -938,7 +689,7 @@ class BookingViewModel(
         if (submissionBlocksEditing() && frozen != null && knownReservationId == null) {
             mutableState.value = frozen
             syncPhoto()
-            scheduleTime()
+            sources.scheduleTime()
             return
         }
         val outcome = readOutcome()
@@ -993,8 +744,8 @@ class BookingViewModel(
                 val amount = (quote as? BookingQuote.Value)?.totalCents
                 content.copy(
                     canConfirm =
-                        draftState.value.step == BookingStep.REVIEW && !opportunityInFlight &&
-                            !opportunityFailed && amount != null &&
+                        draftState.value.step == BookingStep.REVIEW && sources.canReserve &&
+                            amount != null &&
                             draftState.value.reviewedTotalCents == amount &&
                             listOf(BookingStep.DATES, BookingStep.GUESTS, BookingStep.TERMS).all {
                                 draftState.stepError(content, it) == null
@@ -1004,47 +755,7 @@ class BookingViewModel(
                 outcome
             }
         syncPhoto()
-        scheduleTime()
-    }
-
-    /** Uses the confirmed site's timezone instead of the device default.
-     * @param site Current site whose civil dates are displayed.
-     */
-    private fun localToday(site: Campsite): LocalDate =
-        clock.instant().atZone(ZoneId.of(site.details.timeZone)).toLocalDate()
-
-    /** Waits for only the nearest booking boundary or campsite-local rollover. */
-    private fun scheduleTime() {
-        val now = clock.instant()
-        val draw = lottery.takeIf { BookingReadSource.LOTTERY in loaded }
-        val site = campsite.takeIf { BookingReadSource.CAMPSITE in loaded }
-        val deadlines = mutableListOf<Instant>()
-        if (knownReservationId == null && draw != null) {
-            deadlines.add(draw.configuration.bookingOpensAt)
-            deadlines.add(draw.configuration.bookingClosesAt)
-            site?.let {
-                deadlines.add(
-                    localToday(
-                        it,
-                    ).plusDays(1).atStartOfDay(ZoneId.of(it.details.timeZone)).toInstant(),
-                )
-            }
-        }
-        val deadline = deadlines.filter { it > now }.minOrNull()
-        if (deadline == timeDeadline && timeJob?.isActive == true) return
-        timeJob?.cancel()
-        timeJob = null
-        timeDeadline = deadline
-        if (deadline == null) return
-        val pending =
-            viewModelScope.launch(start = CoroutineStart.LAZY) {
-                awaitDeadline(clock, deadline)
-                timeJob = null
-                timeDeadline = null
-                reconcile()
-            }
-        timeJob = pending
-        pending.start()
+        sources.scheduleTime()
     }
 
     /** Releases all sources and invalidates queued/noncooperative work when the graph retires. */
@@ -1052,11 +763,7 @@ class BookingViewModel(
         closed = true
         submissionVersion++
         submissionJob?.cancel()
-        versions.keys.toList().forEach { versions[it] = checkNotNull(versions[it]) + 1 }
-        jobs.values.forEach { it.cancel() }
-        opportunityVersion++
-        opportunityJob?.cancel()
-        timeJob?.cancel()
+        sources.close()
         calendar.close()
         calendarJob.cancel()
         stopPhoto()
