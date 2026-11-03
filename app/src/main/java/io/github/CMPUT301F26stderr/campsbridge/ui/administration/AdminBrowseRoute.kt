@@ -78,3 +78,31 @@ fun AdminBrowseRoute(model: AdminBrowseViewModel, onProfile: (String) -> Unit, o
                             photos[target] ?: ImageSlotState(), { model.retryThumbnail(target) }, { onImage(target) })
                     }
                 }
+            }
+            is AdminBrowseContent.Images -> BrowseRows(content.rows) { rows ->
+                AdminImageGallery(rows, photos, grid, model::retryThumbnail, onImage)
+            }
+        }
+    }
+}
+
+private fun AdminBrowseTab.label(): Int = when (this) {
+    AdminBrowseTab.PROFILES -> R.string.admin_profiles
+    AdminBrowseTab.CAMPSITES -> R.string.admin_campsites
+    AdminBrowseTab.IMAGES -> R.string.admin_images
+}
+
+@Composable
+private fun <T> BrowseRows(rows: List<T>, content: @Composable (List<T>) -> Unit) {
+    if (rows.isEmpty()) EmptyContent(stringResource(R.string.admin_no_results)) else content(rows)
+}
+
+@Composable
+private fun BrowseRow(title: String, metadata: String, photo: ImageSlotState, retry: () -> Unit, open: () -> Unit) {
+    Column(Modifier.fillMaxWidth().clickable(onClick = open).padding(16.dp)) {
+        Text(title, style = MaterialTheme.typography.titleMedium)
+        Text(metadata)
+        AttachmentImage(photo, title, retry, Modifier.size(96.dp))
+        HorizontalDivider()
+    }
+}
