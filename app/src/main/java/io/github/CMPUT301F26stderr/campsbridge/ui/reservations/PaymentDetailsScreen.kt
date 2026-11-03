@@ -21,6 +21,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param onBack Returns to the retained overview.
  * @param onRetry Restarts the existing failed source without leaving this child.
  * @param modifier Caller layout.
+ * @param backEnabled Whether leaving is safe.
+ * @param feedback Independent cancellation recovery content.
  */
 @Composable
 fun PaymentDetailsScreen(
@@ -28,6 +30,8 @@ fun PaymentDetailsScreen(
     onBack: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    backEnabled: Boolean = true,
+    feedback: @Composable () -> Unit = {},
 ) {
     val locale = LocalConfiguration.current.locales[0]
     ReservationRecordScreen(
@@ -36,6 +40,8 @@ fun PaymentDetailsScreen(
         onBack,
         onRetry,
         modifier,
+        backEnabled = backEnabled,
+        feedback = feedback,
     ) { record ->
         ReservationReference(record)
         SummarySection(stringResource(R.string.reservation_payment_record)) {
