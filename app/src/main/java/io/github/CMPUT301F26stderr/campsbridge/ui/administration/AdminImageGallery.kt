@@ -1,13 +1,20 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.CMPUT301F26stderr.campsbridge.domain.image.*
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 
@@ -23,8 +30,12 @@ fun AdminImageGallery(
     LazyVerticalGrid(columns = GridCells.Adaptive(160.dp), state = grid) {
         items(rows, key = { "${it.target.type}:${it.target.id}" }) { image ->
             Column(Modifier.padding(8.dp).clickable { open(image.target) }) {
-                AttachmentImage(photos[image.target] ?: ImageSlotState(), image.target.id,
-                    { retry(image.target) }, Modifier.fillMaxWidth().height(120.dp))
+                AttachmentImage(
+                    photos[image.target] ?: ImageSlotState(),
+                    image.target.id,
+                    { retry(image.target) },
+                    Modifier.fillMaxWidth().height(120.dp),
+                )
                 Text("${image.target.type} | ${image.target.id}")
                 Text(image.blobId)
                 Text(image.uploadedAt.toString())
