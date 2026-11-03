@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +44,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
@@ -53,6 +53,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.notificationLogViewModelFactor
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingStep
@@ -137,7 +138,7 @@ class OfflineDemoActivity : ComponentActivity() {
                                             id,
                                         )
                                     },
-                                    { demoExploreViewModelFactory(session.services) },
+                                    { exploreViewModelFactory(session.services) },
                                     {
                                         ownerId,
                                         id,
@@ -192,12 +193,11 @@ class OfflineDemoActivity : ComponentActivity() {
                                         )
                                     },
                                     { accountId, context, campsiteId ->
-                                        demoReservationListViewModelFactory(
+                                        reservationListViewModelFactory(
                                             session.services,
                                             accountId,
                                             context,
                                             campsiteId,
-                                            session.preview.reservationCategories,
                                         )
                                     },
                                     { adminBrowseViewModelFactory(session.services) },
@@ -303,10 +303,7 @@ private fun DemoToolbar(
             onDismissRequest = { about = false },
             title = { Text(stringResource(R.string.demo_about)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
-                    Text(stringResource(R.string.demo_sample_explanation))
-                    Text(stringResource(R.string.demo_sample_ordering))
-                }
+                Text(stringResource(R.string.demo_sample_explanation))
             },
             confirmButton = {
                 TextButton({ about = false }) { Text(stringResource(R.string.onboarding_close)) }
