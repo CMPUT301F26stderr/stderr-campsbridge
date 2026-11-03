@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.BookingReviewStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.GuestsStep
@@ -50,6 +51,9 @@ import java.time.YearMonth
  * @param discardPrompt Whether abandonment awaits confirmation.
  * @param onDismissDiscard Keeps the parent-owned draft.
  * @param onConfirmDiscard Confirms abandoning the parent-owned draft.
+ * @param submission Current save or recovery outcome, independent of source reads.
+ * @param onRecover Requests a read-only check of an uncertain reservation.
+ * @param exitPending Whether the parent has requested navigation out of this wizard.
  */
 @Composable
 fun BookingScreen(
@@ -77,9 +81,19 @@ fun BookingScreen(
     discardPrompt: Boolean = false,
     onDismissDiscard: () -> Unit = {},
     onConfirmDiscard: () -> Unit = {},
+    submission: BookingSubmission = BookingSubmission.Idle,
+    onRecover: () -> Unit = {},
+    exitPending: Boolean = false,
 ) {
-    val enabled = !isSubmitting && !discardPrompt
-    BackHandler { if (enabled) onBack() }
+    val submitting = isSubmitting || submission == BookingSubmission.Submitting
+    val blocked =
+        submitting || submission == BookingSubmission.Recovering ||
+            submission == BookingSubmission.Unknown
+    val enabled = !blocked && !discardPrompt && !exitPending
+    val exitsEnabled =
+        !submitting && submission != BookingSubmission.Recovering &&
+            !discardPrompt && !exitPending
+    BackHandler { if (exitsEnabled) onBack() }
     if (state is BookingUiState.Content) {
         val step = state.draft.step
         val review = step == BookingStep.REVIEW
@@ -104,11 +118,11 @@ fun BookingScreen(
             },
             modifier = modifier,
             nextEnabled = enabled && (!review || conflict || state.canConfirm),
-            isSubmitting = isSubmitting,
+            isSubmitting = submitting,
             nextLabel =
                 stringResource(
                     when {
-                        isSubmitting -> R.string.booking_submitting
+                        submitting -> R.string.booking_submitting
                         conflict -> R.string.booking_choose_dates
                         review -> R.string.booking_confirm
                         else -> R.string.next
@@ -116,8 +130,18 @@ fun BookingScreen(
                 ),
             steps = StepProgress(step.ordinal + 1, BookingStep.entries.size),
             onCancel = onCancel,
-            exitEnabled = enabled,
+            exitEnabled = exitsEnabled,
         ) {
+            BookingSubmissionFeedback(submission, onRecover)
+            if (state.isCheckingReservation) {
+                LoadingContent(stringResource(R.string.booking_recovering))
+            } else if (state.reservationCheckFailed) {
+                FailureContent(
+                    stringResource(R.string.booking_recheck_failed),
+                    { onRetry(BookingReadSource.OPPORTUNITY) },
+                    enabled,
+                )
+            }
             if (!review) {
                 Text(
                     state.campsite.details.name,
@@ -168,10 +192,12 @@ fun BookingScreen(
             stringResource(R.string.booking_title),
             modifier,
             onBack = onBack,
-            backEnabled = enabled,
+            backEnabled = exitsEnabled,
         ) {
-            if (isSubmitting) {
+            if (submitting) {
                 LoadingContent(stringResource(R.string.booking_submitting))
+            } else if (blocked) {
+                BookingSubmissionFeedback(submission, onRecover)
             } else {
                 when (state) {
                     BookingUiState.Loading -> {
@@ -211,10 +237,73 @@ fun BookingScreen(
             onConfirmDiscard,
             onDismissDiscard,
             onDismissDiscard,
-            isSubmitting = isSubmitting,
+            isSubmitting = submitting || submission == BookingSubmission.Recovering,
             confirmLabel = stringResource(R.string.booking_discard),
             cancelLabel = stringResource(R.string.booking_keep_draft),
         )
+    }
+}
+
+/** Keeps uncertain save feedback visible even when the ordinary source reads fail.
+ * @param submission Current command or recovery outcome.
+ * @param onRecover Requests only the server history lookup.
+ */
+@Composable
+private fun BookingSubmissionFeedback(
+    submission: BookingSubmission,
+    onRecover: () -> Unit,
+) {
+    when (submission) {
+        BookingSubmission.Idle, BookingSubmission.Submitting -> {}
+
+        BookingSubmission.Recovering -> {
+            LoadingContent(stringResource(R.string.booking_recovering))
+        }
+
+        BookingSubmission.Unknown -> {
+            Text(stringResource(R.string.booking_recovery_unknown))
+            AppActionButton(stringResource(R.string.booking_check_result), onRecover)
+        }
+
+        BookingSubmission.Absent -> {
+            Text(stringResource(R.string.booking_recovery_absent))
+        }
+
+        is BookingSubmission.Rejected -> {
+            Text(
+                stringResource(
+                    when (submission.reason) {
+                        PersistenceFailure.Reason.CONFLICT -> {
+                            R.string.booking_conflict
+                        }
+
+                        PersistenceFailure.Reason.CAPACITY_REACHED -> {
+                            R.string.booking_guests_excessive
+                        }
+
+                        PersistenceFailure.Reason.STALE_QUOTE -> {
+                            R.string.booking_rejected_quote
+                        }
+
+                        PersistenceFailure.Reason.WINDOW_CLOSED -> {
+                            R.string.booking_closed
+                        }
+
+                        PersistenceFailure.Reason.NOT_FOUND, PersistenceFailure.Reason.INACTIVE -> {
+                            R.string.booking_site_unavailable
+                        }
+
+                        PersistenceFailure.Reason.NOT_ALLOWED -> {
+                            R.string.booking_not_winner
+                        }
+
+                        else -> {
+                            R.string.booking_rejected
+                        }
+                    },
+                ),
+            )
+        }
     }
 }
 
