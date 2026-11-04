@@ -14,12 +14,13 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailPage
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationListRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationListViewModel
 
 /** Registers saved overview/payment/terms beneath one aggregate owner per actual ID/context.
  * @param controller Current account's navigation host.
@@ -81,7 +82,7 @@ internal fun NavGraphBuilder.reservationGraph(
  * @param ownerItems Actual owner primary peers.
  * @param entrantItems Actual entrant primary peers.
  * @param onSelectDestination Retained primary navigation.
- * @param factory Scoped list dependencies, keeping F17/F18 absent until reviewed integration.
+ * @param factory Scoped list dependencies for the current actor and optional campsite filter.
  */
 internal fun NavGraphBuilder.reservationListGraph(
     controller: NavHostController,
@@ -95,6 +96,7 @@ internal fun NavGraphBuilder.reservationListGraph(
     for (context in ReservationContext.entries) {
         val route = AppDestination.reservations(context)
         composable(route) {
+            val model: ReservationListViewModel = viewModel(factory = factory(context, null))
             WorkspaceScaffold(
                 state,
                 onSelectWorkspace,
@@ -102,15 +104,35 @@ internal fun NavGraphBuilder.reservationListGraph(
                 if (context == ReservationContext.OWNER) ownerItems else entrantItems,
                 route,
                 onSelectDestination,
-            ) { EmptyContent(stringResource(R.string.feature_pending)) }
+            ) {
+                ReservationListRoute(model) { id ->
+                    controller.navigate(AppDestination.reservationDetail(id, context)) {
+                        launchSingleTop =
+                            true
+                    }
+                }
+            }
         }
     }
     composable(
         AppDestination.CAMPSITE_RESERVATIONS,
         arguments = listOf(navArgument("campsiteId") {}),
-    ) {
-        AppScreen(stringResource(R.string.my_reservations), onBack = {
-            controller.popBackStack()
-        }) { EmptyContent(stringResource(R.string.feature_pending)) }
+    ) { entry ->
+        val campsite = requireNotNull(entry.arguments?.getString("campsiteId"))
+        val model: ReservationListViewModel =
+            viewModel(factory = factory(ReservationContext.OWNER, campsite))
+        AppScreen(
+            stringResource(R.string.my_reservations),
+            onBack = { controller.popBackStack() },
+        ) {
+            ReservationListRoute(model) { id ->
+                controller.navigate(
+                    AppDestination.reservationDetail(id, ReservationContext.OWNER),
+                ) {
+                    launchSingleTop =
+                        true
+                }
+            }
+        }
     }
 }
