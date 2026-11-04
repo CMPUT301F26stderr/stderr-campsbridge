@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" pages="2">
+<mxfile host="app.diagrams.net" pages="3">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="U2A">
     <mxGraphModel dx="1416" dy="2058" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -116,7 +116,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="FCsiFROOhhN9DWatV5Q5" name="U2B">
-    <mxGraphModel dx="1553" dy="2547" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1960" dy="3005" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -270,6 +270,23 @@
         </mxCell>
         <mxCell id="xZdr2uHqaRd41W4NWC_k-53" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=16;" value="Only Key attributes are shown" vertex="1">
           <mxGeometry height="30" width="330" x="853" y="-339" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="zoCNEfAiIZ1eO_0Z7JLI" name="U3A">
+    <mxGraphModel dx="823" dy="926" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2kQMRCR8uG5uiH_3b6a0-2" parent="1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;shape=swimlane;startSize=36;swimlaneFillColor=#ffffff;collapsible=0;recursiveResize=0;" value="&lt;b&gt;CalendarNight&lt;/b&gt;" vertex="1">
+          <mxGeometry height="145" width="330" x="40" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="2kQMRCR8uG5uiH_3b6a0-3" parent="2kQMRCR8uG5uiH_3b6a0-2" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="+ date: LocalDate&lt;br&gt;+ isOffered: Boolean&lt;br&gt;+ reservationId: String?&lt;br&gt;+ isFree: Boolean" vertex="1">
+          <mxGeometry height="91" width="330" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="2kQMRCR8uG5uiH_3b6a0-4" parent="2kQMRCR8uG5uiH_3b6a0-2" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="" vertex="1">
+          <mxGeometry height="18" width="330" y="127" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
