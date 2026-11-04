@@ -31,13 +31,20 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 
+/**
+ * Renders account inbox receipts, unread counts, unavailable items, and read acknowledgement actions.
+ * @param state Current inbox presentation state.
+ * @param onOpenItem Explicit user action to open an inbox item and mark it as read.
+ * @param onRetry Retries inbox source observation or missing notification loading.
+ * @param onRetryMarkRead Retries a failed read acknowledgement write.
+ * @param modifier Caller layout modifier.
+ */
 @Composable
 fun InboxScreen(
     state: InboxUiState,
     onOpenItem: (InboxItem) -> Unit,
     onRetry: () -> Unit,
     onRetryMarkRead: () -> Unit,
-    onDismissSaveFailure: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
