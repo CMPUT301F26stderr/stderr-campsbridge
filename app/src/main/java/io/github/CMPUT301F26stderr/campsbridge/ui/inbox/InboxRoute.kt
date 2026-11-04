@@ -9,6 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 
+/** Connects the inbox ViewModel to the screen and handles navigation to saved lottery/reservation targets. */
 @Composable
 fun InboxRoute(
     model: InboxViewModel,
@@ -22,9 +23,13 @@ fun InboxRoute(
         val content = state as? InboxUiState.Content ?: return@LaunchedEffect
         val opening = content.openingItem ?: return@LaunchedEffect
         model.consumeOpen()
-        val context = if (workspace == Role.OWNER) LotteryContext.OWNER else LotteryContext.ENTRANT
         when (val subject = opening.subject) {
             is NotificationSubjectContent.LotteryContent -> {
+                val context = if (subject.lottery.ownerId == model.accountId) {
+                    LotteryContext.OWNER
+                } else {
+                    LotteryContext.ENTRANT
+                }
                 onOpenLottery(subject.lottery.id, context)
             }
             is NotificationSubjectContent.ReservationContent -> {
@@ -35,7 +40,9 @@ fun InboxRoute(
                 }
                 onOpenReservation(subject.reservation.id, resContext)
             }
-            else -> {}
+            NotificationSubjectContent.Failure,
+            NotificationSubjectContent.Unavailable,
+            NotificationSubjectContent.Unsupported -> {}
         }
     }
 

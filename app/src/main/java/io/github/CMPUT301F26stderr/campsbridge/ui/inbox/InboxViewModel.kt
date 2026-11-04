@@ -13,8 +13,15 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+/**
+ * Manages inbox receipts, content loading, unread counts, and read acknowledgements.
+ * @param accountId Recipient account identifier.
+ * @param notifications Notification persistence repository.
+ * @param content Immutable event and subject content loader.
+ */
 class InboxViewModel(
     val accountId: String,
     private val notifications: NotificationRepository,
@@ -34,6 +41,7 @@ class InboxViewModel(
         retry()
     }
 
+    /** Re-establishes inbox observation and loads event facts. */
     fun retry() {
         observation?.cancel()
         if (cachedItems.isEmpty() && cachedUnavailable.isEmpty()) {
@@ -41,7 +49,7 @@ class InboxViewModel(
         }
         observation = viewModelScope.launch {
             try {
-                notifications.observeInbox(accountId).collect { receipts ->
+                notifications.observeInbox(accountId).collectLatest { receipts ->
                     val unread = unreadInboxCount(receipts)
                     val items = mutableListOf<InboxItem>()
                     val unavailable = mutableListOf<UnavailableInboxReceipt>()
@@ -89,6 +97,7 @@ class InboxViewModel(
                         unavailable = cachedUnavailable,
                         unreadCount = cachedUnreadCount,
                         openingItem = openingItemInMemory,
+                        saveFailed = false,
                         sourceFailed = false,
                     )
                 }
@@ -102,6 +111,7 @@ class InboxViewModel(
                         unavailable = cachedUnavailable,
                         unreadCount = cachedUnreadCount,
                         openingItem = openingItemInMemory,
+                        saveFailed = false,
                         sourceFailed = true,
                     )
                 } else {
@@ -111,6 +121,7 @@ class InboxViewModel(
         }
     }
 
+    /** Opens an inbox item, marking it read while preserving navigation flow. */
     fun open(item: InboxItem) {
         val current = state.value as? InboxUiState.Content ?: return
         if (openingItemInMemory == item && current.operation == InboxOperation.OPENING) return
@@ -126,10 +137,9 @@ class InboxViewModel(
                 throw cancelled
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
-                openingItemInMemory = null
                 val latest = state.value as? InboxUiState.Content
                 if (latest != null) {
-                    mutableState.value = latest.copy(saveFailed = true, openingItem = null, operation = InboxOperation.IDLE)
+                    mutableState.value = latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
                 }
                 return@launch
             }
@@ -141,6 +151,7 @@ class InboxViewModel(
         }
     }
 
+    /** Retries a failed read acknowledgement write. */
     fun retryMarkRead() {
         val item = failedAckItem ?: return
         viewModelScope.launch {
@@ -165,12 +176,7 @@ class InboxViewModel(
         }
     }
 
-    fun dismissSaveFailure() {
-        val current = state.value as? InboxUiState.Content ?: return
-        mutableState.value = current.copy(saveFailed = false)
-        failedAckItem = null
-    }
-
+    /** Consumes the pending open navigation request once. */
     fun consumeOpen() {
         openingItemInMemory = null
         val current = state.value as? InboxUiState.Content ?: return

@@ -290,7 +290,7 @@ class InboxNavigationTest {
         compose.onNodeWithText("Could not refresh notifications.").assertIsDisplayed()
         compose.onNodeWithText("No notifications yet.").assertDoesNotExist()
         compose.runOnIdle { host.notifications.inboxFailure.value = null }
-        compose.onNodeWithText("Refresh").performClick()
+        compose.onNodeWithText("Retry").performClick()
         compose.onNodeWithText("No notifications yet.").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, host.inboxCreations)
