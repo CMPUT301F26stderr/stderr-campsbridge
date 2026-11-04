@@ -12,23 +12,33 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.StaySummary
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.CancellationPromptDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationCancellationDetails
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationRecordScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationReference
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.reservationStatusLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
-/** Displays booked facts and saved-page links without creating or changing a reservation.
+/** Displays booked history, saved-page links and explicit cancellation confirmation.
  * @param state Saved parent's current read outcome.
  * @param onBack Returns to the caller.
  * @param onRetry Restarts a failed observation.
  * @param onPayment Opens this record's payment child.
  * @param onTerms Opens this record's accepted-terms child.
  * @param modifier Caller layout.
+ * @param context Actual actor workspace.
+ * @param cancellation Retained action projection.
+ * @param onRequestCancel Opens confirmation.
+ * @param onReason Edits optional input.
+ * @param onConfirmCancel Confirms one guarded operation.
+ * @param onDismissCancel Dismisses without writing.
+ * @param onCheckCancellation Reads an uncertain result.
  */
 @Composable
 fun ReservationDetailScreen(
@@ -38,6 +48,13 @@ fun ReservationDetailScreen(
     onPayment: () -> Unit,
     onTerms: () -> Unit,
     modifier: Modifier = Modifier,
+    context: ReservationContext = ReservationContext.ENTRANT,
+    cancellation: CancellationUiState = CancellationUiState(),
+    onRequestCancel: () -> Unit = {},
+    onReason: (String) -> Unit = {},
+    onConfirmCancel: () -> Unit = {},
+    onDismissCancel: () -> Unit = {},
+    onCheckCancellation: () -> Unit = {},
 ) {
     ReservationRecordScreen(
         R.string.reservation_title,
@@ -45,6 +62,8 @@ fun ReservationDetailScreen(
         onBack,
         onRetry,
         modifier,
+        backEnabled = cancellation.phase == CancellationPhase.IDLE,
+        feedback = { CancellationContent(cancellation, context, onCheckCancellation) },
     ) { record ->
         Text(
             reservationStatusLabel(record),
@@ -69,7 +88,22 @@ fun ReservationDetailScreen(
             DetailRow(stringResource(R.string.campsite_time_zone), record.bookedCampsite.timeZone)
         }
         ReservationCancellationDetails(record)
+        if (cancellation.canRequest) {
+            AppActionButton(
+                stringResource(cancellationAction(context)),
+                onRequestCancel,
+                style = ActionStyle.DESTRUCTIVE,
+            )
+        }
     }
+    CancellationPromptDialog(
+        (state as? ReservationDetailUiState.Content)?.reservation,
+        context,
+        cancellation,
+        onReason,
+        onConfirmCancel,
+        onDismissCancel,
+    )
 }
 
 /** Supplies saved history and every read outcome to passive themed previews. */

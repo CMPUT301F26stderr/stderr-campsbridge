@@ -19,6 +19,12 @@ repos:
         args: [--assume-in-merge]
       - id: check-added-large-files
         args: [--maxkb=1024, --enforce-all]
+        exclude: '^doc/.*\.(drawio|svg)$'
+      - id: check-added-large-files
+        name: Check diagram file sizes
+        # Diagram exports can include embedded image data.
+        files: '^doc/.*\.(drawio|svg)$'
+        args: [--maxkb=20480, --enforce-all]
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e # v8.30.1

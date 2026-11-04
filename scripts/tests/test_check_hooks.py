@@ -117,6 +117,27 @@ class CheckHooksTest(unittest.TestCase):
         self.assertEqual("dir --redact --no-banner\n", self.calls.read_text())
         self.assertEqual(originals, {name: Path(name).read_bytes() for name in originals})
 
+    def test_document_diagrams_pass_at_the_20_mib_limit(self):
+        Path("doc").mkdir()
+        for name in ["diagram.drawio", "diagram.drawio.svg"]:
+            Path("doc", name).write_bytes(b"x" * (20 * 1024 * 1024))
+        self.commit()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, CHECKS.main())
+
+    def test_document_diagrams_over_20_mib_fail(self):
+        Path("doc").mkdir()
+        Path("doc/diagram.svg").write_bytes(b"x" * (20 * 1024 * 1024 + 1))
+        self.commit()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(1, CHECKS.main())
+
+    def test_svg_outside_doc_keeps_the_1_mib_limit(self):
+        Path("diagram.svg").write_bytes(b"x" * (1024 * 1024 + 1))
+        self.commit()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(1, CHECKS.main())
+
 
 if __name__ == "__main__":
     unittest.main()
