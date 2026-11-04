@@ -22,6 +22,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param onBack Returns to the retained overview.
  * @param onRetry Restarts the failed source on this child.
  * @param modifier Caller layout.
+ * @param backEnabled Whether leaving is safe.
+ * @param feedback Independent cancellation recovery content.
  */
 @Composable
 fun AcceptedTermsScreen(
@@ -29,6 +31,8 @@ fun AcceptedTermsScreen(
     onBack: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    backEnabled: Boolean = true,
+    feedback: @Composable () -> Unit = {},
 ) {
     ReservationRecordScreen(
         R.string.reservation_accepted_terms,
@@ -36,6 +40,8 @@ fun AcceptedTermsScreen(
         onBack,
         onRetry,
         modifier,
+        backEnabled = backEnabled,
+        feedback = feedback,
     ) { record ->
         val terms = record.acceptedTerms
         ReservationReference(record)

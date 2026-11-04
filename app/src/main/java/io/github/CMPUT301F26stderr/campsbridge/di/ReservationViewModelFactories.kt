@@ -30,6 +30,7 @@ fun reservationDetailViewModelFactory(
                 context,
                 services.repositories.bookings,
                 services.clock,
+                createSavedStateHandle(),
             )
         }
     }
