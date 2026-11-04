@@ -44,5 +44,6 @@ fun InboxRoute(
         onOpenItem = model::open,
         onRetry = model::retry,
         onRetryMarkRead = model::retryMarkRead,
+        onDismissSaveFailure = model::dismissSaveFailure,
     )
 }

@@ -24,7 +24,7 @@ class InboxViewModel(
     private val mutableState = MutableStateFlow<InboxUiState>(InboxUiState.Loading)
     val state = mutableState.asStateFlow()
     private var observation: Job? = null
-    private var saveFailedItem: InboxItem? = null
+    private var failedAckItem: InboxItem? = null
     private var openingItemInMemory: InboxItem? = null
     private var cachedItems: List<InboxItem> = emptyList()
     private var cachedUnavailable: List<UnavailableInboxReceipt> = emptyList()
@@ -115,6 +115,7 @@ class InboxViewModel(
         val current = state.value as? InboxUiState.Content ?: return
         if (openingItemInMemory == item && current.operation == InboxOperation.OPENING) return
         openingItemInMemory = item
+        failedAckItem = item
         mutableState.value = current.copy(openingItem = item, operation = InboxOperation.OPENING)
         viewModelScope.launch {
             try {
@@ -125,7 +126,6 @@ class InboxViewModel(
                 throw cancelled
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
-                saveFailedItem = item
                 openingItemInMemory = null
                 val latest = state.value as? InboxUiState.Content
                 if (latest != null) {
@@ -133,7 +133,7 @@ class InboxViewModel(
                 }
                 return@launch
             }
-            saveFailedItem = null
+            failedAckItem = null
             val latest = state.value as? InboxUiState.Content
             if (latest != null) {
                 mutableState.value = latest.copy(operation = InboxOperation.IDLE, saveFailed = false, openingItem = openingItemInMemory)
@@ -142,8 +142,33 @@ class InboxViewModel(
     }
 
     fun retryMarkRead() {
-        val item = saveFailedItem ?: return
-        open(item)
+        val item = failedAckItem ?: return
+        viewModelScope.launch {
+            try {
+                if (item.readAt == null) {
+                    notifications.markRead(accountId, item.notification.id)
+                }
+                failedAckItem = null
+                val latest = state.value as? InboxUiState.Content
+                if (latest != null) {
+                    mutableState.value = latest.copy(saveFailed = false)
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                currentCoroutineContext().ensureActive()
+                val latest = state.value as? InboxUiState.Content
+                if (latest != null) {
+                    mutableState.value = latest.copy(saveFailed = true)
+                }
+            }
+        }
+    }
+
+    fun dismissSaveFailure() {
+        val current = state.value as? InboxUiState.Content ?: return
+        mutableState.value = current.copy(saveFailed = false)
+        failedAckItem = null
     }
 
     fun consumeOpen() {

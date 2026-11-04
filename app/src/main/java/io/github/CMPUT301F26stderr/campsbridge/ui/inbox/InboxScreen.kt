@@ -36,6 +36,7 @@ fun InboxScreen(
     onOpenItem: (InboxItem) -> Unit,
     onRetry: () -> Unit,
     onRetryMarkRead: () -> Unit,
+    onDismissSaveFailure: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -53,7 +54,7 @@ fun InboxScreen(
                     item {
                         Column {
                             FailureContent("Could not refresh notifications.", onRetry)
-                            Button(onClick = onRetry) { Text("Retry") }
+                            Button(onClick = onRetry) { Text("Refresh") }
                         }
                     }
                 }
@@ -66,8 +67,11 @@ fun InboxScreen(
                     if (state.saveFailed) {
                         item {
                             Column(Modifier.padding(Spacing.medium)) {
+                                Button(onClick = onRetry){
+                                    Text("Return to Inbox")
+                                }
                                 Text("Could not mark this notification as read.")
-                                Text("Unread")
+//                                Text("Unread")        // Don't think we need this at all
                                 Button(onClick = onRetryMarkRead) {
                                     Text("Retry read acknowledgement")
                                 }
