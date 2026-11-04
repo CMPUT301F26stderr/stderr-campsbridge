@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
  * @param sorter Orders loaded rows.
  */
 class InboxViewModel(
-    private val accountId: String,
+    val accountId: String,
     private val notifications: NotificationRepository,
     private val content: NotificationContentLoader,
     private val sorter: (List<InboxItem>) -> List<InboxItem> = ::sortInboxItems,
@@ -31,6 +31,7 @@ class InboxViewModel(
     private val mutableState = MutableStateFlow<InboxUiState>(InboxUiState.Loading)
     val state = mutableState.asStateFlow()
     private var observation: Job? = null
+    private var failedReadItem: InboxItem? = null
 
     init {
         retry()
@@ -127,6 +128,7 @@ class InboxViewModel(
                 throw cancelled
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
+                failedReadItem = item
                 val latest = state.value as? InboxUiState.Content
                 if (latest != null) {
                     mutableState.value =
@@ -134,6 +136,36 @@ class InboxViewModel(
                 }
                 return@launch
             }
+            failedReadItem = null
+            val latest = state.value as? InboxUiState.Content
+            if (latest != null) {
+                mutableState.value =
+                    latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
+            }
+        }
+    }
+
+    /** Retries the last failed read acknowledgement, ignoring taps while an action is pending. */
+    fun retryMarkRead() {
+        val item = failedReadItem ?: return
+        val current = state.value as? InboxUiState.Content ?: return
+        if (current.operation != InboxOperation.IDLE) return
+        mutableState.value = current.copy(operation = InboxOperation.MARKING_READ)
+        viewModelScope.launch {
+            try {
+                notifications.markRead(accountId, item.notification.id)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                currentCoroutineContext().ensureActive()
+                val latest = state.value as? InboxUiState.Content
+                if (latest != null) {
+                    mutableState.value =
+                        latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
+                }
+                return@launch
+            }
+            failedReadItem = null
             val latest = state.value as? InboxUiState.Content
             if (latest != null) {
                 mutableState.value =
