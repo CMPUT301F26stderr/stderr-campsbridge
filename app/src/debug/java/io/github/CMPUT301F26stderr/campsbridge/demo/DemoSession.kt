@@ -167,10 +167,8 @@ private class DemoRepositories(
     override val bookings =
         DemoBookingRepository(
             data.reservations,
-            data.campsites.associate {
-                it.id to
-                    it.ownerId
-            },
+            data.campsites,
+            data.clock,
         )
     override val notifications = DemoNotificationRepository(data.events, data.inboxes, data.clock)
     override val reviews = DemoReviewRepository()
