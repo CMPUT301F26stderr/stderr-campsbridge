@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -229,7 +230,7 @@ private fun DemoToolbar(
     onTaskExamples: () -> Unit,
     onPreview: (OnboardingStep) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     var previews by remember { mutableStateOf(false) }
     var about by remember { mutableStateOf(false) }
     Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
