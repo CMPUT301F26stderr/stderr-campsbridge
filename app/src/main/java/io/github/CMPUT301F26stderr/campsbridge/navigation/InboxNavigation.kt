@@ -8,7 +8,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
@@ -35,34 +34,29 @@ internal fun NavGraphBuilder.inboxGraph(
     onSelectDestination: (String) -> Unit,
     factory: ViewModelProvider.Factory,
 ) {
-    navigation(
-        startDestination = AppDestination.inbox(Role.ENTRANT),
-        route = "inbox_root",
-    ) {
-        for (role in listOf(Role.ENTRANT, Role.OWNER)) {
-            val route = AppDestination.inbox(role)
-            composable(route) { entry ->
-                val parent = remember(entry) { controller.getBackStackEntry("inbox_root") }
-                val model: InboxViewModel = viewModel(viewModelStoreOwner = parent, factory = factory)
-                WorkspaceScaffold(
-                    state,
-                    onSelectWorkspace,
-                    stringResource(R.string.inbox_title),
-                    if (role == Role.OWNER) ownerItems else entrantItems,
-                    route,
-                    onSelectDestination,
-                ) {
-                    InboxRoute(
-                        model = model,
-                        workspace = role,
-                        onOpenLottery = { lotteryId, ctx ->
-                            controller.navigate(AppDestination.lotteryDetail(lotteryId, ctx))
-                        },
-                        onOpenReservation = { resId, ctx ->
-                            controller.navigate(AppDestination.reservationDetail(resId, ctx))
-                        },
-                    )
-                }
+    for (role in listOf(Role.ENTRANT, Role.OWNER)) {
+        val route = AppDestination.inbox(role)
+        composable(route) { entry ->
+            val rootEntry = remember(entry) { controller.getBackStackEntry(controller.graph.id) }
+            val model: InboxViewModel = viewModel(viewModelStoreOwner = rootEntry, factory = factory)
+            WorkspaceScaffold(
+                state,
+                onSelectWorkspace,
+                stringResource(R.string.inbox_title),
+                if (role == Role.OWNER) ownerItems else entrantItems,
+                route,
+                onSelectDestination,
+            ) {
+                InboxRoute(
+                    model = model,
+                    workspace = role,
+                    onOpenLottery = { lotteryId, ctx ->
+                        controller.navigate(AppDestination.lotteryDetail(lotteryId, ctx))
+                    },
+                    onOpenReservation = { resId, ctx ->
+                        controller.navigate(AppDestination.reservationDetail(resId, ctx))
+                    },
+                )
             }
         }
     }

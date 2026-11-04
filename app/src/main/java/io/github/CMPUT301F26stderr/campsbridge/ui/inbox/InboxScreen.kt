@@ -30,6 +30,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
+
 @Composable
 fun InboxScreen(
     state: InboxUiState,

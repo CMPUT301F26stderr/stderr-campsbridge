@@ -177,7 +177,7 @@ class InboxNavigationTest {
         compose.onNode(hasText("Inbox") and hasClickAction()).assertIsSelected()
         compose.runOnIdle {
             assertEquals(1, host.lotteryDetailCreations)
-//            assertEquals(1, host.inboxCreations)
+            assertEquals(1, host.inboxCreations)
             assertEquals(listOf("account-1"), host.notifications.inboxRequests)
             assertTrue(host.notifications.readRequests.isEmpty())
         }
@@ -233,9 +233,9 @@ class InboxNavigationTest {
         compose.onNodeWithText("No notifications yet.").assertIsDisplayed()
 
         compose.runOnIdle {
-//            assertEquals(1, host.inboxCreations)
-//            assertEquals(1, host.notifications.activeInboxObservers)
-//            assertEquals(listOf("account-1"), host.notifications.inboxRequests)
+            assertEquals(1, host.inboxCreations)
+            assertEquals(1, host.notifications.activeInboxObservers)
+            assertEquals(listOf("account-1"), host.notifications.inboxRequests)
         }
     }
 
@@ -278,7 +278,7 @@ class InboxNavigationTest {
         compose.onNodeWithTag("inbox-receipt-missing-event").assertDoesNotExist()
         compose.runOnIdle {
             assertEquals(listOf("missing-event", "missing-event"), host.notifications.getRequests)
-//            assertEquals(listOf("account-1"), host.notifications.inboxRequests)
+            assertEquals(listOf("account-1"), host.notifications.inboxRequests)
             assertTrue(host.notifications.readRequests.isEmpty())
         }
     }

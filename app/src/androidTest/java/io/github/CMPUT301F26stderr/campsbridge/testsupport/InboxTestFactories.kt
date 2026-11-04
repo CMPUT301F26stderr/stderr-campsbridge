@@ -9,9 +9,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
 /** Creates an InboxViewModel using TestAppHost repositories and tracks creations. */
 internal fun TestAppHost.inboxFactory(): (String) -> ViewModelProvider.Factory =
     { accountId ->
-        inboxCreations++
         viewModelFactory {
             initializer {
+                inboxCreations++
                 InboxViewModel(
                     accountId = accountId,
                     notifications = notifications,
