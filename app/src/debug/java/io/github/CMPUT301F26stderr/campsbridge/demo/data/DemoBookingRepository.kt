@@ -7,6 +7,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Payment
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -93,11 +94,21 @@ class DemoBookingRepository(
         return id
     }
 
-    /** Rejects distributed cancellation/refund.
+    /** Records the cancellation and refund in memory; repeats keep the first result.
      * @param request Requested cancellation.
+     * @throws UnsupportedOperationException When this repository has no such reservation.
      */
-    override suspend fun cancel(request: CancellationRequest): Unit =
-        unavailable()
+    override suspend fun cancel(request: CancellationRequest) {
+        val stay = records.value.firstOrNull { it.id == request.reservationId } ?: unavailable()
+        if (stay.cancellation != null) return
+        val now = clock.instant()
+        val cancelled =
+            stay.copy(
+                cancellation = ReservationCancellation(now, request.actorId, request.initiatedAs, request.reason),
+                payment = stay.payment.copy(refundedAt = now),
+            )
+        records.value = records.value.map { if (it.id == stay.id) cancelled else it }
+    }
 
     /** Keeps local demo limitations explicit at the operation boundary. */
     private fun unavailable(): Nothing =

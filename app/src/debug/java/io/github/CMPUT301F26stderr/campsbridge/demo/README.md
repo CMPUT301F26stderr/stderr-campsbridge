@@ -4,7 +4,7 @@ Select `debug` in Android Studio and run `app`. The default launcher supplies lo
 
 `DemoPreviewData` keeps campsites, offered/booked nights, lotteries, entries, saved stays, events, receipts and credited photos related under one fixed clock. Scenario switching/reset retires the old graph and its subscriptions. Activity recreation retains it; finishing the host or restarting the process discards in-memory changes.
 
-Profile editing, workspace switching and private cached photo changes work locally. Explore uses the production search, capacity and ordering rules. Camp and lottery readers use saved sample records. A confirmed booking is saved in memory so it shows up in Reservations, but it doesn't claim calendar nights or change the lottery entry. Campsite saves, lottery coordination, cancellation/refunds and OS notification delivery are unsupported in the offline adapters.
+Profile editing, workspace switching and private cached photo changes work locally. Explore uses the production search, capacity and ordering rules. Camp and lottery readers use saved sample records. Confirmed bookings and cancellations are saved in memory so they show up in Reservations, but they don't change calendar nights or the lottery entry. Campsite saves, lottery coordination and OS notification delivery are unsupported in the offline adapters.
 
 Inbox, notification settings, the notification log and single-record admin pages are registered but show pending feedback until their feature implementations arrive. Their fixtures and separate demo/test factory contracts are supplied so each feature can be built independently.
 
