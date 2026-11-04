@@ -1,27 +1,38 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.AcceptedTerms
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookedCampsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Payment
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import java.time.Clock
 
-/** Saved offline booking snapshots; coordinated transactions require the Firebase host.
- * @param records Supplied historical aggregates.
- * @param owners Authoritative fixture campsite-to-owner relationships.
+/** In-memory bookings for the offline demo; reset restores the supplied records.
+ * @param initial Supplied historical aggregates.
+ * @param campsites Fixture campsites that supply owners and booking snapshots.
+ * @param clock Fixture time recorded on new bookings.
  */
 class DemoBookingRepository(
-    private val records: List<Reservation> = emptyList(),
-    private val owners: Map<String, String> = emptyMap(),
+    initial: List<Reservation> = emptyList(),
+    private val campsites: List<Campsite> = emptyList(),
+    private val clock: Clock = Clock.systemUTC(),
 ) : BookingRepository {
-    /** Returns the matching supplied reservation, or null.
+    private val records = MutableStateFlow(initial)
+
+    /** Returns the matching reservation, or null.
      * @param id Requested identity.
      */
     override suspend fun get(id: String): Reservation? =
-        records.firstOrNull { it.id == id }
+        records.value.firstOrNull { it.id == id }
 
-    /** Returns a supplied consuming reservation without a Firebase call.
+    /** Returns a consuming reservation without a Firebase call.
      * @param lotteryId Requested lottery.
      * @param entrantId Requested entrant.
      */
@@ -29,43 +40,75 @@ class DemoBookingRepository(
         lotteryId: String,
         entrantId: String,
     ): Reservation? =
-        records.firstOrNull { it.lotteryId == lotteryId && it.entrantId == entrantId }
+        records.value.firstOrNull { it.lotteryId == lotteryId && it.entrantId == entrantId }
 
-    /** Emits the supplied aggregate, or confirmed fixture absence.
+    /** Emits the current aggregate, or confirmed fixture absence.
      * @param id Requested identity.
      */
     override fun observe(id: String): Flow<Reservation?> =
-        flowOf(records.firstOrNull { it.id == id })
+        records.map { stays -> stays.firstOrNull { it.id == id } }
 
-    /** Emits only supplied reservations belonging to the requested entrant.
+    /** Emits only reservations belonging to the requested entrant.
      * @param entrantId Requested account.
      */
     override fun observeForEntrant(entrantId: String): Flow<List<Reservation>> =
-        flowOf(records.filter { it.entrantId == entrantId })
+        records.map { stays -> stays.filter { it.entrantId == entrantId } }
 
-    /** Emits only supplied reservations associated with the requested campsite.
+    /** Emits only reservations associated with the requested campsite.
      * @param campsiteId Requested campsite.
      */
     override fun observeForCampsite(campsiteId: String): Flow<List<Reservation>> =
-        flowOf(records.filter { it.campsiteId == campsiteId })
+        records.map { stays -> stays.filter { it.campsiteId == campsiteId } }
 
     /** Emits reservations associated with the requested fixture owner.
      * @param ownerId Requested owner.
      */
-    override fun observeForOwner(ownerId: String): Flow<List<Reservation>> =
-        flowOf(records.filter { owners[it.campsiteId] == ownerId })
+    override fun observeForOwner(ownerId: String): Flow<List<Reservation>> {
+        val owned = campsites.filter { it.ownerId == ownerId }.map { it.id }.toSet()
+        return records.map { stays -> stays.filter { it.campsiteId in owned } }
+    }
 
-    /** Rejects distributed booking rather than simulating a confirmed transaction.
+    /** Saves the stay in memory so it shows up in Reservations; calendar nights stay unclaimed.
      * @param request Requested stay and accepted quote.
+     * @return New reservation identity.
+     * @throws UnsupportedOperationException When this repository has no fixture for the campsite.
      */
-    override suspend fun reserve(request: BookingRequest): String =
-        unavailable()
+    override suspend fun reserve(request: BookingRequest): String {
+        val details = campsites.firstOrNull { it.id == request.campsiteId }?.details ?: unavailable()
+        val now = clock.instant()
+        val id = "demo-booking-${records.value.size}"
+        records.value +=
+            Reservation(
+                id,
+                request.lotteryId,
+                request.entrantId,
+                request.campsiteId,
+                request.checkInDate,
+                request.checkOutDate,
+                request.guestCount,
+                BookedCampsite(details.name, details.locationLabel, details.location, details.timeZone),
+                AcceptedTerms(request.acceptedRules, request.policyVersion, now),
+                now,
+                Payment(request.expectedTotalCents, now),
+            )
+        return id
+    }
 
-    /** Rejects distributed cancellation/refund.
+    /** Records the cancellation and refund in memory; repeats keep the first result.
      * @param request Requested cancellation.
+     * @throws UnsupportedOperationException When this repository has no such reservation.
      */
-    override suspend fun cancel(request: CancellationRequest): Unit =
-        unavailable()
+    override suspend fun cancel(request: CancellationRequest) {
+        val stay = records.value.firstOrNull { it.id == request.reservationId } ?: unavailable()
+        if (stay.cancellation != null) return
+        val now = clock.instant()
+        val cancelled =
+            stay.copy(
+                cancellation = ReservationCancellation(now, request.actorId, request.initiatedAs, request.reason),
+                payment = stay.payment.copy(refundedAt = now),
+            )
+        records.value = records.value.map { if (it.id == stay.id) cancelled else it }
+    }
 
     /** Keeps local demo limitations explicit at the operation boundary. */
     private fun unavailable(): Nothing =
