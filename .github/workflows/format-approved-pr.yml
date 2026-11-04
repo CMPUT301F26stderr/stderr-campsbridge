@@ -40,6 +40,7 @@ jobs:
           ref: ${{ github.event.review.commit_id }}
           path: reviewed-pr
           fetch-depth: 0
+          persist-credentials: false
       - name: Format changed files, push fixes, and rerun CI
         env:
           GH_TOKEN: ${{ github.token }}

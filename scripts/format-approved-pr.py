@@ -36,8 +36,11 @@ def eligible(pr, repository, reviewed_sha, default_branch):
 
 
 def git(checkout, *args):
-    """Run a Git command only in the disposable reviewed checkout."""
-    return subprocess.check_output(["git", *args], cwd=checkout)
+    """Run Git with command-scoped GitHub authentication in the reviewed checkout."""
+    return subprocess.check_output([
+        "git", "-c", "credential.helper=",
+        "-c", "credential.https://github.com.helper=!gh auth git-credential", *args,
+    ], cwd=checkout)
 
 
 def format_hooks(checkout, config, files):
