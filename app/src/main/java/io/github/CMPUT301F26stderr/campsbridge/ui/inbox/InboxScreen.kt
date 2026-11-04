@@ -24,13 +24,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
+import java.time.Instant
 
 /**
  * Renders account inbox receipts, unread counts, unavailable items, and read acknowledgement actions.
@@ -79,7 +86,6 @@ fun InboxScreen(
                         item {
                             Column(Modifier.padding(Spacing.medium)) {
                                 Text(stringResource(R.string.inbox_ack_failure))
-                                Text(stringResource(R.string.inbox_unread))
                                 Button(onClick = onRetryMarkRead) {
                                     Text(stringResource(R.string.inbox_retry_ack))
                                 }
@@ -91,16 +97,23 @@ fun InboxScreen(
                     } else {
                         if (state.unavailable.isNotEmpty()) {
                             item {
-                                Text(stringResource(R.string.inbox_unavailable_title), style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    stringResource(R.string.inbox_unavailable_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
                             }
                             items(state.unavailable, key = { it.receipt.notificationId }) { unavail ->
                                 Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(Spacing.medium)
-                                        .testTag("inbox-receipt-${unavail.receipt.notificationId}")
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(Spacing.medium)
+                                            .testTag("inbox-receipt-${unavail.receipt.notificationId}"),
                                 ) {
-                                    Text(stringResource(R.string.inbox_unavailable_row), style = MaterialTheme.typography.bodyLarge)
+                                    Text(
+                                        stringResource(R.string.inbox_unavailable_row),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                    )
                                 }
                             }
                             item {
@@ -108,9 +121,10 @@ fun InboxScreen(
                             }
                         }
                         items(state.items, key = { it.notification.id }) { item ->
-                            val isUnavailableSubject = item.subject is NotificationSubjectContent.Unavailable ||
-                                item.subject is NotificationSubjectContent.Failure ||
-                                item.subject is NotificationSubjectContent.Unsupported
+                            val isUnavailableSubject =
+                                item.subject is NotificationSubjectContent.Unavailable ||
+                                    item.subject is NotificationSubjectContent.Failure ||
+                                    item.subject is NotificationSubjectContent.Unsupported
 
                             val title = stringResource(notificationTitleResource(item.notification.type))
                             if (isUnavailableSubject) {
@@ -118,16 +132,35 @@ fun InboxScreen(
                                     Modifier
                                         .fillMaxWidth()
                                         .padding(Spacing.medium)
-                                        .testTag("inbox-event-${item.notification.id}")
+                                        .testTag("inbox-event-${item.notification.id}"),
                                 ) {
                                     Text(title)
-                                    val body = when (item.subject) {
-                                        NotificationSubjectContent.Unsupported -> stringResource(R.string.inbox_unsupported_body)
-                                        NotificationSubjectContent.Unavailable -> stringResource(R.string.inbox_context_unavailable)
-                                        NotificationSubjectContent.Failure -> stringResource(R.string.inbox_context_failed)
-                                        is NotificationSubjectContent.LotteryContent,
-                                        is NotificationSubjectContent.ReservationContent -> ""
-                                    }
+                                    val body =
+                                        when (item.subject) {
+                                            NotificationSubjectContent.Unsupported -> {
+                                                stringResource(
+                                                    R.string.inbox_unsupported_body,
+                                                )
+                                            }
+
+                                            NotificationSubjectContent.Unavailable -> {
+                                                stringResource(
+                                                    R.string.inbox_context_unavailable,
+                                                )
+                                            }
+
+                                            NotificationSubjectContent.Failure -> {
+                                                stringResource(
+                                                    R.string.inbox_context_failed,
+                                                )
+                                            }
+
+                                            is NotificationSubjectContent.LotteryContent,
+                                            is NotificationSubjectContent.ReservationContent,
+                                            -> {
+                                                ""
+                                            }
+                                        }
                                     Text(body)
                                 }
                             } else {
@@ -145,6 +178,11 @@ fun InboxScreen(
     }
 }
 
+/** One openable notification with its title, linked record name and read status.
+ * @param item Loaded notification whose subject has a destination.
+ * @param onClick Opens the item and marks it read.
+ * @param modifier Caller layout modifier.
+ */
 @Composable
 private fun InboxItemRow(
     item: InboxItem,
@@ -152,21 +190,33 @@ private fun InboxItemRow(
     modifier: Modifier = Modifier,
 ) {
     val title = stringResource(notificationTitleResource(item.notification.type))
-    val subtitle = when (val subject = item.subject) {
-        is NotificationSubjectContent.LotteryContent -> subject.lottery.title
-        is NotificationSubjectContent.ReservationContent -> subject.reservation.bookedCampsite.name
-        NotificationSubjectContent.Failure,
-        NotificationSubjectContent.Unavailable,
-        NotificationSubjectContent.Unsupported -> ""
-    }
-    val readStatus = if (item.readAt != null) stringResource(R.string.inbox_read) else stringResource(R.string.inbox_unread)
+    val subtitle =
+        when (val subject = item.subject) {
+            is NotificationSubjectContent.LotteryContent -> subject.lottery.title
+
+            is NotificationSubjectContent.ReservationContent -> subject.reservation.bookedCampsite.name
+
+            NotificationSubjectContent.Failure,
+            NotificationSubjectContent.Unavailable,
+            NotificationSubjectContent.Unsupported,
+            -> ""
+        }
+    val readStatus =
+        if (item.readAt !=
+            null
+        ) {
+            stringResource(R.string.inbox_read)
+        } else {
+            stringResource(R.string.inbox_unread)
+        }
     val colors = MaterialTheme.colorScheme
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(Spacing.medium),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(Spacing.medium),
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -185,16 +235,90 @@ private fun InboxItemRow(
     }
 }
 
-/** Previews the empty and populated inbox screens. */
-@Preview(showBackground = true, widthDp = 360, heightDp = 780)
+/** Rows covering an openable unread stay and a notification with no destination. */
+private fun previewInboxItems(): List<InboxItem> {
+    val reservation = previewReservation()
+    val confirmed =
+        Notification(
+            id = "preview-confirmed",
+            senderId = null,
+            type = NotificationType.RESERVATION_CONFIRMED,
+            subject = NotificationSubject(SubjectType.RESERVATION, reservation.id),
+            announcement = null,
+            createdAt = Instant.EPOCH,
+        )
+    val message =
+        confirmed.copy(
+            id = "preview-message",
+            type = NotificationType.NEW_MESSAGE,
+            subject = NotificationSubject(SubjectType.MESSAGE, "preview-thread"),
+        )
+    return listOf(
+        InboxItem(confirmed, null, NotificationSubjectContent.ReservationContent(reservation)),
+        InboxItem(message, Instant.EPOCH, NotificationSubjectContent.Unsupported),
+    )
+}
+
+/** Shows one inbox state in the app theme with inert actions.
+ * @param state Inbox state to render.
+ */
 @Composable
-private fun InboxScreenPreview() {
+private fun InboxPreviewHost(state: InboxUiState) {
     CampsbridgeTheme {
         InboxScreen(
-            state = InboxUiState.Content(items = emptyList()),
+            state = state,
             onOpenItem = {},
             onRetry = {},
             onRetryMarkRead = {},
         )
     }
+}
+
+/** Previews the first load. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 780)
+@Composable
+private fun InboxLoadingPreview() {
+    InboxPreviewHost(InboxUiState.Loading)
+}
+
+/** Previews a source failure before any rows load. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 780)
+@Composable
+private fun InboxFailurePreview() {
+    InboxPreviewHost(InboxUiState.Failure)
+}
+
+/** Previews an account with no notifications. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 780)
+@Composable
+private fun InboxEmptyPreview() {
+    InboxPreviewHost(InboxUiState.Content(items = emptyList()))
+}
+
+/** Previews loaded rows. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 780)
+@Composable
+private fun InboxContentPreview() {
+    InboxPreviewHost(InboxUiState.Content(items = previewInboxItems(), unreadCount = 1))
+}
+
+/** Previews stale rows with source, read and missing-event failures. */
+@Preview(showBackground = true, widthDp = 360, heightDp = 780)
+@Composable
+private fun InboxRecoveryPreview() {
+    InboxPreviewHost(
+        InboxUiState.Content(
+            items = previewInboxItems(),
+            unavailable =
+                listOf(
+                    UnavailableInboxReceipt(
+                        InboxReceipt("preview-missing", null),
+                        InboxEventStatus.UNAVAILABLE,
+                    ),
+                ),
+            unreadCount = 2,
+            saveFailed = true,
+            sourceFailed = true,
+        ),
+    )
 }

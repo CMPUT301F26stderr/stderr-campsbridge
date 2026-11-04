@@ -82,7 +82,7 @@ class InboxNavigationTest {
         compose
             .onNodeWithText(
                 "Notification ordering and unread count are pending in this build.",
-            ).assertDoesNotExist() // Updated or supported now
+            ).assertDoesNotExist()
         compose.onNodeWithText("0 unread").assertDoesNotExist()
         compose.runOnIdle {
             assertEquals(1, host.inboxCreations)
@@ -137,7 +137,6 @@ class InboxNavigationTest {
             }
             compose.onNodeWithContentDescription("Back").performClick()
             compose.onNodeWithText("Could not mark this notification as read.").assertIsDisplayed()
-//            compose.onNodeWithText("Unread").assertIsDisplayed()      // Unread was removed from UI
             compose.runOnIdle { host.notifications.markReadHandler = { _, _ -> Unit } }
             compose.onNodeWithText("Retry read acknowledgement").performClick()
             compose.onNode(hasText("Inbox") and hasClickAction()).assertIsSelected()
@@ -278,7 +277,7 @@ class InboxNavigationTest {
         compose.onNodeWithTag("inbox-receipt-missing-event").assertDoesNotExist()
         compose.runOnIdle {
             assertEquals(listOf("missing-event", "missing-event"), host.notifications.getRequests)
-            assertEquals(listOf("account-1", "account-1"), host.notifications.inboxRequests) // Not sure if this is correct, changed it to match other tests
+            assertEquals(listOf("account-1", "account-1"), host.notifications.inboxRequests)
             assertTrue(host.notifications.readRequests.isEmpty())
         }
     }
@@ -350,6 +349,3 @@ class InboxNavigationTest {
         compose.onNodeWithText("Inbox").performClick()
     }
 }
-
-
-

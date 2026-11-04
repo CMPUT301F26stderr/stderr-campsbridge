@@ -16,11 +16,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-/**
- * Manages inbox receipts, content loading, unread counts, and read acknowledgements.
- * @param accountId Recipient account identifier.
- * @param notifications Notification persistence repository.
- * @param content Immutable event and subject content loader.
+/** Observes one account's Inbox and handles opening rows.
+ * @param accountId Recipient account.
+ * @param notifications Source of receipts and read acknowledgements.
+ * @param content Loads each receipt's event and subject.
+ * @param sorter Orders loaded rows.
  */
 class InboxViewModel(
     val accountId: String,
@@ -31,102 +31,93 @@ class InboxViewModel(
     private val mutableState = MutableStateFlow<InboxUiState>(InboxUiState.Loading)
     val state = mutableState.asStateFlow()
     private var observation: Job? = null
-    private var failedAckItem: InboxItem? = null
-    private var openingItemInMemory: InboxItem? = null
-    private var cachedItems: List<InboxItem> = emptyList()
-    private var cachedUnavailable: List<UnavailableInboxReceipt> = emptyList()
-    private var cachedUnreadCount: Int = 0
+    private var failedReadItem: InboxItem? = null
 
     init {
         retry()
     }
 
-    /** Re-establishes inbox observation and loads event facts. */
+    /** Restarts the live source, keeping any rows that already loaded. */
     fun retry() {
         observation?.cancel()
-        if (cachedItems.isEmpty() && cachedUnavailable.isEmpty()) {
-            mutableState.value = InboxUiState.Loading
-        }
-        observation = viewModelScope.launch {
-            try {
-                notifications.observeInbox(accountId).collectLatest { receipts ->
-                    val unread = unreadInboxCount(receipts)
-                    val items = mutableListOf<InboxItem>()
-                    val unavailable = mutableListOf<UnavailableInboxReceipt>()
+        val known = mutableState.value as? InboxUiState.Content
+        mutableState.value = known?.copy(sourceFailed = false) ?: InboxUiState.Loading
+        observation =
+            viewModelScope.launch {
+                try {
+                    notifications.observeInbox(accountId).collectLatest { receipts ->
+                        val unread = unreadInboxCount(receipts)
+                        val items = mutableListOf<InboxItem>()
+                        val unavailable = mutableListOf<UnavailableInboxReceipt>()
 
-                    for (receipt in receipts) {
-                        try {
-                            val loaded = content.load(receipt.notificationId)
-                            currentCoroutineContext().ensureActive()
-                            when (loaded) {
-                                is NotificationContent.Loaded -> {
-                                    items.add(
-                                        InboxItem(
-                                            notification = loaded.notification,
-                                            readAt = receipt.readAt,
-                                            subject = loaded.subject,
+                        for (receipt in receipts) {
+                            try {
+                                val loaded = content.load(receipt.notificationId)
+                                currentCoroutineContext().ensureActive()
+                                when (loaded) {
+                                    is NotificationContent.Loaded -> {
+                                        items.add(
+                                            InboxItem(
+                                                notification = loaded.notification,
+                                                readAt = receipt.readAt,
+                                                subject = loaded.subject,
+                                            ),
                                         )
-                                    )
+                                    }
+
+                                    NotificationContent.Unavailable -> {
+                                        unavailable.add(
+                                            UnavailableInboxReceipt(
+                                                receipt,
+                                                InboxEventStatus.UNAVAILABLE,
+                                            ),
+                                        )
+                                    }
+
+                                    NotificationContent.Failure -> {
+                                        unavailable.add(
+                                            UnavailableInboxReceipt(
+                                                receipt,
+                                                InboxEventStatus.FAILURE,
+                                            ),
+                                        )
+                                    }
                                 }
-                                NotificationContent.Unavailable -> {
-                                    unavailable.add(
-                                        UnavailableInboxReceipt(receipt, InboxEventStatus.UNAVAILABLE)
-                                    )
-                                }
-                                NotificationContent.Failure -> {
-                                    unavailable.add(
-                                        UnavailableInboxReceipt(receipt, InboxEventStatus.FAILURE)
-                                    )
-                                }
+                            } catch (cancelled: CancellationException) {
+                                throw cancelled
+                            } catch (_: Exception) {
+                                unavailable.add(
+                                    UnavailableInboxReceipt(receipt, InboxEventStatus.FAILURE),
+                                )
                             }
-                        } catch (cancelled: CancellationException) {
-                            throw cancelled
-                        } catch (_: Exception) {
-                            unavailable.add(
-                                UnavailableInboxReceipt(receipt, InboxEventStatus.FAILURE)
-                            )
                         }
+
+                        // A new snapshot mustn't lose a pending open or a failed read.
+                        val previous = mutableState.value as? InboxUiState.Content
+                        mutableState.value =
+                            (previous ?: InboxUiState.Content(emptyList())).copy(
+                                items = sorter(items),
+                                unavailable = unavailable,
+                                unreadCount = unread,
+                                sourceFailed = false,
+                            )
                     }
-
-                    cachedItems = sorter(items)
-                    cachedUnavailable = unavailable
-                    cachedUnreadCount = unread
-
-                    mutableState.value = InboxUiState.Content(
-                        items = cachedItems,
-                        unavailable = cachedUnavailable,
-                        unreadCount = cachedUnreadCount,
-                        openingItem = openingItemInMemory,
-                        saveFailed = false,
-                        sourceFailed = false,
-                    )
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                currentCoroutineContext().ensureActive()
-                if (cachedItems.isNotEmpty() || cachedUnavailable.isNotEmpty()) {
-                    mutableState.value = InboxUiState.Content(
-                        items = cachedItems,
-                        unavailable = cachedUnavailable,
-                        unreadCount = cachedUnreadCount,
-                        openingItem = openingItemInMemory,
-                        saveFailed = false,
-                        sourceFailed = true,
-                    )
-                } else {
-                    mutableState.value = InboxUiState.Failure
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    currentCoroutineContext().ensureActive()
+                    val known = mutableState.value as? InboxUiState.Content
+                    mutableState.value = known?.copy(sourceFailed = true) ?: InboxUiState.Failure
                 }
             }
-        }
     }
 
-    /** Opens an inbox item, marking it read while preserving navigation flow. */
+    /** Requests navigation and marks the row read, ignoring taps while one is pending.
+     * @param item Row the user tapped.
+     */
     fun open(item: InboxItem) {
         val current = state.value as? InboxUiState.Content ?: return
-        if (openingItemInMemory == item && current.operation == InboxOperation.OPENING) return
-        openingItemInMemory = item
-        failedAckItem = item
+        if (current.openingItem != null || current.operation != InboxOperation.IDLE) return
         mutableState.value = current.copy(openingItem = item, operation = InboxOperation.OPENING)
         viewModelScope.launch {
             try {
@@ -137,48 +128,54 @@ class InboxViewModel(
                 throw cancelled
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
+                failedReadItem = item
                 val latest = state.value as? InboxUiState.Content
                 if (latest != null) {
-                    mutableState.value = latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
+                    mutableState.value =
+                        latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
                 }
                 return@launch
             }
-            failedAckItem = null
+            failedReadItem = null
             val latest = state.value as? InboxUiState.Content
             if (latest != null) {
-                mutableState.value = latest.copy(operation = InboxOperation.IDLE, saveFailed = false, openingItem = openingItemInMemory)
+                mutableState.value =
+                    latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
             }
         }
     }
 
-    /** Retries a failed read acknowledgement write. */
+    /** Retries the last failed read acknowledgement, ignoring taps while an action is pending. */
     fun retryMarkRead() {
-        val item = failedAckItem ?: return
+        val item = failedReadItem ?: return
+        val current = state.value as? InboxUiState.Content ?: return
+        if (current.operation != InboxOperation.IDLE) return
+        mutableState.value = current.copy(operation = InboxOperation.MARKING_READ)
         viewModelScope.launch {
             try {
-                if (item.readAt == null) {
-                    notifications.markRead(accountId, item.notification.id)
-                }
-                failedAckItem = null
-                val latest = state.value as? InboxUiState.Content
-                if (latest != null) {
-                    mutableState.value = latest.copy(saveFailed = false)
-                }
+                notifications.markRead(accountId, item.notification.id)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
                 val latest = state.value as? InboxUiState.Content
                 if (latest != null) {
-                    mutableState.value = latest.copy(saveFailed = true)
+                    mutableState.value =
+                        latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
                 }
+                return@launch
+            }
+            failedReadItem = null
+            val latest = state.value as? InboxUiState.Content
+            if (latest != null) {
+                mutableState.value =
+                    latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
             }
         }
     }
 
-    /** Consumes the pending open navigation request once. */
+    /** Clears the open request once the route has navigated. */
     fun consumeOpen() {
-        openingItemInMemory = null
         val current = state.value as? InboxUiState.Content ?: return
         if (current.openingItem != null) {
             mutableState.value = current.copy(openingItem = null)

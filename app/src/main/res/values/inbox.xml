@@ -3,7 +3,6 @@
     <string name="inbox_title">Inbox</string>
     <string name="inbox_empty">No notifications yet.</string>
     <string name="inbox_source_failure">Could not refresh notifications.</string>
-    <string name="inbox_retry">Retry</string>
     <string name="inbox_unavailable_title">Unavailable notifications</string>
     <string name="inbox_unavailable_row">Notification unavailable</string>
     <string name="inbox_retry_notification">Retry notification</string>
@@ -12,5 +11,4 @@
     <string name="inbox_unread">Unread</string>
     <string name="inbox_ack_failure">Could not mark this notification as read.</string>
     <string name="inbox_retry_ack">Retry read acknowledgement</string>
-    <string name="inbox_return">Return to inbox</string>
 </resources>

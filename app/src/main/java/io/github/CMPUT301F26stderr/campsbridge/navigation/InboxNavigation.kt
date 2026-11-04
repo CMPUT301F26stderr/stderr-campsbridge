@@ -49,7 +49,6 @@ internal fun NavGraphBuilder.inboxGraph(
             ) {
                 InboxRoute(
                     model = model,
-                    workspace = role,
                     onOpenLottery = { lotteryId, ctx ->
                         controller.navigate(AppDestination.lotteryDetail(lotteryId, ctx))
                     },
