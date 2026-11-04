@@ -145,7 +145,7 @@ fun AppRoot(
                                     ->
                                     reservationDetailFactory(session.account.id, id, context)
                                 },
-                                inboxFactory(session.account.id),
+                                remember(session.account.id) { inboxFactory(session.account.id) },
                                 { lotteryId, campsiteId ->
                                     bookingFactory(session.account.id, lotteryId, campsiteId)
                                 },

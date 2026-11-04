@@ -9,7 +9,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookedCampsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Payment
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
-import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategory
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
@@ -213,11 +212,6 @@ class DemoPreviewData(
                     )
                 },
             ownerId to listOf(InboxReceipt("demo-notice-stay", null)),
-        )
-    val reservationCategories =
-        mapOf(
-            "demo-stay" to ReservationCategory.UPCOMING,
-            "demo-past-stay" to ReservationCategory.PAST,
         )
 
     /** Builds a fixture account with the same identity used by its sample records.
