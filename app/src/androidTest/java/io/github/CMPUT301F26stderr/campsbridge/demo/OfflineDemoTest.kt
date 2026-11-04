@@ -47,6 +47,7 @@ class OfflineDemoTest {
             compose.onNodeWithText("Drafts").assertIsSelected()
             compose.onNodeWithText("Forest clearing").assertIsDisplayed()
             compose.onNodeWithText("Demo tools").performClick()
+            awaitVisible("Reset scenario")
             compose.onNodeWithText("Reset scenario").performClick()
             compose.onNodeWithText("My campsites").assertIsDisplayed()
             compose.onNodeWithText("Profile").performClick()
@@ -70,7 +71,7 @@ class OfflineDemoTest {
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Onboarding previews").performClick()
             compose.onNodeWithText("Preferences").performClick()
-            awaitPreview("What kind of camping do you enjoy?")
+            awaitVisible("What kind of camping do you enjoy?")
             compose.onNodeWithText("What kind of camping do you enjoy?").assertIsDisplayed()
             assertTrue(FirebaseApp.getApps(context).isEmpty())
             InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
@@ -80,10 +81,10 @@ class OfflineDemoTest {
         }
     }
 
-    /** Waits for the target content across an asynchronous Android Activity/window handoff.
+    /** Waits for visible content across asynchronous activity and popup transitions.
      * @param text Visible destination text still asserted by the caller after this bounded wait.
      */
-    private fun awaitPreview(text: String) {
+    private fun awaitVisible(text: String) {
         compose.waitUntil(timeoutMillis = 10_000) {
             try {
                 compose.onNodeWithText(text).isDisplayed()
