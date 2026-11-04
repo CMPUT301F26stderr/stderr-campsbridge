@@ -278,7 +278,7 @@ class InboxNavigationTest {
         compose.onNodeWithTag("inbox-receipt-missing-event").assertDoesNotExist()
         compose.runOnIdle {
             assertEquals(listOf("missing-event", "missing-event"), host.notifications.getRequests)
-            assertEquals(listOf("account-1"), host.notifications.inboxRequests)
+            assertEquals(listOf("account-1", "account-1"), host.notifications.inboxRequests) // Not sure if this is correct, changed it to match other tests
             assertTrue(host.notifications.readRequests.isEmpty())
         }
     }

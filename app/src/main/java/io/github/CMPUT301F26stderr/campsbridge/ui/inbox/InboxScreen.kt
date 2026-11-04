@@ -68,9 +68,9 @@ fun InboxScreen(
                     if (state.saveFailed) {
                         item {
                             Column(Modifier.padding(Spacing.medium)) {
-                                Button(onClick = onRetry){
-                                    Text("Return to Inbox")
-                                }
+//                                Button(onClick = onRetry){
+//                                    Text("Return to Inbox")
+//                                }
                                 Text("Could not mark this notification as read.")
 //                                Text("Unread")        // Don't think we need this at all
                                 Button(onClick = onRetryMarkRead) {
