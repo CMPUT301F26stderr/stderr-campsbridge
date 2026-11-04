@@ -22,7 +22,14 @@ internal fun TestAppHost.reservationDetailFactory(): (
             initializer {
                 reservationDetailCreations++
                 reservationDetailRequests.add(id to context)
-                ReservationDetailViewModel(accountId, id, context, bookings)
+                ReservationDetailViewModel(
+                    accountId,
+                    id,
+                    context,
+                    bookings,
+                    Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                    createSavedStateHandle(),
+                )
             }
         }
     }
