@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net">
-  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="1633" dy="2374" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+<mxfile host="app.diagrams.net" pages="2">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="U2A">
+    <mxGraphModel dx="1416" dy="2058" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -111,6 +111,50 @@
         </mxCell>
         <mxCell id="7wMzd1yH76kPRg1VElkG-31" parent="WIyWlLk6GJQsqaUBKTNV-1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="1" vertex="1">
           <mxGeometry height="30" width="60" x="1105" y="620" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="FCsiFROOhhN9DWatV5Q5" name="U2B">
+    <mxGraphModel dx="1481" dy="2153" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-3" parent="1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;shape=swimlane;startSize=36;swimlaneFillColor=#ffffff;collapsible=0;recursiveResize=0;" value="&lt;b&gt;CampsiteListViewModel&lt;/b&gt;" vertex="1">
+          <mxGeometry height="161" width="390" x="109" y="81" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-4" parent="DUI4ftZznmUHGmsAjLFK-3" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="- campsites: CampsiteRepository&lt;br&gt;- photos: MutableMap&amp;lt;String, ImageSlotController&amp;gt;&lt;br&gt;+ state: StateFlow&amp;lt;CampsiteListUiState&amp;gt;" vertex="1">
+          <mxGeometry height="72" width="390" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-5" parent="DUI4ftZznmUHGmsAjLFK-3" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="+ selectTab(tab: CampsiteListTab): Unit&lt;br&gt;+ setVisibleCampsites(ids: Set&amp;lt;String&amp;gt;): Unit" vertex="1">
+          <mxGeometry height="53" width="390" y="108" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-6" parent="1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;shape=swimlane;startSize=36;swimlaneFillColor=#ffffff;collapsible=0;recursiveResize=0;" value="&lt;b&gt;CampsiteSetupViewModel&lt;/b&gt;" vertex="1">
+          <mxGeometry height="199" width="390" x="619" y="81" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-7" parent="DUI4ftZznmUHGmsAjLFK-6" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="- campsites: CampsiteRepository&lt;br&gt;- photoController: ImageSlotController?&lt;br&gt;+ state: StateFlow&amp;lt;CampsiteSetupUiState&amp;gt;" vertex="1">
+          <mxGeometry height="72" width="390" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-8" parent="DUI4ftZznmUHGmsAjLFK-6" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="+ selectLocation(value: Coordinates): Unit&lt;br&gt;+ selectPhoto(photo: SelectedPhoto?): Unit&lt;br&gt;+ saveDraft(): Unit&lt;br&gt;+ publish(): Unit" vertex="1">
+          <mxGeometry height="91" width="390" y="108" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-9" parent="1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;shape=swimlane;startSize=36;swimlaneFillColor=#ffffff;collapsible=0;recursiveResize=0;" value="&lt;b&gt;CampsiteListViewModel&lt;/b&gt;" vertex="1">
+          <mxGeometry height="161" width="390" x="103" y="504" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-10" parent="DUI4ftZznmUHGmsAjLFK-9" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="- campsites: CampsiteRepository&lt;br&gt;- photos: MutableMap&amp;lt;String, ImageSlotController&amp;gt;&lt;br&gt;+ state: StateFlow&amp;lt;CampsiteListUiState&amp;gt;" vertex="1">
+          <mxGeometry height="72" width="390" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-11" parent="DUI4ftZznmUHGmsAjLFK-9" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="+ selectTab(tab: CampsiteListTab): Unit&lt;br&gt;+ setVisibleCampsites(ids: Set&amp;lt;String&amp;gt;): Unit" vertex="1">
+          <mxGeometry height="53" width="390" y="108" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-12" parent="1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;shape=swimlane;startSize=36;swimlaneFillColor=#ffffff;collapsible=0;recursiveResize=0;" value="&lt;b&gt;CampsiteSetupViewModel&lt;/b&gt;" vertex="1">
+          <mxGeometry height="199" width="390" x="613" y="504" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-13" parent="DUI4ftZznmUHGmsAjLFK-12" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="- campsites: CampsiteRepository&lt;br&gt;- photoController: ImageSlotController?&lt;br&gt;+ state: StateFlow&amp;lt;CampsiteSetupUiState&amp;gt;" vertex="1">
+          <mxGeometry height="72" width="390" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="DUI4ftZznmUHGmsAjLFK-14" parent="DUI4ftZznmUHGmsAjLFK-12" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="+ selectLocation(value: Coordinates): Unit&lt;br&gt;+ selectPhoto(photo: SelectedPhoto?): Unit&lt;br&gt;+ saveDraft(): Unit&lt;br&gt;+ publish(): Unit" vertex="1">
+          <mxGeometry height="91" width="390" y="108" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
