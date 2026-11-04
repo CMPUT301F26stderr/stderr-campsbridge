@@ -15,11 +15,12 @@ internal fun TestAppHost.inboxFactory(): (String) -> ViewModelProvider.Factory =
                 InboxViewModel(
                     accountId = accountId,
                     notifications = notifications,
-                    content = NotificationContentLoader(
-                        notifications = notifications,
-                        lotteries = lotteries,
-                        bookings = bookings,
-                    ),
+                    content =
+                        NotificationContentLoader(
+                            notifications = notifications,
+                            lotteries = lotteries,
+                            bookings = bookings,
+                        ),
                 )
             }
         }
