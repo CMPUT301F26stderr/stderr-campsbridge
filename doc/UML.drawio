@@ -1135,7 +1135,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="Hl669axpGb_r63mlWe8a" name="UML_Diagram_Revision">
-    <mxGraphModel dx="2568" dy="2142" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2695" dy="2318" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1827,7 +1827,7 @@
           <mxGeometry height="39" width="138" x="-1045" y="1189" as="geometry" />
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-149" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryMembershipController" vertex="1">
-          <mxGeometry height="170.5" width="257" x="-1302" y="1549" as="geometry" />
+          <mxGeometry height="170.5" width="257" x="-1280" y="144.5" as="geometry" />
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-150" parent="Kk8VSq-1wEVDQgZlFSna-149" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;LotteryMembershipUiState&amp;gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="71" width="257" y="26" as="geometry" />
@@ -1837,6 +1837,29 @@
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-152" parent="Kk8VSq-1wEVDQgZlFSna-149" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ join(): Unit&lt;/div&gt;&lt;div&gt;+ requestLeave(): Unit&lt;/div&gt;&lt;div&gt;+ confirmLeave(): Unit&lt;/div&gt;" vertex="1">
           <mxGeometry height="65.5" width="257" y="105" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-153" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-149" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;entryX=0.555;entryY=0.012;entryDx=0;entryDy=0;entryPerimeter=0;startArrow=diamond;startFill=1;endArrow=none;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-131">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-154" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1155" y="468" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-155" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1148" y="309" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-156" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-149" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.001;entryY=0.617;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-117">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-1436.19" y="229.75" />
+              <mxPoint x="-1429.84" y="1103.16" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-157" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1314" y="1075" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-158" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="joins and withdraws" vertex="1">
+          <mxGeometry height="88" width="101" x="-1530" y="747" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
