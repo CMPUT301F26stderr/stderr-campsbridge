@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudience
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
 
@@ -43,3 +44,36 @@ data class NotificationLogDetailUiState(
     val content: NotificationContent? = null,
     val isLoading: Boolean = false,
 )
+
+/** Recipient reads belong only to the currently displayed audience page. */
+sealed interface NotificationLogAudienceState {
+    val id: String?
+
+    /** No audience page is requesting data. */
+    data object Idle : NotificationLogAudienceState {
+        override val id: String? = null
+    }
+
+    /** One exact event's audience read is pending.
+     * @param id Original event identity.
+     */
+    data class Loading(
+        override val id: String,
+    ) : NotificationLogAudienceState
+
+    /** A required audience read failed, independently of the event and list.
+     * @param id Original event identity.
+     */
+    data class Failure(
+        override val id: String,
+    ) : NotificationLogAudienceState
+
+    /** Recorded facts, confirmed empty membership, absence of information, or unavailability.
+     * @param id Original event identity.
+     * @param audience Repository-supplied recipient facts, without OS delivery assumptions.
+     */
+    data class Content(
+        override val id: String,
+        val audience: NotificationAudience,
+    ) : NotificationLogAudienceState
+}

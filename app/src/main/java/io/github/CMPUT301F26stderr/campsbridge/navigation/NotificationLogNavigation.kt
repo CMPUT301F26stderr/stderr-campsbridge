@@ -17,13 +17,13 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogAudienceRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 
 /** Registers the read-only event list and ID-only children beneath one independent log parent.
@@ -90,16 +90,19 @@ internal fun NavGraphBuilder.notificationLogGraph(
                     ) {
                     },
                 ),
-        ) {
-            AppScreen(stringResource(R.string.admin_logs), onBack = { controller.popBackStack() }) {
-                EmptyContent(stringResource(R.string.feature_pending))
+        ) { entry ->
+            val parent = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_LOGS) }
+            val model: NotificationLogViewModel = viewModel(parent, factory = factory)
+            val id = requireNotNull(entry.arguments?.getString("notificationId"))
+            AppScreen(stringResource(R.string.log_recipients), onBack = { controller.popBackStack() }) {
+                NotificationLogAudienceRoute(model, id)
             }
         }
     }
 }
 
 /** Binds selection to actual navigation identity across detail/audience content lifetimes.
- * Same-ID siblings retain the event; leaving that identity retires selected-event work.
+ * Same-ID siblings retain the event; leaving that identity retires event and audience work.
  * @param controller Current account navigation host.
  * @param factory Existing log-parent repository dependencies.
  */
@@ -126,10 +129,12 @@ internal fun NotificationLogSelectionBinding(
                             null
                         }
                     model.selectEvent(id)
+                    model.setAudienceVisible(route == AppDestination.ADMIN_NOTIFICATION_AUDIENCE)
                 }
             controller.addOnDestinationChangedListener(listener)
             onDispose {
                 controller.removeOnDestinationChangedListener(listener)
+                model.setAudienceVisible(false)
             }
         }
     }
