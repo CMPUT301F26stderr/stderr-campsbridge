@@ -1,0 +1,298 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="FullySimplifiedCRC" id="p0P1agcDSYG_1oyZGBTV">
+    <mxGraphModel dx="1481" dy="2153" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="X5ilICROq1YAWeTVaS0U-1" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Reviews&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-2" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="384" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-3" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Campsite and author, rating, review text, and timestamps.&lt;br&gt;• Thread replies, parent references, and account reactions.&lt;br&gt;• Unsaved rating/reply input and operation state.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Display reviews, rating summaries, replies, and reactions.&lt;br&gt;• Create or update an account’s campsite rating.&lt;br&gt;• Validate ratings from 1–5 and nonblank replies.&lt;br&gt;• Ensure replies belong to the same review thread.&lt;br&gt;• Set, replace, or remove an account’s reaction.&lt;br&gt;• Preserve input after failures." vertex="1">
+          <mxGeometry height="253" width="520" x="270" y="419" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-4" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="384" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-5" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Account,&lt;br&gt;Campsite&lt;br&gt;Discovery&lt;br&gt;Database" vertex="1">
+          <mxGeometry height="253" width="300" x="790" y="419" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-6" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Session/Device&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="702" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-7" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="746" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-8" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Current identity/account and selected interface role.&lt;br&gt;• Initialization state and foreground-work lifecycle.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Show workspaces allowed by the account’s roles.&lt;br&gt;• Switch workspaces while keeping the same account identity.&lt;br&gt;• Request owner capability through AccountRepository; never grant&lt;br&gt;ADMIN.&lt;br&gt;• Bootstrap device identity and retrieve or initialize the account.&lt;br&gt;• Expose session state, initialization errors, and retry actions.&lt;br&gt;• Arrange foreground execution of resumable work after initialization.&lt;br&gt;• Establish or retrieve device-linked identity without username/password&lt;br&gt;login.&lt;br&gt;• Supply the account ID and report initialization failures.&lt;br&gt;• notification-token registration/removal" vertex="1">
+          <mxGeometry height="337" width="520" x="270" y="781" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-9" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="746" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-10" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="PlatformServices&lt;br&gt;Account&lt;br&gt;Database&lt;br&gt;Navigation&lt;br&gt;Android/Firebase identity APIs" vertex="1">
+          <mxGeometry height="337" width="300" x="790" y="781" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-11" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;PlatformServices&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="1148" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-12" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="1192" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-13" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;Device permissions, supported campsite links, export formats, and alert&lt;br&gt;settings.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Request device location and handle permission denial.&lt;br&gt;• Generate and scan campsite QR codes.&lt;br&gt;• Export confirmed reservation/cancellation details as CSV.&lt;br&gt;• Display OS alerts according to notification preferences.&lt;br&gt;• Route QR scans and alert taps to the relevant screen.&lt;br&gt;• Report cancellation, unavailable services, and failures." vertex="1">
+          <mxGeometry height="232" width="520" x="270" y="1227" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-14" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="1192" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-15" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Session/Device&lt;br&gt;Discovery&lt;br&gt;Campsite&lt;br&gt;Reservation/BookingManager&lt;br&gt;NotificationManager&lt;br&gt;Android APIs and platform libraries" vertex="1">
+          <mxGeometry height="232" width="300" x="790" y="1227" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-16" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Message&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-17" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="384" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-18" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="384" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-19" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Message, reservation, and sender identities.&lt;br&gt;• Nonblank message body and creation time.&lt;br&gt;• Optional first-read acknowledgement.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Represent one reservation-related message.&lt;br&gt;• Reject blank message content." vertex="1">
+          <mxGeometry height="253" width="520" x="1122" y="419" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-20" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="None directly.&lt;br&gt;Reservation and sender are referenced&lt;br&gt;by ID rather than object collaborators." vertex="1">
+          <mxGeometry height="253" width="300" x="1642" y="419" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-21" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;ConversationManager&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="702" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-22" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="746" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-23" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="746" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-24" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Current account, reservation conversation, messages, and draft.&lt;br&gt;• Loading, sending, failure, and read state.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Display the reservation conversation.&lt;br&gt;• Validate participants and permitted senders.&lt;br&gt;• Send nonblank messages and request alerts.&lt;br&gt;• Preserve drafts after failed sends.&lt;br&gt;• Acknowledge received messages after display.&lt;br&gt;• Provide read-only message logs to Administration." vertex="1">
+          <mxGeometry height="337" width="520" x="1122" y="781" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-25" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Message&lt;br&gt;Account&lt;br&gt;Reservation/BookingManager&lt;br&gt;NotificationManager&lt;br&gt;Administration&lt;br&gt;Database" vertex="1">
+          <mxGeometry height="337" width="300" x="1642" y="781" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-26" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Database&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="1148" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-27" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="1192" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-28" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="1192" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-29" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Stored accounts, campsites, lotteries, reservations, messages, reviews,&lt;br&gt;and notifications.&lt;br&gt;• Image attachments and pending cleanup jobs.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Store, retrieve, and observe application records.&lt;br&gt;• Enforce authorized reads and writes.&lt;br&gt;• Save related changes together to prevent inconsistent records.&lt;br&gt;• Upload and remove image files.&lt;br&gt;• Resume interrupted delivery and cleanup while preserving history." vertex="1">
+          <mxGeometry height="232" width="520" x="1122" y="1227" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-30" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Account&lt;br&gt;Campsite&lt;br&gt;Lottery&lt;br&gt;Reservation&lt;br&gt;Messaging&lt;br&gt;review,&lt;br&gt;notification&lt;br&gt;image managers&lt;br&gt;firebase Firestore and storage" vertex="1">
+          <mxGeometry height="232" width="300" x="1642" y="1227" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-31" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=14;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Boundary: Groups persistence classes for this overview. Feature cards retain their business rules; Kotlin classes remain&lt;br&gt;separate." vertex="1">
+          <mxGeometry height="58" width="820" x="1122" y="1459" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-32" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;CampsiteManagementUI&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="1547" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-33" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="1591" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-34" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;Selected campsite, calendar nights, and pending availability edits.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Display offered, booked, and unavailable nights.&lt;br&gt;• Let owners offer or withdraw unreserved nights.&lt;br&gt;• Show save results and retain unsaved changes after failure.&lt;br&gt;• Display published campsites for entrants.&lt;br&gt;• Display the current owner’s campsite listings.&lt;br&gt;• Open a selected campsite’s details.&lt;br&gt;• Allow owners to create and edit their listings.&lt;br&gt;• Allow owners to publish a listing" vertex="1">
+          <mxGeometry height="274" width="520" x="270" y="1626" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-35" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="1591" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-36" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Campsite&lt;br&gt;ImageManager&lt;br&gt;Session/Device&lt;br&gt;Database" vertex="1">
+          <mxGeometry height="274" width="300" x="790" y="1626" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-37" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=14;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="" vertex="1">
+          <mxGeometry height="28" width="820" x="270" y="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-38" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;CalendarNight&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="1958" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-39" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="2002" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-40" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• One local campsite date.&lt;br&gt;• Whether the night is offered.&lt;br&gt;• Optional reservation ID claiming the night.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Represent per-night offered inventory and occupancy.&lt;br&gt;• Derive isFree as isOffered and no reservation claim." vertex="1">
+          <mxGeometry height="232" width="520" x="270" y="2037" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-41" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="2002" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-42" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="CampsiteRepository (consumer)&lt;br&gt;BookingRepository (consumer)" vertex="1">
+          <mxGeometry height="232" width="300" x="790" y="2037" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-43" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=14;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Existing; shared with #3 | Ownership: domain/campsite&lt;br&gt;References: US 01.01.02; US 01.04.01–01.04.02; US 02.06.01&lt;br&gt;Boundary: Stores a LocalDate, not a timestamp. Model availability is not winner eligibility; booking validates the lottery offer and&lt;br&gt;winning opportunity separately." vertex="1">
+          <mxGeometry height="98" width="820" x="270" y="2269" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-44" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;NotificationManager&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="1547" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-45" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="1591" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-46" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Notification content, recipients, and per-recipient read status.&lt;br&gt;• Received notifications and sent-announcement history.&lt;br&gt;• Alert preferences.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Publish owner announcements to the intended audience.&lt;br&gt;• Coordinate delivery of lottery, reservation, and message alerts.&lt;br&gt;• Display inbox and sent history.&lt;br&gt;• Mark opened notifications as read.&lt;br&gt;• Preserve inbox history when OS alerts are disabled.&lt;br&gt;• Open the related lottery, reservation, or conversation.&lt;br&gt;• Provide read-only notification logs for Administration." vertex="1">
+          <mxGeometry height="274" width="520" x="1122" y="1626" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-47" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="1591" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-48" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Account, Lottery&lt;br&gt;Reservation/BookingManager&lt;br&gt;ConversationManager, Administration&lt;br&gt;PlatformServices&lt;br&gt;Database" vertex="1">
+          <mxGeometry height="274" width="300" x="1642" y="1626" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-49" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Campsite(includes CampsiteDetails)&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="2397" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-50" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="2441" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-51" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• ID&lt;br&gt;• Site details&lt;br&gt;• Creation/published time&lt;br&gt;• If it was removed&lt;br&gt;• Campsite ID, owner ID, publication/removal state.&lt;br&gt;• Name, description, location, timezone, capacity, amenities, tags, nightly&lt;br&gt;price, and rules.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Stores data related to a campsite&lt;br&gt;• Represent a campsite listing and its editable details.&lt;br&gt;• Validate required fields, capacity, price, and timezone.&lt;br&gt;• Derive whether the listing is published and active.&lt;br&gt;• Retrieve and observe listings and availability.&lt;br&gt;• Create, edit, and publish owner listings.&lt;br&gt;• Offer or withdraw nights while protecting booked nights." vertex="1">
+          <mxGeometry height="358" width="520" x="1122" y="2476" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-52" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="2441" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-53" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Coordinates&lt;br&gt;Database&lt;br&gt;Reservation/BookingManager" vertex="1">
+          <mxGeometry height="358" width="300" x="1642" y="2476" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-54" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Administration&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="1958" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-55" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="2002" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-56" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;Current administrator, selected records, and removal progress.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Browse accounts, campsites, and uploaded images.&lt;br&gt;• Inspect message and notification logs read-only.&lt;br&gt;• Request authorized account, campsite, or image removal.&lt;br&gt;• Coordinate affected lottery cancellations, reservation refunds, and&lt;br&gt;image cleanup.&lt;br&gt;• Resume interrupted removals while preserving history.&lt;br&gt;• Support confirmed account self-deletion." vertex="1">
+          <mxGeometry height="232" width="520" x="1122" y="2037" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-57" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="2002" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-58" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Account, Campsite, Lottery&lt;br&gt;Reservation/BookingManager&lt;br&gt;ImageManager, NotificationManager&lt;br&gt;ConversationManager&lt;br&gt;Database" vertex="1">
+          <mxGeometry height="232" width="300" x="1642" y="2037" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-59" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Discovery(include searchFilters)&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="2397" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-60" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="2441" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-61" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Search text, applied filters, published results, and rating summaries.&lt;br&gt;• Loading/empty/failure state and selected campsite.&lt;br&gt;• Account preferences and optional device location/map state.&lt;br&gt;Applied location, stay dates, guest count, tags/amenities, and nearby&lt;br&gt;radius.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Apply search, location, stay-date, and guest-capacity filters.&lt;br&gt;• Present matching summaries and open campsite details.&lt;br&gt;• Assemble ratings and calendar availability through repositories.&lt;br&gt;• Optional WOW: show nearby map/radius, and feature preference-based&lt;br&gt;campsites.&lt;br&gt;• Validate supplied date ranges and positive guest/radius values.&lt;br&gt;• Apply these criteria when filtering campsites." vertex="1">
+          <mxGeometry height="358" width="520" x="270" y="2476" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-62" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="2441" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-63" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Campsite&lt;br&gt;Account&lt;br&gt;Reviews&lt;br&gt;Session/Device&lt;br&gt;PlatformServices&lt;br&gt;Database" vertex="1">
+          <mxGeometry height="358" width="300" x="790" y="2476" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-64" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Lottery&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="2864" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-65" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="2908" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-66" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Includes LotteryOffer and lotteryEntry&lt;br&gt;&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Owner, lottery details, registration/booking windows, and capacity.&lt;br&gt;• Offered campsites and nights.&lt;br&gt;• Entrants, participation states, and draw outcomes.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Represent lottery configuration and lifecycle.&lt;br&gt;• Validate windows, limits, and offered-night allocations.&lt;br&gt;• Track participation states and derive registration/booking availability.&lt;br&gt;• Create, edit, publish, and cancel lotteries.&lt;br&gt;• Validate owner permissions, windows, offers, and capacity.&lt;br&gt;• Manage entrant joining, withdrawal, and declined offers.&lt;br&gt;• Run and resume draws without replacing saved outcomes.&lt;br&gt;• Request result notifications." vertex="1">
+          <mxGeometry height="316" width="520" x="270" y="2943" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-67" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="2908" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-68" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="• LotteryController&lt;br&gt;• Campsite&lt;br&gt;Reservation/BookingManager&lt;br&gt;Database&lt;br&gt;NotificationManager" vertex="1">
+          <mxGeometry height="316" width="300" x="790" y="2943" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-69" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;LotteryController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="3289" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-70" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="3333" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-71" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Current account and role.&lt;br&gt;• Selected lottery, owner drafts, participant lists, and entrant results.&lt;br&gt;• Loading, submission, and error state.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Let owners configure offers, publish lotteries, inspect participants, and&lt;br&gt;request draws.&lt;br&gt;• Let entrants view lotteries, join or withdraw, view results, and decline&lt;br&gt;offers.&lt;br&gt;• Open booking choices for selected entrants.&lt;br&gt;• Preserve input and show operation results." vertex="1">
+          <mxGeometry height="421" width="520" x="270" y="3368" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-72" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="3333" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-73" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="• Lottery&lt;br&gt;• Campsite&lt;br&gt;• Reservation/BookingManager&lt;br&gt;• NotificationManager" vertex="1">
+          <mxGeometry height="421" width="300" x="790" y="3368" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-74" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=14;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="" vertex="1">
+          <mxGeometry height="28" width="820" x="270" y="3789" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-75" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Reservation/BookingManager&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="2864" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-76" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="2908" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-77" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;Entrant, campsite, lottery win, stay dates, and guests.&lt;br&gt;Price, accepted terms, simulated payment/refund, and reservation status.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Display booking choices and reservation history.&lt;br&gt;• Validate eligibility, availability, guests, price, and accepted rules.&lt;br&gt;• Coordinate booking, payment recording, and night claims.&lt;br&gt;• Cancel/reject reservations, refund, and release nights.&lt;br&gt;• Prevent double booking and repeated refunds; keep used wins&lt;br&gt;consumed.&lt;br&gt;• Request notifications, CSV export, and reservation-map display." vertex="1">
+          <mxGeometry height="316" width="520" x="1122" y="2943" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-78" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="2908" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-79" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Account, Campsite, Lottery&lt;br&gt;Database&lt;br&gt;NotificationManager&lt;br&gt;PlatformServices" vertex="1">
+          <mxGeometry height="316" width="300" x="1642" y="2943" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-80" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Account (include Role, Preferences, AccountSetting, and colorMode)&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="3289" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-81" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="3333" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-82" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="3333" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-83" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Account ID, name, optional email and phone.&lt;br&gt;• Roles, camping preferences, settings, creation time and removal&lt;br&gt;metadata.&lt;br&gt;Account capabilities: ENTRANT, OWNER, and ADMIN; an account can&lt;br&gt;hold multiple roles.&lt;br&gt;Preferred campsite tags and amenities, stored as sets without duplicates.&lt;br&gt;Notification Preference and palette preference, font and control-seze&lt;br&gt;preferences&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Validate that a non-removed account has a non-blank name and at least&lt;br&gt;one role.&lt;br&gt;• Derive isActive from the absence of removal metadata.&lt;br&gt;Provide default settings and validate positive, finite size scales&lt;br&gt;• Create a default entrant account.&lt;br&gt;• Update profile, preferences, and settings while preserving unrelated&lt;br&gt;fields.&lt;br&gt;• Enable owner capability without granting ADMIN.&lt;br&gt;• Reject changes to inactive accounts." vertex="1">
+          <mxGeometry height="421" width="520" x="1122" y="3368" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-84" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Role&lt;br&gt;Preferences&lt;br&gt;AccountSettings&lt;br&gt;Removal&lt;br&gt;Database" vertex="1">
+          <mxGeometry height="421" width="300" x="1642" y="3368" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-85" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=14;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Existing | Ownership: domain / account&lt;br&gt;References: US 01.07.03, 01.08.01, 03.11.01, 01.10.01; optional WOW 6 and personalization&lt;br&gt;Boundary: Holds account data and validates its invariants. Persistence, device authentication and removal cleanup belong to&lt;br&gt;other components." vertex="1">
+          <mxGeometry height="98" width="820" x="1122" y="3789" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-86" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;ProfileUI(ncludes profile and settings screen responsibilities.)&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="1122" y="3917" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-87" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="1122" y="3961" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-88" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="1642" y="3961" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-89" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• Current account ID, observed profile, edit draft and operation state.&lt;br&gt;• Profile, notification-setting, and camping-preference drafts.&lt;br&gt;• Loading, saving, and error state.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Load profile and validate edits; save through Database.&lt;br&gt;• Preserve input on failure and report confirmed results.&lt;br&gt;• Confirm removal and delegate to Administration&lt;br&gt;• Delegate image operations to the shared image controller.&lt;br&gt;&amp;#x27;&lt;br&gt;• Display and edit notification preferences and camping interests.&lt;br&gt;• Save changes through AccountRepository, preserving unrelated&lt;br&gt;settings.&lt;br&gt;• Retain unsaved input after failures." vertex="1">
+          <mxGeometry height="316" width="520" x="1122" y="3996" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-90" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Database&lt;br&gt;Account&lt;br&gt;Administration&lt;br&gt;ImageManager&lt;br&gt;Session/Device" vertex="1">
+          <mxGeometry height="316" width="300" x="1642" y="3996" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-91" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=14;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Planned | Ownership: ui / controller / account&lt;br&gt;References: US 01.07.03, 01.08.01; Image Upload&lt;br&gt;Boundary: Planned proposal. No direct Firebase access or manual cascade deletion; naming and shared collaborators require&lt;br&gt;agreement." vertex="1">
+          <mxGeometry height="98" width="820" x="1122" y="4312" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-92" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=19;fillColor=#f1f1f1;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;ImageManager&lt;/b&gt;" vertex="1">
+          <mxGeometry height="44" width="820" x="270" y="3917" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-93" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Responsibilities&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="520" x="270" y="3961" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-94" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#f8f8f8;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Collaborators&lt;/b&gt;" vertex="1">
+          <mxGeometry height="35" width="300" x="790" y="3961" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-95" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="&lt;b&gt;Knows&lt;/b&gt;&lt;br&gt;• The account/campsite image slot and current attachment.&lt;br&gt;• Selected image, upload progress, and cleanup status.&lt;br&gt;&lt;b&gt;Does&lt;/b&gt;&lt;br&gt;• Select, display, upload, replace, and remove images.&lt;br&gt;• Handle cancellation and upload failures.&lt;br&gt;• Check uncertain publication before retrying or deleting files.&lt;br&gt;• Request safe cleanup of obsolete images." vertex="1">
+          <mxGeometry height="316" width="520" x="270" y="3996" as="geometry" />
+        </mxCell>
+        <mxCell id="X5ilICROq1YAWeTVaS0U-96" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontFamily=Arial;fontSize=15;fillColor=#ffffff;strokeColor=#222222;fontColor=#222222;spacingLeft=12;spacingRight=12;spacingTop=6;spacingBottom=6;" value="Account&lt;br&gt;ProfileUI&lt;br&gt;Campsite&lt;br&gt;Database&lt;br&gt;CampsiteManagementUI" vertex="1">
+          <mxGeometry height="316" width="300" x="790" y="3996" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
