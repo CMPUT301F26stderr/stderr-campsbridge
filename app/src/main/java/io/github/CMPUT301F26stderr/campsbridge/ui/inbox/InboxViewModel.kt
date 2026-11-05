@@ -63,15 +63,32 @@ class InboxViewModel(
         if (!closed && source == InboxSourceState.FAILURE) observeReceipts()
     }
 
-    /** Retries content through the existing source until individual reads are installed.
-     * @param notificationId Retained event identity.
+    /** Retries failed/missing event or subject context without restarting the account query.
+     * @param notificationId Actual retained receipt identity.
      */
     fun retryItem(notificationId: String) {
-        if (state.value.items.any { it.notification.id == notificationId } ||
-            state.value.unavailable.any { it.receipt.notificationId == notificationId }
-        ) {
-            retry()
-        }
+        if (closed || notificationId in loading || receipt(notificationId) == null) return
+        val result = results[notificationId]
+        val retryable =
+            when (result) {
+                NotificationContent.Unavailable, NotificationContent.Failure -> {
+                    true
+                }
+
+                is NotificationContent.Loaded -> {
+                    result.subject ==
+                        NotificationSubjectContent.Unavailable ||
+                        result.subject == NotificationSubjectContent.Failure
+                }
+
+                null -> {
+                    false
+                }
+            }
+        if (!retryable) return
+        val pending = prepareContent(notificationId)
+        publish()
+        pending.start()
     }
 
     /**
