@@ -56,6 +56,46 @@ fun AdminProfileScreen(
     onCampsite: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    AppScreen(stringResource(R.string.admin_profile_inspection), modifier, onBack = onBack) {
+        Column(
+            Modifier.verticalScroll(rememberScrollState()).padding(vertical = Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.large),
+        ) {
+            Text(stringResource(R.string.admin_inspection_read_only))
+            InspectionField(stringResource(R.string.admin_account_id), state.id)
+            Column(
+                Modifier.fillMaxWidth().testTag("admin_profile_account"),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                Text(
+                    stringResource(R.string.personal_details),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                when (val account = state.account) {
+                    AdminRead.Loading -> {
+                        LoadingContent(stringResource(R.string.profile_loading))
+                    }
+
+                    AdminRead.Failure -> {
+                        FailureContent(
+                            stringResource(R.string.profile_failure),
+                            onRetryAccount,
+                        )
+                    }
+
+                    AdminRead.Unavailable -> {
+                        EmptyContent(
+                            stringResource(R.string.admin_profile_unavailable),
+                        )
+                    }
+
+                    is AdminRead.Content -> {
+                        AdminAccountFacts(account.value)
+                    }
+                }
+            }
+        }
+    }
 }
 
 /** Actual saved identity, capabilities and optional contact/removal facts. */
