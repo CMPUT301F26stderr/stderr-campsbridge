@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -16,7 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Declares the read-only log's list, selected-event and recipient contracts.
+/** Owns admin log filters and independent original-event and recipient reads.
  * @param notifications All events and recorded recipients.
  * @param loader Common immutable event/context reader.
  * @param savedState Small retained filters and selection.
@@ -46,12 +47,16 @@ class NotificationLogViewModel(
     private var listVersion = 0L
     private var closed = false
 
+    private val mutableDetail = MutableStateFlow(NotificationLogDetailUiState())
+    val detail = mutableDetail.asStateFlow()
+    private var detailJob: Job? = null
+    private var detailVersion = 0L
+    val audience = MutableStateFlow<NotificationLogAudienceState>(NotificationLogAudienceState.Idle).asStateFlow()
+
     init {
         observeEvents()
+        selectEvent(savedState.get<String>("notificationLogSelection"))
     }
-
-    val detail = MutableStateFlow(NotificationLogDetailUiState()).asStateFlow()
-    val audience = MutableStateFlow<NotificationLogAudienceState>(NotificationLogAudienceState.Idle).asStateFlow()
 
     /** Retains raw query input.
      * @param query User-entered text.
@@ -81,10 +86,26 @@ class NotificationLogViewModel(
     /** Selects the actual navigation identity.
      * @param id Event ID, or null to retire selection.
      */
-    fun selectEvent(id: String?) {}
+    fun selectEvent(id: String?) {
+        if (closed || id == detail.value.id) return
+        detailVersion++
+        detailJob?.cancel()
+        detailJob = null
+        setAudienceVisible(false)
+        savedState["notificationLogSelection"] = id
+        mutableDetail.value =
+            NotificationLogDetailUiState(
+                id = id,
+                event = events?.firstOrNull { it.id == id },
+            )
+        if (id != null) loadDetail(id)
+    }
 
     /** Retries only selected-event content. */
-    fun retryDetail() {}
+    fun retryDetail() {
+        val id = detail.value.id ?: return
+        if (!closed && detailJob?.isActive != true) loadDetail(id)
+    }
 
     /** Starts or retires the audience page's read.
      * @param visible Whether the selected audience page is displayed.
@@ -93,6 +114,38 @@ class NotificationLogViewModel(
 
     /** Retries only the current audience query. */
     fun retryAudience() {}
+
+    /** Keeps known immutable facts while the shared reader resolves optional context.
+     * @param id Exact currently selected original event identity.
+     */
+    private fun loadDetail(id: String) {
+        val version = ++detailVersion
+        detailJob?.cancel()
+        mutableDetail.value = detail.value.copy(content = null, isLoading = true)
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                try {
+                    val content = loader.load(id)
+                    currentCoroutineContext().ensureActive()
+                    if (closed || detailVersion != version || detail.value.id != id) return@launch
+                    mutableDetail.value =
+                        NotificationLogDetailUiState(
+                            id = id,
+                            event =
+                                when (content) {
+                                    is NotificationContent.Loaded -> content.notification
+                                    NotificationContent.Failure -> detail.value.event
+                                    NotificationContent.Unavailable -> null
+                                },
+                            content = content,
+                        )
+                } finally {
+                    if (detailVersion == version) detailJob = null
+                }
+            }
+        detailJob = pending
+        pending.start()
+    }
 
     /** Installs one all-event source before its first potentially synchronous emission. */
     private fun observeEvents() {
@@ -156,6 +209,8 @@ class NotificationLogViewModel(
         closed = true
         listVersion++
         listJob?.cancel()
+        detailVersion++
+        detailJob?.cancel()
         super.onCleared()
     }
 }
