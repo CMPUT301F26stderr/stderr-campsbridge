@@ -969,6 +969,15 @@
         <mxCell id="IhKxpv5wz6MSz_zDdpNs-3" connectable="0" parent="IhKxpv5wz6MSz_zDdpNs-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
           <mxGeometry width="352" y="80" as="geometry" />
         </mxCell>
+        <mxCell id="eMMNsYt36vnlokiH6k6o-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=32;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;LotteryConfiguration&lt;/b&gt;" vertex="1">
+          <mxGeometry height="164" width="352" x="2720" y="2432" as="geometry" />
+        </mxCell>
+        <mxCell id="eMMNsYt36vnlokiH6k6o-2" connectable="0" parent="eMMNsYt36vnlokiH6k6o-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ registrationOpensAt: Instant&lt;br&gt;+ registrationClosesAt: Instant&lt;br&gt;+ bookingOpensAt: Instant&lt;br&gt;+ bookingClosesAt: Instant&lt;br&gt;+ winnerCount: Long&lt;br&gt;+ waitlistCapacity: Long?" vertex="1">
+          <mxGeometry height="120" width="352" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="eMMNsYt36vnlokiH6k6o-3" connectable="0" parent="eMMNsYt36vnlokiH6k6o-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="352" y="152" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
