@@ -59,4 +59,24 @@ class AdminBrowseTest {
         compose.onNodeWithText("No matching records").assertIsDisplayed()
     }
 
+    @Test fun confirmedAttachmentRemovalDoesNotRemoveItsSavedGalleryRow() {
+        val target = ImageTarget(ImageTargetType.CAMPSITE, "site/one")
+        val attachment = ImageAttachment(target, "saved-blob", Instant.EPOCH)
+        host.accounts.account.value = sampleAccount(setOf(Role.ADMIN))
+        host.adminImages =
+            object : ImageRepository by host.images {
+                override fun observeAll() =
+                    MutableStateFlow(listOf(attachment))
+            }
+        compose.setContent { host.Content() }
+        compose.onNodeWithText("Images").performClick()
+        compose.onNodeWithText("Campsite \u00b7 ${target.id}").assertIsDisplayed().performClick()
+        compose
+            .onNodeWithText(
+                "No image is attached to this target.",
+            ).performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Campsite \u00b7 ${target.id}").assertIsDisplayed()
+    }
 }
