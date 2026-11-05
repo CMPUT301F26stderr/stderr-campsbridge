@@ -77,9 +77,7 @@ class AdminProfileScreenTest {
                 )
             }
         }
-        compose.runOnIdle {
-            assertEquals(2, compose.onAllNodesWithText("Not provided").fetchSemanticsNodes().size)
-        }
+        assertEquals(2, compose.onAllNodesWithText("Not provided").fetchSemanticsNodes().size)
         compose.onNodeWithText("No profile photo").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("No owned campsites").performScrollTo().assertIsDisplayed()
     }
