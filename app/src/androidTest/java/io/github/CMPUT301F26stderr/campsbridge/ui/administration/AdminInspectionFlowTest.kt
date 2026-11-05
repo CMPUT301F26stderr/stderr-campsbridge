@@ -92,4 +92,20 @@ class AdminInspectionFlowTest {
         compose.runOnIdle { assertEquals(1, host.adminBrowseCreations) }
     }
 
+    @Test fun missingParentCannotBeOpenedAndLivePresenceAndDisappearanceUpdateTheLink() {
+        parents.account.value = null
+        openImage()
+        compose
+            .onNodeWithText(
+                "The parent record is missing or unavailable.",
+            ).performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("Open profile").performScrollTo().assertIsNotEnabled()
+        compose.runOnIdle { parents.account.value = profile }
+        compose.onNodeWithText("Open profile").performScrollTo().assertIsEnabled()
+        compose.runOnIdle { parents.account.value = null }
+        compose.onNodeWithText("Open profile").performScrollTo().assertIsNotEnabled()
+        compose.runOnIdle { assertEquals(1, parents.observations) }
+    }
+
 }
