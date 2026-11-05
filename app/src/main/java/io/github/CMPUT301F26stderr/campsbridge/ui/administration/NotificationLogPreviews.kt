@@ -1,6 +1,5 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
-import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,13 +49,6 @@ class NotificationLogPreviewProvider : PreviewParameterProvider<NotificationLogU
 /** Shows the list using the shared theme and inert actions.
  * @param state Passive source and filter fixture.
  */
-@Preview(
-    name = "Dark theme",
-    showBackground = true,
-    widthDp = 390,
-    heightDp = 844,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Preview(name = "Large log text", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable
@@ -87,13 +79,6 @@ class NotificationLogDetailPreviewProvider : PreviewParameterProvider<Notificati
 /** Shows event facts with long text and optional context outcomes.
  * @param state Passive original-event fixture.
  */
-@Preview(
-    name = "Dark theme",
-    showBackground = true,
-    widthDp = 390,
-    heightDp = 844,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Preview(name = "Large event text", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable
@@ -148,13 +133,6 @@ class NotificationLogAudiencePreviewProvider : PreviewParameterProvider<Notifica
 /** Shows recorded recipients without constructing an event reader or acknowledging a receipt.
  * @param state Passive captured audience outcome.
  */
-@Preview(
-    name = "Dark theme",
-    showBackground = true,
-    widthDp = 390,
-    heightDp = 844,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Preview(name = "Large recipient text", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable

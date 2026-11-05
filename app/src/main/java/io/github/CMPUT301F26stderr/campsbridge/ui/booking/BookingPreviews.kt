@@ -1,6 +1,5 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
-import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -124,13 +123,6 @@ internal class BookingPreviewProvider : PreviewParameterProvider<BookingUiState>
 /** Themed phone previews for every passive state, including an enlarged narrow layout.
  * @param state Example source/draft facts, never connected to live services.
  */
-@Preview(
-    name = "Booking dark theme",
-    showBackground = true,
-    widthDp = 390,
-    heightDp = 844,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
 @Preview(name = "Booking states", showBackground = true, widthDp = 390, heightDp = 844)
 @Preview(
     name = "Booking large text",
