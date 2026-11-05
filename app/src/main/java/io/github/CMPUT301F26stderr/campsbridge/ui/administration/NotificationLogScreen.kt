@@ -10,19 +10,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
@@ -30,6 +25,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppSearchField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.DropdownField
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -52,17 +48,13 @@ fun NotificationLogScreen(
     onRetry: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
 ) {
-    val focus = LocalFocusManager.current
     val locale = LocalConfiguration.current.locales[0]
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
-        OutlinedTextField(
+    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        AppSearchField(
             state.query,
             onQuery,
-            Modifier.fillMaxWidth().testTag("notification-log-query"),
-            label = { Text(stringResource(R.string.log_search)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
+            stringResource(R.string.log_search),
+            Modifier.testTag("notification-log-query"),
         )
         DropdownField(
             stringResource(R.string.log_event_type),
