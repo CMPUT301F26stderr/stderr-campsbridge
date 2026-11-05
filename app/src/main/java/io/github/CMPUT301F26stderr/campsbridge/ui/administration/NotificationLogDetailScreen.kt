@@ -56,10 +56,6 @@ fun NotificationLogDetailScreen(
             state.event?.let { event ->
                 DetailRow(stringResource(R.string.log_event_id), event.id)
                 DetailRow(
-                    stringResource(R.string.log_event_type),
-                    stringResource(notificationTitleResource(event.type)),
-                )
-                DetailRow(
                     stringResource(R.string.log_sender),
                     event.senderId ?: stringResource(R.string.log_system_sender),
                 )
