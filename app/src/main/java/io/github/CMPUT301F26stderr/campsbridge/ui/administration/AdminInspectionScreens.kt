@@ -119,6 +119,45 @@ fun AdminProfileScreen(
                     Text(stringResource(R.string.admin_profile_dependents_unavailable))
                 }
             }
+            HorizontalDivider()
+            Column(
+                Modifier.fillMaxWidth().testTag("admin_profile_campsites"),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                Text(
+                    stringResource(R.string.admin_owned_campsites),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                if (state.account !is AdminRead.Content) {
+                    Text(stringResource(R.string.admin_profile_dependents_unavailable))
+                } else {
+                    when (val sites = state.campsites) {
+                        AdminRead.Loading -> {
+                            LoadingContent(stringResource(R.string.admin_owned_campsites_loading))
+                        }
+
+                        AdminRead.Failure -> {
+                            FailureContent(
+                                stringResource(R.string.admin_owned_campsites_failure),
+                                onRetryCampsites,
+                            )
+                        }
+
+                        AdminRead.Unavailable -> {
+                            EmptyContent(stringResource(R.string.admin_owned_campsites_unavailable))
+                        }
+
+                        is AdminRead.Content -> {
+                            if (sites.value.isEmpty()) {
+                                EmptyContent(
+                                    stringResource(R.string.admin_no_owned_campsites),
+                                )
+                            }
+                            sites.value.forEach { site -> AdminOwnedCampsite(site, onCampsite) }
+                        }
+                    }
+                }
+            }
         }
     }
 }
