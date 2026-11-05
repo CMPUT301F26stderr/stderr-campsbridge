@@ -16,33 +16,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermissionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.SwitchRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-
-/** Keeps the settings destination usable until its preference controls are implemented.
- * @param model Existing profile parent, retained without starting a preference write.
- * @param permission Host permission boundary, unused by this pending screen.
- * @param onBack Returns to Settings.
- */
-@Composable
-fun NotificationSettingsRoute(
-    model: ProfileViewModel,
-    permission: NotificationPermission,
-    onBack: () -> Unit,
-) {
-    AppScreen(stringResource(R.string.notification_settings_title), onBack = onBack) {
-        EmptyContent(stringResource(R.string.feature_pending))
-    }
-}
 
 /** Keeps saved app preference, account read feedback and actual Android allowance separate.
  * @param source Existing profile parent's account read outcome.
