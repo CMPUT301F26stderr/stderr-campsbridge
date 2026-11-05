@@ -11,6 +11,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import java.time.Instant
@@ -50,4 +52,36 @@ private fun NotificationLogPreview(
     @PreviewParameter(NotificationLogPreviewProvider::class) state: NotificationLogUiState,
 ) {
     CampsbridgeTheme { AppScreen(stringResource(R.string.admin_logs)) { NotificationLogScreen(state, {}, {}, {}, {}) } }
+}
+
+/** Original event facts accompany independent context outcomes. */
+class NotificationLogDetailPreviewProvider : PreviewParameterProvider<NotificationLogDetailUiState> {
+    override val values =
+        sequence {
+            val event = notificationLogPreviewEvent()
+            yield(NotificationLogDetailUiState(event.id, event, isLoading = true))
+            yield(NotificationLogDetailUiState(event.id, content = NotificationContent.Failure))
+            yield(NotificationLogDetailUiState(event.id, content = NotificationContent.Unavailable))
+            for (subject in listOf(
+                NotificationSubjectContent.Unavailable,
+                NotificationSubjectContent.Failure,
+                NotificationSubjectContent.Unsupported,
+            )) {
+                yield(NotificationLogDetailUiState(event.id, event, NotificationContent.Loaded(event, subject)))
+            }
+        }
+}
+
+/** Shows event facts with long text and optional context outcomes.
+ * @param state Passive original-event fixture.
+ */
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(name = "Large event text", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
+@Composable
+private fun NotificationLogDetailPreview(
+    @PreviewParameter(NotificationLogDetailPreviewProvider::class) state: NotificationLogDetailUiState,
+) {
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.log_event_details)) { NotificationLogDetailScreen(state, {}, {}) }
+    }
 }

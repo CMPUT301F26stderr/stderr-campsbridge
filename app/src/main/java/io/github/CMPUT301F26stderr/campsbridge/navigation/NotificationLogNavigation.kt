@@ -17,6 +17,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
@@ -70,9 +71,14 @@ internal fun NavGraphBuilder.notificationLogGraph(
                     ) {
                     },
                 ),
-        ) {
-            AppScreen(stringResource(R.string.admin_logs), onBack = { controller.popBackStack() }) {
-                EmptyContent(stringResource(R.string.feature_pending))
+        ) { entry ->
+            val parent = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_LOGS) }
+            val model: NotificationLogViewModel = viewModel(parent, factory = factory)
+            val id = requireNotNull(entry.arguments?.getString("notificationId"))
+            AppScreen(stringResource(R.string.log_event_details), onBack = { controller.popBackStack() }) {
+                NotificationLogDetailRoute(model, id) {
+                    controller.navigate(AppDestination.notificationAudience(id)) { launchSingleTop = true }
+                }
             }
         }
         composable(
