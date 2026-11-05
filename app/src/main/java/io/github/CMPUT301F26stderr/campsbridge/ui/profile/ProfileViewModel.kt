@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.SelectedPhoto
+import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageOperation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
@@ -45,6 +46,10 @@ class ProfileViewModel(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val state = mutableState.asStateFlow()
+    private val mutableNotificationPreferenceState =
+        MutableStateFlow(NotificationPreferenceUiState())
+    val notificationPreferenceState = mutableNotificationPreferenceState.asStateFlow()
+    val notificationPreference = notificationPreferenceState
     private var observation: Job? = null
     private val photoController =
         ImageSlotController(images, ImageTarget(ImageTargetType.ACCOUNT, accountId), viewModelScope)
@@ -52,6 +57,7 @@ class ProfileViewModel(
     private var account: Account? = null
     private var loading = true
     private var loadFailed = false
+    private var acknowledgedNotificationsEnabled: Boolean? = null
     private var personalDraft = savedState.get<String>("profileName")?.let(::PersonalDetailsDraft)
     private var contactDraft =
         savedState.get<String>("profileEmail")?.let {
@@ -300,6 +306,96 @@ class ProfileViewModel(
         retry()
     }
 
+    private var cleared = false
+
+    override fun onCleared() {
+        cleared = true
+    }
+
+    private fun canChangeState(): Boolean {
+        val current = account
+        if (loading && current == null) return true
+        return !loadFailed && current != null && current.isActive
+    }
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        if (cleared) return
+        updateNotificationsEnabled(enabled)
+    }
+
+    fun retryNotificationPreference() {
+        if (cleared) return
+        retryNotificationsEnabled()
+    }
+
+    fun updateNotificationsEnabled(enabled: Boolean) {
+        if (cleared) return
+        val prefState = mutableNotificationPreferenceState.value
+        if (!prefState.canChange) return
+        val currentAccount = account ?: return
+        if (currentAccount.settings.notificationsEnabled == enabled && prefState.requestedNotificationsEnabled == null) return
+        mutableNotificationPreferenceState.value = prefState.copy(
+            requestedNotificationsEnabled = enabled,
+            isSaving = true,
+            saveFailed = false,
+            canChange = false,
+        )
+        viewModelScope.launch {
+            try {
+                val newSettings = currentAccount.settings.copy(notificationsEnabled = enabled)
+                accounts.updateSettings(accountId, newSettings)
+                if (cleared) return@launch
+                acknowledgedNotificationsEnabled = enabled
+                val canChange = canChangeState()
+                mutableNotificationPreferenceState.value = mutableNotificationPreferenceState.value.copy(
+                    notificationsEnabled = enabled,
+                    requestedNotificationsEnabled = null,
+                    isSaving = false,
+                    saveFailed = false,
+                    canChange = canChange,
+                )
+            } catch (cancelled: CancellationException) {
+                if (!cleared) {
+                    val canChange = canChangeState()
+                    mutableNotificationPreferenceState.value = mutableNotificationPreferenceState.value.copy(
+                        isSaving = false,
+                        saveFailed = true,
+                        canChange = canChange,
+                    )
+                }
+                throw cancelled
+            } catch (_: Exception) {
+                currentCoroutineContext().ensureActive()
+                if (cleared) return@launch
+                val canChange = canChangeState()
+                mutableNotificationPreferenceState.value = mutableNotificationPreferenceState.value.copy(
+                    isSaving = false,
+                    saveFailed = true,
+                    canChange = canChange,
+                )
+            }
+        }
+    }
+
+    fun retryNotificationsEnabled() {
+        if (cleared) return
+        val requested = mutableNotificationPreferenceState.value.requestedNotificationsEnabled
+            ?: account?.let { !it.settings.notificationsEnabled }
+            ?: return
+        updateNotificationsEnabled(requested)
+    }
+
+    fun refreshPermission(permission: NotificationPermission) {
+        val permState = permission.status()
+        mutableNotificationPreferenceState.value =
+            mutableNotificationPreferenceState.value.copy(permissionState = permState)
+    }
+
+    fun markSettingsActivityMissing() {
+        mutableNotificationPreferenceState.value =
+            mutableNotificationPreferenceState.value.copy(canOpenSettings = false)
+    }
+
     /** Replaces a failed observation; prior subscription is cancelled before replacement. */
     fun retry() {
         if (operation != ProfileOperation.IDLE) return
@@ -328,6 +424,12 @@ class ProfileViewModel(
                     accounts.observe(accountId).collect { record ->
                         account = record
                         loading = false
+                        if (record != null && !mutableNotificationPreferenceState.value.isSaving) {
+                            mutableNotificationPreferenceState.value =
+                                mutableNotificationPreferenceState.value.copy(
+                                    notificationsEnabled = record.settings.notificationsEnabled,
+                                )
+                        }
                         publish()
                     }
                 } catch (cancelled: CancellationException) {
@@ -391,6 +493,13 @@ class ProfileViewModel(
                 saveDrafts()
                 setCompletion(editor)
             } catch (cancelled: CancellationException) {
+                val current = account
+                val canChange = current != null && current.isActive && !loadFailed
+                mutableNotificationPreferenceState.value = mutableNotificationPreferenceState.value.copy(
+                    isSaving = false,
+                    saveFailed = true,
+                    canChange = canChange,
+                )
                 throw cancelled
             } catch (_: Exception) {
                 saveFailed = true
@@ -419,6 +528,28 @@ class ProfileViewModel(
     /** Renders authoritative read outcome and retained editor state without performing writes. */
     private fun publish() {
         val current = account
+        val prefState = mutableNotificationPreferenceState.value
+        val isSaving = prefState.isSaving
+        val canChange = !isSaving && canChangeState()
+        val targetNotification = acknowledgedNotificationsEnabled
+        val observedNotification = current?.settings?.notificationsEnabled
+        val newNotificationsEnabled = when {
+            isSaving -> prefState.notificationsEnabled
+            targetNotification != null -> {
+                if (observedNotification == targetNotification) {
+                    acknowledgedNotificationsEnabled = null
+                    targetNotification
+                } else {
+                    targetNotification
+                }
+            }
+            else -> observedNotification ?: prefState.notificationsEnabled
+        }
+        mutableNotificationPreferenceState.value =
+            prefState.copy(
+                notificationsEnabled = newNotificationsEnabled,
+                canChange = canChange,
+            )
         mutableState.value =
             when {
                 loading -> {
