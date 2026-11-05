@@ -42,18 +42,18 @@ import java.time.Instant
 /**
  * Renders account inbox receipts, unread counts, unavailable items, and read acknowledgement actions.
  * @param state Current inbox presentation state.
- * @param onOpenItem Explicit user action to open an inbox item and mark it as read.
- * @param onRetry Retries a failed receipt source observation.
- * @param onRetryMarkRead Retries one failed receipt acknowledgement.
+ * @param onOpen Explicit user action to open an inbox item and mark it as read.
+ * @param onRetrySource Retries a failed receipt source observation.
+ * @param onRetryRead Retries one failed receipt acknowledgement.
  * @param onRetryItem Retries one failed event or subject.
  * @param modifier Caller layout modifier.
  */
 @Composable
 fun InboxScreen(
     state: InboxUiState,
-    onOpenItem: (InboxItem) -> Unit,
-    onRetry: () -> Unit,
-    onRetryMarkRead: (String) -> Unit,
+    onOpen: (String) -> Unit,
+    onRetrySource: () -> Unit,
+    onRetryRead: (String) -> Unit,
     onRetryItem: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -69,7 +69,7 @@ fun InboxScreen(
 
             if (state.source == InboxSourceState.FAILURE) {
                 item {
-                    FailureContent(stringResource(R.string.inbox_source_failure), onRetry)
+                    FailureContent(stringResource(R.string.inbox_source_failure), onRetrySource)
                 }
             }
 
@@ -109,7 +109,7 @@ fun InboxScreen(
                     if (item.notification.id in state.readFailures) {
                         Column(Modifier.padding(Spacing.medium)) {
                             Text(stringResource(R.string.inbox_ack_failure))
-                            Button(onClick = { onRetryMarkRead(item.notification.id) }) {
+                            Button(onClick = { onRetryRead(item.notification.id) }) {
                                 Text(stringResource(R.string.inbox_retry_ack))
                             }
                         }
@@ -164,7 +164,7 @@ fun InboxScreen(
                     } else {
                         InboxItemRow(
                             item = item,
-                            onClick = { onOpenItem(item) },
+                            onClick = { onOpen(item.notification.id) },
                             modifier = Modifier.testTag("inbox-event-${item.notification.id}"),
                         )
                     }
@@ -263,9 +263,9 @@ private fun InboxPreviewHost(state: InboxUiState) {
     CampsbridgeTheme {
         InboxScreen(
             state = state,
-            onOpenItem = {},
-            onRetry = {},
-            onRetryMarkRead = {},
+            onOpen = {},
+            onRetrySource = {},
+            onRetryRead = {},
             onRetryItem = {},
         )
     }

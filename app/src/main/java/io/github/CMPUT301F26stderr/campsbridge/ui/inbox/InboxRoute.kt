@@ -67,11 +67,11 @@ fun InboxRoute(
 
     InboxScreen(
         state = state,
-        onOpenItem = {
-            if (owner.lifecycle.currentState == Lifecycle.State.RESUMED) model.openItem(it.notification.id)
+        onOpen = {
+            if (owner.lifecycle.currentState == Lifecycle.State.RESUMED) model.openItem(it)
         },
-        onRetry = model::retry,
-        onRetryMarkRead = model::retryReadAcknowledgement,
+        onRetrySource = model::retry,
+        onRetryRead = model::retryReadAcknowledgement,
         onRetryItem = model::retryItem,
     )
 }
