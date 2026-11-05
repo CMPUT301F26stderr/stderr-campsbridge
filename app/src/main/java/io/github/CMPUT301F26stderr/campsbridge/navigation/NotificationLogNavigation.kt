@@ -2,8 +2,10 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -11,6 +13,8 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
@@ -38,7 +42,9 @@ internal fun NavGraphBuilder.notificationLogGraph(
         startDestination = "${AppDestination.ADMIN_LOGS}/list",
         route = AppDestination.ADMIN_LOGS,
     ) {
-        composable("${AppDestination.ADMIN_LOGS}/list") {
+        composable("${AppDestination.ADMIN_LOGS}/list") { entry ->
+            val parent = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_LOGS) }
+            val model: NotificationLogViewModel = viewModel(parent, factory = factory)
             WorkspaceScaffold(
                 state,
                 onSelectWorkspace,
@@ -46,7 +52,11 @@ internal fun NavGraphBuilder.notificationLogGraph(
                 items,
                 AppDestination.ADMIN_LOGS,
                 onSelectDestination,
-            ) { EmptyContent(stringResource(R.string.feature_pending)) }
+            ) {
+                NotificationLogRoute(model) { id ->
+                    controller.navigate(AppDestination.adminNotification(id)) { launchSingleTop = true }
+                }
+            }
         }
         composable(
             AppDestination.ADMIN_NOTIFICATION,
