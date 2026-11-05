@@ -100,7 +100,7 @@ class InboxLoadingTest {
             )
             assertEquals(listOf(won.id), notifications.getRequests)
             assertEquals(1, notifications.activeInboxObservers)
-            assertNull(model.state.value.openingItem)
+            assertNull(model.pendingOpen.value)
             assertTrue(notifications.readRequests.isEmpty())
         }
 
@@ -174,7 +174,7 @@ class InboxLoadingTest {
                 assertEquals(InboxEventStatus.LOADING, unknown(model).status)
                 assertEquals(InboxSourceState.READY, model.state.value.source)
                 model.openItem(won.id)
-                assertNull(model.state.value.openingItem)
+                assertNull(model.pendingOpen.value)
                 assertTrue(notifications.readRequests.isEmpty())
             } finally {
                 gate.complete(won)
@@ -316,7 +316,7 @@ class InboxLoadingTest {
                         .isEmpty(),
                 )
                 model.openItem(won.id)
-                assertNull(model.state.value.openingItem)
+                assertNull(model.pendingOpen.value)
                 gate.complete(lottery)
                 runCurrent()
                 assertFalse(sole(model).isLoading)

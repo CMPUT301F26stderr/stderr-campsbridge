@@ -9,6 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -82,7 +83,7 @@ class InboxViewModelTest {
             runCurrent()
             val item = (viewModel.state.value).items.single()
 
-            viewModel.open(item)
+            viewModel.openItem(item.notification.id)
             runCurrent()
             notifications.receipts.value =
                 mapOf("account-1" to listOf(InboxReceipt("n-1", null), InboxReceipt("n-2", null)))
@@ -90,7 +91,7 @@ class InboxViewModelTest {
 
             val content = viewModel.state.value
             assertEquals(2, content.items.size)
-            assertEquals(item, content.openingItem)
+            assertEquals(InboxOpenRequest(item.notification.id, item.notification.subject), viewModel.pendingOpen.value)
         }
 
     /** Retrying and a failed live source both keep rows that already loaded. */
@@ -127,8 +128,8 @@ class InboxViewModelTest {
             runCurrent()
             val item = (viewModel.state.value).items.single()
 
-            viewModel.open(item)
-            viewModel.open(item)
+            viewModel.openItem(item.notification.id)
+            viewModel.openItem(item.notification.id)
             runCurrent()
 
             assertEquals(1, notifications.readRequests.size)
@@ -162,7 +163,7 @@ class InboxViewModelTest {
             notifications,
             NotificationContentLoader(
                 notifications,
-                FakeLotteryRepository(),
+                FakeLotteryRepository(listOf(CampingFixtures.lottery().copy(id = "l-1"))),
                 FakeBookingRepository(),
             ),
         )
