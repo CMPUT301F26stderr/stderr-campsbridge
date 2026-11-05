@@ -333,7 +333,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="hvT20Ri4xHA-ost2JuPR" name="UML_Diagram">
-    <mxGraphModel dx="3029" dy="3458" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1199" dy="772" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -618,6 +618,44 @@
         </mxCell>
         <mxCell id="y4vJeRaloHJ9WPZOvsb0-49" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=16;" value="Only Key attributes are shown" vertex="1">
           <mxGeometry height="30" width="330" x="616" y="1622" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-1" parent="1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;shape=swimlane;startSize=36;swimlaneFillColor=#ffffff;collapsible=0;recursiveResize=0;" value="&lt;b&gt;CalendarNight&lt;/b&gt;" vertex="1">
+          <mxGeometry height="145" width="330" x="1430" y="1160" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-9" edge="1" parent="bAxq81OmRp6vgKVxhQuH-1" source="bAxq81OmRp6vgKVxhQuH-2" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="330.49367088607596" y="81.9240506329113" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-2" parent="bAxq81OmRp6vgKVxhQuH-1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="+ date: LocalDate&lt;br&gt;+ isOffered: Boolean&lt;br&gt;+ reservationId: String?&lt;br&gt;+ isFree: Boolean" vertex="1">
+          <mxGeometry height="91" width="330" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-3" parent="bAxq81OmRp6vgKVxhQuH-1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=9;spacingTop=5;movable=0;resizable=0;" value="" vertex="1">
+          <mxGeometry height="18" width="330" y="127" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-5" edge="1" parent="1" source="bAxq81OmRp6vgKVxhQuH-4" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;startArrow=diamond;startFill=1;endArrow=open;endFill=0;" target="bAxq81OmRp6vgKVxhQuH-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-4" parent="1" style="html=1;rounded=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;fillColor=#ffffff;strokeColor=#000000;" value="&lt;b&gt;Campsite&lt;/b&gt;" vertex="1">
+          <mxGeometry height="36" width="230" x="1480" y="980" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=16;" value="1" vertex="1">
+          <mxGeometry height="30" width="60" x="1580" y="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-7" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=16;" value="0..*" vertex="1">
+          <mxGeometry height="30" width="60" x="1590" y="1130" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Arial;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;" value="Reservation" vertex="1">
+          <mxGeometry height="38" width="230" x="1870" y="1213.5" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-10" edge="1" parent="1" source="bAxq81OmRp6vgKVxhQuH-2" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="bAxq81OmRp6vgKVxhQuH-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-11" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=16;" value="reservationId" vertex="1">
+          <mxGeometry height="30" width="60" x="1785" y="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="bAxq81OmRp6vgKVxhQuH-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=16;" value="0..*" vertex="1">
+          <mxGeometry height="30" width="60" x="1750" y="1244" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
