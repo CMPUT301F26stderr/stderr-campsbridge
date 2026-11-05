@@ -43,7 +43,7 @@ import java.time.Instant
  * Renders account inbox receipts, unread counts, unavailable items, and read acknowledgement actions.
  * @param state Current inbox presentation state.
  * @param onOpenItem Explicit user action to open an inbox item and mark it as read.
- * @param onRetry Retries inbox source observation or missing notification loading.
+ * @param onRetry Retries a failed receipt source observation.
  * @param onRetryMarkRead Retries a failed read acknowledgement write.
  * @param onRetryItem Retries one failed event or subject.
  * @param modifier Caller layout modifier.
@@ -178,7 +178,6 @@ fun InboxScreen(
 /** One openable notification with its title, linked record name and read status.
  * @param item Loaded notification whose subject has a destination.
  * @param onClick Opens the item and marks it read.
- * @param onRetryItem Retries one failed event or subject.
  * @param modifier Caller layout modifier.
  */
 @Composable

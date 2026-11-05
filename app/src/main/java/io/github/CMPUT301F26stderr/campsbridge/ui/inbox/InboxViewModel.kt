@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Account-scoped receipt/content assembly with independent read acknowledgements.
+/** Account-scoped receipt/content assembly with independent content reads.
  * @param accountId Fixed active account; workspace changes do not change receipt ownership.
  * @param notifications Receipt observation and explicit first-read acknowledgements.
  * @param content Shared immutable event/context assembler.
@@ -216,7 +216,7 @@ class InboxViewModel(
             )
     }
 
-    /** Retires account work and pending navigation before cancelling noncooperative callbacks. */
+    /** Retires receipt and content reads before cancelling noncooperative callbacks. */
     override fun onCleared() {
         closed = true
         sourceVersion++
@@ -260,18 +260,14 @@ class InboxViewModel(
                 currentCoroutineContext().ensureActive()
                 failedReadItem = item
                 val latest = state.value
-                if (latest != null) {
-                    mutableState.value =
-                        latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
-                }
+                mutableState.value =
+                    latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
                 return@launch
             }
             failedReadItem = null
             val latest = state.value
-            if (latest != null) {
-                mutableState.value =
-                    latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
-            }
+            mutableState.value =
+                latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
         }
     }
 
@@ -289,18 +285,14 @@ class InboxViewModel(
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
                 val latest = state.value
-                if (latest != null) {
-                    mutableState.value =
-                        latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
-                }
+                mutableState.value =
+                    latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
                 return@launch
             }
             failedReadItem = null
             val latest = state.value
-            if (latest != null) {
-                mutableState.value =
-                    latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
-            }
+            mutableState.value =
+                latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
         }
     }
 
