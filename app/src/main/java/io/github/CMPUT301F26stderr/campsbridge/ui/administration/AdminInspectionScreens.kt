@@ -1,0 +1,60 @@
+package io.github.CMPUT301F26stderr.campsbridge.ui.administration
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
+import java.time.Instant
+
+/** Read-only profile facts and three independently retryable source sections.
+ * @param state Current selected profile, including retained removal facts.
+ * @param onBack Returns to the actual caller.
+ * @param onRetryAccount Retries only the failed account source.
+ * @param onRetryCampsites Retries only the failed owner-scoped campsite source.
+ * @param onRetryPhoto Retries only the attachment or transient display URL.
+ * @param onCampsite Opens a saved listing through read-only admin inspection.
+ * @param modifier Caller layout.
+ */
+@Composable
+fun AdminProfileScreen(
+    state: AdminInspectionUiState.Profile,
+    onBack: () -> Unit,
+    onRetryAccount: () -> Unit,
+    onRetryCampsites: () -> Unit,
+    onRetryPhoto: () -> Unit,
+    onCampsite: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+}
+
