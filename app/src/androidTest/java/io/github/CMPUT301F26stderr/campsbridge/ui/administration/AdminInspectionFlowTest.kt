@@ -54,4 +54,42 @@ class AdminInspectionFlowTest {
         compose.onNodeWithText("Image inspection").assertIsDisplayed()
     }
 
+    @Test fun parentAndPhotoRetriesAreIndependentAndOnlyConfirmedFactsEnableNavigation() {
+        parents.streamFailure.value = IOException("parent offline")
+        host.images.streamFailure.value = IOException("image offline")
+        openImage()
+        compose.onNodeWithText("Open profile").performScrollTo().assertIsNotEnabled()
+        var slotReads = 0
+        compose.runOnIdle {
+            slotReads = host.images.observedTargets.size
+            parents.streamFailure.value = null
+        }
+        compose
+            .onNode(hasText("Retry") and hasAnyAncestor(hasTestTag("admin_image_parent")))
+            .performScrollTo()
+            .performClick()
+        compose.onNodeWithText("Open profile").performScrollTo().assertIsEnabled()
+        var parentReads = 0
+        compose.runOnIdle {
+            assertEquals(slotReads, host.images.observedTargets.size)
+            parentReads = parents.observations
+            host.images.streamFailure.value = null
+        }
+        compose
+            .onNode(hasText("Retry") and hasAnyAncestor(hasTestTag("admin_image_photo")))
+            .performScrollTo()
+            .performClick()
+        compose.onNodeWithText("Open profile").performScrollTo().assertIsEnabled()
+        compose.runOnIdle {
+            assertEquals(parentReads, parents.observations)
+            assertEquals(0, parents.writes + host.images.replaceCalls + host.images.deleteCalls)
+        }
+        compose.onNodeWithText("Open profile").performClick()
+        compose.onNodeWithText("Profile inspection").assertIsDisplayed()
+        compose.onNodeWithText(profile.id).assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Image inspection").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(1, host.adminBrowseCreations) }
+    }
+
 }
