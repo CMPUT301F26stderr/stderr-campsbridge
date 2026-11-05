@@ -416,7 +416,57 @@ fun AdminImageScreen(
                         EmptyContent(stringResource(R.string.admin_image_parent_unavailable))
                     }
 
-                    is AdminRead.Content -> {}
+                    is AdminRead.Content -> {
+                        if (confirmed) {
+                            when (parent) {
+                                is AdminImageParent.Profile -> {
+                                    InspectionField(
+                                        stringResource(R.string.admin_display_name),
+                                        parent.account.name,
+                                    )
+                                    Text(
+                                        stringResource(
+                                            if (parent.account.isActive) {
+                                                R.string.admin_account_active
+                                            } else {
+                                                R.string.admin_account_removed
+                                            },
+                                        ),
+                                    )
+                                }
+
+                                is AdminImageParent.Site -> {
+                                    InspectionField(
+                                        stringResource(R.string.admin_display_name),
+                                        parent.campsite.details.name,
+                                    )
+                                    Text(
+                                        stringResource(
+                                            when {
+                                                parent.campsite.removal != null -> {
+                                                    R.string.campsite_removed
+                                                }
+
+                                                parent.campsite.isPublished -> {
+                                                    R.string.campsite_published
+                                                }
+
+                                                else -> {
+                                                    R.string.campsite_draft
+                                                }
+                                            },
+                                        ),
+                                    )
+                                }
+
+                                null -> {
+                                    Unit
+                                }
+                            }
+                        } else {
+                            EmptyContent(stringResource(R.string.admin_image_parent_unavailable))
+                        }
+                    }
                 }
                 NavigationRow(
                     title =
