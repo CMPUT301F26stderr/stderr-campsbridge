@@ -108,4 +108,30 @@ class AdminInspectionFlowTest {
         compose.runOnIdle { assertEquals(1, parents.observations) }
     }
 
+    @Test fun attachmentReplacementAndRemovalStayInTheSameSlotAndDoNotRestartItsParent() {
+        openImage()
+        compose.runOnIdle {
+            host.images.urlResults["blob-2"] = fixturePhotoUri().toString()
+            host.images.attachment.value =
+                ImageAttachment(target, "blob-2", Instant.EPOCH.plusSeconds(60))
+        }
+        compose.waitUntil(5_000) { "blob-2" in host.images.downloads }
+        compose.runOnIdle {
+            assertEquals(1, parents.observations)
+            host.images.attachment.value = null
+        }
+        compose
+            .onNodeWithText(
+                "No image is attached to this target.",
+            ).performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("Open profile").performScrollTo().assertIsEnabled()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("No matching records").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(0, parents.activeObservers)
+            assertEquals(0, host.images.activeObservers)
+        }
+    }
+
 }
