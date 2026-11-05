@@ -81,7 +81,12 @@ fun StayDatesStep(
         }
 
         CalendarInventoryRead.Failure -> {
-            FailureContent(stringResource(R.string.booking_inventory_failed), onRetryVisible, enabled)
+            FailureContent(
+                stringResource(R.string.booking_inventory_failed),
+                onRetryVisible,
+                enabled,
+                retryLabel = stringResource(R.string.booking_retry_visible),
+            )
         }
 
         else -> {
@@ -137,6 +142,11 @@ fun StayDatesStep(
         Text(stringResource(R.string.booking_selected_loading))
     }
     if (state.calendar.selected == CalendarInventoryRead.Failure) {
-        FailureContent(stringResource(R.string.booking_selected_inventory_failed), onRetrySelected, enabled)
+        FailureContent(
+            stringResource(R.string.booking_selected_inventory_failed),
+            onRetrySelected,
+            enabled,
+            retryLabel = stringResource(R.string.booking_retry_selected),
+        )
     }
 }
