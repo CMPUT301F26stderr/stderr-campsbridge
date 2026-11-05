@@ -12,9 +12,6 @@ enum class InboxSourceState { LOADING, READY, FAILURE }
  * @param unreadCount Supplied count over every original receipt; null while its helper is pending.
  * @param orderingPending The reserved chronological ordering function is absent.
  * @param unreadCountPending The reserved unread-count function is absent.
- * @param operation Current acknowledgement action.
- * @param openingItem Selected row awaiting route delivery.
- * @param saveFailed A read acknowledgement requires retry.
  * @param readFailures Explicit acknowledgement failures, separate from context and navigation.
  */
 data class InboxUiState(
@@ -25,9 +22,6 @@ data class InboxUiState(
     val orderingPending: Boolean = true,
     val unreadCountPending: Boolean = true,
     val readFailures: Set<String> = emptySet(),
-    val operation: InboxOperation = InboxOperation.IDLE,
-    val openingItem: InboxItem? = null,
-    val saveFailed: Boolean = false,
 )
 
 /** One explicit open request; consuming it has no effect on the independent receipt write.
@@ -38,6 +32,3 @@ data class InboxOpenRequest(
     val notificationId: String,
     val subject: NotificationSubject,
 )
-
-/** Acknowledgement operation retained while its actions migrate to per-receipt ownership. */
-enum class InboxOperation { IDLE, OPENING, MARKING_READ }

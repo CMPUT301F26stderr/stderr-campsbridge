@@ -288,7 +288,6 @@ class InboxViewModel(
                 orderingPending = sorter == null,
                 unreadCountPending = countUnread == null,
                 readFailures = readFailures.toSet(),
-                saveFailed = readFailures.isNotEmpty(),
             )
     }
 

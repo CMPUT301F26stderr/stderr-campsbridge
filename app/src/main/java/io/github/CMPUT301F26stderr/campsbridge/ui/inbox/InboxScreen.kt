@@ -44,7 +44,7 @@ import java.time.Instant
  * @param state Current inbox presentation state.
  * @param onOpenItem Explicit user action to open an inbox item and mark it as read.
  * @param onRetry Retries a failed receipt source observation.
- * @param onRetryMarkRead Retries a failed read acknowledgement write.
+ * @param onRetryMarkRead Retries one failed receipt acknowledgement.
  * @param onRetryItem Retries one failed event or subject.
  * @param modifier Caller layout modifier.
  */
@@ -53,7 +53,7 @@ fun InboxScreen(
     state: InboxUiState,
     onOpenItem: (InboxItem) -> Unit,
     onRetry: () -> Unit,
-    onRetryMarkRead: () -> Unit,
+    onRetryMarkRead: (String) -> Unit,
     onRetryItem: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -72,16 +72,7 @@ fun InboxScreen(
                     FailureContent(stringResource(R.string.inbox_source_failure), onRetry)
                 }
             }
-            if (state.saveFailed) {
-                item {
-                    Column(Modifier.padding(Spacing.medium)) {
-                        Text(stringResource(R.string.inbox_ack_failure))
-                        Button(onClick = onRetryMarkRead) {
-                            Text(stringResource(R.string.inbox_retry_ack))
-                        }
-                    }
-                }
-            }
+
             if (state.source == InboxSourceState.READY && state.items.isEmpty() &&
                 state.unavailable.isEmpty()
             ) {
@@ -115,6 +106,14 @@ fun InboxScreen(
                     }
                 }
                 items(state.items, key = { it.notification.id }) { item ->
+                    if (item.notification.id in state.readFailures) {
+                        Column(Modifier.padding(Spacing.medium)) {
+                            Text(stringResource(R.string.inbox_ack_failure))
+                            Button(onClick = { onRetryMarkRead(item.notification.id) }) {
+                                Text(stringResource(R.string.inbox_retry_ack))
+                            }
+                        }
+                    }
                     val isUnavailableSubject =
                         item.subject is NotificationSubjectContent.Unavailable ||
                             item.subject is NotificationSubjectContent.Failure ||
@@ -315,7 +314,7 @@ private fun InboxRecoveryPreview() {
                     ),
                 ),
             unreadCount = 2,
-            saveFailed = true,
+            readFailures = setOf("preview-confirmed"),
             source = InboxSourceState.FAILURE,
         ),
     )
