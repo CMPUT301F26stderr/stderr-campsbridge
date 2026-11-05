@@ -1135,7 +1135,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="Hl669axpGb_r63mlWe8a" name="UML_Diagram_Revision">
-    <mxGraphModel dx="1495" dy="1918" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1884" dy="2458" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1212,6 +1212,15 @@
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-45" parent="lMeluzwtmmu1OW87kY-_-43" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
           <mxGeometry height="8" width="160" y="114" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-110" edge="1" parent="1" source="lMeluzwtmmu1OW87kY-_-52" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="lMeluzwtmmu1OW87kY-_-16">
+          <mxGeometry relative="1" x="-0.0146" as="geometry">
+            <Array as="points">
+              <mxPoint x="1530.06" y="1212.98" />
+              <mxPoint x="1530.06" y="-118.94" />
+              <mxPoint x="559.5" y="-118.94" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-52" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="CampsiteListViewModel" vertex="1">
           <mxGeometry height="240" width="257" x="431" y="1098" as="geometry" />
@@ -1347,6 +1356,81 @@
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-99" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="manages visible photo" vertex="1">
           <mxGeometry height="30" width="101" x="1151" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-100" edge="1" parent="1" source="lMeluzwtmmu1OW87kY-_-56" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1.008;entryY=0.053;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="lMeluzwtmmu1OW87kY-_-61">
+          <mxGeometry relative="1" x="-0.1762" as="geometry">
+            <Array as="points">
+              <mxPoint x="1322.22" y="1348.32" />
+              <mxPoint x="1307.92" y="446.72" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-101" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="manages listing photo" vertex="1">
+          <mxGeometry height="30" width="101" x="1351" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-102" edge="1" parent="1" source="lMeluzwtmmu1OW87kY-_-52" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.995;entryY=0.795;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="lMeluzwtmmu1OW87kY-_-37">
+          <mxGeometry relative="1" x="0.067" as="geometry">
+            <Array as="points">
+              <mxPoint x="374.09" y="1158" />
+              <mxPoint x="374.09" y="1005.09" />
+              <mxPoint x="370.45" y="810.36" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-103" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="266" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-104" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="provides photo access" vertex="1">
+          <mxGeometry height="30" width="60" x="307" y="969" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-105" edge="1" parent="1" source="lMeluzwtmmu1OW87kY-_-56" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.011;entryY=0.559;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="lMeluzwtmmu1OW87kY-_-37">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-69.55" y="1163.25" />
+              <mxPoint x="-65.91" y="704.87" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-106" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="38" y="684" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-107" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="provides photo access" vertex="1">
+          <mxGeometry height="30" width="60" x="-120" y="946" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-111" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="0..*" vertex="1">
+          <mxGeometry height="30" width="23" x="564" y="-97" as="geometry" />
+        </mxCell>
+        <mxCell id="lMeluzwtmmu1OW87kY-_-112" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="lists" vertex="1">
+          <mxGeometry height="30" width="60" x="1525" y="883" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-1" parent="1" style="html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;shape=note;size=12;align=left;verticalAlign=middle;spacingLeft=10;" value="&lt;div&gt;For campsite photos, type is CAMPSITE and id is the campsite ID.&lt;/div&gt;&lt;div&gt;Firestore stores the attachment record.&lt;/div&gt;&lt;div&gt;Firebase Storage stores the image bytes identified by blobId.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="66" width="430" x="624" y="962" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-6" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-2" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="lMeluzwtmmu1OW87kY-_-1">
+          <mxGeometry relative="1" x="-0.0007" as="geometry">
+            <Array as="points">
+              <mxPoint x="1171.9" y="-238.33" />
+              <mxPoint x="188.5" y="-224.05" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-2" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="CampsiteAvailabilityController" vertex="1">
+          <mxGeometry height="187" width="257" x="1035" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-3" parent="Kk8VSq-1wEVDQgZlFSna-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- campsites: CampsiteRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;CampsiteAvailabilityState&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="72" width="257" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-4" parent="Kk8VSq-1wEVDQgZlFSna-2" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="257" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-5" parent="Kk8VSq-1wEVDQgZlFSna-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ changeMonth(month: YearMonth): Unit&lt;/div&gt;&lt;div&gt;+ toggleDate(date: LocalDate): Unit&lt;/div&gt;&lt;div&gt;+ save(): Boolean&lt;/div&gt;" vertex="1">
+          <mxGeometry height="81" width="257" y="106" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-7" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="190" y="-155" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-9" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="reads and updates nights" vertex="1">
+          <mxGeometry height="30" width="143" x="584" y="-265" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
