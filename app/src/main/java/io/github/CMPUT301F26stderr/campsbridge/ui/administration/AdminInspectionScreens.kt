@@ -351,5 +351,47 @@ fun AdminImageScreen(
                 false
             }
         }
+    AppScreen(stringResource(R.string.admin_image_inspection), modifier, onBack = onBack) {
+        Column(
+            Modifier.verticalScroll(rememberScrollState()).padding(vertical = Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.large),
+        ) {
+            Text(stringResource(R.string.admin_inspection_read_only))
+            InspectionField(stringResource(R.string.admin_image_slot), state.target.id)
+            Text(
+                stringResource(
+                    if (state.target.type ==
+                        ImageTargetType.ACCOUNT
+                    ) {
+                        R.string.admin_target_account
+                    } else {
+                        R.string.admin_target_campsite
+                    },
+                ),
+            )
+            Column(
+                Modifier.testTag("admin_image_photo"),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                AttachmentImage(
+                    state.photo,
+                    stringResource(R.string.admin_image_inspection),
+                    onRetryPhoto,
+                    Modifier.fillMaxWidth().aspectRatio(4f / 3f),
+                )
+                if (state.photo.loadState == ImageLoadState.READY &&
+                    state.photo.attachment == null
+                ) {
+                    EmptyContent(stringResource(R.string.admin_image_no_attachment))
+                }
+                state.photo.attachment?.let { attachment ->
+                    InspectionField(
+                        stringResource(R.string.admin_image_uploaded_at),
+                        formatDateTime(attachment.uploadedAt, ZoneId.systemDefault(), locale),
+                    )
+                }
+            }
+        }
+    }
 }
 
