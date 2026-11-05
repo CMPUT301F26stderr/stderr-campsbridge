@@ -391,6 +391,48 @@ fun AdminImageScreen(
                     )
                 }
             }
+            HorizontalDivider()
+            Column(
+                Modifier.testTag("admin_image_parent"),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                Text(
+                    stringResource(R.string.admin_image_parent),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                when (state.parent) {
+                    AdminRead.Loading -> {
+                        LoadingContent(stringResource(R.string.admin_image_parent_loading))
+                    }
+
+                    AdminRead.Failure -> {
+                        FailureContent(
+                            stringResource(R.string.admin_image_parent_failure),
+                            onRetryParent,
+                        )
+                    }
+
+                    AdminRead.Unavailable -> {
+                        EmptyContent(stringResource(R.string.admin_image_parent_unavailable))
+                    }
+
+                    is AdminRead.Content -> {}
+                }
+                NavigationRow(
+                    title =
+                        stringResource(
+                            if (state.target.type ==
+                                ImageTargetType.ACCOUNT
+                            ) {
+                                R.string.admin_open_profile
+                            } else {
+                                R.string.admin_open_campsite
+                            },
+                        ),
+                    onClick = onParent,
+                    enabled = confirmed,
+                )
+            }
         }
     }
 }
