@@ -960,6 +960,15 @@
         <mxCell id="becnvyvJ2J-wRLdYCRf8-3" connectable="0" parent="becnvyvJ2J-wRLdYCRf8-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
           <mxGeometry width="352" y="134" as="geometry" />
         </mxCell>
+        <mxCell id="IhKxpv5wz6MSz_zDdpNs-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=32;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;LotteryOffer&lt;/b&gt;" vertex="1">
+          <mxGeometry height="92" width="352" x="2870" y="2680" as="geometry" />
+        </mxCell>
+        <mxCell id="IhKxpv5wz6MSz_zDdpNs-2" connectable="0" parent="IhKxpv5wz6MSz_zDdpNs-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ campsiteId: String&lt;br&gt;+ nights: List&amp;lt;LocalDate&amp;gt;" vertex="1">
+          <mxGeometry height="48" width="352" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="IhKxpv5wz6MSz_zDdpNs-3" connectable="0" parent="IhKxpv5wz6MSz_zDdpNs-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="352" y="80" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
