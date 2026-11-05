@@ -74,8 +74,8 @@ class InboxNavigationTest {
         compose.runOnIdle { host.close() }
     }
 
-    /** Default limited history is genuinely empty and does not invent an unread total. */
-    @Test fun emptyInboxKeepsItsPrimaryFrameAndExplicitPendingHelpers() {
+    /** Confirmed empty history displays its actual unread total in the primary frame. */
+    @Test fun emptyInboxKeepsItsPrimaryFrameAndConfirmedUnreadCount() {
         start()
         compose.onNode(hasText("Inbox") and hasClickAction()).assertIsSelected()
         compose.onNodeWithText("No notifications yet.").assertIsDisplayed()
@@ -83,7 +83,7 @@ class InboxNavigationTest {
             .onNodeWithText(
                 "Notification ordering and unread count are pending in this build.",
             ).assertDoesNotExist()
-        compose.onNodeWithText("0 unread").assertDoesNotExist()
+        compose.onNodeWithText("0 unread").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, host.inboxCreations)
             assertEquals(listOf("account-1"), host.notifications.inboxRequests)
