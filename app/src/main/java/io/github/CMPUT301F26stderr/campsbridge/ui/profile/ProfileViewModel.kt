@@ -45,6 +45,8 @@ class ProfileViewModel(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val state = mutableState.asStateFlow()
+    private val mutableNotificationPreference = MutableStateFlow(NotificationPreferenceUiState())
+    val notificationPreference = mutableNotificationPreference.asStateFlow()
     private var observation: Job? = null
     private val photoController =
         ImageSlotController(images, ImageTarget(ImageTargetType.ACCOUNT, accountId), viewModelScope)
@@ -73,6 +75,14 @@ class ProfileViewModel(
     private val mutableOwnerWorkspaceRequested =
         MutableStateFlow(savedState["profileOwnerWorkspaceRequested"] ?: false)
     val ownerWorkspaceRequested = mutableOwnerWorkspaceRequested.asStateFlow()
+
+    /** Keeps a preference request pending until its persistence contract is connected.
+     * @param enabled Requested app-alert preference; no success is simulated.
+     */
+    fun setNotificationsEnabled(enabled: Boolean) { }
+
+    /** Keeps explicit retry disabled until preference persistence is connected. */
+    fun retryNotificationPreference() { }
 
     /** Reads the same account and adds hosting when needed, then waits for acknowledged/observed capability.
      * Interrupted attempts reconcile by server read; this operation never creates another profile.
