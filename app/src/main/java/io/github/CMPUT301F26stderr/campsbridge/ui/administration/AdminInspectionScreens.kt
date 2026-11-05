@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,8 +24,12 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsitePhoto
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
@@ -36,6 +42,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
+import java.time.ZoneId
 
 /** Read-only profile facts and three independently retryable source sections.
  * @param state Current selected profile, including retained removal facts.
@@ -308,3 +315,41 @@ private fun AdminProfileSectionFailuresPreview() {
         ),
     )
 }
+
+/** Slot display remains independent of its parent metadata, including orphaned attachments.
+ * @param state Selected target and the independent display/metadata outcomes.
+ * @param onBack Returns to the retained caller.
+ * @param onRetryPhoto Retries only attachment or display reads.
+ * @param onRetryParent Retries only failed parent metadata.
+ * @param onParent Opens the confirmed parent identity; never enabled for inferred facts.
+ * @param modifier Caller layout.
+ */
+@Composable
+fun AdminImageScreen(
+    state: AdminInspectionUiState.Image,
+    onBack: () -> Unit,
+    onRetryPhoto: () -> Unit,
+    onRetryParent: () -> Unit,
+    onParent: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val locale = LocalConfiguration.current.locales[0]
+    val parent = (state.parent as? AdminRead.Content)?.value
+    val confirmed =
+        when (parent) {
+            is AdminImageParent.Profile -> {
+                state.target.type == ImageTargetType.ACCOUNT &&
+                    parent.account.id == state.target.id
+            }
+
+            is AdminImageParent.Site -> {
+                state.target.type == ImageTargetType.CAMPSITE &&
+                    parent.campsite.id == state.target.id
+            }
+
+            null -> {
+                false
+            }
+        }
+}
+
