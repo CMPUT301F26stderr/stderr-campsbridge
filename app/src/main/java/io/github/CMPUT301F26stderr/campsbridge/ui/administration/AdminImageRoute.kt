@@ -70,4 +70,5 @@ fun AdminImageRoute(
             }
         },
     )
+
 }
