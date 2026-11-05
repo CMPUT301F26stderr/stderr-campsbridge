@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="admin_logs">Logs</string>
+    <string name="log_search">Search events</string>
+    <string name="log_event_type">Event type</string>
+    <string name="log_all_types">All event types</string>
+    <string name="log_loading">Loading notification events…</string>
+    <string name="log_failed">Could not load notification events.</string>
+    <string name="log_empty">No notification events.</string>
+    <string name="log_no_matches">No matching notification events.</string>
+    <string name="log_system_sender">System</string>
 </resources>
