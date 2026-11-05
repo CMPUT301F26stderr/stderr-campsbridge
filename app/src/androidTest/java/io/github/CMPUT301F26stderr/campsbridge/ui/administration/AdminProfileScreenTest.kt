@@ -84,4 +84,23 @@ class AdminProfileScreenTest {
         compose.onNodeWithText("No owned campsites").performScrollTo().assertIsDisplayed()
     }
 
+    @Test fun unavailableAccountIsNotAnEmptyProfileOrIndefiniteDependentLoad() {
+        compose.setContent {
+            CampsbridgeTheme {
+                AdminProfileScreen(
+                    AdminInspectionUiState.Profile("missing/id", account = AdminRead.Unavailable),
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                )
+            }
+        }
+        compose.onNodeWithText("missing/id").assertIsDisplayed()
+        compose.onNodeWithText("This profile is missing or unavailable.").assertIsDisplayed()
+        compose.onNodeWithText("No owned campsites").assertDoesNotExist()
+        compose.onNodeWithText("Loading owned campsites").assertDoesNotExist()
+    }
+
 }
