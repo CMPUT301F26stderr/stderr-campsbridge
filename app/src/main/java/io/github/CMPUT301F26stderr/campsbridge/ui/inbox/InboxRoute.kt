@@ -55,8 +55,9 @@ fun InboxRoute(
 
     InboxScreen(
         state = state,
-        onOpenItem = model::open,
+        onOpenItem = { model.openItem(it.notification.id) },
         onRetry = model::retry,
         onRetryMarkRead = model::retryMarkRead,
+        onRetryItem = model::retryItem,
     )
 }

@@ -45,6 +45,7 @@ import java.time.Instant
  * @param onOpenItem Explicit user action to open an inbox item and mark it as read.
  * @param onRetry Retries inbox source observation or missing notification loading.
  * @param onRetryMarkRead Retries a failed read acknowledgement write.
+ * @param onRetryItem Retries one failed event or subject.
  * @param modifier Caller layout modifier.
  */
 @Composable
@@ -53,6 +54,7 @@ fun InboxScreen(
     onOpenItem: (InboxItem) -> Unit,
     onRetry: () -> Unit,
     onRetryMarkRead: () -> Unit,
+    onRetryItem: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -104,10 +106,12 @@ fun InboxScreen(
                                 stringResource(R.string.inbox_unavailable_row),
                                 style = MaterialTheme.typography.bodyLarge,
                             )
+                            if (unavail.status != InboxEventStatus.LOADING) {
+                                Button(onClick = { onRetryItem(unavail.receipt.notificationId) }) {
+                                    Text(stringResource(R.string.inbox_retry_notification))
+                                }
+                            }
                         }
-                    }
-                    item {
-                        Button(onClick = onRetry) { Text(stringResource(R.string.inbox_retry_notification)) }
                     }
                 }
                 items(state.items, key = { it.notification.id }) { item ->
@@ -152,6 +156,11 @@ fun InboxScreen(
                                     }
                                 }
                             Text(body)
+                            if (!item.isLoading && item.subject != NotificationSubjectContent.Unsupported) {
+                                Button(onClick = { onRetryItem(item.notification.id) }) {
+                                    Text(stringResource(R.string.inbox_retry_notification))
+                                }
+                            }
                         }
                     } else {
                         InboxItemRow(
@@ -169,6 +178,7 @@ fun InboxScreen(
 /** One openable notification with its title, linked record name and read status.
  * @param item Loaded notification whose subject has a destination.
  * @param onClick Opens the item and marks it read.
+ * @param onRetryItem Retries one failed event or subject.
  * @param modifier Caller layout modifier.
  */
 @Composable
@@ -258,6 +268,7 @@ private fun InboxPreviewHost(state: InboxUiState) {
             onOpenItem = {},
             onRetry = {},
             onRetryMarkRead = {},
+            onRetryItem = {},
         )
     }
 }
