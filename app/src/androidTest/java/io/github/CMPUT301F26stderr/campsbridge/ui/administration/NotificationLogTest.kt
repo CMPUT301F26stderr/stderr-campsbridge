@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isPopup
 import androidx.compose.ui.test.junit4.StateRestorationTester
@@ -46,7 +47,10 @@ class NotificationLogTest {
         compose.onNodeWithText(f.event.id).assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithTag("notification-log-query").assertTextContains("Trail")
-        compose.onNodeWithText("Lottery announcement").assertIsDisplayed()
+        compose
+            .onNode(
+                hasText("Lottery announcement") and hasAnyAncestor(hasTestTag("notification-log-type")),
+            ).assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, f.host.notificationLogCreations)
             assertEquals(1, f.listRequests)
