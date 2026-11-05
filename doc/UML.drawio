@@ -1135,7 +1135,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="Hl669axpGb_r63mlWe8a" name="UML_Diagram_Revision">
-    <mxGraphModel dx="2815" dy="2484" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3856" dy="3372" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1759,7 +1759,7 @@
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-121" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotterySetupViewModel" vertex="1">
           <mxGeometry height="253" width="257" x="-1013.75" y="889" as="geometry" />
         </mxCell>
-        <mxCell id="Kk8VSq-1wEVDQgZlFSna-122" parent="Kk8VSq-1wEVDQgZlFSna-121" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- campsites: CampsiteRepository&lt;/div&gt;&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;LotterySetupUiState&amp;gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-122" parent="Kk8VSq-1wEVDQgZlFSna-121" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- campsites: CampsiteRepository&lt;/div&gt;&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;LotterySetupUiState&amp;gt;&lt;/div&gt;&lt;div&gt;- writer: LotteryDraftWriter&lt;/div&gt;" vertex="1">
           <mxGeometry height="135" width="257" y="26" as="geometry" />
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-123" parent="Kk8VSq-1wEVDQgZlFSna-121" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
@@ -1800,6 +1800,17 @@
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-138" parent="1" style="text;whiteSpace=wrap;html=1;" value="reads lottery and draws winners" vertex="1">
           <mxGeometry height="39" width="195" x="-1342.997536231884" y="796.0046376811595" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-179" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-142" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.421;exitY=0.981;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;exitPerimeter=0;">
+          <mxGeometry relative="1" x="-0.0556" as="geometry">
+            <Array as="points">
+              <mxPoint x="-905.55" y="1950.44" />
+              <mxPoint x="2166.78" y="1906" />
+              <mxPoint x="2133.44" y="822.67" />
+              <mxPoint x="2113.53" y="-209" />
+            </Array>
+            <mxPoint x="1987" y="-209" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-139" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryListViewModel" vertex="1">
           <mxGeometry height="224" width="257" x="-1013.75" y="1262" as="geometry" />
@@ -1872,6 +1883,74 @@
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-162" parent="Kk8VSq-1wEVDQgZlFSna-159" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ setVisible(visible: Boolean): Unit&lt;/div&gt;&lt;div&gt;+ selectState(state: EntryState?): Unit&lt;/div&gt;&lt;div&gt;+ retryEntries(): Unit&lt;/div&gt;" vertex="1">
           <mxGeometry height="76" width="257" y="169" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-163" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-132" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1.009;entryY=0.646;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;startArrow=diamond;startFill=1;endArrow=none;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-160">
+          <mxGeometry relative="1" x="-0.029" as="geometry">
+            <Array as="points">
+              <mxPoint x="-979.59" y="546.5" />
+              <mxPoint x="-985.39" y="-105.79" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-164" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1031" y="519" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-165" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1017" y="-131" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-166" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="owns participant reader" vertex="1">
+          <mxGeometry height="88" width="101" x="-994" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-167" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-159" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.012;entryY=0.844;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-117">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-1572.75" y="-96.5" />
+              <mxPoint x="-1566.86" y="1180.12" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-168" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1317.75" y="1149" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-169" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="reads participant entries" vertex="1">
+          <mxGeometry height="88" width="101" x="-1673" y="453" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-171" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-159" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;entryX=-0.002;entryY=0.944;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=open;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-32">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-315.88" y="-173.98" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-172" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-329" y="-205" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-173" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="reads participant names" vertex="1">
+          <mxGeometry height="88" width="101" x="-895" y="-234" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-180" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="1993" y="-236" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-181" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="reads booked lottery wins" vertex="1">
+          <mxGeometry height="30" width="101" x="2178" y="1088" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-188" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-182" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1766.25" y="-677.56" />
+              <mxPoint x="450.38" y="-660.89" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-182" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="Reservation" vertex="1">
+          <mxGeometry height="257.5" width="257" x="1702" y="-646" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-183" parent="Kk8VSq-1wEVDQgZlFSna-182" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ id: String&lt;/div&gt;&lt;div&gt;+ lotteryId: String&lt;/div&gt;&lt;div&gt;+ entrantId: String&lt;/div&gt;&lt;div&gt;+ campsiteId: String&lt;/div&gt;&lt;div&gt;+ checkInDate: LocalDate&lt;/div&gt;&lt;div&gt;+ checkOutDate: LocalDate&lt;/div&gt;&lt;div&gt;+ guestCount: Long&lt;/div&gt;&lt;div&gt;+ bookedCampsite: BookedCampsite&lt;/div&gt;&lt;div&gt;+ acceptedTerms: AcceptedTerms&lt;/div&gt;&lt;div&gt;+ payment: Payment&lt;/div&gt;&lt;div&gt;+ cancellation: ReservationCancellation?&lt;/div&gt;" vertex="1">
+          <mxGeometry height="223.5" width="257" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-184" parent="Kk8VSq-1wEVDQgZlFSna-182" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="257" y="249.5" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-187" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=14;" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;font&gt;&lt;i style=&quot;&quot;&gt;&amp;lt;&amp;lt;Interface&amp;gt;&amp;gt;&lt;/i&gt;&lt;br&gt;&lt;b&gt;BookingRepository&lt;/b&gt;&lt;/font&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;font&gt;&lt;br&gt;&lt;/font&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ get(id: String): Reservation?&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ observeForEntrant(entrantId: String): Flow&amp;lt;List&amp;lt;Reservation&amp;gt;&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ observeForOwner(ownerId: String): Flow&amp;lt;List&amp;lt;Reservation&amp;gt;&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ reserve(request: BookingRequest): String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ cancel(request: CancellationRequest): Unit&lt;/p&gt;" vertex="1">
+          <mxGeometry height="288" width="205" x="1781" y="-258" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
