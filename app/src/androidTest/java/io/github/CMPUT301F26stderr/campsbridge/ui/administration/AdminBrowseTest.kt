@@ -31,4 +31,32 @@ class AdminBrowseTest {
         compose.runOnIdle { host.close() }
     }
 
+    @Test fun failedThumbnailsKeepMetadataRowsAndReturningRetainsTheImageQuery() {
+        val target = ImageTarget(ImageTargetType.ACCOUNT, "owner/alpha ?")
+        val attachment = ImageAttachment(target, "broken-blob", Instant.EPOCH)
+        val metadata = MutableStateFlow(listOf(attachment))
+        host.accounts.account.value = sampleAccount(setOf(Role.ADMIN))
+        host.images.attachment.value = attachment
+        host.images.urlFailures[attachment.blobId] = IOException("image offline")
+        host.adminImages =
+            object : ImageRepository by host.images {
+                override fun observeAll() =
+                    metadata
+            }
+        compose.setContent { host.Content() }
+        compose.onNodeWithText("Images").performClick()
+        compose.onNodeWithText("Search").performTextInput("owner/")
+        compose.onNodeWithText("Profile \u00b7 ${target.id}").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Image inspection").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("owner/").assertIsDisplayed()
+        compose.onNodeWithText("Profile \u00b7 ${target.id}").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(1, host.adminBrowseCreations)
+            assertEquals(0, host.images.replaceCalls + host.images.deleteCalls)
+            metadata.value = emptyList()
+        }
+        compose.onNodeWithText("No matching records").assertIsDisplayed()
+    }
+
 }
