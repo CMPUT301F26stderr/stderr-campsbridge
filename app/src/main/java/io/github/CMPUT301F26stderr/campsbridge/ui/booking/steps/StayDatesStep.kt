@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
@@ -80,10 +81,7 @@ fun StayDatesStep(
         }
 
         CalendarInventoryRead.Failure -> {
-            Text(stringResource(R.string.booking_inventory_failed))
-            TextButton(onRetryVisible, enabled = enabled) {
-                Text(stringResource(R.string.booking_retry_visible))
-            }
+            FailureContent(stringResource(R.string.booking_inventory_failed), onRetryVisible, enabled)
         }
 
         else -> {
@@ -139,9 +137,6 @@ fun StayDatesStep(
         Text(stringResource(R.string.booking_selected_loading))
     }
     if (state.calendar.selected == CalendarInventoryRead.Failure) {
-        Text(stringResource(R.string.booking_selected_inventory_failed))
-        TextButton(onRetrySelected, enabled = enabled) {
-            Text(stringResource(R.string.booking_retry_selected))
-        }
+        FailureContent(stringResource(R.string.booking_selected_inventory_failed), onRetrySelected, enabled)
     }
 }

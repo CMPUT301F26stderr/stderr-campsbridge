@@ -2,13 +2,14 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,8 +29,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyConte
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 /** Displays recorded Inbox facts without acknowledging receipts or inferring Android alerts.
  * @param state One selected event's audience outcome.
@@ -40,8 +42,18 @@ fun NotificationAudienceScreen(
     state: NotificationLogAudienceState,
     onRetry: () -> Unit,
 ) {
-    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
-        state.id?.let { id -> item("event-id") { DetailRow(stringResource(R.string.log_event_id), id) } }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = Spacing.medium),
+        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+    ) {
+        state.id?.let { id ->
+            item("event-id") {
+                SummarySection(stringResource(R.string.log_event_details)) {
+                    DetailRow(stringResource(R.string.log_event_id), id)
+                }
+            }
+        }
         item("delivery-explanation") {
             Text(stringResource(R.string.log_delivery_explanation), style = MaterialTheme.typography.bodySmall)
         }
@@ -86,9 +98,12 @@ fun NotificationAudienceScreen(
 @Composable
 private fun NotificationLogRecipientRow(member: NotificationAudienceMember) {
     val locale = LocalConfiguration.current.locales[0]
-    OutlinedCard(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(Spacing.medium), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
-            Text(member.accountId, style = MaterialTheme.typography.titleMedium)
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        Column(
+            Modifier.padding(vertical = Spacing.small),
+            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+        ) {
+            Text(member.accountId, style = MaterialTheme.typography.titleSmall)
             Text(
                 stringResource(
                     when (member.delivery) {
@@ -101,13 +116,14 @@ private fun NotificationLogRecipientRow(member: NotificationAudienceMember) {
             if (readAt !=
                 null
             ) {
-                DetailRow(stringResource(R.string.log_read_at), formatDateTime(readAt, ZoneOffset.UTC, locale))
+                DetailRow(stringResource(R.string.log_read_at), formatDateTime(readAt, ZoneId.systemDefault(), locale))
             } else if (member.delivery ==
                 NotificationAudienceDelivery.DELIVERED
             ) {
                 Text(stringResource(R.string.log_unread))
             }
         }
+        HorizontalDivider()
     }
 }
 

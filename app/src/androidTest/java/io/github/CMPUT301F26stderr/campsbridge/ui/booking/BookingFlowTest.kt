@@ -156,7 +156,7 @@ class BookingFlowTest {
         compose.onNodeWithText("Could not load these nights.").assertIsDisplayed()
         compose.onNodeWithTag("calendar-date-$start").performScrollTo().assertIsNotEnabled()
         compose.runOnIdle { sites.calendarFailure.value = null }
-        open("Retry calendar")
+        open("Retry")
         selectStay()
         next()
         compose.onNodeWithText("Number of guests").assertIsDisplayed()
