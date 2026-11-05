@@ -94,6 +94,31 @@ fun AdminProfileScreen(
                     }
                 }
             }
+            HorizontalDivider()
+            Column(
+                Modifier.fillMaxWidth().testTag("admin_profile_photo"),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                Text(
+                    stringResource(R.string.profile_photo),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                if (state.account is AdminRead.Content) {
+                    AttachmentImage(
+                        state.photo,
+                        stringResource(R.string.profile_photo),
+                        onRetryPhoto,
+                        Modifier.size(128.dp),
+                    )
+                    if (state.photo.loadState == ImageLoadState.READY &&
+                        state.photo.attachment == null
+                    ) {
+                        EmptyContent(stringResource(R.string.admin_no_profile_photo))
+                    }
+                } else {
+                    Text(stringResource(R.string.admin_profile_dependents_unavailable))
+                }
+            }
         }
     }
 }
