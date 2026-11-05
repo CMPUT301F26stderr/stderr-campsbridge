@@ -1135,7 +1135,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="Hl669axpGb_r63mlWe8a" name="UML_Diagram_Revision">
-    <mxGraphModel dx="1895" dy="2318" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2568" dy="2142" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1187,7 +1187,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-37" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=14;" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;font&gt;&lt;i style=&quot;&quot;&gt;&amp;lt;&amp;lt;Interface&amp;gt;&amp;gt;&lt;/i&gt;&lt;br&gt;&lt;b style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;ImageRepository&lt;/font&gt;&lt;/b&gt;&lt;/font&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;font&gt;&lt;br&gt;&lt;/font&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ get(target: ImageTarget): ImageAttachment?&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ observe(target: ImageTarget): Flow&amp;lt;ImageAttachment?&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ replace(target: ImageTarget, upload: ImageUpload): ImageUpdateResult&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ delete(target: ImageTarget): ImageUpdateResult&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ downloadUrl(blobId: String): String&lt;/p&gt;" vertex="1">
-          <mxGeometry height="447" width="205" x="61" y="455" as="geometry" />
+          <mxGeometry height="272" width="205" x="66" y="552" as="geometry" />
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-80" edge="1" parent="1" source="lMeluzwtmmu1OW87kY-_-38" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="lMeluzwtmmu1OW87kY-_-43">
           <mxGeometry relative="1" as="geometry" />
@@ -1338,7 +1338,7 @@
           <mxGeometry height="30" width="60" x="-173" y="516" as="geometry" />
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-91" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
-          <mxGeometry height="30" width="23" x="271" y="652" as="geometry" />
+          <mxGeometry height="30" width="23" x="273" y="660" as="geometry" />
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-92" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="reads and writes photos" vertex="1">
           <mxGeometry height="30" width="101" x="475" y="637" as="geometry" />
@@ -1375,16 +1375,16 @@
           <mxGeometry height="30" width="101" x="1351" y="870" as="geometry" />
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-102" edge="1" parent="1" source="lMeluzwtmmu1OW87kY-_-52" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.995;entryY=0.795;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="lMeluzwtmmu1OW87kY-_-37">
-          <mxGeometry relative="1" x="0.067" as="geometry">
+          <mxGeometry relative="1" x="0.0015" as="geometry">
             <Array as="points">
               <mxPoint x="374.09" y="1158" />
               <mxPoint x="374.09" y="1005.09" />
-              <mxPoint x="370.45" y="810.36" />
+              <mxPoint x="370.45" y="768.24" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-103" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
-          <mxGeometry height="30" width="23" x="266" y="790" as="geometry" />
+          <mxGeometry height="30" width="23" x="268" y="772" as="geometry" />
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-104" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="provides photo access" vertex="1">
           <mxGeometry height="30" width="60" x="307" y="969" as="geometry" />
@@ -1702,6 +1702,141 @@
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-105" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="offers at night" vertex="1">
           <mxGeometry height="30" width="101" x="1997" y="1190" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-113" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-106" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-13">
+          <mxGeometry relative="1" x="-0.0511" as="geometry">
+            <Array as="points">
+              <mxPoint x="-701.5" y="-654.35" />
+              <mxPoint x="409.5" y="-662.46" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-106" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryEntry" vertex="1">
+          <mxGeometry height="139" width="257" x="-830" y="1634" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-107" parent="Kk8VSq-1wEVDQgZlFSna-106" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ lotteryId: String&lt;/div&gt;&lt;div&gt;+ accountId: String&lt;/div&gt;&lt;div&gt;+ state: EntryState&lt;/div&gt;&lt;div&gt;+ joinedAt: Instant&lt;/div&gt;&lt;div&gt;+ stateChangedAt: Instant&lt;/div&gt;" vertex="1">
+          <mxGeometry height="105" width="257" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-108" parent="Kk8VSq-1wEVDQgZlFSna-106" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="257" y="131" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-110" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-80" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.362;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;startArrow=diamond;startFill=1;endArrow=none;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-107">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-111" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-460" y="1676" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-112" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="0..*" vertex="1">
+          <mxGeometry height="30" width="23" x="-568" y="1678" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-114" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="0..*" vertex="1">
+          <mxGeometry height="30" width="23" x="-723" y="1613" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-115" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="408" y="-489" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-117" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=14;" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;font&gt;&lt;i style=&quot;&quot;&gt;&amp;lt;&amp;lt;Interface&amp;gt;&amp;gt;&lt;/i&gt;&lt;br&gt;&lt;b style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;LotteryRepository&lt;/font&gt;&lt;/b&gt;&lt;/font&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;font&gt;&lt;br&gt;&lt;/font&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ observe(id: String): Flow&amp;lt;Lottery?&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ observeOffers(id: String): Flow&amp;lt;List&amp;lt;LotteryOffer&amp;gt;&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ observeEntries(id: String): Flow&amp;lt;List&amp;lt;LotteryEntry&amp;gt;&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ setOffer(id: String, ownerId: String, offer: LotteryOffer): Unit&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ publish(id: String, ownerId: String): Unit&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ join(id: String, accountId: String): Unit&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ withdraw(id: String, accountId: String): Unit&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ draw(id: String): DrawResult&lt;/p&gt;" vertex="1">
+          <mxGeometry height="339" width="205" x="-1294.75" y="894" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-120" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-118" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=block;endFill=0;dashed=1;" target="Kk8VSq-1wEVDQgZlFSna-117">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-118" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="FireStoreLotteryRepository" vertex="1">
+          <mxGeometry height="34" width="219.5" x="-1302" y="1344" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-119" parent="Kk8VSq-1wEVDQgZlFSna-118" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="219.5" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-127" edge="1" parent="1" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;entryX=0.016;entryY=0.342;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" x="-0.0107" as="geometry">
+            <Array as="points">
+              <mxPoint x="-883.25" y="35.18" />
+            </Array>
+            <mxPoint x="-883.25" y="890.13" as="sourcePoint" />
+            <mxPoint x="91.2800000000002" y="22.003999999999795" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-121" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotterySetupViewModel" vertex="1">
+          <mxGeometry height="253" width="257" x="-1013.75" y="889" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-122" parent="Kk8VSq-1wEVDQgZlFSna-121" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- campsites: CampsiteRepository&lt;/div&gt;&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;LotterySetupUiState&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="135" width="257" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-123" parent="Kk8VSq-1wEVDQgZlFSna-121" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="257" y="161" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-124" parent="Kk8VSq-1wEVDQgZlFSna-121" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ chooseCampsite(id: String): Unit&lt;/div&gt;&lt;div&gt;+ saveDraft(): Unit&lt;/div&gt;&lt;div&gt;+ publishLottery(): Unit&lt;/div&gt;&lt;div&gt;+ retrySave(): Unit&lt;/div&gt;" vertex="1">
+          <mxGeometry height="84" width="257" y="169" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-125" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-117" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.005;entryY=0.069;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=none;endFill=0;startArrow=open;startFill=0;" target="Kk8VSq-1wEVDQgZlFSna-124">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-126" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1084.75" y="1044" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-128" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="59" y="-4" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-129" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="reads campsite availiability" vertex="1">
+          <mxGeometry height="88" width="101" x="-989" y="549" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-131" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryDetailViewModel" vertex="1">
+          <mxGeometry height="226.5" width="257" x="-1294.75" y="487.5" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-132" parent="Kk8VSq-1wEVDQgZlFSna-131" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;LotteryDetailUiState&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="66" width="257" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-133" parent="Kk8VSq-1wEVDQgZlFSna-131" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="257" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-134" parent="Kk8VSq-1wEVDQgZlFSna-131" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ draw(): Unit&lt;/div&gt;&lt;div&gt;+ join(): Unit&lt;/div&gt;&lt;div&gt;+ requestLeave(): Unit&lt;/div&gt;&lt;div&gt;+ confirmLeave(): Unit&lt;/div&gt;&lt;div&gt;+ setParticipantsVisible(visible: Boolean): Unit&lt;/div&gt;" vertex="1">
+          <mxGeometry height="126.5" width="257" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-135" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-131" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.654;entryY=0.006;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-117">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-136" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1185" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-138" parent="1" style="text;whiteSpace=wrap;html=1;" value="reads lottery and draws winners" vertex="1">
+          <mxGeometry height="39" width="195" x="-1342.997536231884" y="796.0046376811595" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-139" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryListViewModel" vertex="1">
+          <mxGeometry height="224" width="257" x="-1013.75" y="1262" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-140" parent="Kk8VSq-1wEVDQgZlFSna-139" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;- bookings: BookingRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;LotteryListUiState&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="71" width="257" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-141" parent="Kk8VSq-1wEVDQgZlFSna-139" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="257" y="97" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-142" parent="Kk8VSq-1wEVDQgZlFSna-139" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ selectCategory(category: LotteryListCategory): Unit&lt;/div&gt;&lt;div&gt;+ selectCampsite(campsiteId: String?): Unit&lt;/div&gt;&lt;div&gt;+ showVisibleLotteries(ids: Set&amp;lt;String&amp;gt;): Unit&lt;/div&gt;" vertex="1">
+          <mxGeometry height="119" width="257" y="105" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-144" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-139" style="edgeStyle=none;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.847;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=open;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-117">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-885.25" y="1181.13" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-145" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="1" vertex="1">
+          <mxGeometry height="30" width="23" x="-1089.75" y="1156" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-146" parent="1" style="text;whiteSpace=wrap;html=1;" value="reads lottery and entries" vertex="1">
+          <mxGeometry height="39" width="138" x="-1045" y="1189" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-149" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryMembershipController" vertex="1">
+          <mxGeometry height="170.5" width="257" x="-1302" y="1549" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-150" parent="Kk8VSq-1wEVDQgZlFSna-149" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;LotteryMembershipUiState&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="71" width="257" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-151" parent="Kk8VSq-1wEVDQgZlFSna-149" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
+          <mxGeometry height="8" width="257" y="97" as="geometry" />
+        </mxCell>
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-152" parent="Kk8VSq-1wEVDQgZlFSna-149" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ join(): Unit&lt;/div&gt;&lt;div&gt;+ requestLeave(): Unit&lt;/div&gt;&lt;div&gt;+ confirmLeave(): Unit&lt;/div&gt;" vertex="1">
+          <mxGeometry height="65.5" width="257" y="105" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
