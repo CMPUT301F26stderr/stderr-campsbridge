@@ -10,121 +10,57 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.sortInboxItems
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.unreadInboxCount
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-/** Observes one account's Inbox and handles opening rows.
- * @param accountId Recipient account.
- * @param notifications Source of receipts and read acknowledgements.
- * @param content Loads each receipt's event and subject.
- * @param sorter Orders loaded rows; null leaves the helper pending.
- * @param countUnread Counts original unread receipts; null leaves the helper pending.
+/** Account-scoped receipt/content assembly with independent read acknowledgements.
+ * @param accountId Fixed active account; workspace changes do not change receipt ownership.
+ * @param notifications Receipt observation and explicit first-read acknowledgements.
+ * @param content Shared immutable event/context assembler.
+ * @param sorter Reserved loaded-event ordering; null keeps its dependency explicit.
+ * @param countUnread Reserved count over all original receipts; null is never a fabricated zero.
  */
 class InboxViewModel(
     val accountId: String,
     private val notifications: NotificationRepository,
     private val content: NotificationContentLoader,
     private val sorter: ((List<InboxItem>) -> List<InboxItem>)? = ::sortInboxItems,
-    private val countUnread: (
-        (
-            List<InboxReceipt>,
-        ) -> Int
-    )? = ::unreadInboxCount,
+    private val countUnread: ((List<InboxReceipt>) -> Int)? = ::unreadInboxCount,
 ) : ViewModel() {
     private val mutableState =
         MutableStateFlow(
             InboxUiState(
                 orderingPending = sorter == null,
-                unreadCountPending =
-                    countUnread == null,
+                unreadCountPending = countUnread == null,
             ),
         )
     val state = mutableState.asStateFlow()
-    private var observation: Job? = null
+    private var source = InboxSourceState.LOADING
+    private var hasReceipts = false
+    private var receipts = emptyList<InboxReceipt>()
+    private var sourceJob: Job? = null
+    private var sourceVersion = 0L
+    private var nextContentVersion = 0L
+    private var closed = false
+    private val results = mutableMapOf<String, NotificationContent>()
+    private val loading = mutableSetOf<String>()
+    private val contentJobs = mutableMapOf<String, Job>()
+    private val contentVersions = mutableMapOf<String, Long>()
+
     private var failedReadItem: InboxItem? = null
 
     init {
-        retry()
+        observeReceipts()
     }
 
-    /** Restarts the live source, keeping any rows that already loaded. */
+    /** Retries only a failed account-receipt observation. */
     fun retry() {
-        observation?.cancel()
-        val known = mutableState.value
-        mutableState.value = known.copy(source = InboxSourceState.LOADING)
-        observation =
-            viewModelScope.launch {
-                try {
-                    notifications.observeInbox(accountId).collectLatest { receipts ->
-                        val unread = countUnread?.invoke(receipts)
-                        val items = mutableListOf<InboxItem>()
-                        val unavailable = mutableListOf<UnavailableInboxReceipt>()
-
-                        for (receipt in receipts) {
-                            try {
-                                val loaded = content.load(receipt.notificationId)
-                                currentCoroutineContext().ensureActive()
-                                when (loaded) {
-                                    is NotificationContent.Loaded -> {
-                                        items.add(
-                                            InboxItem(
-                                                notification = loaded.notification,
-                                                readAt = receipt.readAt,
-                                                subject = loaded.subject,
-                                            ),
-                                        )
-                                    }
-
-                                    NotificationContent.Unavailable -> {
-                                        unavailable.add(
-                                            UnavailableInboxReceipt(
-                                                receipt,
-                                                InboxEventStatus.UNAVAILABLE,
-                                            ),
-                                        )
-                                    }
-
-                                    NotificationContent.Failure -> {
-                                        unavailable.add(
-                                            UnavailableInboxReceipt(
-                                                receipt,
-                                                InboxEventStatus.FAILURE,
-                                            ),
-                                        )
-                                    }
-                                }
-                            } catch (cancelled: CancellationException) {
-                                throw cancelled
-                            } catch (_: Exception) {
-                                unavailable.add(
-                                    UnavailableInboxReceipt(receipt, InboxEventStatus.FAILURE),
-                                )
-                            }
-                        }
-
-                        // A new snapshot mustn't lose a pending open or a failed read.
-                        val previous = mutableState.value
-                        mutableState.value =
-                            previous.copy(
-                                items = sorter?.invoke(items) ?: items,
-                                unavailable = unavailable,
-                                unreadCount = unread,
-                                source = InboxSourceState.READY,
-                            )
-                    }
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    currentCoroutineContext().ensureActive()
-                    val known = mutableState.value
-                    mutableState.value = known.copy(source = InboxSourceState.FAILURE)
-                }
-            }
+        if (!closed && source == InboxSourceState.FAILURE) observeReceipts()
     }
 
     /** Retries content through the existing source until individual reads are installed.
@@ -136,6 +72,141 @@ class InboxViewModel(
         ) {
             retry()
         }
+    }
+
+    /**
+     * Installs one account source before starting immediate callbacks; retains known rows on
+     * retry.
+     */
+    private fun observeReceipts() {
+        val version = ++sourceVersion
+        sourceJob?.cancel()
+        source = InboxSourceState.LOADING
+        publish()
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                try {
+                    notifications.observeInbox(accountId).collect { rows ->
+                        currentCoroutineContext().ensureActive()
+                        if (closed || version != sourceVersion) return@collect
+                        receipts = rows
+                        hasReceipts = true
+                        source = InboxSourceState.READY
+                        reconcileReceipts()
+                    }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    currentCoroutineContext().ensureActive()
+                    if (!closed && version == sourceVersion) {
+                        source = InboxSourceState.FAILURE
+                        publish()
+                    }
+                }
+            }
+        sourceJob = pending
+        pending.start()
+    }
+
+    /** Retires removed identities and installs all new item jobs before any can emit. */
+    private fun reconcileReceipts() {
+        val ids = receipts.map { it.notificationId }.toSet()
+        for (id in contentVersions.keys.toList()) {
+            if (id !in ids) {
+                contentVersions.remove(id)
+                contentJobs.remove(id)?.cancel()
+                results.remove(id)
+                loading.remove(id)
+            }
+        }
+        val pending = ids.filter { it !in contentVersions }.map { prepareContent(it) }
+        publish()
+        pending.forEach { it.start() }
+    }
+
+    /** Prepares one scoped event/context read while retaining previously known event facts.
+     * @param id Actual current receipt identity.
+     * @return Installed lazy job; the caller starts it after publishing coherent loading state.
+     */
+    private fun prepareContent(id: String): Job {
+        val version = ++nextContentVersion
+        contentVersions[id] = version
+        contentJobs[id]?.cancel()
+        loading.add(id)
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                val result = content.load(id)
+                currentCoroutineContext().ensureActive()
+                if (closed || contentVersions[id] != version) return@launch
+                results[id] = result
+                loading.remove(id)
+                publish()
+            }
+        contentJobs[id] = pending
+        return pending
+    }
+
+    /** Resolves receipt identity from the last confirmed source without creating a read timestamp.
+     * @param id Exact event/receipt identity.
+     */
+    private fun receipt(id: String): InboxReceipt? =
+        receipts.firstOrNull { it.notificationId == id }
+
+    /**
+     * Projects known events separately from unknown-time receipts; helpers own only their
+     * leaves.
+     */
+    private fun publish() {
+        if (closed) return
+        val items =
+            receipts.mapNotNull { receipt ->
+                val content = results[receipt.notificationId] as? NotificationContent.Loaded
+                content?.let {
+                    InboxItem(
+                        it.notification,
+                        receipt.readAt,
+                        it.subject,
+                        receipt.notificationId in loading,
+                    )
+                }
+            }
+        val unavailable =
+            receipts
+                .mapNotNull { receipt ->
+                    val id = receipt.notificationId
+                    val content = results[id]
+                    if (content is NotificationContent.Loaded) {
+                        null
+                    } else {
+                        UnavailableInboxReceipt(
+                            receipt,
+                            when {
+                                id in loading || content == null -> InboxEventStatus.LOADING
+                                content == NotificationContent.Failure -> InboxEventStatus.FAILURE
+                                else -> InboxEventStatus.UNAVAILABLE
+                            },
+                        )
+                    }
+                }.sortedBy { it.receipt.notificationId }
+        mutableState.value =
+            mutableState.value.copy(
+                source = source,
+                items = if (hasReceipts) sorter?.invoke(items) ?: items else emptyList(),
+                unavailable = unavailable,
+                unreadCount = if (hasReceipts) countUnread?.invoke(receipts) else null,
+                orderingPending = sorter == null,
+                unreadCountPending = countUnread == null,
+            )
+    }
+
+    /** Retires account work and pending navigation before cancelling noncooperative callbacks. */
+    override fun onCleared() {
+        closed = true
+        sourceVersion++
+        contentVersions.clear()
+        sourceJob?.cancel()
+        contentJobs.values.forEach { it.cancel() }
+        super.onCleared()
     }
 
     /** Selects a current supported row, ignoring unresolved context.
