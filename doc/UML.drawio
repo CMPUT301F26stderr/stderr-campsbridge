@@ -1135,7 +1135,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="Hl669axpGb_r63mlWe8a" name="UML_Diagram_Revision">
-    <mxGraphModel dx="2522" dy="1523" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2879" dy="2018" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1163,13 +1163,13 @@
         <mxCell id="lMeluzwtmmu1OW87kY-_-22" parent="lMeluzwtmmu1OW87kY-_-20" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
           <mxGeometry height="8" width="160" y="162" as="geometry" />
         </mxCell>
-        <mxCell id="lMeluzwtmmu1OW87kY-_-24" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="Coordiantes" vertex="1">
+        <mxCell id="lMeluzwtmmu1OW87kY-_-24" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="Coordinates" vertex="1">
           <mxGeometry height="34" width="163.5" x="479.5" y="444" as="geometry" />
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-26" parent="lMeluzwtmmu1OW87kY-_-24" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
           <mxGeometry height="8" width="163.5" y="26" as="geometry" />
         </mxCell>
-        <mxCell id="lMeluzwtmmu1OW87kY-_-28" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="CalenderNight" vertex="1">
+        <mxCell id="lMeluzwtmmu1OW87kY-_-28" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="CalendarNight" vertex="1">
           <mxGeometry height="122" width="160" x="764" y="-67" as="geometry" />
         </mxCell>
         <mxCell id="lMeluzwtmmu1OW87kY-_-29" parent="lMeluzwtmmu1OW87kY-_-28" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;+ date: LocalDate&lt;/div&gt;&lt;div&gt;+ isOffered: Boolean&lt;/div&gt;&lt;div&gt;+ reservationId: String?&lt;/div&gt;&lt;div&gt;+ isFree: Boolean&lt;/div&gt;" vertex="1">
@@ -1504,7 +1504,7 @@
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-36" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-33" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;dashed=1;endArrow=block;endFill=0;" target="Kk8VSq-1wEVDQgZlFSna-32">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Kk8VSq-1wEVDQgZlFSna-33" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="FireStoreAccountRepository" vertex="1">
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-33" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="FirestoreAccountRepository" vertex="1">
           <mxGeometry height="34" width="219.5" x="-316.25" y="-67" as="geometry" />
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-35" parent="Kk8VSq-1wEVDQgZlFSna-33" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
@@ -1743,7 +1743,7 @@
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-120" edge="1" parent="1" source="Kk8VSq-1wEVDQgZlFSna-118" style="edgeStyle=none;curved=1;rounded=0;curveGeometry=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=12;defaultLabelBackgroundColor=page;startSize=8;endSize=8;endArrow=block;endFill=0;dashed=1;" target="Kk8VSq-1wEVDQgZlFSna-117">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Kk8VSq-1wEVDQgZlFSna-118" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="FireStoreLotteryRepository" vertex="1">
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-118" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="FirestoreLotteryRepository" vertex="1">
           <mxGeometry height="34" width="219.5" x="-1302" y="1344" as="geometry" />
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-119" parent="Kk8VSq-1wEVDQgZlFSna-118" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;labelPerimeter=1;" value="" vertex="1">
@@ -1874,7 +1874,7 @@
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-158" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontFamily=Arial;" value="joins and withdraws" vertex="1">
           <mxGeometry height="88" width="101" x="-1530" y="747" as="geometry" />
         </mxCell>
-        <mxCell id="Kk8VSq-1wEVDQgZlFSna-159" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryParticipantController" vertex="1">
+        <mxCell id="Kk8VSq-1wEVDQgZlFSna-159" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="LotteryParticipantsController" vertex="1">
           <mxGeometry height="245" width="257" x="-1270.75" y="-219" as="geometry" />
         </mxCell>
         <mxCell id="Kk8VSq-1wEVDQgZlFSna-160" parent="Kk8VSq-1wEVDQgZlFSna-159" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=14;" value="&lt;div&gt;- lotteries: LotteryRepository&lt;/div&gt;&lt;div&gt;- accounts: AccountRepository&lt;/div&gt;&lt;div&gt;+ state: StateFlow&amp;lt;ParticipantListUiState&amp;gt;&lt;/div&gt;" vertex="1">
