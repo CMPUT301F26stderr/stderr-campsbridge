@@ -58,3 +58,41 @@ fun AdminProfileScreen(
 ) {
 }
 
+/** Actual saved identity, capabilities and optional contact/removal facts. */
+@Composable
+private fun AdminAccountFacts(account: Account) {
+    InspectionField(stringResource(R.string.admin_display_name), account.name)
+    InspectionField(stringResource(R.string.email), account.email)
+    InspectionField(stringResource(R.string.phone), account.phone)
+    InspectionField(
+        stringResource(R.string.admin_profile_roles),
+        account.roles
+            .map {
+                roleLabel(it)
+            }.joinToString(),
+    )
+    InspectionField(stringResource(R.string.admin_created_at), account.createdAt.toString())
+    Text(
+        stringResource(
+            if (account.isActive) R.string.admin_account_active else R.string.admin_account_removed,
+        ),
+    )
+    account.removal?.let { removal ->
+        InspectionField(stringResource(R.string.admin_removed_at), removal.at.toString())
+        InspectionField(stringResource(R.string.admin_removed_by), removal.actorId)
+        InspectionField(stringResource(R.string.admin_removal_reason), removal.reason)
+    }
+}
+
+/** Missing values stay visible instead of disappearing from a retained profile. */
+@Composable
+private fun InspectionField(
+    label: String,
+    value: String?,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(value?.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided))
+    }
+}
+
