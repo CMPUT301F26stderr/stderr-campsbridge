@@ -40,6 +40,8 @@ class InboxViewModel(
             ),
         )
     val state = mutableState.asStateFlow()
+    private val mutableOpen = MutableStateFlow<InboxOpenRequest?>(null)
+    val pendingOpen = mutableOpen.asStateFlow()
     private var source = InboxSourceState.LOADING
     private var hasReceipts = false
     private var receipts = emptyList<InboxReceipt>()
@@ -248,6 +250,7 @@ class InboxViewModel(
     fun open(item: InboxItem) {
         val current = state.value
         if (current.openingItem != null || current.operation != InboxOperation.IDLE) return
+        mutableOpen.value = InboxOpenRequest(item.notification.id, item.notification.subject)
         mutableState.value = current.copy(openingItem = item, operation = InboxOperation.OPENING)
         viewModelScope.launch {
             try {
@@ -296,8 +299,23 @@ class InboxViewModel(
         }
     }
 
+    /** Consumes only the request whose destination was delivered.
+     * @param notificationId Delivered event identity.
+     */
+    fun acknowledgeOpen(notificationId: String) {
+        if (pendingOpen.value?.notificationId == notificationId) consumeOpen()
+    }
+
+    /** Retries the retained acknowledgement when its identity matches.
+     * @param notificationId Failed receipt identity.
+     */
+    fun retryReadAcknowledgement(notificationId: String) {
+        if (failedReadItem?.notification?.id == notificationId) retryMarkRead()
+    }
+
     /** Clears the open request once the route has navigated. */
     fun consumeOpen() {
+        mutableOpen.value = null
         val current = state.value
         if (current.openingItem != null) {
             mutableState.value = current.copy(openingItem = null)
