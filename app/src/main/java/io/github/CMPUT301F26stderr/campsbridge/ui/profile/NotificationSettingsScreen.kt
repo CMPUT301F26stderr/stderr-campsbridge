@@ -2,6 +2,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -35,8 +36,13 @@ fun NotificationSettingsRoute(
     onBack: () -> Unit,
 ) {
     val state by model.notificationPreferenceState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val settingsLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) {
+            model.refreshPermission(permission)
+        }
 
     DisposableEffect(lifecycleOwner, model, permission) {
         val observer = LifecycleEventObserver { _, event ->
@@ -57,7 +63,7 @@ fun NotificationSettingsRoute(
         onRetry = model::retryNotificationsEnabled,
         onOpenSettings = {
             try {
-                context.startActivity(permission.settingsIntent())
+                settingsLauncher.launch(permission.settingsIntent())
             } catch (_: ActivityNotFoundException) {
                 model.markSettingsActivityMissing()
             }
@@ -80,9 +86,9 @@ fun NotificationSettingsScreen(
         Column(Modifier.fillMaxSize().padding(Spacing.medium)) {
             SwitchRow(
                 title = "Enable notifications",
-                checked = state.requestedNotificationsEnabled ?: state.notificationsEnabled,
+                checked = state.enabled,
                 onCheckedChange = onToggleNotifications,
-                enabled = !state.isSaving,
+                enabled = state.canChange,
                 supportingText = if (state.saveFailed) "Save failed. Tap retry." else null,
             )
             if (state.saveFailed) {
