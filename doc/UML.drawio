@@ -495,6 +495,33 @@
         <mxCell id="I2M36rCPQsWLhFKKdNgR-13" connectable="0" parent="I2M36rCPQsWLhFKKdNgR-11" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="1" vertex="1">
           <mxGeometry relative="1" x="-0.86" y="12" as="geometry" />
         </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=32;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ImageSlotController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="128" width="382" x="230" y="3430" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-2" connectable="0" parent="8nm0jIO1hNWP9Sb1o7cx-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ state: StateFlow&amp;lt;ImageSlotState&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="382" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-3" connectable="0" parent="8nm0jIO1hNWP9Sb1o7cx-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ select(photo: SelectedPhoto?): Unit&lt;br&gt;+ save(): Unit&lt;br&gt;+ clearAttachment(): Unit" vertex="1">
+          <mxGeometry height="66" width="382" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-4" connectable="0" parent="8nm0jIO1hNWP9Sb1o7cx-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="382" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-5" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=52;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="«interface»&lt;br&gt;&lt;b&gt;ImageRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="130" width="442" x="190" y="3660" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-6" connectable="0" parent="8nm0jIO1hNWP9Sb1o7cx-5" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ observe(target: ImageTarget): Flow&amp;lt;ImageAttachment?&amp;gt;&lt;br&gt;+ replace(target: ImageTarget, upload: ImageUpload): ImageUpdateResult&lt;br&gt;+ delete(target: ImageTarget): ImageUpdateResult" vertex="1">
+          <mxGeometry height="66" width="442" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-7" connectable="0" parent="8nm0jIO1hNWP9Sb1o7cx-5" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="442" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-8" edge="1" parent="1" source="8nm0jIO1hNWP9Sb1o7cx-1" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1;startSize=14;endSize=14;fontColor=#000000;fontFamily=Arial;fontSize=14;exitX=0.5;exitY=1;entryX=0.52;entryY=0;exitPerimeter=0;entryPerimeter=0;startArrow=none;endArrow=open;endFill=0;" target="8nm0jIO1hNWP9Sb1o7cx-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="8nm0jIO1hNWP9Sb1o7cx-9" connectable="0" parent="8nm0jIO1hNWP9Sb1o7cx-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="images" vertex="1">
+          <mxGeometry relative="1" y="-10" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
