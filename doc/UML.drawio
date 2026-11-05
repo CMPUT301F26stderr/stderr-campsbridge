@@ -669,6 +669,15 @@
         <mxCell id="emLp8tbJB-BbBfuEufGA-3" connectable="0" parent="emLp8tbJB-BbBfuEufGA-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
           <mxGeometry width="300" y="224" as="geometry" />
         </mxCell>
+        <mxCell id="9QPmOhFLBqf7kPjm8rk5-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=32;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ProfileUpdate&lt;/b&gt;" vertex="1">
+          <mxGeometry height="110" width="300" x="710" y="2610" as="geometry" />
+        </mxCell>
+        <mxCell id="9QPmOhFLBqf7kPjm8rk5-2" connectable="0" parent="9QPmOhFLBqf7kPjm8rk5-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ name: String&lt;br&gt;+ email: String?&lt;br&gt;+ phone: String?" vertex="1">
+          <mxGeometry height="66" width="300" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="9QPmOhFLBqf7kPjm8rk5-3" connectable="0" parent="9QPmOhFLBqf7kPjm8rk5-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="300" y="98" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
