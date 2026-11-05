@@ -40,35 +40,38 @@ fun NotificationAudienceScreen(
     state: NotificationLogAudienceState,
     onRetry: () -> Unit,
 ) {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
-        state.id?.let { DetailRow(stringResource(R.string.log_event_id), it) }
-        Text(stringResource(R.string.log_delivery_explanation), style = MaterialTheme.typography.bodySmall)
+    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
+        state.id?.let { id -> item("event-id") { DetailRow(stringResource(R.string.log_event_id), id) } }
+        item("delivery-explanation") {
+            Text(stringResource(R.string.log_delivery_explanation), style = MaterialTheme.typography.bodySmall)
+        }
         when (state) {
             NotificationLogAudienceState.Idle, is NotificationLogAudienceState.Loading -> {
-                LoadingContent(stringResource(R.string.log_audience_loading))
+                item("loading") { LoadingContent(stringResource(R.string.log_audience_loading)) }
             }
 
             is NotificationLogAudienceState.Failure -> {
-                FailureContent(stringResource(R.string.log_audience_failed), onRetry)
+                item("failure") { FailureContent(stringResource(R.string.log_audience_failed), onRetry) }
             }
 
             is NotificationLogAudienceState.Content -> {
                 when (val audience = state.audience) {
                     NotificationAudience.NoRecordedInformation -> {
-                        EmptyContent(stringResource(R.string.log_audience_no_information))
+                        item("no-information") { EmptyContent(stringResource(R.string.log_audience_no_information)) }
                     }
 
                     is NotificationAudience.Unavailable -> {
-                        Text(audienceUnavailableText(audience.reason))
+                        item("unavailable") { Text(audienceUnavailableText(audience.reason)) }
                     }
 
                     is NotificationAudience.Recorded -> {
                         if (audience.members.isEmpty()) {
-                            EmptyContent(stringResource(R.string.log_audience_empty))
+                            item("empty") { EmptyContent(stringResource(R.string.log_audience_empty)) }
                         } else {
-                            LazyColumn(verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
-                                items(audience.members, key = { it.accountId }) { NotificationLogRecipientRow(it) }
-                            }
+                            items(
+                                audience.members,
+                                key = { "recipient:${it.accountId}" },
+                            ) { NotificationLogRecipientRow(it) }
                         }
                     }
                 }
