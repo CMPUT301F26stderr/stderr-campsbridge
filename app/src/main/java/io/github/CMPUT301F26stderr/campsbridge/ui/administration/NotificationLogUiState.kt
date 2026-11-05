@@ -47,21 +47,25 @@ data class NotificationLogDetailUiState(
 
 /** Recipient reads belong only to the currently displayed audience page. */
 sealed interface NotificationLogAudienceState {
+    val id: String?
+
     /** No audience page is requesting data. */
-    data object Idle : NotificationLogAudienceState
+    data object Idle : NotificationLogAudienceState {
+        override val id: String? = null
+    }
 
     /** One exact event's audience read is pending.
      * @param id Original event identity.
      */
     data class Loading(
-        val id: String,
+        override val id: String,
     ) : NotificationLogAudienceState
 
     /** A required audience read failed, independently of the event and list.
      * @param id Original event identity.
      */
     data class Failure(
-        val id: String,
+        override val id: String,
     ) : NotificationLogAudienceState
 
     /** Recorded facts, confirmed empty membership, absence of information, or unavailability.
@@ -69,7 +73,7 @@ sealed interface NotificationLogAudienceState {
      * @param audience Repository-supplied recipient facts, without OS delivery assumptions.
      */
     data class Content(
-        val id: String,
+        override val id: String,
         val audience: NotificationAudience,
     ) : NotificationLogAudienceState
 }

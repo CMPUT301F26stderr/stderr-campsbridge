@@ -51,7 +51,8 @@ class NotificationLogViewModel(
     val detail = mutableDetail.asStateFlow()
     private var detailJob: Job? = null
     private var detailVersion = 0L
-    val audience = MutableStateFlow<NotificationLogAudienceState>(NotificationLogAudienceState.Idle).asStateFlow()
+    private val audienceReader = NotificationLogAudienceReader(notifications, viewModelScope)
+    val audience = audienceReader.state
 
     init {
         observeEvents()
@@ -110,10 +111,14 @@ class NotificationLogViewModel(
     /** Starts or retires the audience page's read.
      * @param visible Whether the selected audience page is displayed.
      */
-    fun setAudienceVisible(visible: Boolean) {}
+    fun setAudienceVisible(visible: Boolean) {
+        if (!closed) audienceReader.show(detail.value.id.takeIf { visible })
+    }
 
     /** Retries only the current audience query. */
-    fun retryAudience() {}
+    fun retryAudience() {
+        if (!closed) audienceReader.retry()
+    }
 
     /** Keeps known immutable facts while the shared reader resolves optional context.
      * @param id Exact currently selected original event identity.
@@ -211,6 +216,7 @@ class NotificationLogViewModel(
         listJob?.cancel()
         detailVersion++
         detailJob?.cancel()
+        audienceReader.close()
         super.onCleared()
     }
 }
