@@ -16,6 +16,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotControl
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -47,6 +48,10 @@ class ProfileViewModel(
     val state = mutableState.asStateFlow()
     private val mutableNotificationPreference = MutableStateFlow(NotificationPreferenceUiState())
     val notificationPreference = mutableNotificationPreference.asStateFlow()
+    private var notificationJob: Job? = null
+    private var notificationClosed = false
+    private var awaitingNotificationObservation: Boolean? = null
+
     private var observation: Job? = null
     private val photoController =
         ImageSlotController(images, ImageTarget(ImageTargetType.ACCOUNT, accountId), viewModelScope)
@@ -76,13 +81,91 @@ class ProfileViewModel(
         MutableStateFlow(savedState["profileOwnerWorkspaceRequested"] ?: false)
     val ownerWorkspaceRequested = mutableOwnerWorkspaceRequested.asStateFlow()
 
-    /** Keeps a preference request pending until its persistence contract is connected.
-     * @param enabled Requested app-alert preference; no success is simulated.
+    /** Saves one app-alert preference without changing permission or unrelated profile/photo input.
+     * The displayed value stays confirmed until acknowledgement; errors retain an explicit retry.
+     * @param enabled Requested saved preference.
      */
-    fun setNotificationsEnabled(enabled: Boolean) { }
+    fun setNotificationsEnabled(enabled: Boolean) {
+        if (notificationClosed) return
+        val current = notificationAccount() ?: return
+        val previous = notificationPreference.value
+        if (previous.isSaving || previous.enabled == null) return
+        if (previous.enabled == enabled) {
+            if (previous.saveFailed && previous.requestedEnabled == enabled) {
+                mutableNotificationPreference.value =
+                    previous.copy(
+                        requestedEnabled = null,
+                        saveFailed = false,
+                    )
+            }
+            return
+        }
+        val settings = current.settings.copy(notificationsEnabled = enabled)
+        mutableNotificationPreference.value =
+            previous.copy(
+                requestedEnabled = enabled,
+                isSaving = true,
+                saveFailed = false,
+                canChange = false,
+            )
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                try {
+                    accounts.updateSettings(accountId, settings)
+                    currentCoroutineContext().ensureActive()
+                    if (notificationClosed) return@launch
+                    awaitingNotificationObservation = enabled
+                    mutableNotificationPreference.value =
+                        notificationPreference.value.copy(
+                            enabled = enabled,
+                            requestedEnabled = null,
+                            isSaving = false,
+                            saveFailed = false,
+                        )
+                    publishNotificationPreference()
+                } catch (cancelled: CancellationException) {
+                    if (!notificationClosed) failNotificationPreference()
+                    throw cancelled
+                } catch (_: Exception) {
+                    currentCoroutineContext().ensureActive()
+                    if (!notificationClosed) failNotificationPreference()
+                }
+            }
+        notificationJob = pending
+        pending.start()
+    }
 
-    /** Keeps explicit retry disabled until preference persistence is connected. */
+    /** Retries only the retained failed app-alert preference after explicit user action. */
     fun retryNotificationPreference() { }
+
+    /** Returns only the current readable active account for this graph's exact identity. */
+    private fun notificationAccount(): Account? =
+        account?.takeIf { !loading && !loadFailed && it.id == accountId && it.isActive }
+
+    /** Retains the confirmed display and failed target without replaying a write. */
+    private fun failNotificationPreference() {
+        awaitingNotificationObservation = notificationPreference.value.enabled
+        mutableNotificationPreference.value =
+            notificationPreference.value.copy(
+                isSaving = false,
+                saveFailed = true,
+            )
+        publishNotificationPreference()
+    }
+
+    /** Holds acknowledged preference values until the sole account observer catches up. */
+    private fun publishNotificationPreference() {
+        if (notificationClosed) return
+        val current = notificationAccount()
+        val previous = notificationPreference.value
+        var enabled = previous.enabled
+        if (!previous.isSaving && current != null) enabled = current.settings.notificationsEnabled
+        mutableNotificationPreference.value =
+            previous.copy(
+                enabled = enabled,
+                canChange = current != null && !previous.isSaving,
+            )
+    }
 
     /** Reads the same account and adds hosting when needed, then waits for acknowledged/observed capability.
      * Interrupted attempts reconcile by server read; this operation never creates another profile.
@@ -460,5 +543,6 @@ class ProfileViewModel(
                     )
                 }
             }
+        publishNotificationPreference()
     }
 }
