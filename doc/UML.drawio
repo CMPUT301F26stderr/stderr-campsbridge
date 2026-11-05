@@ -333,7 +333,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="hvT20Ri4xHA-ost2JuPR" name="UML_Diagram">
-    <mxGraphModel dx="1674" dy="2630" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="485" dy="981" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -951,11 +951,20 @@
         <mxCell id="xhuol1T4v1gge1RNOD_U-3" connectable="0" parent="xhuol1T4v1gge1RNOD_U-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
           <mxGeometry width="405" y="64" as="geometry" />
         </mxCell>
+        <mxCell id="becnvyvJ2J-wRLdYCRf8-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=32;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;LotteryEntry&lt;/b&gt;" vertex="1">
+          <mxGeometry height="146" width="352" x="2620" y="2870" as="geometry" />
+        </mxCell>
+        <mxCell id="becnvyvJ2J-wRLdYCRf8-2" connectable="0" parent="becnvyvJ2J-wRLdYCRf8-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ lotteryId: String&lt;br&gt;+ accountId: String&lt;br&gt;+ state: EntryState&lt;br&gt;+ joinedAt: Instant&lt;br&gt;+ stateChangedAt: Instant" vertex="1">
+          <mxGeometry height="102" width="352" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="becnvyvJ2J-wRLdYCRf8-3" connectable="0" parent="becnvyvJ2J-wRLdYCRf8-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="352" y="134" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="J1A6YTeUr51gc_qvPRDk" name="Page-5">
-    <mxGraphModel dx="510" dy="216" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="393" dy="54" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1040,7 +1049,9 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="31-26zZFyre8xve7wqQr-26" connectable="0" parent="31-26zZFyre8xve7wqQr-25" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="contains offers" vertex="1">
-          <mxGeometry relative="1" y="-10" as="geometry" />
+          <mxGeometry relative="1" y="-10" as="geometry">
+            <mxPoint x="-44" y="21" as="offset" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="31-26zZFyre8xve7wqQr-27" connectable="0" parent="31-26zZFyre8xve7wqQr-25" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="1" vertex="1">
           <mxGeometry relative="1" x="-0.86" y="12" as="geometry" />
@@ -1057,7 +1068,9 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="31-26zZFyre8xve7wqQr-30" connectable="0" parent="31-26zZFyre8xve7wqQr-29" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="records entries" vertex="1">
-          <mxGeometry relative="1" y="-10" as="geometry" />
+          <mxGeometry relative="1" y="-10" as="geometry">
+            <mxPoint x="-56" y="2" as="offset" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="31-26zZFyre8xve7wqQr-31" connectable="0" parent="31-26zZFyre8xve7wqQr-29" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="1" vertex="1">
           <mxGeometry relative="1" x="-0.86" y="12" as="geometry" />
