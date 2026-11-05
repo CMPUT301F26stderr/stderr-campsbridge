@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Owns admin log filters and independent original-event and recipient reads.
- * @param notifications All events and recorded recipients.
+/** Owns admin log filters and the selected original-event reader.
+ * @param notifications All readable immutable events.
  * @param loader Common immutable event/context reader.
  * @param savedState Small retained filters and selection.
  */
@@ -51,8 +51,6 @@ class NotificationLogViewModel(
     val detail = mutableDetail.asStateFlow()
     private var detailJob: Job? = null
     private var detailVersion = 0L
-    private val audienceReader = NotificationLogAudienceReader(notifications, viewModelScope)
-    val audience = audienceReader.state
 
     init {
         observeEvents()
@@ -92,7 +90,6 @@ class NotificationLogViewModel(
         detailVersion++
         detailJob?.cancel()
         detailJob = null
-        setAudienceVisible(false)
         savedState["notificationLogSelection"] = id
         mutableDetail.value =
             NotificationLogDetailUiState(
@@ -106,18 +103,6 @@ class NotificationLogViewModel(
     fun retryDetail() {
         val id = detail.value.id ?: return
         if (!closed && detailJob?.isActive != true) loadDetail(id)
-    }
-
-    /** Starts or retires the audience page's read.
-     * @param visible Whether the selected audience page is displayed.
-     */
-    fun setAudienceVisible(visible: Boolean) {
-        if (!closed) audienceReader.show(detail.value.id.takeIf { visible })
-    }
-
-    /** Retries only the current audience query. */
-    fun retryAudience() {
-        if (!closed) audienceReader.retry()
     }
 
     /** Keeps known immutable facts while the shared reader resolves optional context.
@@ -216,7 +201,6 @@ class NotificationLogViewModel(
         listJob?.cancel()
         detailVersion++
         detailJob?.cancel()
-        audienceReader.close()
         super.onCleared()
     }
 }
