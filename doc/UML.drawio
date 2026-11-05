@@ -690,6 +690,15 @@
         <mxCell id="LRtNMbIitdRumrqZrPn_-4" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="1" vertex="1">
           <mxGeometry x="1110" y="2402.4799888048783" as="geometry" />
         </mxCell>
+        <mxCell id="mytzb4A_K2U04XUwVC71-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=32;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;AccountSettings&lt;/b&gt;" vertex="1">
+          <mxGeometry height="128" width="258" x="1110" y="2490" as="geometry" />
+        </mxCell>
+        <mxCell id="mytzb4A_K2U04XUwVC71-2" connectable="0" parent="mytzb4A_K2U04XUwVC71-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ notificationsEnabled: Boolean&lt;br&gt;+ colorMode: ColorMode&lt;br&gt;+ fontScale: Double&lt;br&gt;+ controlScale: Double" vertex="1">
+          <mxGeometry height="84" width="258" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="mytzb4A_K2U04XUwVC71-3" connectable="0" parent="mytzb4A_K2U04XUwVC71-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="258" y="116" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
