@@ -942,6 +942,15 @@
         <mxCell id="H6KzX9lzAI8jbyD79ZQl-4" connectable="0" parent="H6KzX9lzAI8jbyD79ZQl-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
           <mxGeometry width="360" y="188" as="geometry" />
         </mxCell>
+        <mxCell id="xhuol1T4v1gge1RNOD_U-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=52;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="«interface»&lt;br&gt;&lt;b&gt;LotteryRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="220" width="405" x="2710" y="3280" as="geometry" />
+        </mxCell>
+        <mxCell id="xhuol1T4v1gge1RNOD_U-2" connectable="0" parent="xhuol1T4v1gge1RNOD_U-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ observe(id: String): Flow&amp;lt;Lottery?&amp;gt;&lt;br&gt;+ observeOffers(id: String): Flow&amp;lt;List&amp;lt;LotteryOffer&amp;gt;&amp;gt;&lt;br&gt;+ observeEntries(id: String): Flow&amp;lt;List&amp;lt;LotteryEntry&amp;gt;&amp;gt;&lt;br&gt;+ setOffer(id: String, ownerId: String, offer: LotteryOffer): Unit&lt;br&gt;+ publish(id: String, ownerId: String): Unit&lt;br&gt;+ join(id: String, accountId: String): Unit&lt;br&gt;+ withdraw(id: String, accountId: String): Unit&lt;br&gt;+ draw(id: String): DrawResult" vertex="1">
+          <mxGeometry height="156" width="405" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="xhuol1T4v1gge1RNOD_U-3" connectable="0" parent="xhuol1T4v1gge1RNOD_U-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="405" y="64" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
