@@ -134,4 +134,28 @@ class AdminInspectionFlowTest {
         }
     }
 
+    @Test fun confirmedCampsiteParentOpensReadOnlyInspectionBySavedIdentity() {
+        val site = sampleCampsite("site/one ?", profile.id)
+        val siteTarget = ImageTarget(ImageTargetType.CAMPSITE, site.id)
+        host.accounts.account.value = sampleAccount(setOf(Role.ADMIN))
+        host.campsites.records.value = listOf(site)
+        host.images.attachment.value = ImageAttachment(siteTarget, "blob-site", Instant.EPOCH)
+        host.images.urlResults["blob-site"] = fixturePhotoUri().toString()
+        compose.setContent { host.Content() }
+        compose.onNodeWithText("Images").performClick()
+        compose.onNodeWithText("Campsite \u00b7 ${site.id}").performClick()
+        compose
+            .onNodeWithText(
+                "Inspect campsite",
+            ).performScrollTo()
+            .assertIsEnabled()
+            .performClick()
+        compose.onNodeWithText("Campsite inspection").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Image inspection").assertIsDisplayed()
+        compose.runOnIdle {
+            assertTrue(host.images.observedTargets.all { it == siteTarget })
+            assertEquals(0, host.campsites.writeCalls)
+        }
+    }
 }
