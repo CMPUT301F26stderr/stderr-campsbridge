@@ -254,3 +254,57 @@ private fun AdminProfileContentPreview() {
     )
 }
 
+@Preview(showBackground = true, widthDp = 390, heightDp = 900, fontScale = 1.5f)
+@Composable
+private fun AdminProfileRemovedPreview() {
+    ProfileInspectionPreview(
+        AdminInspectionUiState.Profile(
+            "preview-owner",
+            AdminRead.Content(
+                inspectionPreviewAccount().copy(
+                    name = "",
+                    email = null,
+                    roles = emptySet(),
+                    removal = Removal(Instant.EPOCH, "admin", null),
+                ),
+            ),
+            AdminRead.Content(emptyList()),
+            ImageSlotState(loadState = ImageLoadState.READY),
+        ),
+    )
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminProfileLoadingPreview() {
+    ProfileInspectionPreview(AdminInspectionUiState.Profile("preview-owner"))
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminProfileFailurePreview() {
+    ProfileInspectionPreview(
+        AdminInspectionUiState.Profile("preview-owner", account = AdminRead.Failure),
+    )
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun AdminProfileUnavailablePreview() {
+    ProfileInspectionPreview(
+        AdminInspectionUiState.Profile("missing-owner", account = AdminRead.Unavailable),
+    )
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 900)
+@Composable
+private fun AdminProfileSectionFailuresPreview() {
+    ProfileInspectionPreview(
+        AdminInspectionUiState.Profile(
+            "preview-owner",
+            AdminRead.Content(inspectionPreviewAccount()),
+            AdminRead.Failure,
+            ImageSlotState(loadState = ImageLoadState.FAILED),
+        ),
+    )
+}
