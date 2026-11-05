@@ -61,116 +61,104 @@ fun InboxScreen(
             contentPadding = PaddingValues(vertical = Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
-            when (state) {
-                InboxUiState.Loading -> {
-                    item { LoadingContent() }
-                }
+            if (state.source == InboxSourceState.LOADING) {
+                item { LoadingContent() }
+            }
 
-                InboxUiState.Failure -> {
+            if (state.source == InboxSourceState.FAILURE) {
+                item {
+                    FailureContent(stringResource(R.string.inbox_source_failure), onRetry)
+                }
+            }
+            if (state.saveFailed) {
+                item {
+                    Column(Modifier.padding(Spacing.medium)) {
+                        Text(stringResource(R.string.inbox_ack_failure))
+                        Button(onClick = onRetryMarkRead) {
+                            Text(stringResource(R.string.inbox_retry_ack))
+                        }
+                    }
+                }
+            }
+            if (state.source == InboxSourceState.READY && state.items.isEmpty() &&
+                state.unavailable.isEmpty()
+            ) {
+                item { EmptyContent(stringResource(R.string.inbox_empty)) }
+            } else {
+                if (state.unavailable.isNotEmpty()) {
                     item {
-                        FailureContent(stringResource(R.string.inbox_source_failure), onRetry)
+                        Text(
+                            stringResource(R.string.inbox_unavailable_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
                     }
-                }
-
-                InboxUiState.Unavailable -> {
-                    item { EmptyContent(stringResource(R.string.inbox_empty)) }
-                }
-
-                is InboxUiState.Content -> {
-                    if (state.sourceFailed) {
-                        item {
-                            FailureContent(stringResource(R.string.inbox_source_failure), onRetry)
+                    items(state.unavailable, key = { it.receipt.notificationId }) { unavail ->
+                        Column(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(Spacing.medium)
+                                    .testTag("inbox-receipt-${unavail.receipt.notificationId}"),
+                        ) {
+                            Text(
+                                stringResource(R.string.inbox_unavailable_row),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
                         }
                     }
-                    if (state.saveFailed) {
-                        item {
-                            Column(Modifier.padding(Spacing.medium)) {
-                                Text(stringResource(R.string.inbox_ack_failure))
-                                Button(onClick = onRetryMarkRead) {
-                                    Text(stringResource(R.string.inbox_retry_ack))
+                    item {
+                        Button(onClick = onRetry) { Text(stringResource(R.string.inbox_retry_notification)) }
+                    }
+                }
+                items(state.items, key = { it.notification.id }) { item ->
+                    val isUnavailableSubject =
+                        item.subject is NotificationSubjectContent.Unavailable ||
+                            item.subject is NotificationSubjectContent.Failure ||
+                            item.subject is NotificationSubjectContent.Unsupported
+
+                    val title = stringResource(notificationTitleResource(item.notification.type))
+                    if (isUnavailableSubject) {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(Spacing.medium)
+                                .testTag("inbox-event-${item.notification.id}"),
+                        ) {
+                            Text(title)
+                            val body =
+                                when (item.subject) {
+                                    NotificationSubjectContent.Unsupported -> {
+                                        stringResource(
+                                            R.string.inbox_unsupported_body,
+                                        )
+                                    }
+
+                                    NotificationSubjectContent.Unavailable -> {
+                                        stringResource(
+                                            R.string.inbox_context_unavailable,
+                                        )
+                                    }
+
+                                    NotificationSubjectContent.Failure -> {
+                                        stringResource(
+                                            R.string.inbox_context_failed,
+                                        )
+                                    }
+
+                                    is NotificationSubjectContent.LotteryContent,
+                                    is NotificationSubjectContent.ReservationContent,
+                                    -> {
+                                        ""
+                                    }
                                 }
-                            }
+                            Text(body)
                         }
-                    }
-                    if (state.items.isEmpty() && state.unavailable.isEmpty()) {
-                        item { EmptyContent(stringResource(R.string.inbox_empty)) }
                     } else {
-                        if (state.unavailable.isNotEmpty()) {
-                            item {
-                                Text(
-                                    stringResource(R.string.inbox_unavailable_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            }
-                            items(state.unavailable, key = { it.receipt.notificationId }) { unavail ->
-                                Column(
-                                    modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(Spacing.medium)
-                                            .testTag("inbox-receipt-${unavail.receipt.notificationId}"),
-                                ) {
-                                    Text(
-                                        stringResource(R.string.inbox_unavailable_row),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                    )
-                                }
-                            }
-                            item {
-                                Button(onClick = onRetry) { Text(stringResource(R.string.inbox_retry_notification)) }
-                            }
-                        }
-                        items(state.items, key = { it.notification.id }) { item ->
-                            val isUnavailableSubject =
-                                item.subject is NotificationSubjectContent.Unavailable ||
-                                    item.subject is NotificationSubjectContent.Failure ||
-                                    item.subject is NotificationSubjectContent.Unsupported
-
-                            val title = stringResource(notificationTitleResource(item.notification.type))
-                            if (isUnavailableSubject) {
-                                Column(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(Spacing.medium)
-                                        .testTag("inbox-event-${item.notification.id}"),
-                                ) {
-                                    Text(title)
-                                    val body =
-                                        when (item.subject) {
-                                            NotificationSubjectContent.Unsupported -> {
-                                                stringResource(
-                                                    R.string.inbox_unsupported_body,
-                                                )
-                                            }
-
-                                            NotificationSubjectContent.Unavailable -> {
-                                                stringResource(
-                                                    R.string.inbox_context_unavailable,
-                                                )
-                                            }
-
-                                            NotificationSubjectContent.Failure -> {
-                                                stringResource(
-                                                    R.string.inbox_context_failed,
-                                                )
-                                            }
-
-                                            is NotificationSubjectContent.LotteryContent,
-                                            is NotificationSubjectContent.ReservationContent,
-                                            -> {
-                                                ""
-                                            }
-                                        }
-                                    Text(body)
-                                }
-                            } else {
-                                InboxItemRow(
-                                    item = item,
-                                    onClick = { onOpenItem(item) },
-                                    modifier = Modifier.testTag("inbox-event-${item.notification.id}"),
-                                )
-                            }
-                        }
+                        InboxItemRow(
+                            item = item,
+                            onClick = { onOpenItem(item) },
+                            modifier = Modifier.testTag("inbox-event-${item.notification.id}"),
+                        )
                     }
                 }
             }
@@ -278,28 +266,28 @@ private fun InboxPreviewHost(state: InboxUiState) {
 @Preview(showBackground = true, widthDp = 360, heightDp = 780)
 @Composable
 private fun InboxLoadingPreview() {
-    InboxPreviewHost(InboxUiState.Loading)
+    InboxPreviewHost(InboxUiState())
 }
 
 /** Previews a source failure before any rows load. */
 @Preview(showBackground = true, widthDp = 360, heightDp = 780)
 @Composable
 private fun InboxFailurePreview() {
-    InboxPreviewHost(InboxUiState.Failure)
+    InboxPreviewHost(InboxUiState(source = InboxSourceState.FAILURE))
 }
 
 /** Previews an account with no notifications. */
 @Preview(showBackground = true, widthDp = 360, heightDp = 780)
 @Composable
 private fun InboxEmptyPreview() {
-    InboxPreviewHost(InboxUiState.Content(items = emptyList()))
+    InboxPreviewHost(InboxUiState(source = InboxSourceState.READY, items = emptyList()))
 }
 
 /** Previews loaded rows. */
 @Preview(showBackground = true, widthDp = 360, heightDp = 780)
 @Composable
 private fun InboxContentPreview() {
-    InboxPreviewHost(InboxUiState.Content(items = previewInboxItems(), unreadCount = 1))
+    InboxPreviewHost(InboxUiState(source = InboxSourceState.READY, items = previewInboxItems(), unreadCount = 1))
 }
 
 /** Previews stale rows with source, read and missing-event failures. */
@@ -307,7 +295,7 @@ private fun InboxContentPreview() {
 @Composable
 private fun InboxRecoveryPreview() {
     InboxPreviewHost(
-        InboxUiState.Content(
+        InboxUiState(
             items = previewInboxItems(),
             unavailable =
                 listOf(
@@ -318,7 +306,7 @@ private fun InboxRecoveryPreview() {
                 ),
             unreadCount = 2,
             saveFailed = true,
-            sourceFailed = true,
+            source = InboxSourceState.FAILURE,
         ),
     )
 }

@@ -22,7 +22,7 @@ fun InboxRoute(
     val state by model.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(state) {
-        val content = state as? InboxUiState.Content ?: return@LaunchedEffect
+        val content = state
         val opening = content.openingItem ?: return@LaunchedEffect
         model.consumeOpen()
         when (val subject = opening.subject) {

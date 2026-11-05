@@ -2,9 +2,11 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.sortInboxItems
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.unreadInboxCount
 import kotlinx.coroutines.CancellationException
@@ -20,15 +22,28 @@ import kotlinx.coroutines.launch
  * @param accountId Recipient account.
  * @param notifications Source of receipts and read acknowledgements.
  * @param content Loads each receipt's event and subject.
- * @param sorter Orders loaded rows.
+ * @param sorter Orders loaded rows; null leaves the helper pending.
+ * @param countUnread Counts original unread receipts; null leaves the helper pending.
  */
 class InboxViewModel(
     val accountId: String,
     private val notifications: NotificationRepository,
     private val content: NotificationContentLoader,
-    private val sorter: (List<InboxItem>) -> List<InboxItem> = ::sortInboxItems,
+    private val sorter: ((List<InboxItem>) -> List<InboxItem>)? = ::sortInboxItems,
+    private val countUnread: (
+        (
+            List<InboxReceipt>,
+        ) -> Int
+    )? = ::unreadInboxCount,
 ) : ViewModel() {
-    private val mutableState = MutableStateFlow<InboxUiState>(InboxUiState.Loading)
+    private val mutableState =
+        MutableStateFlow(
+            InboxUiState(
+                orderingPending = sorter == null,
+                unreadCountPending =
+                    countUnread == null,
+            ),
+        )
     val state = mutableState.asStateFlow()
     private var observation: Job? = null
     private var failedReadItem: InboxItem? = null
@@ -40,13 +55,13 @@ class InboxViewModel(
     /** Restarts the live source, keeping any rows that already loaded. */
     fun retry() {
         observation?.cancel()
-        val known = mutableState.value as? InboxUiState.Content
-        mutableState.value = known?.copy(sourceFailed = false) ?: InboxUiState.Loading
+        val known = mutableState.value
+        mutableState.value = known.copy(source = InboxSourceState.LOADING)
         observation =
             viewModelScope.launch {
                 try {
                     notifications.observeInbox(accountId).collectLatest { receipts ->
-                        val unread = unreadInboxCount(receipts)
+                        val unread = countUnread?.invoke(receipts)
                         val items = mutableListOf<InboxItem>()
                         val unavailable = mutableListOf<UnavailableInboxReceipt>()
 
@@ -93,30 +108,57 @@ class InboxViewModel(
                         }
 
                         // A new snapshot mustn't lose a pending open or a failed read.
-                        val previous = mutableState.value as? InboxUiState.Content
+                        val previous = mutableState.value
                         mutableState.value =
-                            (previous ?: InboxUiState.Content(emptyList())).copy(
-                                items = sorter(items),
+                            previous.copy(
+                                items = sorter?.invoke(items) ?: items,
                                 unavailable = unavailable,
                                 unreadCount = unread,
-                                sourceFailed = false,
+                                source = InboxSourceState.READY,
                             )
                     }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
                     currentCoroutineContext().ensureActive()
-                    val known = mutableState.value as? InboxUiState.Content
-                    mutableState.value = known?.copy(sourceFailed = true) ?: InboxUiState.Failure
+                    val known = mutableState.value
+                    mutableState.value = known.copy(source = InboxSourceState.FAILURE)
                 }
             }
+    }
+
+    /** Retries content through the existing source until individual reads are installed.
+     * @param notificationId Retained event identity.
+     */
+    fun retryItem(notificationId: String) {
+        if (state.value.items.any { it.notification.id == notificationId } ||
+            state.value.unavailable.any { it.receipt.notificationId == notificationId }
+        ) {
+            retry()
+        }
+    }
+
+    /** Selects a current supported row, ignoring unresolved context.
+     * @param notificationId Retained event identity.
+     */
+    fun openItem(notificationId: String) {
+        val item = state.value.items.firstOrNull { it.notification.id == notificationId } ?: return
+        if (item.isLoading ||
+            (
+                item.subject !is NotificationSubjectContent.LotteryContent &&
+                    item.subject !is NotificationSubjectContent.ReservationContent
+            )
+        ) {
+            return
+        }
+        open(item)
     }
 
     /** Requests navigation and marks the row read, ignoring taps while one is pending.
      * @param item Row the user tapped.
      */
     fun open(item: InboxItem) {
-        val current = state.value as? InboxUiState.Content ?: return
+        val current = state.value
         if (current.openingItem != null || current.operation != InboxOperation.IDLE) return
         mutableState.value = current.copy(openingItem = item, operation = InboxOperation.OPENING)
         viewModelScope.launch {
@@ -129,7 +171,7 @@ class InboxViewModel(
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
                 failedReadItem = item
-                val latest = state.value as? InboxUiState.Content
+                val latest = state.value
                 if (latest != null) {
                     mutableState.value =
                         latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
@@ -137,7 +179,7 @@ class InboxViewModel(
                 return@launch
             }
             failedReadItem = null
-            val latest = state.value as? InboxUiState.Content
+            val latest = state.value
             if (latest != null) {
                 mutableState.value =
                     latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
@@ -148,7 +190,7 @@ class InboxViewModel(
     /** Retries the last failed read acknowledgement, ignoring taps while an action is pending. */
     fun retryMarkRead() {
         val item = failedReadItem ?: return
-        val current = state.value as? InboxUiState.Content ?: return
+        val current = state.value
         if (current.operation != InboxOperation.IDLE) return
         mutableState.value = current.copy(operation = InboxOperation.MARKING_READ)
         viewModelScope.launch {
@@ -158,7 +200,7 @@ class InboxViewModel(
                 throw cancelled
             } catch (_: Exception) {
                 currentCoroutineContext().ensureActive()
-                val latest = state.value as? InboxUiState.Content
+                val latest = state.value
                 if (latest != null) {
                     mutableState.value =
                         latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
@@ -166,7 +208,7 @@ class InboxViewModel(
                 return@launch
             }
             failedReadItem = null
-            val latest = state.value as? InboxUiState.Content
+            val latest = state.value
             if (latest != null) {
                 mutableState.value =
                     latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
@@ -176,7 +218,7 @@ class InboxViewModel(
 
     /** Clears the open request once the route has navigated. */
     fun consumeOpen() {
-        val current = state.value as? InboxUiState.Content ?: return
+        val current = state.value
         if (current.openingItem != null) {
             mutableState.value = current.copy(openingItem = null)
         }
