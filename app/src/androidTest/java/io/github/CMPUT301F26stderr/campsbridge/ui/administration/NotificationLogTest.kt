@@ -67,7 +67,7 @@ class NotificationLogTest {
         f.host.lotteries.getHandler = { throw IOException("context offline") }
         f.start(compose)
         compose.onNodeWithTag("notification-log-event:${f.event.id}").performClick()
-        compose.onNodeWithText("Bring drinking water.").assertIsDisplayed()
+        compose.onNodeWithText("Bring drinking water.").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Could not load the linked record.").performScrollTo().assertIsDisplayed()
         compose.runOnIdle { f.host.lotteries.getHandler = { null } }
         compose.onNodeWithText("Retry event details").performScrollTo().performClick()
