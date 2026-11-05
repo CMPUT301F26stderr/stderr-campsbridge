@@ -5,12 +5,13 @@ import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
@@ -31,7 +32,6 @@ fun NotificationSettingsRoute(
     var device by remember(permission) { mutableStateOf(permission.status()) }
     var settingsUnavailable by remember { mutableStateOf(false) }
     val owner = LocalLifecycleOwner.current
-    val lifecycle by owner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
     val permissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
             device = permission.status()
@@ -40,8 +40,13 @@ fun NotificationSettingsRoute(
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             device = permission.status()
         }
-    LaunchedEffect(permission, lifecycle) {
-        if (owner.lifecycle.currentState == Lifecycle.State.RESUMED) device = permission.status()
+    DisposableEffect(owner, permission) {
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) device = permission.status()
+            }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
     }
     NotificationSettingsScreen(
         source,
