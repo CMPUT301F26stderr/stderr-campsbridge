@@ -22,4 +22,41 @@ import org.junit.Test
 class AdminProfileScreenTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun failedSectionsRetryIndependentlyAndKeepAccountVisible() {
+        var accountRetries = 0
+        var siteRetries = 0
+        var photoRetries = 0
+        compose.setContent {
+            CampsbridgeTheme {
+                AdminProfileScreen(
+                    AdminInspectionUiState.Profile(
+                        "account-1",
+                        AdminRead.Content(sampleAccount()),
+                        AdminRead.Failure,
+                        ImageSlotState(loadState = ImageLoadState.FAILED),
+                    ),
+                    {},
+                    { accountRetries++ },
+                    { siteRetries++ },
+                    { photoRetries++ },
+                    {},
+                )
+            }
+        }
+        compose.onNodeWithText("Alex Chen").assertIsDisplayed()
+        compose
+            .onNode(hasText("Retry") and hasAnyAncestor(hasTestTag("admin_profile_photo")))
+            .performScrollTo()
+            .performClick()
+        compose
+            .onNode(hasText("Retry") and hasAnyAncestor(hasTestTag("admin_profile_campsites")))
+            .performScrollTo()
+            .performClick()
+        compose.runOnIdle {
+            assertEquals(0, accountRetries)
+            assertEquals(1, photoRetries)
+            assertEquals(1, siteRetries)
+        }
+    }
+
 }
