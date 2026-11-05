@@ -26,6 +26,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.StaySummary
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -86,17 +87,19 @@ fun BookingReviewStep(
                     stringResource(R.string.booking_guests_required)
                 },
             )
-            Text(
-                stringResource(
-                    if (state.quote ==
-                        BookingQuote.Overflow
-                    ) {
-                        R.string.booking_quote_overflow
-                    } else {
-                        R.string.booking_quote_missing
-                    },
-                ),
-            )
+            if (quote != null) {
+                DetailRow(stringResource(R.string.total), formatCad(quote.totalCents, locale))
+            } else {
+                Text(
+                    stringResource(
+                        if (state.quote == BookingQuote.Overflow) {
+                            R.string.booking_quote_overflow
+                        } else {
+                            R.string.booking_quote_missing
+                        },
+                    ),
+                )
+            }
         }
     }
     if (state.error == BookingStepError.Dates(StaySelectionInput.UNAVAILABLE_NIGHTS)) {
