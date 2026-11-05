@@ -224,3 +224,33 @@ private fun AdminOwnedCampsite(
     )
 }
 
+private fun inspectionPreviewAccount() =
+    Account(
+        "preview-owner",
+        "Jordan Lee",
+        "jordan@example.ca",
+        null,
+        setOf(Role.ENTRANT, Role.OWNER),
+        Preferences(),
+        AccountSettings(),
+        Instant.EPOCH,
+    )
+
+@Composable
+private fun ProfileInspectionPreview(state: AdminInspectionUiState.Profile) {
+    CampsbridgeTheme { AdminProfileScreen(state, {}, {}, {}, {}, {}) }
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 900)
+@Composable
+private fun AdminProfileContentPreview() {
+    ProfileInspectionPreview(
+        AdminInspectionUiState.Profile(
+            "preview-owner",
+            AdminRead.Content(inspectionPreviewAccount()),
+            AdminRead.Content(listOf(previewCampsite())),
+            ImageSlotState(loadState = ImageLoadState.READY),
+        ),
+    )
+}
+
