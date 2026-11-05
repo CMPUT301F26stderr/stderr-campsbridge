@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Account-scoped receipt/content assembly with independent content reads.
+/** Account-scoped receipt/content assembly with independent read acknowledgements.
  * @param accountId Fixed active account; workspace changes do not change receipt ownership.
  * @param notifications Receipt observation and explicit first-read acknowledgements.
  * @param content Shared immutable event/context assembler.
@@ -48,13 +48,15 @@ class InboxViewModel(
     private var sourceJob: Job? = null
     private var sourceVersion = 0L
     private var nextContentVersion = 0L
+    private var nextReadVersion = 0L
     private var closed = false
     private val results = mutableMapOf<String, NotificationContent>()
     private val loading = mutableSetOf<String>()
     private val contentJobs = mutableMapOf<String, Job>()
     private val contentVersions = mutableMapOf<String, Long>()
-
-    private var failedReadItem: InboxItem? = null
+    private val readJobs = mutableMapOf<String, Job>()
+    private val readVersions = mutableMapOf<String, Long>()
+    private val readFailures = mutableSetOf<String>()
 
     init {
         observeReceipts()
@@ -91,6 +93,36 @@ class InboxViewModel(
         val pending = prepareContent(notificationId)
         publish()
         pending.start()
+    }
+
+    /** Opens supported loaded context and starts acknowledgement independently.
+     * @param notificationId Actual selected event identity.
+     */
+    fun openItem(notificationId: String) {
+        if (closed || mutableOpen.value != null || notificationId in loading) return
+        val receipt = receipt(notificationId) ?: return
+        val loaded = results[notificationId] as? NotificationContent.Loaded ?: return
+        if (loaded.subject !is NotificationSubjectContent.LotteryContent &&
+            loaded.subject !is NotificationSubjectContent.ReservationContent
+        ) {
+            return
+        }
+        mutableOpen.value = InboxOpenRequest(notificationId, loaded.notification.subject)
+        if (receipt.readAt == null) startReadAcknowledgement(notificationId)
+    }
+
+    /** Consumes only the matching local navigation request.
+     * @param notificationId Event whose route request was delivered.
+     */
+    fun acknowledgeOpen(notificationId: String) {
+        if (!closed && mutableOpen.value?.notificationId == notificationId) mutableOpen.value = null
+    }
+
+    /** Explicitly retries a failed first-read acknowledgement without opening any destination.
+     * @param notificationId Retained failed receipt identity.
+     */
+    fun retryReadAcknowledgement(notificationId: String) {
+        if (!closed && notificationId in readFailures) startReadAcknowledgement(notificationId)
     }
 
     /**
@@ -136,8 +168,13 @@ class InboxViewModel(
                 contentJobs.remove(id)?.cancel()
                 results.remove(id)
                 loading.remove(id)
+                readVersions.remove(id)
+                readJobs.remove(id)?.cancel()
+                readFailures.remove(id)
             }
         }
+        if (mutableOpen.value?.notificationId?.let { it !in ids } == true) mutableOpen.value = null
+        readFailures.removeAll { receipt(it)?.readAt != null }
         val pending = ids.filter { it !in contentVersions }.map { prepareContent(it) }
         publish()
         pending.forEach { it.start() }
@@ -163,6 +200,41 @@ class InboxViewModel(
             }
         contentJobs[id] = pending
         return pending
+    }
+
+    /** Claims only the account/receipt acknowledgement; navigation has an independent lifetime.
+     * @param id Actual current unread receipt.
+     */
+    private fun startReadAcknowledgement(id: String) {
+        val current = receipt(id) ?: return
+        if (current.readAt != null || readJobs[id]?.isActive == true) return
+        val version = ++nextReadVersion
+        readVersions[id] = version
+        readFailures.remove(id)
+        publish()
+        val pending =
+            viewModelScope.launch(start = CoroutineStart.LAZY) {
+                try {
+                    notifications.markRead(accountId, id)
+                    currentCoroutineContext().ensureActive()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    currentCoroutineContext().ensureActive()
+                    if (!closed && readVersions[id] == version && receipt(id)?.readAt == null &&
+                        receipt(id) != null
+                    ) {
+                        readFailures.add(id)
+                    }
+                } finally {
+                    if (!closed && readVersions[id] == version) {
+                        readJobs.remove(id)
+                        publish()
+                    }
+                }
+            }
+        readJobs[id] = pending
+        pending.start()
     }
 
     /** Resolves receipt identity from the last confirmed source without creating a read timestamp.
@@ -208,117 +280,28 @@ class InboxViewModel(
                     }
                 }.sortedBy { it.receipt.notificationId }
         mutableState.value =
-            mutableState.value.copy(
-                source = source,
-                items = if (hasReceipts) sorter?.invoke(items) ?: items else emptyList(),
-                unavailable = unavailable,
-                unreadCount = if (hasReceipts) countUnread?.invoke(receipts) else null,
+            InboxUiState(
+                source,
+                if (hasReceipts) sorter?.invoke(items) ?: items else emptyList(),
+                unavailable,
+                if (hasReceipts) countUnread?.invoke(receipts) else null,
                 orderingPending = sorter == null,
                 unreadCountPending = countUnread == null,
+                readFailures = readFailures.toSet(),
+                saveFailed = readFailures.isNotEmpty(),
             )
     }
 
-    /** Retires receipt and content reads before cancelling noncooperative callbacks. */
+    /** Retires account work and pending navigation before cancelling noncooperative callbacks. */
     override fun onCleared() {
         closed = true
         sourceVersion++
         contentVersions.clear()
+        readVersions.clear()
         sourceJob?.cancel()
         contentJobs.values.forEach { it.cancel() }
-        super.onCleared()
-    }
-
-    /** Selects a current supported row, ignoring unresolved context.
-     * @param notificationId Retained event identity.
-     */
-    fun openItem(notificationId: String) {
-        val item = state.value.items.firstOrNull { it.notification.id == notificationId } ?: return
-        if (item.isLoading ||
-            (
-                item.subject !is NotificationSubjectContent.LotteryContent &&
-                    item.subject !is NotificationSubjectContent.ReservationContent
-            )
-        ) {
-            return
-        }
-        open(item)
-    }
-
-    /** Requests navigation and marks the row read, ignoring taps while one is pending.
-     * @param item Row the user tapped.
-     */
-    fun open(item: InboxItem) {
-        val current = state.value
-        if (current.openingItem != null || current.operation != InboxOperation.IDLE) return
-        mutableOpen.value = InboxOpenRequest(item.notification.id, item.notification.subject)
-        mutableState.value = current.copy(openingItem = item, operation = InboxOperation.OPENING)
-        viewModelScope.launch {
-            try {
-                if (item.readAt == null) {
-                    notifications.markRead(accountId, item.notification.id)
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                currentCoroutineContext().ensureActive()
-                failedReadItem = item
-                val latest = state.value
-                mutableState.value =
-                    latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
-                return@launch
-            }
-            failedReadItem = null
-            val latest = state.value
-            mutableState.value =
-                latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
-        }
-    }
-
-    /** Retries the last failed read acknowledgement, ignoring taps while an action is pending. */
-    fun retryMarkRead() {
-        val item = failedReadItem ?: return
-        val current = state.value
-        if (current.operation != InboxOperation.IDLE) return
-        mutableState.value = current.copy(operation = InboxOperation.MARKING_READ)
-        viewModelScope.launch {
-            try {
-                notifications.markRead(accountId, item.notification.id)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                currentCoroutineContext().ensureActive()
-                val latest = state.value
-                mutableState.value =
-                    latest.copy(saveFailed = true, operation = InboxOperation.IDLE)
-                return@launch
-            }
-            failedReadItem = null
-            val latest = state.value
-            mutableState.value =
-                latest.copy(operation = InboxOperation.IDLE, saveFailed = false)
-        }
-    }
-
-    /** Consumes only the request whose destination was delivered.
-     * @param notificationId Delivered event identity.
-     */
-    fun acknowledgeOpen(notificationId: String) {
-        if (pendingOpen.value?.notificationId == notificationId) consumeOpen()
-    }
-
-    /** Retries the retained acknowledgement when its identity matches.
-     * @param notificationId Failed receipt identity.
-     */
-    fun retryReadAcknowledgement(notificationId: String) {
-        if (failedReadItem?.notification?.id == notificationId) retryMarkRead()
-    }
-
-    /** Clears the open request once the route has navigated. */
-    fun consumeOpen() {
+        readJobs.values.forEach { it.cancel() }
         mutableOpen.value = null
-        val current = state.value
-        if (current.openingItem != null) {
-            mutableState.value = current.copy(openingItem = null)
-        }
+        super.onCleared()
     }
 }

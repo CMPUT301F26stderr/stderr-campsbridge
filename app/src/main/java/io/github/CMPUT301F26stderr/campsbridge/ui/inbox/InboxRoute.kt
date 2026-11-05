@@ -21,10 +21,13 @@ fun InboxRoute(
 ) {
     val state by model.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state) {
-        val content = state
-        val opening = content.openingItem ?: return@LaunchedEffect
-        model.consumeOpen()
+    val pending by model.pendingOpen.collectAsStateWithLifecycle()
+    LaunchedEffect(pending) {
+        val request = pending ?: return@LaunchedEffect
+        val opening =
+            model.state.value.items
+                .firstOrNull { it.notification.id == request.notificationId }
+                ?: return@LaunchedEffect
         when (val subject = opening.subject) {
             is NotificationSubjectContent.LotteryContent -> {
                 val context =
@@ -51,13 +54,18 @@ fun InboxRoute(
             NotificationSubjectContent.Unsupported,
             -> {}
         }
+        model.acknowledgeOpen(request.notificationId)
     }
 
     InboxScreen(
         state = state,
         onOpenItem = { model.openItem(it.notification.id) },
         onRetry = model::retry,
-        onRetryMarkRead = model::retryMarkRead,
+        onRetryMarkRead = {
+            model.state.value.readFailures
+                .firstOrNull()
+                ?.let(model::retryReadAcknowledgement)
+        },
         onRetryItem = model::retryItem,
     )
 }
