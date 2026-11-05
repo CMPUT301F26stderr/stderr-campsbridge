@@ -333,7 +333,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="hvT20Ri4xHA-ost2JuPR" name="UML_Diagram">
-    <mxGraphModel dx="1229" dy="1859" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="910" dy="1416" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -677,6 +677,18 @@
         </mxCell>
         <mxCell id="9QPmOhFLBqf7kPjm8rk5-3" connectable="0" parent="9QPmOhFLBqf7kPjm8rk5-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
           <mxGeometry width="300" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="LRtNMbIitdRumrqZrPn_-1" parent="1" style="swimlane;html=1;rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontColor=#000000;fontFamily=Arial;fontSize=14;startSize=32;horizontal=1;collapsible=0;swimlaneFillColor=#ffffff;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;Preferences&lt;/b&gt;" vertex="1">
+          <mxGeometry height="92" width="258" x="1121.0000008780491" y="2372" as="geometry" />
+        </mxCell>
+        <mxCell id="LRtNMbIitdRumrqZrPn_-2" connectable="0" parent="LRtNMbIitdRumrqZrPn_-1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontFamily=Arial;fontSize=14;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;whiteSpace=wrap;overflow=hidden;" value="+ tags: Set&amp;lt;String&amp;gt;&lt;br&gt;+ amenities: Set&amp;lt;String&amp;gt;" vertex="1">
+          <mxGeometry height="48" width="258" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="LRtNMbIitdRumrqZrPn_-3" connectable="0" parent="LRtNMbIitdRumrqZrPn_-1" style="shape=line;html=1;strokeColor=#000000;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry width="258" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="LRtNMbIitdRumrqZrPn_-4" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#ffffff;fontColor=#000000;fontFamily=Arial;fontSize=14;" value="1" vertex="1">
+          <mxGeometry x="1110" y="2402.4799888048783" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
