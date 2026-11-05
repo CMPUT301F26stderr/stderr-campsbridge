@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
@@ -22,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.StaySummary
@@ -67,9 +69,23 @@ fun BookingReviewStep(
                 )
             },
         )
-    }
-    if (quote == null) {
+    } else {
         SummarySection(state.campsite.details.name) {
+            val locale = LocalConfiguration.current.locales[0]
+            Text(
+                if (start != null && end != null && end > start) {
+                    stringResource(R.string.stay_dates, formatDate(start, locale), formatDate(end, locale))
+                } else {
+                    stringResource(R.string.booking_range_invalid)
+                },
+            )
+            Text(
+                if (guests != null && guests > 0) {
+                    pluralStringResource(R.plurals.guests, guests.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), guests)
+                } else {
+                    stringResource(R.string.booking_guests_required)
+                },
+            )
             Text(
                 stringResource(
                     if (state.quote ==

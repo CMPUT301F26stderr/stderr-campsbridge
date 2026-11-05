@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -22,7 +21,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationText
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -103,9 +101,6 @@ fun NotificationLogDetailScreen(
                 }
 
                 is NotificationContent.Loaded -> {
-                    if (content.notification.announcement == null) {
-                        Text(notificationText(LocalContext.current, content).body)
-                    }
                     when (val subject = content.subject) {
                         is NotificationSubjectContent.LotteryContent -> {
                             DetailRow(stringResource(R.string.log_lottery), subject.lottery.title)
