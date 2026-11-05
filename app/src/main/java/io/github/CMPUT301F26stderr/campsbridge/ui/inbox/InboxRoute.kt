@@ -71,11 +71,7 @@ fun InboxRoute(
             if (owner.lifecycle.currentState == Lifecycle.State.RESUMED) model.openItem(it.notification.id)
         },
         onRetry = model::retry,
-        onRetryMarkRead = {
-            model.state.value.readFailures
-                .firstOrNull()
-                ?.let(model::retryReadAcknowledgement)
-        },
+        onRetryMarkRead = model::retryReadAcknowledgement,
         onRetryItem = model::retryItem,
     )
 }
