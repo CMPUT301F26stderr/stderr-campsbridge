@@ -2,6 +2,8 @@ package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategory
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.availableBookingNights
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.classifyReservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
@@ -23,6 +25,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactI
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.logic.sortReservationsByCheckIn
 import java.time.LocalDate
 
 /** Explicit real-function ports supplied by each prepared handoff, never fallback algorithms.
@@ -95,4 +98,7 @@ fun taskExampleBindings(): TaskExampleBindings =
         filterParticipants = ::filterParticipantsByState,
         orderInbox = ::sortInboxItems,
         countUnread = ::unreadInboxCount,
+        availableNights = ::availableBookingNights,
+        classifyReservation = ::classifyReservation,
+        orderReservations = ::sortReservationsByCheckIn,
     )

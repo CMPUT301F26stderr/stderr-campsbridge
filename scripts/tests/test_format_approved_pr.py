@@ -2,6 +2,7 @@
 
 import copy
 import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -79,6 +80,85 @@ class FormatApprovedPrTest(unittest.TestCase):
     def run_format(self, **options):
         return FORMAT.format_approved(self.event, self.checkout, self.config,
                                       api=self.api, formatter=options.get("formatter", self.formatter))
+
+    def credential_environment(self, *, fail=False):
+        """Supply a fake GitHub helper without consulting real accounts or credential files."""
+        tools = self.root / "tools"
+        tools.mkdir()
+        helper = tools / "gh"
+        helper.write_text(
+            '#!/usr/bin/env python3\n'
+            'import os, sys\n'
+            'from pathlib import Path\n'
+            'request = sys.stdin.read()\n'
+            'if sys.argv[1:] != ["auth", "git-credential", "get"]:\n'
+            '    sys.exit(2)\n'
+            'if "protocol=https\\n" not in request or "host=github.com\\n" not in request:\n'
+            '    sys.exit(2)\n'
+            'with Path(os.environ["HELPER_CALLS"]).open("a") as calls:\n'
+            '    calls.write("get\\n")\n'
+            'if os.environ["HELPER_FAIL"] == "1":\n'
+            '    sys.exit(1)\n'
+            'print("username=x-access-token")\n'
+            'print("password=" + os.environ["GH_TOKEN"])\n'
+        )
+        helper.chmod(0o755)
+        global_config = self.root / "global.gitconfig"
+        global_config.write_text("")
+        self.real_check_output = subprocess.check_output
+        return patch.dict(os.environ, {
+            "PATH": f"{tools}:{os.environ['PATH']}",
+            "GH_TOKEN": "formatter-fixture-token",
+            "HELPER_CALLS": str(self.root / "helper-calls.txt"),
+            "HELPER_FAIL": "1" if fail else "0",
+            "GIT_CONFIG_GLOBAL": str(global_config),
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_TERMINAL_PROMPT": "0",
+        })
+
+    def credential_checked_transport(self, command, **options):
+        """Require real Git credential resolution before each simulated network operation."""
+        for operation in ("fetch", "push"):
+            if operation in command:
+                prefix = command[:command.index(operation)]
+                credentials = self.real_check_output(
+                    [*prefix, "credential", "fill"],
+                    input=b"protocol=https\nhost=github.com\n\n",
+                    cwd=options["cwd"], stderr=subprocess.PIPE,
+                )
+                self.assertIn(b"password=formatter-fixture-token\n", credentials)
+                self.assertNotIn("formatter-fixture-token", repr(command))
+                break
+        return self.real_check_output(command, **options)
+
+    def test_fetch_and_push_authenticate_from_resolved_checkout_without_saving_credentials(self):
+        alias = self.root / "workspace"
+        alias.symlink_to(self.checkout, target_is_directory=True)
+        checkout_auth = self.root / "checkout-auth.config"
+        checkout_auth.write_text("[credential]\n\thelper = !false\n")
+        self.git(self.checkout, "config", f"includeIf.gitdir:{alias}/.git.path", str(checkout_auth))
+        self.checkout = alias.resolve()
+        local_config = self.checkout / ".git/config"
+        original_config = local_config.read_bytes()
+        with self.credential_environment(), patch.object(
+            FORMAT.subprocess, "check_output", side_effect=self.credential_checked_transport,
+        ):
+            self.assertTrue(self.run_format())
+        self.assertEqual("get\nget\n", (self.root / "helper-calls.txt").read_text())
+        self.assertEqual(original_config, local_config.read_bytes())
+        self.assertEqual("", (self.root / "global.gitconfig").read_text())
+        self.assertEqual(1, len(self.dispatches))
+
+    def test_authentication_failure_stops_before_formatting_push_or_ci_dispatch(self):
+        with self.credential_environment(fail=True), patch.object(
+            FORMAT.subprocess, "check_output", side_effect=self.credential_checked_transport,
+        ):
+            with self.assertRaises(subprocess.CalledProcessError):
+                self.run_format()
+        self.assertEqual([], self.formatted)
+        self.assertEqual([], self.dispatches)
+        self.assertEqual(self.head, self.git(self.checkout, "rev-parse", "HEAD"))
+        self.assertEqual(self.head, self.git(self.author, "rev-parse", "student/task"))
 
     def test_formats_only_pr_files_pushes_bot_commit_and_dispatches_ci(self):
         self.assertTrue(self.run_format())
