@@ -96,3 +96,27 @@ private fun InspectionField(
     }
 }
 
+/** Draft and retained rows remain navigable, with no owner edit or participation actions. */
+@Composable
+private fun AdminOwnedCampsite(
+    site: Campsite,
+    onCampsite: (String) -> Unit,
+) {
+    val status =
+        stringResource(
+            when {
+                site.removal != null -> R.string.campsite_removed
+                site.isPublished -> R.string.campsite_published
+                else -> R.string.campsite_draft
+            },
+        )
+    val location =
+        site.details.locationLabel.takeIf { it.isNotBlank() }
+            ?: stringResource(R.string.not_provided)
+    NavigationRow(
+        title = site.details.name,
+        supportingText = listOf(site.id, location, status).joinToString(" | "),
+        onClick = { onCampsite(site.id) },
+    )
+}
+
