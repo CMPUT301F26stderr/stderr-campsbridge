@@ -35,4 +35,5 @@
     <string name="log_read_at">Read at</string>
     <string name="log_unread">Unread</string>
     <string name="log_delivery_explanation">These records show Inbox delivery. They do not tell us whether an Android alert appeared.</string>
+    <string name="log_sender_summary">Sender: %1$s</string>
 </resources>

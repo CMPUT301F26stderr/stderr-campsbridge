@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -29,7 +34,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppSearchFiel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.DropdownField
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 /** Displays immutable event rows and parent-owned filters without acquiring repositories.
  * @param state Current filters and all-event source outcome.
@@ -77,8 +82,8 @@ fun NotificationLogScreen(
                 LazyColumn(
                     Modifier.weight(1f).fillMaxWidth(),
                     state = listState,
-                    contentPadding = PaddingValues(vertical = Spacing.small),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                    contentPadding = PaddingValues(vertical = Spacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
                 ) {
                     if (source.events.isEmpty()) {
                         item {
@@ -99,15 +104,25 @@ fun NotificationLogScreen(
                         OutlinedCard(
                             onClick = { onOpen(event.id) },
                             modifier = Modifier.fillMaxWidth().testTag("notification-log-event:${event.id}"),
+                            shape = MaterialTheme.shapes.medium,
+                            colors =
+                                CardDefaults.outlinedCardColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                ),
                         ) {
                             Column(
                                 Modifier.padding(Spacing.medium),
                                 verticalArrangement = Arrangement.spacedBy(Spacing.small),
                             ) {
-                                Text(
-                                    event.announcement?.title ?: stringResource(notificationTitleResource(event.type)),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
+                                Row(Modifier.fillMaxWidth()) {
+                                    Text(
+                                        event.announcement?.title
+                                            ?: stringResource(notificationTitleResource(event.type)),
+                                        Modifier.weight(1f),
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                                }
                                 if (event.announcement != null) {
                                     Text(
                                         stringResource(notificationTitleResource(event.type)),
@@ -115,12 +130,22 @@ fun NotificationLogScreen(
                                     )
                                 }
                                 Text(
-                                    formatDateTime(event.createdAt, ZoneOffset.UTC, locale),
+                                    formatDateTime(event.createdAt, ZoneId.systemDefault(), locale),
                                     style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                                 Text(
-                                    event.senderId ?: stringResource(R.string.log_system_sender),
+                                    stringResource(
+                                        R.string.log_sender_summary,
+                                        event.senderId ?: stringResource(R.string.log_system_sender),
+                                    ),
                                     style = MaterialTheme.typography.bodySmall,
+                                )
+                                Text(event.subject.id, style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    event.id,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
