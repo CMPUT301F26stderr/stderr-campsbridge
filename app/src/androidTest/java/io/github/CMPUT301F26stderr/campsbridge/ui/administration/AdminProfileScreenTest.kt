@@ -103,4 +103,28 @@ class AdminProfileScreenTest {
         compose.onNodeWithText("Loading owned campsites").assertDoesNotExist()
     }
 
+    @Test fun relatedCampsiteOpensByActualIdentityWithoutOwnerActions() {
+        val site = sampleCampsite("site/one", "account-1")
+        var selected: String? = null
+        compose.setContent {
+            CampsbridgeTheme {
+                AdminProfileScreen(
+                    AdminInspectionUiState.Profile(
+                        "account-1",
+                        AdminRead.Content(sampleAccount()),
+                        AdminRead.Content(listOf(site)),
+                        ImageSlotState(loadState = ImageLoadState.READY),
+                    ),
+                    {},
+                    {},
+                    {},
+                    {},
+                    { selected = it },
+                )
+            }
+        }
+        compose.onNodeWithText(site.details.name).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(site.id, selected) }
+        compose.onNodeWithText("Save").assertDoesNotExist()
+    }
 }
