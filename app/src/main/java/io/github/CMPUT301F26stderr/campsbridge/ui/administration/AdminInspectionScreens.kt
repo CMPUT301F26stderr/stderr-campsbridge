@@ -487,3 +487,57 @@ fun AdminImageScreen(
     }
 }
 
+@Preview(showBackground = true, widthDp = 390, heightDp = 850)
+@Composable
+private fun AdminImageMissingParentPreview() {
+    CampsbridgeTheme {
+        AdminImageScreen(
+            AdminInspectionUiState.Image(
+                ImageTarget(ImageTargetType.ACCOUNT, "missing-owner"),
+                AdminRead.Unavailable,
+                ImageSlotState(loadState = ImageLoadState.READY),
+            ),
+            {},
+            {},
+            {},
+            {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 850, fontScale = 1.5f)
+@Composable
+private fun AdminImageFailedPhotoPreview() {
+    CampsbridgeTheme {
+        AdminImageScreen(
+            AdminInspectionUiState.Image(
+                ImageTarget(ImageTargetType.ACCOUNT, "preview-owner"),
+                AdminRead.Content(AdminImageParent.Profile(inspectionPreviewAccount())),
+                ImageSlotState(loadState = ImageLoadState.FAILED),
+            ),
+            {},
+            {},
+            {},
+            {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 850)
+@Composable
+private fun AdminImageParentFailurePreview() {
+    CampsbridgeTheme {
+        AdminImageScreen(
+            AdminInspectionUiState.Image(
+                ImageTarget(ImageTargetType.CAMPSITE, "preview-campsite"),
+                AdminRead.Failure,
+                io.github.CMPUT301F26stderr.campsbridge.ui.campsites
+                    .previewCampsitePhoto(),
+            ),
+            {},
+            {},
+            {},
+            {},
+        )
+    }
+}
