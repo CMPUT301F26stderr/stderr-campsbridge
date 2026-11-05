@@ -3,6 +3,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
@@ -22,8 +24,14 @@ fun InboxRoute(
     val state by model.state.collectAsStateWithLifecycle()
 
     val pending by model.pendingOpen.collectAsStateWithLifecycle()
-    LaunchedEffect(pending) {
+    val owner = LocalLifecycleOwner.current
+    val lifecycle by owner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
+    LaunchedEffect(pending, lifecycle) {
+        if (lifecycle != Lifecycle.State.RESUMED || owner.lifecycle.currentState != Lifecycle.State.RESUMED) {
+            return@LaunchedEffect
+        }
         val request = pending ?: return@LaunchedEffect
+        if (model.pendingOpen.value != request) return@LaunchedEffect
         val opening =
             model.state.value.items
                 .firstOrNull { it.notification.id == request.notificationId }
@@ -59,7 +67,9 @@ fun InboxRoute(
 
     InboxScreen(
         state = state,
-        onOpenItem = { model.openItem(it.notification.id) },
+        onOpenItem = {
+            if (owner.lifecycle.currentState == Lifecycle.State.RESUMED) model.openItem(it.notification.id)
+        },
         onRetry = model::retry,
         onRetryMarkRead = {
             model.state.value.readFailures
