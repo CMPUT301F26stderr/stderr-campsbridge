@@ -26,7 +26,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Owns profile drafts, field saves and hosting activation; the image controller owns photo persistence.
+ * Owns profile drafts, field saves, alert preferences and hosting activation.
+ * The image controller owns photo persistence.
  * @param accountId Established identity, never a placeholder ID.
  * @param accounts Account observation dependency.
  * @param images Image dependency shared with the profile-photo integration.
@@ -136,7 +137,11 @@ class ProfileViewModel(
     }
 
     /** Retries only the retained failed app-alert preference after explicit user action. */
-    fun retryNotificationPreference() { }
+    fun retryNotificationPreference() {
+        val previous = notificationPreference.value
+        if (!previous.saveFailed) return
+        previous.requestedEnabled?.let(::setNotificationsEnabled)
+    }
 
     /** Returns only the current readable active account for this graph's exact identity. */
     private fun notificationAccount(): Account? =
@@ -159,7 +164,15 @@ class ProfileViewModel(
         val current = notificationAccount()
         val previous = notificationPreference.value
         var enabled = previous.enabled
-        if (!previous.isSaving && current != null) enabled = current.settings.notificationsEnabled
+        if (!previous.isSaving && current != null &&
+            (
+                awaitingNotificationObservation == null ||
+                    current.settings.notificationsEnabled == awaitingNotificationObservation
+            )
+        ) {
+            enabled = current.settings.notificationsEnabled
+            awaitingNotificationObservation = null
+        }
         mutableNotificationPreference.value =
             previous.copy(
                 enabled = enabled,
@@ -544,5 +557,12 @@ class ProfileViewModel(
                 }
             }
         publishNotificationPreference()
+    }
+
+    /** Retires preference completion and stale callbacks with the owning graph. */
+    override fun onCleared() {
+        notificationClosed = true
+        notificationJob?.cancel()
+        super.onCleared()
     }
 }
