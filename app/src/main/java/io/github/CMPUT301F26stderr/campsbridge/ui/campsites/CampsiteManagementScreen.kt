@@ -15,12 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -195,7 +195,7 @@ fun CampsiteManagementScreen(
                             NavigationRow(
                                 stringResource(R.string.campsite_lotteries),
                                 onViewLotteries,
-                                icon = Icons.Default.List,
+                                icon = Icons.AutoMirrored.Filled.List,
                             )
                         }
                         if (site.isPublished && onCreateLottery != null) {

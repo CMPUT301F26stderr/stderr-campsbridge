@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -124,6 +125,9 @@ class BookingFlowTest {
         open("Edit guests")
         compose.onNodeWithTag("booking-guests").performTextReplacement("3")
         next()
+        compose.waitUntil(15_000) {
+            compose.onNodeWithText("Review your stay").isDisplayed()
+        }
         compose.onNodeWithText("Review your stay").assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()
         open("Edit dates")

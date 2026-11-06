@@ -197,7 +197,7 @@ class LotterySetupViewModelTest {
             }
         }
 
-    /** DST gaps and overlaps keep the actual raw input and request another unambiguous time. */
+    /** Historical DST gaps and overlaps retain raw input and request an unambiguous time. */
     @Test fun ambiguousLocalTimesNeverBecomeShiftedInstants() =
         runTest {
             val model = model()
@@ -207,8 +207,8 @@ class LotterySetupViewModelTest {
             allocate(model)
             model.next()
             for ((date, time) in listOf(
-                LocalDate.of(2027, 3, 14) to LocalTime.of(2, 30),
-                LocalDate.of(2027, 11, 7) to LocalTime.of(1, 30),
+                LocalDate.of(2025, 3, 9) to LocalTime.of(2, 30),
+                LocalDate.of(2025, 11, 2) to LocalTime.of(1, 30),
             )) {
                 model.editScheduleDate(LotterySchedulePoint.REGISTRATION_OPEN, date)
                 model.editScheduleTime(LotterySchedulePoint.REGISTRATION_OPEN, time)

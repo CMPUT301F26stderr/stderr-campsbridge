@@ -89,7 +89,7 @@ class CampsiteOrderingTest {
     fun usesRootLocaleInsteadOfTheDeviceLocale() {
         val previousLocale = Locale.getDefault()
         try {
-            Locale.setDefault(Locale("tr", "TR"))
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"))
             val hazel = campsite("hazel", "hazel")
             val iris = campsite("iris", "Iris")
             val juniper = campsite("juniper", "juniper")

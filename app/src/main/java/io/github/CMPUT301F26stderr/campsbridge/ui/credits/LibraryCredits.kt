@@ -29,6 +29,16 @@ internal val AdditionalLibraryCredits =
             "https://github.com/firebase/firebase-functions/blob/v7.4.0/LICENSE",
         ),
         LibraryCredit(
+            "Moment Timezone (booking service)",
+            "MIT License",
+            "https://github.com/moment/moment-timezone/blob/0.6.6/LICENSE",
+        ),
+        LibraryCredit(
+            "Moment.js (booking service)",
+            "MIT License",
+            "https://github.com/moment/moment/blob/2.31.0/LICENSE",
+        ),
+        LibraryCredit(
             "Guava failureaccess and listenablefuture",
             "Apache License 2.0",
             "https://github.com/google/guava/blob/master/LICENSE",

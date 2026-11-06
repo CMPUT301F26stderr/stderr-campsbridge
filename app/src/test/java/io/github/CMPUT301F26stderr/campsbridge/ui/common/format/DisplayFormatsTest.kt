@@ -40,15 +40,15 @@ class DisplayFormatsTest {
         assertTrue(formatDateTime(instant, ZoneId.of("UTC"), Locale.US).contains("May 15, 2027"))
     }
 
-    /** Ambiguous and nonexistent local times never silently shift a lottery deadline. */
+    /** Recorded 2025 gaps and overlaps never silently shift a lottery deadline. */
     @Test fun daylightSavingBoundariesAreExplicit() {
         val zone = ZoneId.of("America/Edmonton")
         assertEquals(
             Instant.parse("2027-05-14T15:30:00Z"),
             resolveDateTime(LocalDate.of(2027, 5, 14), 9, 30, zone),
         )
-        assertNull(resolveDateTime(LocalDate.of(2027, 3, 14), 2, 30, zone))
-        assertNull(resolveDateTime(LocalDate.of(2027, 11, 7), 1, 30, zone))
+        assertNull(resolveDateTime(LocalDate.of(2025, 3, 9), 2, 30, zone))
+        assertNull(resolveDateTime(LocalDate.of(2025, 11, 2), 1, 30, zone))
         assertThrows(java.time.DateTimeException::class.java) {
             resolveDateTime(LocalDate.of(2027, 5, 14), 24, 0, zone)
         }

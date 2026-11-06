@@ -6,6 +6,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const { calendarDate } = require('./calendar-date');
 const pair = (...ids) => ids.map(id => `${id.length}:${id}`).join('');
 
 // Build current-schema records first so an invalid declaration cannot start a partial setup.
@@ -17,7 +18,7 @@ function compileFixture(fixture, actors, anchor) {
   assert.equal(new Set(names.map(name => actors[name])).size, names.length, 'Actors need distinct UIDs');
   const documents = new Map(), photos = [], roots = new Set();
   const at = seconds => new Date(anchor.getTime() + seconds * 1000);
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: fixture.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(anchor);
+  const today = calendarDate(anchor, fixture.timeZone);
   const day = offset => new Date(Date.parse(today + 'T00:00:00Z') + offset * 86400000).toISOString().slice(0, 10);
   const put = (key, value) => { assert.ok(!documents.has(key), `Duplicate record ${key}`); documents.set(key, value); };
   const notice = (type, subjectType, subjectId, recipients, createdAt) => {

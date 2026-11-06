@@ -15,7 +15,7 @@ firebase emulators:start --config firebase/firebase.json --project demo-stderr
 
 ## Application integration
 
-The functions validate the full stay, claim or release every night, and write the payment and notification in one transaction. They use server time in cloud builds. Emulator contract tests supply a controlled clock. Server dependencies are pinned in `functions/package-lock.json`; Firebase Admin uses Apache-2.0; Firebase Functions uses the MIT license.
+The functions validate the full stay, claim or release every night, and write the payment and notification in one transaction. They use server time in cloud builds and pinned Moment Timezone data for campsite-local dates. The seed uses the same date conversion. Emulator contract tests supply a controlled clock. Server dependencies are pinned in `functions/package-lock.json`; Firebase Admin uses Apache-2.0; Firebase Functions, Moment.js and Moment Timezone use the MIT license.
 
 The container exposes domain repository interfaces and account-scoped `PendingWork`. Ready foreground sessions observe owner lotteries and entrant/owner reservations, draw due lotteries, and resume their durable inbox jobs with bounded retries. `AdminMaintenance.resume(adminId)` separately authorizes global removal, draw, delivery and obsolete-image cleanup. Inbox delivery creates Firestore receipts. Ready Android sessions publish system alerts when account settings and Android permission allow them. Closed-app scheduling and FCM delivery remain separate integrations.
 

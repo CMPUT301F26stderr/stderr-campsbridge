@@ -7,6 +7,7 @@
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, Timestamp } = require('firebase-admin/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { calendarDate } = require('./calendar-date');
 initializeApp();
 const db = getFirestore();
 db.settings({ useBigInt: true });
@@ -36,9 +37,7 @@ const nightsBetween = (start, end) => {
   for (let day = first; day < last; day += 86400000) result.push(new Date(day).toISOString().slice(0, 10));
   return result;
 };
-const today = (now, zone) => new Intl.DateTimeFormat('en-CA', {
-  timeZone: zone.replace(/^(UTC|GMT|UT)(?=[+-])/, ''), year: 'numeric', month: '2-digit', day: '2-digit',
-}).format(now.toDate());
+const today = (now, zone) => calendarDate(now.toDate(), zone);
 // Controlled time is available only in the disposable Functions emulator.
 const operationTime = request => process.env.FUNCTIONS_EMULATOR === 'true' && request.data?.emulatorTime
   ? new Timestamp(request.data.emulatorTime.seconds, request.data.emulatorTime.nanos) : Timestamp.now();

@@ -195,6 +195,7 @@ class AndroidNotificationPublisherTest {
     /** Android 7 receives high-priority standard content without accessing channel-only APIs. */
     @Test
     @Config(sdk = [24])
+    @Suppress("DEPRECATION")
     fun android24UsesPriorityWithoutChannelApis() {
         AndroidNotificationPublisher(context).post(alert)
         assertEquals(1, manager.activeNotifications.size)

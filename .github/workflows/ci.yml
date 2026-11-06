@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Validate repository configuration
@@ -43,7 +43,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -61,13 +61,13 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Expose Nix tools to Gradle setup
         run: nix develop .#default --no-update-lock-file --command bash scripts/setup-ci-toolchain.sh
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@07d1f8453baaff67fb503883367f8b13e6158a54 # v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           # Self-hosted runners retain Gradle's home between jobs.
           cache-overwrite-existing: true
@@ -83,7 +83,7 @@ jobs:
             find "$gradle_distributions" -type f -path '*/bin/gradle' -exec chmod +x {} +
           fi
       - name: Upload offline debug build
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           path: app/build/outputs/apk/debug/app-debug.apk
           archive: false
@@ -91,7 +91,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Upload Firebase release build
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           path: app/build/outputs/apk/release/app-release.apk
           archive: false
@@ -99,7 +99,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Upload API documentation
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: api-docs
           path: app/build/dokka/html/
@@ -108,7 +108,7 @@ jobs:
           retention-days: 14
       - name: Upload check reports
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -123,13 +123,13 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Expose Nix tools to Gradle setup
         run: nix develop .#default --no-update-lock-file --command bash scripts/setup-ci-toolchain.sh
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@07d1f8453baaff67fb503883367f8b13e6158a54 # v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           cache-overwrite-existing: true
       - name: Verify rules and Kotlin repositories with disposable emulators
@@ -143,7 +143,7 @@ jobs:
           fi
       - name: Upload Firebase test reports
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: firebase-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -159,14 +159,14 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Run shared-control interactions on a disposable device
         run: nix develop .#ui --no-update-lock-file --command bash scripts/check-android-ui.sh -PmapsApiKey= --stacktrace
       - name: Upload UI reports
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ui-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -182,7 +182,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Verify actual map load, tap, drag, Apply, and Cancel
@@ -195,7 +195,7 @@ jobs:
           --stacktrace
       - name: Upload configured Maps reports
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: maps-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -238,17 +238,17 @@ jobs:
       contents: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Download the verified debug APK
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: app-debug.apk
           path: ${{ runner.temp }}/beta-apk-${{ github.run_id }}-${{ github.run_attempt }}
           skip-decompress: true
       - name: Download the verified release APK
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: app-release.apk
           path: ${{ runner.temp }}/beta-apk-${{ github.run_id }}-${{ github.run_attempt }}

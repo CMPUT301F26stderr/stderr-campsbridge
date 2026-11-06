@@ -195,9 +195,7 @@ tasks.register<Test>("firebaseIntegrationTest") {
     maxParallelForks = 1
     maxHeapSize = "2g"
     outputs.upToDateWhen { false }
-    systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
     jvmArgs(
-        "--enable-native-access=ALL-UNNAMED",
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
         "--add-opens=java.base/java.util=ALL-UNNAMED",
         "--add-opens=java.base/java.io=ALL-UNNAMED",
@@ -209,6 +207,9 @@ tasks.register<Test>("firebaseIntegrationTest") {
 }
 
 tasks.withType<Test>().configureEach {
+    // Keep runtime SDK downloads off the rate-limited Maven Central endpoints.
+    systemProperty("robolectric.dependency.repo.url", "https://maven-central.storage-download.googleapis.com/maven2")
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
     if (name != "firebaseIntegrationTest") exclude("**/integration/firebase/**")
 }
 
