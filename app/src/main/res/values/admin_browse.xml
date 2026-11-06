@@ -30,4 +30,15 @@
     <string name="admin_owned_campsites_failure">Could not load owned campsites</string>
     <string name="admin_owned_campsites_unavailable">Owned campsite information is unavailable.</string>
     <string name="admin_no_owned_campsites">No owned campsites</string>
+    <string name="admin_image_inspection">Image inspection</string>
+    <string name="admin_image_invalid_target">This image target is invalid or unavailable.</string>
+    <string name="admin_image_slot">Image target ID</string>
+    <string name="admin_image_uploaded_at">Uploaded at</string>
+    <string name="admin_image_no_attachment">No image is attached to this target.</string>
+    <string name="admin_image_parent">Parent record</string>
+    <string name="admin_image_parent_loading">Loading parent record</string>
+    <string name="admin_image_parent_failure">Could not load parent record</string>
+    <string name="admin_image_parent_unavailable">The parent record is missing or unavailable.</string>
+    <string name="admin_open_profile">Open profile</string>
+    <string name="admin_open_campsite">Inspect campsite</string>
 </resources>

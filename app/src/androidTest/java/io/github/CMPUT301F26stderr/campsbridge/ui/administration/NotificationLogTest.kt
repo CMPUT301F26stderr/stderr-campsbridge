@@ -37,16 +37,16 @@ class NotificationLogTest {
     @Test fun filtersAndDetailRestoreUnderOneParent() {
         val restoration = StateRestorationTester(compose)
         f.start(compose, restoration)
-        compose.onNodeWithTag("notification-log-query").performTextReplacement("Trail")
+        compose.onNodeWithTag("notification-log-query").performTextReplacement("owner")
         compose.onNodeWithTag("notification-log-query").performImeAction()
-        compose.onNodeWithText("Event type").performClick()
+        compose.onNodeWithText("Type").performClick()
         compose.onNode(hasText("Lottery announcement") and hasAnyAncestor(isPopup())).performClick()
         compose.onNodeWithTag("notification-log-event:${f.event.id}").performScrollTo().performClick()
         compose.onNodeWithText(f.event.id).assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()
         compose.onNodeWithText(f.event.id).assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithTag("notification-log-query").assertTextContains("Trail")
+        compose.onNodeWithTag("notification-log-query").assertTextContains("owner")
         compose
             .onNode(
                 hasText("Lottery announcement") and hasAnyAncestor(hasTestTag("notification-log-type")),
@@ -67,14 +67,31 @@ class NotificationLogTest {
         f.host.lotteries.getHandler = { throw IOException("context offline") }
         f.start(compose)
         compose.onNodeWithTag("notification-log-event:${f.event.id}").performClick()
-        compose.onNodeWithText("Bring drinking water.").assertIsDisplayed()
+        compose.onNodeWithText("Bring drinking water.").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Could not load the linked record.").performScrollTo().assertIsDisplayed()
         compose.runOnIdle { f.host.lotteries.getHandler = { null } }
-        compose.onNodeWithText("Retry event details").performScrollTo().performClick()
+        compose.onNodeWithText("Retry event").performScrollTo().performClick()
         compose.onNodeWithText("The linked record is unavailable.").performScrollTo().assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, f.listRequests)
             assertEquals(2, f.host.notifications.getRequests.size)
+            assertTrue(
+                f.host.notifications.readRequests
+                    .isEmpty(),
+            )
+        }
+    }
+
+    /** Missing linked context offers an explicit retry without rereading the list. */
+    @Test fun unavailableContextCanRetryInPlace() {
+        f.host.lotteries.getHandler = { null }
+        f.start(compose)
+        compose.onNodeWithTag("notification-log-event:${f.event.id}").performClick()
+        compose.onNodeWithText("The linked record is unavailable.").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Retry event").performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(listOf(f.event.id, f.event.id), f.host.notifications.getRequests)
+            assertEquals(1, f.listRequests)
             assertTrue(
                 f.host.notifications.readRequests
                     .isEmpty(),
@@ -87,13 +104,13 @@ class NotificationLogTest {
         f.failure.value = IOException("log offline")
         f.start(compose)
         compose.onNodeWithText("Could not load notification events.").assertIsDisplayed()
-        compose.onNodeWithText("No notification events.").assertDoesNotExist()
+        compose.onNodeWithText("No notification events match.").assertDoesNotExist()
         compose.runOnIdle {
             f.failure.value = null
             f.host.notifications.records.value = emptyList()
         }
         compose.onNodeWithText("Retry").performClick()
-        compose.onNodeWithText("No notification events.").assertIsDisplayed()
+        compose.onNodeWithText("No notification events match.").assertIsDisplayed()
         compose.runOnIdle { assertEquals(2, f.listRequests) }
     }
 
@@ -103,8 +120,9 @@ class NotificationLogTest {
         f.host.notifications.records.value =
             listOf(f.event.copy(announcement = Announcement(longTitle, "Bring drinking water.")))
         f.start(compose, fontScale = 2f)
-        compose.onNodeWithText(longTitle).performScrollTo().performClick()
+        compose.onNodeWithTag("notification-log-event:${f.event.id}").performScrollTo().performClick()
+        compose.onNodeWithText(longTitle).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(f.event.id).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Recorded recipients").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("View recipients").performScrollTo().assertIsDisplayed()
     }
 }

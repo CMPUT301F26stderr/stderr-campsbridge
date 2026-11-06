@@ -39,11 +39,11 @@ internal class NotificationLogAudienceReader(
         if (notificationId != null) load(notificationId)
     }
 
-    /** Retries only an unsuccessful or interrupted current audience read. */
+    /** Reloads the current audience after completion or interruption, coalescing active requests. */
     fun retry() {
         val selected = id ?: return
         if (!closed && job?.isActive != true &&
-            (state.value is NotificationLogAudienceState.Failure || state.value is NotificationLogAudienceState.Loading)
+            state.value !is NotificationLogAudienceState.Idle
         ) {
             load(selected)
         }

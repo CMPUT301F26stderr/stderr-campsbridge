@@ -24,7 +24,7 @@ import java.time.Instant
 /** Passive original event with long owner-supplied content for layout inspection. */
 private fun notificationLogPreviewEvent(): Notification =
     Notification(
-        "event/A ?1",
+        "event/with-a-long-recorded-identity-that-wraps-on-a-narrow-phone ?1",
         "owner-account",
         NotificationType.OWNER_ANNOUNCEMENT,
         NotificationSubject(SubjectType.LOTTERY, "river-lottery"),
@@ -95,7 +95,7 @@ class NotificationLogAudiencePreviewProvider : PreviewParameterProvider<Notifica
     override val values =
         sequenceOf(
             NotificationLogAudienceState.Loading("event"),
-            NotificationLogAudienceState.Failure("event"),
+            NotificationLogAudienceState.Failure(notificationLogPreviewEvent().id),
             NotificationLogAudienceState.Content("event", NotificationAudience.NoRecordedInformation),
             NotificationLogAudienceState.Content("event", NotificationAudience.Recorded(emptyList())),
             NotificationLogAudienceState.Content(
@@ -104,9 +104,20 @@ class NotificationLogAudiencePreviewProvider : PreviewParameterProvider<Notifica
             ),
             NotificationLogAudienceState.Content(
                 "event",
+                NotificationAudience.Unavailable(NotificationAudienceUnavailable.SUBJECT_MISSING),
+            ),
+            NotificationLogAudienceState.Content(
+                "event",
+                NotificationAudience.Unavailable(NotificationAudienceUnavailable.UNSUPPORTED_SUBJECT),
+            ),
+            NotificationLogAudienceState.Content(
+                "event",
                 NotificationAudience.Recorded(
                     listOf(
-                        NotificationAudienceMember("pending-account", NotificationAudienceDelivery.PENDING),
+                        NotificationAudienceMember(
+                            "pending-account-with-a-long-original-identity",
+                            NotificationAudienceDelivery.PENDING,
+                        ),
                         NotificationAudienceMember("unread-account", NotificationAudienceDelivery.DELIVERED),
                         NotificationAudienceMember(
                             "read-account",
@@ -128,5 +139,9 @@ class NotificationLogAudiencePreviewProvider : PreviewParameterProvider<Notifica
 private fun NotificationLogAudiencePreview(
     @PreviewParameter(NotificationLogAudiencePreviewProvider::class) state: NotificationLogAudienceState,
 ) {
-    CampsbridgeTheme { AppScreen(stringResource(R.string.log_recipients)) { NotificationAudienceScreen(state, {}) } }
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.log_recipients_title)) {
+            NotificationAudienceScreen(state, {}, notificationLogPreviewEvent().copy(id = state.id ?: "event"))
+        }
+    }
 }
