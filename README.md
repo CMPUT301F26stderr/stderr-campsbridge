@@ -69,11 +69,16 @@ Detailed team documentation belongs in the wiki. Keep executable configuration, 
 
 ## Testing
 
-[![Build status](https://github.com/CMPUT301F26stderr/stderr-campsbridge/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/CMPUT301F26stderr/stderr-campsbridge/actions/workflows/ci.yml?query=branch%3Amain+event%3Apush) [![Download Last Success APK](https://img.shields.io/badge/Download-Latest%20APK-blue?logo=android)](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/download/beta/app-release.apk)
+[![Build status](https://github.com/CMPUT301F26stderr/stderr-campsbridge/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/CMPUT301F26stderr/stderr-campsbridge/actions/workflows/ci.yml?query=branch%3Amain+event%3Apush)
 
-Use **Download Latest APK** above to download `app-release.apk` from the rolling [beta prerelease](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/tag/beta), without signing in to GitHub. CI updates it after all checks pass on `main`. Open the APK on your Android device to install it, and allow installation from the app you used to open the APK if Android prompts you. The build-status badge links to CI runs and check reports.
+Download either APK from the rolling [beta prerelease](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/tag/beta):
 
-CI publishes the signed Firebase-backed `release` app to the rolling beta. The course release uses the existing local Android debug keystore for signing and remains non-debuggable. Select `debug` in Android Studio for the offline demo, or `firebaseDebug` for connected development. See [Firebase setup](firebase/README.md) to prepare the live Halfway dataset. The beta download stays available until replaced by a newer verified build. Per-run APKs and check reports remain available as Actions artifacts for 14 days.
+- [Offline debug demo (`app-debug.apk`)](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/download/beta/app-debug.apk): runs without Firebase setup.
+- [Firebase release demo (`app-release.apk`)](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/download/beta/app-release.apk): connects to Firebase. See [Firebase setup](firebase/README.md) to prepare the live Halfway dataset.
+
+Both downloads work without signing in to GitHub. CI updates them after all checks pass on `main`. Open the APK on your Android device to install it, and allow installation from the app you used to open the APK if Android prompts you. The build-status badge links to CI runs and check reports.
+
+The course release uses the existing local Android debug keystore for signing and remains non-debuggable. Select `firebaseDebug` in Android Studio for connected development. Both beta downloads stay available until replaced by a newer verified build. Per-run APKs and check reports remain available as Actions artifacts for 14 days.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses the [GNU GPL v3 license](LICENSE).
 

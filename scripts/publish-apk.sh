@@ -12,9 +12,11 @@ if [[ "${GITHUB_REF:-}" != refs/heads/main ||
     exit 1
 fi
 
-apk_path="${1:?APK path is required}"
-if [[ ! -s "$apk_path" || "${apk_path##*/}" != app-release.apk ]]; then
-    echo 'Expected a nonempty app-release.apk from this CI run.' >&2
+debug_apk_path="${1:?Debug APK path is required}"
+release_apk_path="${2:?Release APK path is required}"
+if [[ ! -s "$debug_apk_path" || "${debug_apk_path##*/}" != app-debug.apk ||
+    ! -s "$release_apk_path" || "${release_apk_path##*/}" != app-release.apk ]]; then
+    echo 'Expected nonempty app-debug.apk and app-release.apk files from this CI run.' >&2
     exit 1
 fi
 
@@ -26,7 +28,7 @@ fi
 
 notes_file="$(mktemp)"
 trap 'rm -f -- "$notes_file"' EXIT
-printf 'Halfway Firebase release APK from main commit %s.\n\n[CI run](https://github.com/%s/actions/runs/%s).\n\nThis beta prerelease is updated after successful main checks.\n' \
+printf 'Verified APKs from main commit %s.\n\napp-debug.apk runs the offline demo. app-release.apk connects to Firebase.\n\n[CI run](https://github.com/%s/actions/runs/%s).\n' \
     "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > "$notes_file"
 
 release_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
@@ -34,12 +36,12 @@ release_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
 if [[ -n "$release_id" ]]; then
     gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/beta" \
         -f sha="$GITHUB_SHA" -F force=true >/dev/null
-    gh release upload beta "$apk_path" --repo "$GITHUB_REPOSITORY" --clobber
+    gh release upload beta "$debug_apk_path" "$release_apk_path" --repo "$GITHUB_REPOSITORY" --clobber
     gh release edit beta --repo "$GITHUB_REPOSITORY" \
         --title 'Beta - latest successful main build' \
         --notes-file "$notes_file" --prerelease --latest=false
 else
-    gh release create beta "$apk_path" --repo "$GITHUB_REPOSITORY" \
+    gh release create beta "$debug_apk_path" "$release_apk_path" --repo "$GITHUB_REPOSITORY" \
         --target "$GITHUB_SHA" --title 'Beta - latest successful main build' \
         --notes-file "$notes_file" --prerelease --latest=false
 fi
