@@ -139,5 +139,9 @@ class NotificationLogAudiencePreviewProvider : PreviewParameterProvider<Notifica
 private fun NotificationLogAudiencePreview(
     @PreviewParameter(NotificationLogAudiencePreviewProvider::class) state: NotificationLogAudienceState,
 ) {
-    CampsbridgeTheme { AppScreen(stringResource(R.string.log_recipients)) { NotificationAudienceScreen(state, {}) } }
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.log_recipients_title)) {
+            NotificationAudienceScreen(state, {}, notificationLogPreviewEvent().copy(id = state.id ?: "event"))
+        }
+    }
 }

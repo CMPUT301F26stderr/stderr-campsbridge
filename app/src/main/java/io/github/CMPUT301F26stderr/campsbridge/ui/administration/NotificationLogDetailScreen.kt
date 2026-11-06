@@ -12,15 +12,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationText
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -41,54 +43,31 @@ fun NotificationLogDetailScreen(
     onRetry: () -> Unit,
     onAudience: () -> Unit,
 ) {
-    val locale = LocalConfiguration.current.locales[0]
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
         SummarySection(
             state.event?.let { stringResource(notificationTitleResource(it.type)) }
-                ?: stringResource(R.string.log_event_details),
+                ?: stringResource(R.string.log_metadata),
         ) {
-            if (state.event == null) {
-                state.id?.let { DetailRow(stringResource(R.string.log_event_id), it) }
-            }
-            state.event?.let { event ->
-                DetailRow(stringResource(R.string.log_event_id), event.id)
-                DetailRow(
-                    stringResource(R.string.log_sender),
-                    event.senderId ?: stringResource(R.string.log_system_sender),
-                )
-                DetailRow(
-                    stringResource(R.string.log_created),
-                    formatDateTime(event.createdAt, ZoneId.systemDefault(), locale),
-                )
-                DetailRow(
-                    stringResource(R.string.log_linked_type),
-                    stringResource(
-                        when (event.subject.type) {
-                            SubjectType.LOTTERY -> R.string.log_lottery
-                            SubjectType.RESERVATION -> R.string.log_reservation_subject
-                            SubjectType.MESSAGE -> R.string.log_message_subject
-                        },
-                    ),
-                )
-                DetailRow(stringResource(R.string.log_linked_id), event.subject.id)
-            }
+            state.event?.let { NotificationEventFacts(it) }
+            state.id?.let { DetailRow(stringResource(R.string.log_event_id), it) }
         }
-        if (state.event != null) NavigationRow(stringResource(R.string.log_recipients), onAudience)
+        if (state.event != null) {
+            NavigationRow(stringResource(R.string.log_recipients), onAudience)
+        }
         SummarySection(stringResource(R.string.log_message_content)) {
-            state.event?.announcement?.let {
-                Text(it.title, style = MaterialTheme.typography.titleSmall)
-                Text(it.body)
-            }
-            when (val content = state.content) {
+            when (val result = state.content) {
                 null -> {
                     if (state.isLoading) LoadingContent(stringResource(R.string.log_detail_loading))
                 }
 
                 NotificationContent.Failure -> {
-                    FailureContent(stringResource(R.string.log_detail_failed), onRetry)
+                    FailureContent(
+                        stringResource(R.string.log_detail_failed),
+                        onRetry,
+                    )
                 }
 
                 NotificationContent.Unavailable -> {
@@ -97,32 +76,56 @@ fun NotificationLogDetailScreen(
                 }
 
                 is NotificationContent.Loaded -> {
-                    when (val subject = content.subject) {
-                        is NotificationSubjectContent.LotteryContent -> {
-                            DetailRow(stringResource(R.string.log_lottery), subject.lottery.title)
+                    val loaded = result
+                    val copy = notificationText(LocalContext.current, loaded)
+                    if (loaded.notification.announcement != null) {
+                        Text(copy.title, style = MaterialTheme.typography.titleSmall)
+                    }
+                    Text(copy.body)
+                    if (loaded.subject == NotificationSubjectContent.Failure ||
+                        loaded.subject == NotificationSubjectContent.Unavailable
+                    ) {
+                        // Saved announcement text survives unavailable current lottery context.
+                        if (loaded.notification.announcement != null) {
+                            Text(
+                                stringResource(
+                                    if (loaded.subject == NotificationSubjectContent.Failure) {
+                                        R.string.inbox_context_failed
+                                    } else {
+                                        R.string.inbox_context_unavailable
+                                    },
+                                ),
+                            )
                         }
-
-                        is NotificationSubjectContent.ReservationContent -> {
-                            DetailRow(stringResource(R.string.log_reservation), subject.reservation.bookedCampsite.name)
-                        }
-
-                        NotificationSubjectContent.Unavailable -> {
-                            Text(stringResource(R.string.inbox_context_unavailable))
-                        }
-
-                        NotificationSubjectContent.Unsupported -> {
-                            Text(stringResource(R.string.inbox_context_unsupported))
-                        }
-
-                        NotificationSubjectContent.Failure -> {
-                            Text(stringResource(R.string.inbox_context_failed))
-                            TextButton(onRetry) { Text(stringResource(R.string.log_retry_details)) }
-                        }
+                        TextButton(
+                            onRetry,
+                        ) { Text(stringResource(R.string.log_retry_details)) }
                     }
                 }
             }
         }
     }
+}
+
+/** Renders known immutable event metadata without treating it as a successful content read.
+ * @param event Actual observed or loaded event header.
+ */
+@Composable
+private fun NotificationEventFacts(event: Notification) {
+    DetailRow(
+        stringResource(R.string.log_created),
+        formatDateTime(
+            event.createdAt,
+            ZoneId.systemDefault(),
+            LocalConfiguration.current.locales[0],
+        ),
+    )
+    DetailRow(
+        stringResource(R.string.log_sender),
+        event.senderId ?: stringResource(R.string.log_system_sender),
+    )
+    DetailRow(stringResource(R.string.log_linked_type), event.subject.type.name)
+    DetailRow(stringResource(R.string.log_linked_id), event.subject.id)
 }
 
 /** Projects only this route's selected identity while the graph owns its reader lifetime.

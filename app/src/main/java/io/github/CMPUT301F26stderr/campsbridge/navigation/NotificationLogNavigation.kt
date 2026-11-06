@@ -94,7 +94,7 @@ internal fun NavGraphBuilder.notificationLogGraph(
             val parent = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_LOGS) }
             val model: NotificationLogViewModel = viewModel(parent, factory = factory)
             val id = requireNotNull(entry.arguments?.getString("notificationId"))
-            AppScreen(stringResource(R.string.log_recipients), onBack = { controller.popBackStack() }) {
+            AppScreen(stringResource(R.string.log_recipients_title), onBack = { controller.popBackStack() }) {
                 NotificationLogAudienceRoute(model, id)
             }
         }

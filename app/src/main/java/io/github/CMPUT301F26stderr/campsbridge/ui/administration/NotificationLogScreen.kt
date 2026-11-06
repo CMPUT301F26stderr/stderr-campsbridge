@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
@@ -53,7 +54,6 @@ fun NotificationLogScreen(
     onRetry: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
 ) {
-    val locale = LocalConfiguration.current.locales[0]
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         AppSearchField(
             state.query,
@@ -66,92 +66,93 @@ fun NotificationLogScreen(
             listOf(ChoiceOption("all", stringResource(R.string.log_all_types))) +
                 NotificationType.entries.map { ChoiceOption(it.name, stringResource(notificationTitleResource(it))) },
             state.type?.name ?: "all",
-            { key -> onType(NotificationType.entries.firstOrNull { it.name == key }) },
-            Modifier.fillMaxWidth().testTag("notification-log-type"),
+            { id -> onType(NotificationType.entries.firstOrNull { it.name == id }) },
+            Modifier.testTag("notification-log-type"),
         )
-        when (val source = state.events) {
-            NotificationLogEvents.Loading -> {
-                LoadingContent(stringResource(R.string.log_loading))
-            }
-
-            NotificationLogEvents.Failure -> {
-                FailureContent(stringResource(R.string.log_failed), onRetry)
-            }
-
-            is NotificationLogEvents.Content -> {
-                LazyColumn(
-                    Modifier.weight(1f).fillMaxWidth(),
-                    state = listState,
-                    contentPadding = PaddingValues(vertical = Spacing.medium),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                ) {
-                    if (source.events.isEmpty()) {
-                        item {
-                            EmptyContent(
-                                stringResource(
-                                    if (state.query.isBlank() &&
-                                        state.type == null
-                                    ) {
-                                        R.string.log_empty
-                                    } else {
-                                        R.string.log_no_matches
-                                    },
-                                ),
-                            )
-                        }
+        LazyColumn(
+            Modifier.weight(1f).testTag("admin-log-records"),
+            state = listState,
+            contentPadding = PaddingValues(vertical = Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+        ) {
+            when (val records = state.events) {
+                NotificationLogEvents.Loading -> {
+                    item("loading") {
+                        LoadingContent(stringResource(R.string.log_loading))
                     }
-                    items(source.events, key = { it.id }) { event ->
-                        OutlinedCard(
-                            onClick = { onOpen(event.id) },
-                            modifier = Modifier.fillMaxWidth().testTag("notification-log-event:${event.id}"),
-                            shape = MaterialTheme.shapes.medium,
-                            colors =
-                                CardDefaults.outlinedCardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                ),
-                        ) {
-                            Column(
-                                Modifier.padding(Spacing.medium),
-                                verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                            ) {
-                                Row(Modifier.fillMaxWidth()) {
-                                    Text(
-                                        event.announcement?.title
-                                            ?: stringResource(notificationTitleResource(event.type)),
-                                        Modifier.weight(1f),
-                                        style = MaterialTheme.typography.titleMedium,
-                                    )
-                                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
-                                }
-                                if (event.announcement != null) {
-                                    Text(
-                                        stringResource(notificationTitleResource(event.type)),
-                                        style = MaterialTheme.typography.labelLarge,
-                                    )
-                                }
-                                Text(
-                                    formatDateTime(event.createdAt, ZoneId.systemDefault(), locale),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                Text(
-                                    stringResource(
-                                        R.string.log_sender_summary,
-                                        event.senderId ?: stringResource(R.string.log_system_sender),
-                                    ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                                Text(event.subject.id, style = MaterialTheme.typography.bodySmall)
-                                Text(
-                                    event.id,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
+                }
+
+                NotificationLogEvents.Failure -> {
+                    item("failure") {
+                        FailureContent(stringResource(R.string.log_failed), onRetry)
+                    }
+                }
+
+                is NotificationLogEvents.Content -> {
+                    if (records.events.isEmpty()) {
+                        item("empty") { EmptyContent(stringResource(R.string.log_empty)) }
+                    }
+                    items(records.events, key = { "event:${it.id}" }) { event ->
+                        NotificationLogRow(event, { onOpen(event.id) })
                     }
                 }
             }
+        }
+    }
+}
+
+/** Shows only original event facts; list presentation never fetches related records.
+ * @param event Original immutable event.
+ * @param onOpen Explicit row action owned by the route.
+ */
+@Composable
+private fun NotificationLogRow(
+    event: Notification,
+    onOpen: () -> Unit,
+) {
+    OutlinedCard(
+        onClick = onOpen,
+        modifier = Modifier.fillMaxWidth().testTag("notification-log-event:${event.id}"),
+        shape = MaterialTheme.shapes.medium,
+        colors =
+            CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+    ) {
+        Column(
+            Modifier.padding(Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+        ) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(notificationTitleResource(event.type)),
+                    Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+            }
+            Text(
+                formatDateTime(
+                    event.createdAt,
+                    ZoneId.systemDefault(),
+                    LocalConfiguration.current.locales[0],
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                stringResource(
+                    R.string.log_sender_summary,
+                    event.senderId ?: stringResource(R.string.log_system_sender),
+                ),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(event.subject.id, style = MaterialTheme.typography.bodySmall)
+            Text(
+                event.id,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

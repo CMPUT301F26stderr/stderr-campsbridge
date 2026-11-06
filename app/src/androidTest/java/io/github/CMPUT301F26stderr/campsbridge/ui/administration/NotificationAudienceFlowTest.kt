@@ -51,9 +51,9 @@ class NotificationAudienceFlowTest {
         f.start(compose, restoration)
         openAudience()
         compose.onNodeWithText("pending-account").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Pending Inbox delivery").assertIsDisplayed()
-        compose.onNodeWithText("Unread").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Read at").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Pending delivery").assertIsDisplayed()
+        compose.onNodeWithText("Delivered to Inbox").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Read at:", substring = true).performScrollTo().assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()
         compose.onNodeWithText("read-account").performScrollTo().assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
@@ -76,21 +76,48 @@ class NotificationAudienceFlowTest {
         compose.onNodeWithText("Could not load recipients.").assertIsDisplayed()
         compose.runOnIdle { f.host.notifications.getAudienceHandler = { NotificationAudience.NoRecordedInformation } }
         compose.onNodeWithText("Retry").performClick()
-        compose.onNodeWithText("No recipient information was recorded.").assertIsDisplayed()
+        compose.onNodeWithText("No recorded recipient information.").assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.runOnIdle { f.host.notifications.getAudienceHandler = { NotificationAudience.Recorded(emptyList()) } }
-        compose.onNodeWithText("Recorded recipients").performScrollTo().performClick()
-        compose.onNodeWithText("No recorded recipients.").assertIsDisplayed()
+        compose.onNodeWithText("View recipients").performScrollTo().performClick()
+        compose.onNodeWithText("No recipients were captured.").assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.runOnIdle {
             f.host.notifications.getAudienceHandler =
                 { NotificationAudience.Unavailable(NotificationAudienceUnavailable.EVENT_MISSING) }
         }
-        compose.onNodeWithText("Recorded recipients").performScrollTo().performClick()
-        compose.onNodeWithText("The original event is unavailable.").assertIsDisplayed()
+        compose.onNodeWithText("View recipients").performScrollTo().performClick()
+        compose.onNodeWithText("Notification event unavailable").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, f.listRequests)
             assertEquals(listOf(f.event.id), f.host.notifications.getRequests)
+            assertTrue(
+                f.host.notifications.readRequests
+                    .isEmpty(),
+            )
+        }
+    }
+
+    /** Loaded recipient facts can refresh without leaving the page or replacing its event. */
+    @Test fun loadedAudienceRefreshesInPlace() {
+        f.host.notifications.getAudienceHandler = { NotificationAudience.NoRecordedInformation }
+        f.start(compose)
+        openAudience()
+        compose.onNodeWithText("No recorded recipient information.").assertIsDisplayed()
+        compose.runOnIdle {
+            f.host.notifications.getAudienceHandler = {
+                NotificationAudience.Recorded(
+                    listOf(NotificationAudienceMember("fresh-account", NotificationAudienceDelivery.DELIVERED)),
+                )
+            }
+        }
+        compose.onNodeWithText("Refresh recipients").performScrollTo().performClick()
+        compose.onNodeWithText("fresh-account").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Delivered to Inbox").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf(f.event.id, f.event.id), f.host.notifications.audienceRequests)
+            assertEquals(listOf(f.event.id), f.host.notifications.getRequests)
+            assertEquals(1, f.listRequests)
             assertTrue(
                 f.host.notifications.readRequests
                     .isEmpty(),
@@ -109,15 +136,15 @@ class NotificationAudienceFlowTest {
         try {
             f.start(compose)
             openAudience()
-            compose.onNodeWithText("Loading recipients…").assertIsDisplayed()
+            compose.onNodeWithText("Loading recipients").assertIsDisplayed()
             compose.onNodeWithContentDescription("Back").performClick()
             compose.onNodeWithText(f.event.id).assertIsDisplayed()
             compose.runOnIdle {
                 f.host.notifications.getAudienceHandler = { NotificationAudience.Recorded(emptyList()) }
                 held.complete(Unit)
             }
-            compose.onNodeWithText("Recorded recipients").performScrollTo().performClick()
-            compose.onNodeWithText("No recorded recipients.").assertIsDisplayed()
+            compose.onNodeWithText("View recipients").performScrollTo().performClick()
+            compose.onNodeWithText("No recipients were captured.").assertIsDisplayed()
             compose.runOnIdle {
                 assertEquals(listOf(f.event.id), f.host.notifications.getRequests)
                 assertEquals(2, f.host.notifications.audienceRequests.size)
@@ -130,6 +157,6 @@ class NotificationAudienceFlowTest {
     /** Opens both actual ID-only child routes through their visible row/action. */
     private fun openAudience() {
         compose.onNodeWithTag("notification-log-event:${f.event.id}").performClick()
-        compose.onNodeWithText("Recorded recipients").performScrollTo().performClick()
+        compose.onNodeWithText("View recipients").performScrollTo().performClick()
     }
 }
