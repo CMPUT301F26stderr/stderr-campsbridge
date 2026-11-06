@@ -1,3 +1,7 @@
+/*
+ * Connects the inbox ViewModel to the screen and handles navigation to saved lottery/reservation targets.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.runtime.Composable

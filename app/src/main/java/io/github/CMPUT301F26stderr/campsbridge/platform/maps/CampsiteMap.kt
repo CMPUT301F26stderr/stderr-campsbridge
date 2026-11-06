@@ -1,3 +1,7 @@
+/*
+ * Displays a saved location through the Maps SDK or an explicitly supplied offline demo surface.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 
 import androidx.compose.foundation.layout.Box

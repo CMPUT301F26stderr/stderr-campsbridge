@@ -1,3 +1,7 @@
+/*
+ * Existing-profile presentation outcomes, independent of navigation and SDK clients.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

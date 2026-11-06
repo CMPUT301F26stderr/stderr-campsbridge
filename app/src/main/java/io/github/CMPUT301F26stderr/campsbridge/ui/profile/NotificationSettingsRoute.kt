@@ -1,3 +1,7 @@
+/*
+ * Connects one profile parent to user-triggered Android launchers and resumed device inspection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import android.Manifest

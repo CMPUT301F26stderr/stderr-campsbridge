@@ -1,3 +1,7 @@
+/*
+ * Tests booking content callbacks and submission feedback without performing a live booking.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.compose.foundation.layout.Box

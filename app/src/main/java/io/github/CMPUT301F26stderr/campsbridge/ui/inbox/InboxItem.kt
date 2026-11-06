@@ -1,3 +1,7 @@
+/*
+ * Combines immutable events, receipt read state and independently loaded linked content for Inbox rows.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt

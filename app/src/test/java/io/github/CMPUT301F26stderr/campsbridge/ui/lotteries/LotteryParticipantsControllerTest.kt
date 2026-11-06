@@ -1,3 +1,7 @@
+/*
+ * Contract-first owner child reads keep entries, profile labels and result filtering independent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

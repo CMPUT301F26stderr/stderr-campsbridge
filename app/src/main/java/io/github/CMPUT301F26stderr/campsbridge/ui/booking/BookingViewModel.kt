@@ -1,3 +1,7 @@
+/*
+ * Owns one winner's draft, current approvals and guarded reservation/recovery commands.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

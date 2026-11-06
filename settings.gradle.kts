@@ -1,3 +1,7 @@
+/*
+ * Configures plugin and dependency repositories and includes the Android application module.
+ */
+
 pluginManagement {
     resolutionStrategy {
         eachPlugin {

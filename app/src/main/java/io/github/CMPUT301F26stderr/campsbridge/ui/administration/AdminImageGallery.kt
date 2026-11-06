@@ -1,3 +1,7 @@
+/*
+ * Metadata membership belongs to the observed source, independently of thumbnail success.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.clickable

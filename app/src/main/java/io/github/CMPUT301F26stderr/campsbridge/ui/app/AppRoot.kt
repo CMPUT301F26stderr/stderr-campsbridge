@@ -1,3 +1,7 @@
+/*
+ * Selects one root branch from lifecycle-aware session state without imperative navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.runtime.Composable

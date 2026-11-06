@@ -1,3 +1,7 @@
+/*
+ * Owns the shared white app bar, system insets, gutters, and optional bottom actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.compose.foundation.layout.Arrangement

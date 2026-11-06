@@ -1,3 +1,7 @@
+/*
+ * Renders shared inline notices with visible text that explains their meaning alongside color and icons.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback
 
 import androidx.compose.foundation.layout.Arrangement

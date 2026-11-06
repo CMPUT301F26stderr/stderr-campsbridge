@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Runs Android lint, local unit tests and the debug build through the Gradle wrapper.
+
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

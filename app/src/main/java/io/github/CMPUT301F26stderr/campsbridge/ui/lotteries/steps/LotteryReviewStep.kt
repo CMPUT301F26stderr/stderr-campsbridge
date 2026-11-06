@@ -1,3 +1,7 @@
+/*
+ * Reviews the single allocation, actual local windows and their explicitly chosen zone.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.annotation.StringRes

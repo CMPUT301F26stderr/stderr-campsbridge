@@ -1,3 +1,7 @@
+/*
+ * Checks the list's use of shared photo readers without repeating image-slot contracts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.lifecycle.ViewModelStore

@@ -1,3 +1,7 @@
+/*
+ * Renders packaged policy lists and version-specific readers with caller-owned navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.policies
 
 import androidx.activity.compose.BackHandler

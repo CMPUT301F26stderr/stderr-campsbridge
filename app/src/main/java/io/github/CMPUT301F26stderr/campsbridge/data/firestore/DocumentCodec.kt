@@ -1,3 +1,7 @@
+/*
+ * Defines Firestore serialization contracts and reports malformed records with their document paths.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import com.google.firebase.Timestamp

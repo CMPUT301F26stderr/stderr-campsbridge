@@ -1,3 +1,7 @@
+/*
+ * Debug-only direct task launcher, retaining real feature owners across activity recreation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import android.os.Bundle

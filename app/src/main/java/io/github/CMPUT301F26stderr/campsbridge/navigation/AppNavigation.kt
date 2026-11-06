@@ -1,3 +1,7 @@
+/*
+ * Hosts implemented destinations. The root keys this graph by account identity.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.material.icons.Icons

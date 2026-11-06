@@ -1,3 +1,7 @@
+/*
+ * Applies the approved white/green Material theme and account accessibility preferences.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize

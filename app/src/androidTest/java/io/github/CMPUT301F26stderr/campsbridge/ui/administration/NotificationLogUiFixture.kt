@@ -1,3 +1,7 @@
+/*
+ * Uses actual admin navigation with a separately controlled read-only log source.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.runtime.CompositionLocalProvider

@@ -1,3 +1,7 @@
+/*
+ * Owns the application service graph shared by production activities and ViewModels.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge
 
 import android.app.Application

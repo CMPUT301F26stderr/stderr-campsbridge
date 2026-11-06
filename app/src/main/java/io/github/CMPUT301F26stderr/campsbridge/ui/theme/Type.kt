@@ -1,3 +1,7 @@
+/*
+ * Applies application scaling to Material typography; Android still applies system scaling.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.material3.Typography

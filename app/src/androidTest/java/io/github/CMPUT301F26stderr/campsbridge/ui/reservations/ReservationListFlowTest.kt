@@ -1,3 +1,7 @@
+/*
+ * Tests active lists and their shared saved-reservation reader through account navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.runtime.CompositionLocalProvider

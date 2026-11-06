@@ -1,3 +1,7 @@
+/*
+ * Connects the current saved summary to its own graph-scoped read owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.runtime.Composable

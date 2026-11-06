@@ -1,3 +1,7 @@
+/*
+ * Owns admin log filters and independent original-event and recipient reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

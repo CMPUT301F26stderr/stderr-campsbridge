@@ -1,3 +1,7 @@
+/*
+ * Owns scoped primary-list reads and derived categories, without membership mutations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

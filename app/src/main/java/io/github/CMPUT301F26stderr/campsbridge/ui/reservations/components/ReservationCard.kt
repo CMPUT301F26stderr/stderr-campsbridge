@@ -1,3 +1,7 @@
+/*
+ * Shows saved stay facts with an independently supplied current photo and optional owner label.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.foundation.layout.Arrangement

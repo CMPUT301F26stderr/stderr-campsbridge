@@ -1,3 +1,7 @@
+/*
+ * A winning entrant and three free offered nights; arranging this state never executes a draw.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument

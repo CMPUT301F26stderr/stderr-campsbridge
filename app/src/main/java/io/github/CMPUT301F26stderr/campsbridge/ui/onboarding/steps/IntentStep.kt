@@ -1,3 +1,7 @@
+/*
+ * Offers only public starting intents; selection never grants an account role.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps
 
 import androidx.compose.foundation.layout.Arrangement

@@ -1,3 +1,7 @@
+/*
+ * Composes alert initialization/observation with the existing session's durable due work.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.PendingWork

@@ -1,3 +1,7 @@
+/*
+ * Connects one saved parent to its registered overview, schedule and allocation children.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

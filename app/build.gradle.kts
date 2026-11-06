@@ -1,3 +1,8 @@
+/*
+ * Configures the Android app, signed release build, dependencies, test suites, coverage and generated API
+ * documentation.
+ */
+
 plugins {
     jacoco
     alias(libs.plugins.android.application)
@@ -43,6 +48,8 @@ android {
             matchingFallbacks += "debug"
         }
         release {
+            // Use the existing installation key for the trusted Halfway distribution.
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = false
             }

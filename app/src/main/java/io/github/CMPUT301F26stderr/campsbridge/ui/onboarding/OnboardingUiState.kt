@@ -1,3 +1,7 @@
+/*
+ * Defines onboarding steps, retained editable input and setup read or save outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences

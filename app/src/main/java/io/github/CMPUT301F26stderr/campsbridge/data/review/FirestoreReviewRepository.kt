@@ -1,3 +1,7 @@
+/*
+ * Firebase-backed implementation for campsite ratings, threaded replies, and per-account reactions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.review
 
 import com.google.firebase.firestore.FirebaseFirestore

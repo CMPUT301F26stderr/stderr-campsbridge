@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for reservation creation/cancellation with coordinated inventory and simulated payments.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import kotlinx.coroutines.flow.Flow

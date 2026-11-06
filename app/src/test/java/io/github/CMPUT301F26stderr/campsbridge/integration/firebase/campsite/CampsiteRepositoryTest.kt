@@ -1,3 +1,7 @@
+/*
+ * Tests listing lifecycle/query behavior and the documented independent calendar writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.campsite
 
 import com.google.firebase.firestore.Source

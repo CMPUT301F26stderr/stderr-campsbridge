@@ -1,3 +1,7 @@
+/*
+ * Firebase-backed implementation for lottery configuration, membership, resumable draws, and cancellation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.FirebaseFirestore

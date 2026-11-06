@@ -1,3 +1,7 @@
+/*
+ * Represents lottery setup input, published campsite choices and explicit save or recovery outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

@@ -1,3 +1,7 @@
+/*
+ * Reuses one local date/time composition for the two distinct schedule steps.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.compose.foundation.layout.Arrangement

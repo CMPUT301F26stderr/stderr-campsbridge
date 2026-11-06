@@ -1,3 +1,7 @@
+/*
+ * Ordered feedback for selected dates against confirmed eligible occupied nights.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic
 
 import java.time.LocalDate

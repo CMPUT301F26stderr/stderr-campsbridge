@@ -1,3 +1,7 @@
+/*
+ * Reads a real event target and acknowledges the local receipt through the actual Inbox owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.runtime.Composable

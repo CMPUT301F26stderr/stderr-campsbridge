@@ -1,3 +1,7 @@
+/*
+ * Read-only child contracts extend the saved listing reader without duplicating persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

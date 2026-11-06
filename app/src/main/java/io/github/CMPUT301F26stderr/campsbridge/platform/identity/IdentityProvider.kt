@@ -1,3 +1,7 @@
+/*
+ * Establishes one device-linked Firebase identity without creating a profile.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.identity
 
 /** Establishes one device-linked Firebase identity without creating a profile. */

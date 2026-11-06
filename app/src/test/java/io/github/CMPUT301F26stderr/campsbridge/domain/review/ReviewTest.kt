@@ -1,3 +1,7 @@
+/*
+ * Tests star-rating limits and nonblank review replies.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.review
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures

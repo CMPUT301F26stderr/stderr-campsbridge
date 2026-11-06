@@ -1,3 +1,7 @@
+/*
+ * Covers source outcomes and independent owner names with passive saved fixtures.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.runtime.Composable

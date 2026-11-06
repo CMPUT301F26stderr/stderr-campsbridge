@@ -1,3 +1,8 @@
+/*
+ * Owns one image slot's preview, explicit writes, and transient display references. Call actions on the parent
+ * dispatcher (normally Main); the parent owns its lifetime.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment

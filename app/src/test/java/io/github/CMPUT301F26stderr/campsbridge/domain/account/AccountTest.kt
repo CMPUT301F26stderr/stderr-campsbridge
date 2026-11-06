@@ -1,3 +1,7 @@
+/*
+ * Tests profile validity and accessibility-setting boundaries, independent of storage.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.account
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal

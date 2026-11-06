@@ -1,3 +1,7 @@
+/*
+ * Defines shared radio, checkbox and switch controls with caller-owned selections and accessible row actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
 import androidx.compose.foundation.layout.Arrangement

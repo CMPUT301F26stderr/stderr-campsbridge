@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for attachment metadata, uploaded blobs, and retryable publication/cleanup.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.image
 
 import kotlinx.coroutines.flow.Flow

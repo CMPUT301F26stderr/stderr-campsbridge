@@ -1,3 +1,7 @@
+/*
+ * Read-only saved image with stable geometry and independent attachment/URL retry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.images
 
 import androidx.compose.foundation.layout.Box

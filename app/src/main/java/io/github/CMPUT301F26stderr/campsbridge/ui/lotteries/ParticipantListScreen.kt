@@ -1,3 +1,7 @@
+/*
+ * Connects the actual child to its saved parent's read lifetime and retained filter.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.Arrangement

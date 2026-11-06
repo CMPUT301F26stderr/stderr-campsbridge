@@ -1,3 +1,9 @@
+/*
+ * Implements authenticated booking and cancellation as Firestore transactions.
+ *
+ * Halfway limitation: payments and refunds use simulated records.
+ */
+
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, Timestamp } = require('firebase-admin/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
@@ -58,7 +64,8 @@ const notice = (tx, reservationId, entrantId, cancelled, at, existing) => {
 };
 
 /** Authenticate the caller before any trusted Firestore operation. */
-const authenticated = handler => onCall(async request => {
+// Firebase Auth is checked here; mobile callers reach the function through public HTTP.
+const authenticated = handler => onCall({ invoker: 'public' }, async request => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in first');
   return handler(request, request.auth.uid);
 });

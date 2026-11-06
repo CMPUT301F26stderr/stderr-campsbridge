@@ -1,3 +1,7 @@
+/*
+ * Exact editable basics without a screenshot-only character limit.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.compose.runtime.Composable

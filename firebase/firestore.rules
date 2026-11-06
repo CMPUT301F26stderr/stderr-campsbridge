@@ -1,3 +1,6 @@
+// Defines document access and coordinated-write rules for accounts, campsites,
+// lotteries, reservations, notifications and image metadata.
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {

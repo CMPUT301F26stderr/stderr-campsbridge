@@ -1,3 +1,7 @@
+/*
+ * Transaction writes shared by authorized removal requests and their recorded cleanup.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.moderation
 
 import com.google.firebase.firestore.FirebaseFirestore

@@ -1,3 +1,7 @@
+/*
+ * Tests packaged credits, ordinary links and the Android dependency-notices entry point.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.credits
 
 import androidx.compose.ui.test.assertIsDisplayed

@@ -1,3 +1,7 @@
+/*
+ * Owns six-step input, its allocation child and explicit same-ID save/recovery operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * Reads one saved campsite; each caller context has a separate graph-owned instance.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

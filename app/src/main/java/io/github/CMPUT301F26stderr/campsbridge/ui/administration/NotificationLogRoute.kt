@@ -1,3 +1,7 @@
+/*
+ * Binds retained filters and permits saved-ID navigation only from the current resumed list.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.lazy.rememberLazyListState

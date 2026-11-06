@@ -1,3 +1,7 @@
+/*
+ * Controllable time shared by timezone views of the same fixture clock.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import java.time.Clock

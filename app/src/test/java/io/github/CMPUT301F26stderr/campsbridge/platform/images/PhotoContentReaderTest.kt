@@ -1,3 +1,7 @@
+/*
+ * Tests the real Android adapter around a controlled ContentResolver boundary.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.images
 
 import android.content.ContentResolver

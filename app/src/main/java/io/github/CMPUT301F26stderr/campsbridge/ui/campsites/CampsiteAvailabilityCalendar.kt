@@ -1,3 +1,7 @@
+/*
+ * Maps only a successfully read month to editable cells; unknown dates never become all-free.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead

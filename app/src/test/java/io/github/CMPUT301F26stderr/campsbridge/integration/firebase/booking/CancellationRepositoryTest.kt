@@ -1,3 +1,7 @@
+/*
+ * Tests refunds, inventory release, consumed opportunities and cancellation history.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
 import com.google.firebase.firestore.Source

@@ -1,3 +1,7 @@
+/*
+ * Shares the short hosting introduction; the containing flow owns its actual completion action.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps
 
 import androidx.compose.foundation.layout.Arrangement

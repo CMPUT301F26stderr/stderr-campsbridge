@@ -1,3 +1,7 @@
+/*
+ * Account-scoped receipt/content assembly with independent read acknowledgements.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.lifecycle.ViewModel

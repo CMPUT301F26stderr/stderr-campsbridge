@@ -1,3 +1,7 @@
+/*
+ * Tests saved alert preferences independently of Android permission and notification publication.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.lifecycle.ViewModelStore

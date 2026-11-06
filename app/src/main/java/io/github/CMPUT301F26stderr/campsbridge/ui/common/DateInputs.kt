@@ -1,3 +1,7 @@
+/*
+ * Converts local dates to and from Material pickers' UTC date representation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common
 
 import java.time.Instant

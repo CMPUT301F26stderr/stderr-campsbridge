@@ -1,3 +1,7 @@
+/*
+ * Coordinates the acknowledged stages of saving or publishing one lottery draft.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery

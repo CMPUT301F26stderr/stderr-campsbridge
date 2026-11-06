@@ -1,3 +1,7 @@
+/*
+ * Defines validated geographic coordinates, removal audit facts and typed persistence failures.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.shared
 
 import java.time.Instant

@@ -1,3 +1,7 @@
+/*
+ * Coordinates actual local booking, inventory, simulated payments and Inbox records.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument

@@ -1,3 +1,7 @@
+/*
+ * Primary discovery content; navigation owns its workspace frame.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.compose.foundation.layout.Arrangement

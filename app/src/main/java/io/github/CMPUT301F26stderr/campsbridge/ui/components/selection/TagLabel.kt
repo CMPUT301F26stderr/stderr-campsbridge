@@ -1,3 +1,7 @@
+/*
+ * A passive tag, without a disabled control appearance or a misleading click target.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
 import androidx.compose.foundation.BorderStroke

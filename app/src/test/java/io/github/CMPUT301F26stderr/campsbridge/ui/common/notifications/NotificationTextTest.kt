@@ -1,3 +1,7 @@
+/*
+ * Tests localized event copy shared by Inbox rows and Android alerts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import android.app.Application

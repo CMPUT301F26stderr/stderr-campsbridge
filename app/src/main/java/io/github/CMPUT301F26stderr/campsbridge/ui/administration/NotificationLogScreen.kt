@@ -1,3 +1,7 @@
+/*
+ * Displays immutable event rows and parent-owned filters without acquiring repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Arrangement

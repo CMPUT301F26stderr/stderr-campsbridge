@@ -1,3 +1,7 @@
+/*
+ * Tests owner query scope, inventory tabs, restoration and thumbnail lifetimes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

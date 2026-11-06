@@ -1,3 +1,7 @@
+/*
+ * Owns the seed/freeze barrier, idempotent outcomes and final draw completion.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.FirebaseFirestore

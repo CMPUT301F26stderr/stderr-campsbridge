@@ -1,3 +1,7 @@
+/*
+ * Displays retained reservation identity, stay facts and cancellation history without mutation actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.runtime.Composable

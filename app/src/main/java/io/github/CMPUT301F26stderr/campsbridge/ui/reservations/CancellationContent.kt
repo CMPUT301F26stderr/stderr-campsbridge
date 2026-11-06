@@ -1,3 +1,7 @@
+/*
+ * Displays cancellation confirmation, progress and recoverable failure independently of saved-record reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.foundation.layout.Arrangement

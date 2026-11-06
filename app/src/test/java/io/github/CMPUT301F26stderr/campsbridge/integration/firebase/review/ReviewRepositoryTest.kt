@@ -1,3 +1,7 @@
+/*
+ * Tests editable ratings, thread membership and per-account reactions through real persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.review
 
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument

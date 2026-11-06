@@ -1,3 +1,7 @@
+/*
+ * Verifies profile wiring around the shared image controller, separate from image-rule tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.lifecycle.ViewModelStore

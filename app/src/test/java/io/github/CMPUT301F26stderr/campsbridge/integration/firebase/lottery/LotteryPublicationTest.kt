@@ -1,3 +1,7 @@
+/*
+ * Tests publication prerequisites and the owner's offer/configuration editing boundary.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument

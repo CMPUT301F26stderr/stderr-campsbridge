@@ -1,3 +1,7 @@
+/*
+ * Coordinates foreground Android alerts with confirmed Inbox history and installation-local delivery bookkeeping.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

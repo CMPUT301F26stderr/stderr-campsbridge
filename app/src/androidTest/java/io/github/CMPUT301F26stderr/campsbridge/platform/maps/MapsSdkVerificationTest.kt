@@ -1,3 +1,7 @@
+/*
+ * Verifies the real SDK when explicitly requested; ordinary keyless CI verifies truthful fallback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 
 import android.os.SystemClock

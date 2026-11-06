@@ -1,3 +1,7 @@
+/*
+ * Presents one focused wizard step with scrolling content and a reachable bottom action.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.activity.compose.BackHandler

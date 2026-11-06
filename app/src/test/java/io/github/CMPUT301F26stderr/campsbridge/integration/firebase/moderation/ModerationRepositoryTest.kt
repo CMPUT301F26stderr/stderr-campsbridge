@@ -1,3 +1,7 @@
+/*
+ * Tests removal cascades and durable orchestration; booking and image suites own their operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.moderation
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.DeviceRegistrationDocument

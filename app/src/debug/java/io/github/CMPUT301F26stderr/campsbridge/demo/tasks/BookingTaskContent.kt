@@ -1,3 +1,7 @@
+/*
+ * Exercises the accepted availability helper through the real date-selection owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.foundation.layout.Arrangement

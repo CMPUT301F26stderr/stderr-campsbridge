@@ -1,3 +1,7 @@
+/*
+ * Connects one navigation-scoped draft owner to repository-free screen content.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.compose.runtime.Composable

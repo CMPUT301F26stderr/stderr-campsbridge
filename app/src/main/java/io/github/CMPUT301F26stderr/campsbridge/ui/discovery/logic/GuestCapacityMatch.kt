@@ -1,3 +1,7 @@
+/*
+ * Checks a positive listing capacity against an optional requested group size.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic
 
 /** Checks a positive listing capacity against an optional requested group size.

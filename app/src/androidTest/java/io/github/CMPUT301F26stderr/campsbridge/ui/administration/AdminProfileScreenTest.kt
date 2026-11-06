@@ -1,3 +1,7 @@
+/*
+ * Presentation contracts supplement the existing controller lifetime/retry tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.test.assertIsDisplayed

@@ -1,3 +1,7 @@
+/*
+ * Observes current related records and cancels children when membership changes or collection ends.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import kotlinx.coroutines.flow.Flow

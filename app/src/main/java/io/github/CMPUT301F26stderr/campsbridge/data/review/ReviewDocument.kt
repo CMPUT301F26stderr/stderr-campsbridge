@@ -1,3 +1,7 @@
+/*
+ * Explicit Firestore codec for Review, deriving identity from the document path.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.review
 
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentCodec

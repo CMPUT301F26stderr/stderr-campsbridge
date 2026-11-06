@@ -1,3 +1,7 @@
+/*
+ * Defines stable task-example identities and their UI grouping.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.annotation.StringRes

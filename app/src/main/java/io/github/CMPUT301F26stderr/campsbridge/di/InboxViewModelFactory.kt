@@ -1,3 +1,7 @@
+/*
+ * Creates an InboxViewModel for the given account.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

@@ -1,3 +1,7 @@
+/*
+ * Tests isolated task examples through real feature controllers and injected helper outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.lifecycle.ViewModelStore

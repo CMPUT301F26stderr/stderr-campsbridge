@@ -1,3 +1,7 @@
+/*
+ * Controlled account dependency; writes fail unless a test explicitly enables them.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

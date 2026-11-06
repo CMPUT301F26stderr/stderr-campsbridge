@@ -1,3 +1,7 @@
+/*
+ * Real profile route, ViewModel, controller, and content reader with isolated persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner

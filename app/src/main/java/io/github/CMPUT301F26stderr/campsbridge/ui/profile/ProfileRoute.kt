@@ -1,3 +1,8 @@
+/*
+ * Connects the shared profile ViewModel to menu and editor screens, native photo selection and explicit
+ * navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.foundation.shape.CircleShape

@@ -1,3 +1,7 @@
+/*
+ * Tests task-host integration with controlled helper results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.lifecycle.ViewModelProvider

@@ -1,3 +1,7 @@
+/*
+ * Reads captured recipients only for the currently displayed audience page.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository

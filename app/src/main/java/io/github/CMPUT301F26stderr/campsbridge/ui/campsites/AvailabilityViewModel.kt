@@ -1,3 +1,7 @@
+/*
+ * Independent saved-campsite editor; one shared controller owns inventory reads and explicit writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

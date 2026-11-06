@@ -1,3 +1,7 @@
+/*
+ * Tests admin gallery membership and recovery when saved image displays fail.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.test.assertIsDisplayed

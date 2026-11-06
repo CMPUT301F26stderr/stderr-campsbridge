@@ -1,3 +1,7 @@
+/*
+ * Tests entrant cancellation, owner rejection and saved history through the production root and routes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import android.view.KeyEvent

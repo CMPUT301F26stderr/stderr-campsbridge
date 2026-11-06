@@ -1,3 +1,7 @@
+/*
+ * Six step contents with explicit save progress, retry and authoritative target restoration.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.activity.compose.BackHandler

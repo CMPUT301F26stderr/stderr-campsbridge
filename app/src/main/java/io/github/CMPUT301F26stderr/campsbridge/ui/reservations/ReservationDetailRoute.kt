@@ -1,3 +1,7 @@
+/*
+ * Saved children beneath the same identity and actor context.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.runtime.Composable

@@ -1,3 +1,7 @@
+/*
+ * Defines shared Material action buttons and submission feedback for forms.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.actions
 
 import androidx.compose.foundation.layout.RowScope

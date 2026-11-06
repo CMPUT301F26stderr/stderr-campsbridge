@@ -1,3 +1,7 @@
+/*
+ * Forwards validated launch and warm tap envelopes to the existing root owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.content.Intent

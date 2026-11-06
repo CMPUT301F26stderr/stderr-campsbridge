@@ -1,3 +1,7 @@
+/*
+ * Encodes and decodes shared nested Firestore values, including removal and cancellation audit metadata.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation

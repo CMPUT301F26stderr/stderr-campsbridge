@@ -1,3 +1,7 @@
+/*
+ * Discovery-specific toolbar reused by list/map presentations without performing a search.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.components
 
 import androidx.compose.foundation.layout.Arrangement

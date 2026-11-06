@@ -1,3 +1,8 @@
+/*
+ * Owns profile drafts, field saves, alert preferences and hosting activation. The image controller owns photo
+ * persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.lifecycle.SavedStateHandle

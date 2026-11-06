@@ -1,3 +1,7 @@
+/*
+ * Separates confirmation, explicit cancellation, and outside/Back dismissal.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback
 
 import androidx.compose.foundation.layout.Arrangement

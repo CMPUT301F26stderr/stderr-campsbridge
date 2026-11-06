@@ -1,3 +1,7 @@
+/*
+ * Resolves notification delivery jobs and writes durable Inbox receipts for their captured recipients.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.notification
 
 import com.google.firebase.firestore.DocumentSnapshot

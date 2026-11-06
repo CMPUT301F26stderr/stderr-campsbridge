@@ -1,3 +1,7 @@
+/*
+ * Classifies saved stays from their dates and cancellation state without persisting presentation categories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 /** Derived stay presentation, supplied by the reserved F17 rule and never persisted. */

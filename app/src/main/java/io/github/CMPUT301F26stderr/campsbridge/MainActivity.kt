@@ -1,3 +1,7 @@
+/*
+ * Hosts the production app's root session and navigation, retaining its ViewModels across recreation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge
 
 import android.os.Bundle

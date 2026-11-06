@@ -1,3 +1,7 @@
+/*
+ * Verifies durable account-keyed local state using real temporary DataStore files.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.preferences
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory

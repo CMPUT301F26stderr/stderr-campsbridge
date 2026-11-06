@@ -1,3 +1,7 @@
+/*
+ * Provides local repository dependencies used by isolated task examples.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository

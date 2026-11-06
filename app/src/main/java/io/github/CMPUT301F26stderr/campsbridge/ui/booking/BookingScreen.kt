@@ -1,3 +1,7 @@
+/*
+ * Four stateless wizard steps under the shared frame; the caller owns every effect.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.activity.compose.BackHandler

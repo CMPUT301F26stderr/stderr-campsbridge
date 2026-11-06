@@ -1,3 +1,7 @@
+/*
+ * Registers one local setup parent shared by six steps and its working-allocation child.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.LaunchedEffect

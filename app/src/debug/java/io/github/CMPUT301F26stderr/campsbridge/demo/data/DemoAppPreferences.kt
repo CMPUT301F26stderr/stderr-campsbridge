@@ -1,3 +1,7 @@
+/*
+ * Scenario-local progress; never reads or changes the Firebase installation's DataStore.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.demo.DemoScenario

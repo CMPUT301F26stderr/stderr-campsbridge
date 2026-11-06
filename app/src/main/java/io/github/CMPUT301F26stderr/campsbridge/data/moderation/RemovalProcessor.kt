@@ -1,3 +1,7 @@
+/*
+ * Processes recorded removal jobs; request authorization belongs to the repository.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.moderation
 
 import com.google.firebase.firestore.FirebaseFirestore

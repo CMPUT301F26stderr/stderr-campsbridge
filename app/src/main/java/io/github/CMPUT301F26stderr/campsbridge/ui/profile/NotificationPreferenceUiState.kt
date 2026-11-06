@@ -1,3 +1,7 @@
+/*
+ * Acknowledged app-alert preference independent of OS permission and profile/photo drafts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 /** Acknowledged app-alert preference independent of OS permission and profile/photo drafts.

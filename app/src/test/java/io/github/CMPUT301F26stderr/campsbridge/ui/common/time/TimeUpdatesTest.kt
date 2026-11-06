@@ -1,3 +1,7 @@
+/*
+ * Deadline waits use controlled clocks and coroutine time without real sleeps or writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.time
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock

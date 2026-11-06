@@ -1,3 +1,7 @@
+/*
+ * One private offline dataset, committed to disk before observers see a successful change.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import com.google.firebase.Timestamp

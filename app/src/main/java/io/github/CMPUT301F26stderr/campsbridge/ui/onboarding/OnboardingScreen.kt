@@ -1,3 +1,7 @@
+/*
+ * Arranges short onboarding steps from supplied state, without persistence or navigation lookup.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.activity.compose.BackHandler

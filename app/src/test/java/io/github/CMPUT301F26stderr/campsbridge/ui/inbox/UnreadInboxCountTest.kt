@@ -1,3 +1,7 @@
+/*
+ * Tests unread counting from original receipts, including unloaded event content.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt

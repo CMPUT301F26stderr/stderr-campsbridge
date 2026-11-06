@@ -1,3 +1,7 @@
+/*
+ * Saved-parent resolution and local offer-editor state; no writes happen on selection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

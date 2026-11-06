@@ -1,3 +1,7 @@
+/*
+ * Validated document identities and deterministic keys shared by readers and writers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget

@@ -1,3 +1,7 @@
+/*
+ * One prominent, mutually exclusive choice with a single accessible selection target.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
 import androidx.compose.foundation.BorderStroke

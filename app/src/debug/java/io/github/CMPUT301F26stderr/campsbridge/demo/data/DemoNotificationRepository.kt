@@ -1,3 +1,7 @@
+/*
+ * Local event history and read acknowledgements; no delivery or announcement simulation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.InboxReceiptDocument

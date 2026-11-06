@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for lottery configuration, membership, resumable draws, and cancellation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.lottery
 
 import kotlinx.coroutines.flow.Flow

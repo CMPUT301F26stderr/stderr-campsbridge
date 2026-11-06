@@ -1,3 +1,7 @@
+/*
+ * Two offline gallery pages invoking production components with explicitly local interactions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.compose.foundation.layout.Arrangement

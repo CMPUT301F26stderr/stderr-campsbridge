@@ -1,3 +1,7 @@
+/*
+ * Route-facing state has explicit display/action identity and consumed navigation handoffs.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

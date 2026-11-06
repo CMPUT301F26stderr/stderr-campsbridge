@@ -1,3 +1,7 @@
+/*
+ * Binds one graph-owned local draft to native selection and explicit navigation results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.BackHandler

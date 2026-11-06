@@ -1,3 +1,7 @@
+/*
+ * Read outcome shared by the saved overview, payment, and accepted terms pages.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation

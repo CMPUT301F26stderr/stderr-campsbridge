@@ -1,3 +1,7 @@
+/*
+ * Defines stable tag and amenity choices with localized display labels.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.options
 
 import androidx.annotation.StringRes

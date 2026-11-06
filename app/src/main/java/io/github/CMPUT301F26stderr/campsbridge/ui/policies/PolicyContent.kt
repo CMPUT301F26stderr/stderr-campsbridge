@@ -1,3 +1,8 @@
+/*
+ * Defines packaged community guidelines and versioned refund-policy content used by offline readers and booking
+ * terms.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.policies
 
 import androidx.annotation.StringRes

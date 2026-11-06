@@ -1,3 +1,7 @@
+/*
+ * Owns one task's actual controllers and sample repositories until reset or exit.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * Coordinates cancellation with the same resumable draw operation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.FirebaseFirestore

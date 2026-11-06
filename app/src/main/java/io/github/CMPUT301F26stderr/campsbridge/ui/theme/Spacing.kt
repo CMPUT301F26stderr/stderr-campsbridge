@@ -1,3 +1,7 @@
+/*
+ * Shared layout spacing; typography and controls have separate accessibility scaling.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.ui.unit.dp

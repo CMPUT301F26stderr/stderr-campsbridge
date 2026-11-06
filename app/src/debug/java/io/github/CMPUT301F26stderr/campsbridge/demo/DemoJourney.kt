@@ -1,3 +1,7 @@
+/*
+ * Suggests the next demo screen from shared saved records and the controlled scenario clock.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.R

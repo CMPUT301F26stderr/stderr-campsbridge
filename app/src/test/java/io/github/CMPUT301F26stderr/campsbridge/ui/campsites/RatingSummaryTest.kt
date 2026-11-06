@@ -1,3 +1,7 @@
+/*
+ * Rating aggregation derives display facts without a stored summary.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review

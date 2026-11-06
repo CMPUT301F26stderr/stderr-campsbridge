@@ -1,3 +1,7 @@
+/*
+ * Immutable reservation-conversation text with the recipient's optional first-read time.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.messaging
 
 import java.time.Instant

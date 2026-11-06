@@ -1,3 +1,7 @@
+/*
+ * A consistent full-width navigation target for menus and detail sections.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.rows
 
 import androidx.compose.foundation.clickable

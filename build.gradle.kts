@@ -1,3 +1,7 @@
+/*
+ * Aligns the Android and Compose compiler toolchain and declares shared Gradle plugins.
+ */
+
 // Keep AGP's built-in Kotlin compiler aligned with the Compose compiler plugin.
 buildscript {
     dependencies {

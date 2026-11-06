@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for shared notification events, inbox acknowledgements, and resumable receipt delivery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.notification
 
 import kotlinx.coroutines.flow.Flow

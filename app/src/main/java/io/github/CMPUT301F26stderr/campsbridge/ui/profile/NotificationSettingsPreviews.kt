@@ -1,3 +1,7 @@
+/*
+ * Previews settings and enlarged native controls with inert callbacks and explicit platform facts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.runtime.Composable

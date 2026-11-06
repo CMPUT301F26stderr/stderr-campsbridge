@@ -1,3 +1,7 @@
+/*
+ * Contracts for existing-profile presentation, without name/contact editing.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.lifecycle.ViewModelStore

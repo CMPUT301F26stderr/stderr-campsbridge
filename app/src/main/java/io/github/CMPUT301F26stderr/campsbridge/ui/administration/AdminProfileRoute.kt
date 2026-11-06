@@ -1,3 +1,7 @@
+/*
+ * Binds the saved route identity to the Browse parent's selected read-only profile.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.runtime.Composable

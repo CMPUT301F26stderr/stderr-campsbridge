@@ -1,3 +1,7 @@
+/*
+ * Local lottery coordination against the same inventory used by booking.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument

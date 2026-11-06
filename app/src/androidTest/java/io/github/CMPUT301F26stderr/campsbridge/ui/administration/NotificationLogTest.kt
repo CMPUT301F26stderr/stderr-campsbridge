@@ -1,3 +1,7 @@
+/*
+ * Tests notification list and detail routes, retries, restoration and enlarged text.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.test.assertIsDisplayed

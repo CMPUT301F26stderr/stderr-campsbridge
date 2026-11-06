@@ -1,3 +1,7 @@
+/*
+ * Eight stateless step contents and explicit draft-save feedback in one shared scaffold.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.BackHandler

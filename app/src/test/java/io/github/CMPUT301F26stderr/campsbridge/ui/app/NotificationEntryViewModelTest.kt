@@ -1,3 +1,7 @@
+/*
+ * Tests restored root taps, account readiness and saved-target resolution.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.lifecycle.SavedStateHandle

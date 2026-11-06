@@ -1,3 +1,7 @@
+/*
+ * Exercises the two B2 task entry points without onboarding, Firebase, or peer helpers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.ui.test.assertIsDisplayed

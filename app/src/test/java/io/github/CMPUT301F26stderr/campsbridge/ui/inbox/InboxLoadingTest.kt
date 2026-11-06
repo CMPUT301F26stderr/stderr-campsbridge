@@ -1,3 +1,7 @@
+/*
+ * Receipt/event assembly and explicit opening never invent time, unread counts or acknowledgements.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.lifecycle.ViewModelStore

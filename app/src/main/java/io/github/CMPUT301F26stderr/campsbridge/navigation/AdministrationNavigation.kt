@@ -1,3 +1,7 @@
+/*
+ * Registers Browse and its read-only profile/image children beneath one shared parent owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember

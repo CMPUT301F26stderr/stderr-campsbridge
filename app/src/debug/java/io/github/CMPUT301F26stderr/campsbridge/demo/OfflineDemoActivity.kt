@@ -1,3 +1,7 @@
+/*
+ * Default debug launcher; real screen controllers use an explicitly local demo graph.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import android.content.Intent

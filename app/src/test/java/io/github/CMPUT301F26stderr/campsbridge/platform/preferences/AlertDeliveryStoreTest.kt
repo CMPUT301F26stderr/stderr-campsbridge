@@ -1,3 +1,7 @@
+/*
+ * Tests account-scoped handled-alert persistence using temporary Preferences files.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.preferences
 
 import androidx.datastore.core.DataStore

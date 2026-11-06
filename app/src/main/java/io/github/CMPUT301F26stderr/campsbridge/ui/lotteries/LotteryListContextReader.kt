@@ -1,3 +1,9 @@
+/*
+ * Resolves display context for visible lottery allocations without owning their primary truth. All calls use the
+ * parent ViewModel's main-thread scope. Each referenced campsite has one reader, shared by visible lotteries; the
+ * parent remains the sole owner of allocation subscriptions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

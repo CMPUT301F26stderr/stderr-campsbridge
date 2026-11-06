@@ -1,3 +1,8 @@
+/*
+ * Tests Firestore and Storage access rules against isolated emulator data for anonymous, entrant, owner and admin
+ * callers.
+ */
+
 import { after, before, beforeEach, test } from 'node:test';
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';

@@ -1,3 +1,7 @@
+/*
+ * Supplies related events, subjects and recipient facts for notification log tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

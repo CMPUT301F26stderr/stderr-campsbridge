@@ -1,3 +1,7 @@
+/*
+ * User feedback precedence is distinct from repository/request invariant enforcement.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic
 
 import org.junit.Assert.assertEquals

@@ -1,3 +1,7 @@
+/*
+ * Tests applied and working filters, read outcomes and listener ownership with controlled helper results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.lifecycle.SavedStateHandle

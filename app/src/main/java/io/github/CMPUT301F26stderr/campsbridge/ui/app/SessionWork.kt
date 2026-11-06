@@ -1,3 +1,7 @@
+/*
+ * Supplies recovery capabilities only after account setup is complete.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.WorkSession

@@ -1,3 +1,7 @@
+/*
+ * Independent lottery association outcome; unknown data never implies no active lottery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery

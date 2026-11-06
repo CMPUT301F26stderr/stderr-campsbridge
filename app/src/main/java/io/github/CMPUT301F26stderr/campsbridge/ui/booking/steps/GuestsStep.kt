@@ -1,3 +1,7 @@
+/*
+ * Edits the booking's guest count with raw input and bounded increment or decrement actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 
 import androidx.compose.runtime.Composable

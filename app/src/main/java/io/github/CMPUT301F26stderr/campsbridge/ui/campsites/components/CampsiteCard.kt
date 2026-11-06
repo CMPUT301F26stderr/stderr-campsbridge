@@ -1,3 +1,7 @@
+/*
+ * Clickable campsite identity/facts shared by discovery and listing contexts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components
 
 import androidx.compose.foundation.layout.Arrangement

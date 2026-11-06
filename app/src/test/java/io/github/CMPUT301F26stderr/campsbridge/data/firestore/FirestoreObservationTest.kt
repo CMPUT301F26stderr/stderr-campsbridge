@@ -1,3 +1,8 @@
+/*
+ * Tests the shared SDK-to-Flow adapter's lifetime and latest-state policy, without claiming persistence
+ * guarantees. Parameterization checks both independent listener entry points.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import com.google.firebase.firestore.DocumentReference

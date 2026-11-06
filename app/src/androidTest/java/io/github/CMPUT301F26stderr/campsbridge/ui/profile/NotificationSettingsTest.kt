@@ -1,3 +1,7 @@
+/*
+ * Settings interactions with independent platform and account outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import android.Manifest

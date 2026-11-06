@@ -1,3 +1,7 @@
+/*
+ * Displays active saved stays; the caller owns navigation, source reads and selected filter.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.foundation.layout.Arrangement

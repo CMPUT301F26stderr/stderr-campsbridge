@@ -1,3 +1,7 @@
+/*
+ * Represents submitted results and retained filter input with independent optional row reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

@@ -1,3 +1,7 @@
+/*
+ * Defines device-linked profiles, account capabilities, camping preferences and accessibility settings.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.account
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal

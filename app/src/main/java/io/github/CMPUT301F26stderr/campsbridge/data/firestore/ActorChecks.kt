@@ -1,3 +1,7 @@
+/*
+ * Checks active account capabilities within the transaction performing a protected write.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import com.google.firebase.firestore.FirebaseFirestore

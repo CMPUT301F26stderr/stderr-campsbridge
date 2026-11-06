@@ -1,3 +1,7 @@
+/*
+ * Defines the observable contract for the F11 campsite ordering exercise.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

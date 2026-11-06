@@ -1,3 +1,7 @@
+/*
+ * Tests admin inspection navigation and shared image-slot readers with independent controlled sources.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.test.assertIsDisplayed

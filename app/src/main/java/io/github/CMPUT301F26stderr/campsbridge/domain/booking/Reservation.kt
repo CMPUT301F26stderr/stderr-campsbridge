@@ -1,3 +1,7 @@
+/*
+ * Defines saved reservations with their original campsite facts, accepted terms and simulated payment history.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

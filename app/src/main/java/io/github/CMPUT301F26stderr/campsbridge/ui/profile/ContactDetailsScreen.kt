@@ -1,3 +1,7 @@
+/*
+ * Optional contacts editor; content does not infer login or contact ownership.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.BackHandler

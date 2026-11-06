@@ -1,3 +1,7 @@
+/*
+ * Firebase-backed implementation for listing publication and owner-managed per-night inventory.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.campsite
 
 import com.google.firebase.firestore.FieldPath

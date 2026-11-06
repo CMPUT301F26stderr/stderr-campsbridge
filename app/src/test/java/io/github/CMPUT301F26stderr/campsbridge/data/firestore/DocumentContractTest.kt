@@ -1,3 +1,7 @@
+/*
+ * Pins the schema independently in both directions, including native types and field ownership.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.DocumentFixture

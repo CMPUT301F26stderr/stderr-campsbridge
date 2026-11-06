@@ -1,3 +1,7 @@
+/*
+ * Supplies the shared Inbox/OS event title without doing reads or replacing owner-supplied text.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import android.content.Context

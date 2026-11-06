@@ -1,3 +1,7 @@
+/*
+ * Entrant overview entry; current server facts choose direct actions or the real choices child.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement

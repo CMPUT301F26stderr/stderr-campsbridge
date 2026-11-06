@@ -1,3 +1,7 @@
+/*
+ * Owns server-only audience assembly within the existing notification data implementation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.notification
 
 import com.google.firebase.firestore.DocumentSnapshot

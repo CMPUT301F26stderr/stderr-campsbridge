@@ -1,3 +1,7 @@
+/*
+ * Defines lottery setup steps, local schedule input and a working campsite-night allocation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import java.time.LocalDate

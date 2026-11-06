@@ -1,3 +1,7 @@
+/*
+ * Verifies the populated offline session through its actual repository interfaces.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.lifecycle.ViewModelStore

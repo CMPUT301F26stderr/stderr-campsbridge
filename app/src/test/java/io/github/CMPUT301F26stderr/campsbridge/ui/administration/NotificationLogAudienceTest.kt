@@ -1,3 +1,7 @@
+/*
+ * Tests read-only recipient facts, independent retries and selected-child lifetimes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudience

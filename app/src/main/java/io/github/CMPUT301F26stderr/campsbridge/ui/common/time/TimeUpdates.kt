@@ -1,3 +1,7 @@
+/*
+ * Supplies cancellable deadline waits for injected real or controlled clocks.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.time
 
 import kotlinx.coroutines.currentCoroutineContext

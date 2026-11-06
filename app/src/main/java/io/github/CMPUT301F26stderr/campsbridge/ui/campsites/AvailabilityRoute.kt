@@ -1,3 +1,7 @@
+/*
+ * Connects one independent inventory editor to the actual caller's Back stack.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.runtime.Composable

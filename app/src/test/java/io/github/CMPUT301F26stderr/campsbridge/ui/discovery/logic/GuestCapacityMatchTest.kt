@@ -1,3 +1,7 @@
+/*
+ * F10 contracts for optional counts, inclusive bounds and precondition precedence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic
 
 import org.junit.Assert.assertFalse

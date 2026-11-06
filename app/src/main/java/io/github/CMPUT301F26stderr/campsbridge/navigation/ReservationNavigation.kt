@@ -1,3 +1,7 @@
+/*
+ * Registers active reservation lists and saved overview, payment and terms pages with shared readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember

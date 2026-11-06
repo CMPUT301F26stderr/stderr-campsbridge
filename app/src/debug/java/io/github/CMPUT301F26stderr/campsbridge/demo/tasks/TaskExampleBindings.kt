@@ -1,3 +1,7 @@
+/*
+ * Connects task examples to their prepared helper functions and reports each example's readiness.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation

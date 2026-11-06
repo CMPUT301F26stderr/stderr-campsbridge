@@ -1,3 +1,7 @@
+/*
+ * Owns one explicit cancellation and its read-only recovery within the saved parent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.lifecycle.SavedStateHandle

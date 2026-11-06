@@ -1,3 +1,7 @@
+/*
+ * Tests booking's coordinated writes, quote validation and competing claims.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
 import com.google.firebase.firestore.Source

@@ -1,3 +1,7 @@
+/*
+ * Displays booking dates, inventory and deadline feedback through the shared calendar.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 
 import androidx.compose.foundation.layout.Arrangement

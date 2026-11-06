@@ -1,3 +1,7 @@
+/*
+ * Real owner primary/filter lists use actual setup/detail targets and retained callers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.CompositionLocalProvider

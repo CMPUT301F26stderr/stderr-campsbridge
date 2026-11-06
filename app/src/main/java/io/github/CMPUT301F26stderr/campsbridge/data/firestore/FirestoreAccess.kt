@@ -1,3 +1,7 @@
+/*
+ * Adapts Firestore reads, listeners and transactions to suspending operations and cancellable flows.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import com.google.firebase.firestore.DocumentReference

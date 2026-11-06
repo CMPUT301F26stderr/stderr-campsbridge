@@ -1,3 +1,7 @@
+/*
+ * Creates an InboxViewModel using TestAppHost repositories and tracks creations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.lifecycle.ViewModelProvider

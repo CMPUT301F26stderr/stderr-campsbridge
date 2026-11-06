@@ -1,3 +1,7 @@
+/*
+ * Represents attachment reads, local selections and image mutation or reconciliation progress.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment

@@ -1,3 +1,7 @@
+/*
+ * Actual restored route cannot abandon a listing whose publication is still unknown.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.ui.test.assertIsDisplayed

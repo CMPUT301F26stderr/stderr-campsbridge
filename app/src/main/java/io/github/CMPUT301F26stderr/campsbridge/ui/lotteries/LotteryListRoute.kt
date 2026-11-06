@@ -1,3 +1,7 @@
+/*
+ * Connects the read owner to real navigation and retains a scroll position per category.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.lazy.rememberLazyListState

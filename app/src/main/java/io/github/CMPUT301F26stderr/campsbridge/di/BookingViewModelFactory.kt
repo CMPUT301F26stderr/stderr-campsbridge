@@ -1,3 +1,7 @@
+/*
+ * Creates one saved-state booking parent with the confirmed availability rule.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

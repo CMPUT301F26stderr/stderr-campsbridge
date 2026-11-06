@@ -1,3 +1,7 @@
+/*
+ * Inbox controller state and actions with controlled repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt

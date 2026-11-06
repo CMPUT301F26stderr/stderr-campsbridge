@@ -1,3 +1,7 @@
+/*
+ * Durable database inbox delivery. OS/FCM push transport is a separate integration.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.notification
 
 import com.google.firebase.firestore.FirebaseFirestore

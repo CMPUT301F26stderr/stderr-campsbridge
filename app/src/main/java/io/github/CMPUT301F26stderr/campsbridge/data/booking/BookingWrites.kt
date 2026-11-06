@@ -1,3 +1,10 @@
+/*
+ * Sends booking and cancellation requests to Firebase callable functions. The server updates reservations, payment
+ * records and night availability together.
+ *
+ * Halfway limitation: payments and refunds use simulated records.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.CallableFunctions

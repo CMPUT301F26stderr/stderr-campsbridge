@@ -1,3 +1,7 @@
+/*
+ * Application-scoped repositories and platform services supplied to ViewModel factories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.PendingWork

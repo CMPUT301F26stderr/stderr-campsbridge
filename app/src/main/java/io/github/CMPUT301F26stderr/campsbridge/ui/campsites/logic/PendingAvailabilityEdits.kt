@@ -1,3 +1,8 @@
+/*
+ * Keeps requested offered values that differ from a successfully known baseline. The caller owns unknown ranges,
+ * write acknowledgements and retries; this function has no IO.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 
 import java.time.LocalDate

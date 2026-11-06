@@ -1,3 +1,7 @@
+/*
+ * Passive category and independently supplied context, without repositories or commands.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable
