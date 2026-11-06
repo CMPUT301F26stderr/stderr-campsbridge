@@ -476,9 +476,7 @@ class CampsiteLotteriesControllerTest {
                     /** Holds only the first incarnation outside cancellation.
                      * @param campsiteId Fixed saved identity.
                      */
-                    override fun observePublishedForCampsite(
-                        campsiteId: String,
-                    ): Flow<List<Lottery>> =
+                    override fun observePublishedForCampsite(campsiteId: String): Flow<List<Lottery>> =
                         flow {
                             calls++
                             if (calls == 1) {

@@ -33,7 +33,7 @@ class AccountTest {
         assertEquals(original.id, removed.id)
     }
 
-    /** Accessibility scales accept finite positive values without an invented maximum. */
+    /** Accessibility scales accept reduced, standard and enlarged presentation. */
     @Test fun accessibilityScalesAcceptPositiveValuesOnly() {
         for (scale in listOf(0.25, 1.0, 4.0)) {
             assertEquals(

@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.data.moderation
 import com.google.firebase.firestore.FirebaseFirestore
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.CallableFunctions
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.activeAccount
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.atomic
@@ -27,14 +28,16 @@ import java.time.Clock
  * @param images Image repository used to remove attachments and queue blob cleanup.
  * @param lotteries Lottery implementation providing coordinated cancellation during removal.
  * @param clock Injectable time source for recorded timestamps and deadline checks.
+ * @param functions Trusted booking client configured for the same environment.
  */
 class FirestoreModerationRepository(
     private val db: FirebaseFirestore,
     images: ImageRepository,
     lotteries: FirestoreLotteryRepository,
     private val clock: Clock,
+    functions: CallableFunctions = CallableFunctions(db.app),
 ) : ModerationRepository {
-    private val processor = RemovalProcessor(db, images, lotteries, clock)
+    private val processor = RemovalProcessor(db, images, lotteries, clock, functions)
 
     /**
      * Scrubs profile data while retaining identity/history, then resumes dependent removal

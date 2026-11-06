@@ -22,8 +22,7 @@ import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
 /** Local calendar store; sample edits never reach Firebase or perform reservation transactions. */
-internal class TaskCampsiteRepository :
-    CampsiteRepository by DemoCampsiteRepository(TaskExampleData.sites) {
+internal class TaskCampsiteRepository : CampsiteRepository by DemoCampsiteRepository(TaskExampleData.sites) {
     private val nights = MutableStateFlow(TaskExampleData.nights)
 
     /** Observes the requested sample range through the same repository contract as production.

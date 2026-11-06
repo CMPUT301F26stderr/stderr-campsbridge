@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
@@ -15,6 +16,8 @@ import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoStore
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.documents
 import io.github.CMPUT301F26stderr.campsbridge.di.AppRepositories
 import io.github.CMPUT301F26stderr.campsbridge.di.AppServices
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
@@ -27,23 +30,49 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.LocalAccount
 import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.SetupProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
-/** Starting scenarios offered by the debug launcher's visible tools menu. */
-enum class DemoScenario { ENTRANT, OWNER, NEW_ACCOUNT, ADMIN }
+/** Separate people in one local dataset.
+ * @param accountId Stable person identity.
+ * @param workspace Initial permitted workspace.
+ */
+enum class DemoScenario(
+    val accountId: String,
+    val workspace: Role,
+) {
+    ENTRANT("demo-account", Role.ENTRANT),
+    OWNER("demo-host", Role.OWNER),
+    NEW_ACCOUNT("demo-new", Role.ENTRANT),
+    ADMIN("demo-admin", Role.ADMIN),
+}
 
-/** Owns one isolated in-memory graph and its root/navigation ViewModels.
+/** Owns one person's screen models over the shared local dataset.
  * @param scenario Starting account and progress.
- * @param cacheDirectory Parent directory for scenario-local photo bytes.
+ * @param cacheDirectory Parent directory for local photo bytes.
+ * @param store Shared data retained when another area opens.
+ * @param repositories Same repository instances for every person.
  */
 class DemoSession(
     val scenario: DemoScenario,
     cacheDirectory: File,
+    val store: DemoStore = DemoStore(DemoPreviewData(scenario).documents()),
+    private val repositories: DemoRepositories =
+        DemoRepositories(store, DemoPreviewData(scenario), File(cacheDirectory, UUID.randomUUID().toString())),
 ) : ViewModelStoreOwner {
     override val viewModelStore = ViewModelStore()
     val preview = DemoPreviewData(scenario)
@@ -52,41 +81,9 @@ class DemoSession(
     val notificationEntries: NotificationEntryViewModel
 
     init {
-        val id = "demo-account"
-        val data = preview
-        val owner = scenario == DemoScenario.OWNER
-        val account =
-            if (scenario ==
-                DemoScenario.NEW_ACCOUNT
-            ) {
-                null
-            } else {
-                data.accounts.single { it.id == id }
-            }
-        val local =
-            if (account == null) {
-                LocalAccountProgress()
-            } else {
-                LocalAccountProgress(
-                    SetupProgress.COMPLETED,
-                    if (scenario ==
-                        DemoScenario.ADMIN
-                    ) {
-                        Role.ADMIN
-                    } else if (owner) {
-                        Role.OWNER
-                    } else {
-                        Role.ENTRANT
-                    },
-                )
-            }
+        val id = scenario.accountId
         services =
-            AppServices(
-                DemoRepositories(account, data, File(cacheDirectory, UUID.randomUUID().toString())),
-                DemoIdentity(id),
-                DemoAppPreferences(mapOf(id to local)),
-                data.clock,
-            )
+            AppServices(repositories, DemoIdentity(id), DemoAppPreferences(emptyMap(), store, scenario), store.clock)
         model = ViewModelProvider(this, appViewModelFactory(services))[AppViewModel::class.java]
         val notificationFactory =
             viewModelFactory {
@@ -106,28 +103,135 @@ class DemoSession(
                 NotificationEntryViewModel::class.java,
             ]
     }
+
+    /** Releases this person's models without deleting shared records or photos. */
+    fun close() {
+        viewModelStore.clear()
+    }
 }
 
-/** Retains a demo graph across activity recreation and discards it on explicit reset.
- * @param cacheDirectory Application cache location, never an Activity reference.
+/** Retains each person's navigation and one durable dataset across area changes.
+ * @param cacheDirectory Private dataset directory, never an Activity reference.
  */
 class DemoHostViewModel(
     private val cacheDirectory: File,
 ) : ViewModel() {
-    private val mutableSession = MutableStateFlow(DemoSession(DemoScenario.ENTRANT, cacheDirectory))
+    private val mutableSession = MutableStateFlow<DemoSession?>(null)
     val session = mutableSession.asStateFlow()
+    private val mutableDestination = MutableStateFlow<String?>(null)
+    val destination = mutableDestination.asStateFlow()
+    private val mutableFailure = MutableStateFlow(false)
+    val failure = mutableFailure.asStateFlow()
+    private val sessions = mutableMapOf<DemoScenario, DemoSession>()
+    private val commands = Mutex()
+    private var repositories: DemoRepositories? = null
+    private var store: DemoStore? = null
 
-    /** Cancels old models before exposing a fresh isolated scenario.
-     * @param scenario Requested starting state; defaults to resetting the selected scenario.
-     */
-    fun reset(scenario: DemoScenario = session.value.scenario) {
-        session.value.viewModelStore.clear()
-        mutableSession.value = DemoSession(scenario, cacheDirectory)
+    init {
+        command { restore() }
     }
 
-    /** Releases root/navigation models when the host finishes. */
+    /** Serializes host actions so a later area selection or reset wins over earlier work.
+     * @param operation Explicit user action or initial load.
+     */
+    private fun command(operation: suspend () -> Unit) {
+        viewModelScope.launch {
+            commands.withLock {
+                try {
+                    operation()
+                    mutableFailure.value = false
+                } catch (
+                    cancelled: CancellationException,
+                ) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    mutableFailure.value = true
+                }
+            }
+        }
+    }
+
+    /** Restores committed records before constructing any screen controllers.
+     * @param preferred Optional area following an explicit reset.
+     */
+    private suspend fun restore(preferred: DemoScenario? = null) {
+        val data = DemoPreviewData(DemoScenario.ENTRANT)
+        val restored =
+            withContext(Dispatchers.IO) { DemoStore(data.documents(), File(cacheDirectory, "records.json"), data.now) }
+        store = restored
+        repositories = DemoRepositories(restored, data, File(cacheDirectory, "photos"))
+        val selected =
+            preferred ?: restored
+                .read { raw["_demo/area"]?.get("name") as? String }
+                ?.let { name -> DemoScenario.entries.firstOrNull { it.name == name } } ?: DemoScenario.ENTRANT
+        activate(selected)
+    }
+
+    /** Selects the area's actual person and confirmed workspace before exposing its graph.
+     * @param scenario Requested person/area.
+     */
+    private suspend fun activate(scenario: DemoScenario) {
+        val shared = checkNotNull(store)
+        DemoAppPreferences(emptyMap(), shared, scenario).setWorkspace(scenario.accountId, scenario.workspace)
+        shared.change { raw["_demo/area"] = mapOf("name" to scenario.name) }
+        val target =
+            sessions.getOrPut(
+                scenario,
+            ) { DemoSession(scenario, cacheDirectory, shared, checkNotNull(repositories)) }
+        target.model.state.first { state ->
+            state != SessionState.Initializing &&
+                (state !is SessionState.Ready || state.workspace == scenario.workspace)
+        }
+        mutableDestination.value = null
+        mutableSession.value = target
+    }
+
+    /** Opens a retained area without rebuilding records or discarding its navigation.
+     * @param scenario Person whose view should open.
+     */
+    fun select(scenario: DemoScenario) {
+        command { if (store != null) activate(scenario) }
+    }
+
+    /** Opens an actual saved target, advancing demonstration time only on explicit request.
+     * @param action Current contextual handoff.
+     */
+    fun follow(action: DemoJourneyAction) {
+        command {
+            val shared = checkNotNull(store)
+            action.at?.let { shared.advanceTo(maxOf(it, shared.clock.instant())) }
+            action.drawId?.let { checkNotNull(repositories).lotteries.draw(it) }
+            activate(action.area)
+            mutableDestination.value = action.route
+        }
+    }
+
+    /** Acknowledges a handoff only after its destination has opened. */
+    fun consumeDestination() {
+        mutableDestination.value = null
+    }
+
+    /** Explicitly restores baseline records for every person after pending commits finish.
+     * @param scenario Area to open after reset.
+     */
+    fun reset(scenario: DemoScenario = session.value?.scenario ?: DemoScenario.ENTRANT) {
+        command {
+            mutableSession.value = null
+            mutableDestination.value = null
+            sessions.values.forEach { it.close() }
+            sessions.clear()
+            repositories?.images?.close()
+            store?.change { Unit }
+            withContext(Dispatchers.IO) { check(!cacheDirectory.exists() || cacheDirectory.deleteRecursively()) }
+            store = null
+            repositories = null
+            restore(scenario)
+        }
+    }
+
+    /** Retires models while retaining committed records and photos for the next launch. */
     override fun onCleared() {
-        session.value.viewModelStore.clear()
+        sessions.values.forEach { it.close() }
         super.onCleared()
     }
 }
@@ -143,37 +247,24 @@ private class DemoIdentity(
         id
 }
 
-/** Supplies only repositories required by implemented screens.
- * @param account Optional starting profile.
- * @param data Coherent saved preview records and fixed clock.
- * @param directory Private photo cache for this scenario.
+/** Supplies the same local repositories to each person's real screen factories.
+ * @param store Shared committed documents and clock.
+ * @param data Baseline packaged photo references.
+ * @param directory Private photo files retained with the dataset.
  */
-private class DemoRepositories(
-    account: Account?,
+class DemoRepositories(
+    store: DemoStore,
     data: DemoPreviewData,
     directory: File,
 ) : AppRepositories {
-    override val accounts =
-        DemoAccountRepository(
-            data.accounts.filterNot { it.id == "demo-account" } + listOfNotNull(account),
-        )
-    override val images =
-        DemoImageRepository(
-            directory,
-            data.clock,
-            data.photoReferences,
-        )
-    override val lotteries = DemoLotteryRepository(data.lotteries, data.offers, data.entries)
-    override val bookings =
-        DemoBookingRepository(
-            data.reservations,
-            data.campsites,
-            data.clock,
-        )
-    override val notifications = DemoNotificationRepository(data.events, data.inboxes, data.clock)
+    override val accounts = DemoAccountRepository(emptyList(), store.clock, store)
+    override val images = DemoImageRepository(directory, store.clock, data.photoReferences, store)
+    override val lotteries = DemoLotteryRepository(store = store)
+    override val bookings = DemoBookingRepository(store = store)
+    override val notifications = DemoNotificationRepository(clock = store.clock, store = store)
     override val reviews = DemoReviewRepository()
-    override val campsites = DemoCampsiteRepository(data.campsites, data.calendars)
-    override val pendingWork = DemoPendingWork()
+    override val campsites = DemoCampsiteRepository(store = store)
+    override val pendingWork: PendingWork = DemoPendingWork()
 }
 
 /** The offline demo has no distributed lottery or notification work to process. */

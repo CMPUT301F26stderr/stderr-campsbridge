@@ -10,6 +10,6 @@ fun sortInboxItems(items: List<InboxItem>): List<InboxItem> {
     if (items.isEmpty()) return emptyList()
     return items.sortedWith(
         compareByDescending<InboxItem> { it.notification.createdAt }
-            .thenBy { it.notification.id }
+            .thenBy { it.notification.id },
     )
 }

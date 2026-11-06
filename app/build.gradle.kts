@@ -181,6 +181,7 @@ tasks.register<Test>("firebaseIntegrationTest") {
         "FIRESTORE_EMULATOR_HOST",
         "FIREBASE_AUTH_EMULATOR_HOST",
         "FIREBASE_STORAGE_EMULATOR_HOST",
+        "FUNCTIONS_EMULATOR_HOST",
     ).forEach { variable ->
         providers.environmentVariable(variable).orNull?.let { environment(variable, it) }
     }

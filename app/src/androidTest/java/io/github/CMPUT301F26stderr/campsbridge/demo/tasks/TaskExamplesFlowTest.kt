@@ -30,6 +30,7 @@ class TaskExamplesFlowTest {
         val intent =
             checkNotNull(context.packageManager.getLaunchIntentForPackage(context.packageName))
         ActivityScenario.launch<OfflineDemoActivity>(intent).use {
+            awaitText("Demo tools")
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Task examples").performClick()
             awaitText("Task examples")

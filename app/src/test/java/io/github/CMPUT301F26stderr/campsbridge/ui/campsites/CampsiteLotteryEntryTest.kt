@@ -218,9 +218,7 @@ class CampsiteLotteryEntryTest {
     /** Constructs a tracked production owner with independently controlled sources.
      * @param context Actual saved graph presentation.
      */
-    private fun model(
-        context: CampsiteDetailContext = CampsiteDetailContext.VIEW,
-    ): CampsiteDetailViewModel =
+    private fun model(context: CampsiteDetailContext = CampsiteDetailContext.VIEW): CampsiteDetailViewModel =
         CampsiteDetailViewModel(
             "entrant",
             site.id,

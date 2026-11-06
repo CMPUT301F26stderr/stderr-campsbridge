@@ -40,8 +40,8 @@ class DemoPreviewData(
 ) {
     val now: Instant = Instant.parse("2027-05-10T18:00:00Z")
     val clock: Clock = Clock.fixed(now, ZoneOffset.UTC)
-    val ownerId = if (scenario == DemoScenario.OWNER) "demo-account" else "demo-host"
-    val entrantId = if (scenario == DemoScenario.ENTRANT) "demo-account" else "demo-entrant"
+    val ownerId = "demo-host"
+    val entrantId = "demo-account"
     val photoReferences =
         mapOf(
             ImageTarget(ImageTargetType.CAMPSITE, "demo-river") to SceneryPhoto.JASPER.reference,
@@ -53,14 +53,8 @@ class DemoPreviewData(
             account(ownerId, "Jordan Lee", setOf(Role.ENTRANT, Role.OWNER)),
             account(entrantId, "Alex Chen", setOf(Role.ENTRANT)),
             account("demo-other", "Morgan Park", setOf(Role.ENTRANT)),
-        ) +
-            if (scenario ==
-                DemoScenario.ADMIN
-            ) {
-                listOf(account("demo-account", "Taylor Brooks", setOf(Role.ADMIN)))
-            } else {
-                emptyList()
-            }
+            account("demo-admin", "Taylor Brooks", setOf(Role.ADMIN)),
+        )
     val campsites: List<Campsite> =
         listOf(
             sampleCampsite("demo-river", ownerId).let {
@@ -131,7 +125,9 @@ class DemoPreviewData(
                 listOf(
                     LotteryOffer(
                         "demo-river",
-                        if (draw.id ==
+                        if (draw.id == "demo-past") {
+                            (5..6).map(::date)
+                        } else if (draw.id ==
                             "demo-won"
                         ) {
                             (18..21).map(::date)
@@ -149,20 +145,36 @@ class DemoPreviewData(
             entry("demo-won", "demo-other", EntryState.LOST),
             entry("demo-lost", entrantId, EntryState.LOST),
             entry("demo-booked", entrantId, EntryState.OFFERED),
+            entry("demo-past", entrantId, EntryState.OFFERED).copy(
+                joinedAt = now.minusSeconds(1900800),
+                stateChangedAt = now.minusSeconds(1814400),
+            ),
+        )
+    val bookedReservationId =
+        io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys.reservation(
+            "demo-booked",
+            entrantId,
+        )
+    val pastReservationId =
+        io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys.reservation(
+            "demo-past",
+            entrantId,
         )
     val reservations: List<Reservation> =
-        listOf(stay("demo-stay", "demo-booked", 15), stay("demo-past-stay", "demo-past", 5))
+        listOf(stay(bookedReservationId, "demo-booked", 15), stay(pastReservationId, "demo-past", 5))
     val calendars: Map<String, List<CalendarNight>> =
         campsites.associate { site ->
             site.id to
                 (1..31).map { day ->
                     CalendarNight(
                         date(day),
-                        day in 11..28,
-                        if (site.id == "demo-river" &&
+                        day in 11..28 || (site.id == "demo-river" && day in 5..6),
+                        if (site.id == "demo-river" && day in 5..6) {
+                            pastReservationId
+                        } else if (site.id == "demo-river" &&
                             day in 15..16
                         ) {
-                            "demo-stay"
+                            bookedReservationId
                         } else {
                             null
                         },
@@ -176,7 +188,7 @@ class DemoPreviewData(
                 "demo-notice-stay",
                 NotificationType.RESERVATION_CONFIRMED,
                 SubjectType.RESERVATION,
-                "demo-stay",
+                bookedReservationId,
             ),
             event(
                 "demo-notice-lost",
@@ -295,7 +307,7 @@ class DemoPreviewData(
         day: Int,
     ): Reservation {
         val site = campsites[0]
-        val bookedAt = now.minusSeconds(if (day < 10) 864000 else 86400)
+        val bookedAt = now.minusSeconds(if (day < 10) 950400 else 86400)
         return Reservation(
             id,
             lotteryId,

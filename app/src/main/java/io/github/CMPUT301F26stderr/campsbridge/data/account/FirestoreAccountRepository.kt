@@ -121,6 +121,18 @@ class FirestoreAccountRepository(
         change(id) { it.copy(name = profile.name, email = profile.email, phone = profile.phone) }
     }
 
+    /** Changes only the name inside the latest account transaction.
+     * @param id Account identity whose name is changing.
+     * @param name Nonblank display name.
+     */
+    override suspend fun updateName(
+        id: String,
+        name: String,
+    ) {
+        require(name.isNotBlank())
+        change(id) { it.copy(name = name) }
+    }
+
     /**
      * Replaces the account’s alert and accessibility preferences.
      *

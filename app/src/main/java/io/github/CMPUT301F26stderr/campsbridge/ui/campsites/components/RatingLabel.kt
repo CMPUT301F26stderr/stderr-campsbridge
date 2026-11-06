@@ -2,6 +2,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.RatingState
@@ -33,7 +34,12 @@ internal fun ratingLabel(state: RatingState): String =
                             minimumFractionDigits = 1
                             maximumFractionDigits = 1
                         }.format(mean)
-                stringResource(R.string.discovery_rating_summary, number, state.summary.count)
+                pluralStringResource(
+                    R.plurals.discovery_rating_summary,
+                    state.summary.count,
+                    number,
+                    state.summary.count,
+                )
             }
         }
     }

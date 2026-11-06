@@ -29,12 +29,14 @@ class OfflineDemoTest {
             checkNotNull(context.packageManager.getLaunchIntentForPackage(context.packageName))
         assertTrue(intent.component!!.className.endsWith(".OfflineDemoActivity"))
         ActivityScenario.launch<OfflineDemoActivity>(intent).use { scenario ->
+            resetToCamping()
             compose.onNodeWithText("Offline demo").assertIsDisplayed()
             compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Alex Chen").assertIsDisplayed()
             assertTrue(FirebaseApp.getApps(context).isEmpty())
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Existing owner").performClick()
+            awaitVisible("My campsites")
             compose.onNodeWithText("My campsites").assertIsDisplayed()
             compose.onNodeWithText("River Camp").assertIsDisplayed()
             compose.onNodeWithText("Drafts").performClick()
@@ -49,6 +51,8 @@ class OfflineDemoTest {
             compose.onNodeWithText("Demo tools").performClick()
             awaitVisible("Reset scenario")
             compose.onNodeWithText("Reset scenario").performClick()
+            compose.onNodeWithText("Reset scenario").performClick()
+            awaitVisible("My campsites")
             compose.onNodeWithText("My campsites").assertIsDisplayed()
             compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Jordan Lee").assertIsDisplayed()
@@ -68,6 +72,7 @@ class OfflineDemoTest {
         val intent =
             checkNotNull(context.packageManager.getLaunchIntentForPackage(context.packageName))
         ActivityScenario.launch<OfflineDemoActivity>(intent).use { scenario ->
+            resetToCamping()
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Onboarding previews").performClick()
             compose.onNodeWithText("Preferences").performClick()
@@ -79,6 +84,17 @@ class OfflineDemoTest {
             compose.onNodeWithText("Profile").performClick()
             compose.onNodeWithText("Alex Chen").assertIsDisplayed()
         }
+    }
+
+    /** Restores the explicit baseline because committed demo data survives activity launches. */
+    private fun resetToCamping() {
+        awaitVisible("Demo tools")
+        compose.onNodeWithText("Camping").performClick()
+        awaitVisible("Alex · Camper")
+        compose.onNodeWithText("Demo tools").performClick()
+        compose.onNodeWithText("Reset scenario").performClick()
+        compose.onNodeWithText("Reset scenario").performClick()
+        awaitVisible("Demo tools")
     }
 
     /** Waits for visible content across asynchronous activity and popup transitions.

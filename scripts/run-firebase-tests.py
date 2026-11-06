@@ -2,6 +2,7 @@
 """Run the agreed Firebase suites and retain emulator diagnostics before disposal."""
 
 import os
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -45,6 +46,10 @@ def main():
     integration_log = report_dir / "integration.log"
     # Remove only this runner's prior evidence so failed rules never expose an old integration log.
     integration_log.unlink(missing_ok=True)
+    hub = os.environ["FIREBASE_EMULATOR_HUB"]
+    with urlopen(f"http://{hub}/emulators", timeout=10) as response:
+        functions = json.load(response)["functions"]
+    os.environ["FUNCTIONS_EMULATOR_HOST"] = f"{functions['host']}:{functions['port']}"
     result = run_logged(["npm", "--prefix", "firebase/tooling", "test"], rules_log)
     if result == 0:
         result = run_logged(

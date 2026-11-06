@@ -92,6 +92,7 @@ internal fun NavGraphBuilder.campsiteGraph(
                 )
             CampsiteDetailRoute(model, onCreateLottery = {
                 controller.navigate(AppDestination.LOTTERY_SETUP) { launchSingleTop = true }
+                controller.getBackStackEntry(AppDestination.LOTTERY_SETUP).savedStateHandle["initialCampsite"] = id
             }, onViewLotteries = {
                 controller.navigate(AppDestination.campsiteLotteries(id)) { launchSingleTop = true }
             }, onViewReservations = {

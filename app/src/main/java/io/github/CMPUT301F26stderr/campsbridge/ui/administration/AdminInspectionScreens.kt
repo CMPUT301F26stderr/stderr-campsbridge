@@ -231,6 +231,7 @@ private fun AdminOwnedCampsite(
     )
 }
 
+/** Supplies a stable owner profile for admin inspection previews. */
 private fun inspectionPreviewAccount() =
     Account(
         "preview-owner",
@@ -243,11 +244,15 @@ private fun inspectionPreviewAccount() =
         Instant.EPOCH,
     )
 
+/** Renders one admin profile state with the shared theme.
+ * @param state Profile data and independent loading outcomes.
+ */
 @Composable
 private fun ProfileInspectionPreview(state: AdminInspectionUiState.Profile) {
     CampsbridgeTheme { AdminProfileScreen(state, {}, {}, {}, {}, {}) }
 }
 
+/** Shows a loaded profile, owned campsite, and photo slot. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 900)
 @Composable
 private fun AdminProfileContentPreview() {
@@ -261,6 +266,7 @@ private fun AdminProfileContentPreview() {
     )
 }
 
+/** Shows the retained fields of a removed profile at enlarged text. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 900, fontScale = 1.5f)
 @Composable
 private fun AdminProfileRemovedPreview() {
@@ -281,12 +287,14 @@ private fun AdminProfileRemovedPreview() {
     )
 }
 
+/** Shows loading while the profile and dependent sections resolve. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 700)
 @Composable
 private fun AdminProfileLoadingPreview() {
     ProfileInspectionPreview(AdminInspectionUiState.Profile("preview-owner"))
 }
 
+/** Shows a profile read failure with retry feedback. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 700)
 @Composable
 private fun AdminProfileFailurePreview() {
@@ -295,6 +303,7 @@ private fun AdminProfileFailurePreview() {
     )
 }
 
+/** Shows the unavailable state for an absent profile. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 700)
 @Composable
 private fun AdminProfileUnavailablePreview() {
@@ -303,6 +312,7 @@ private fun AdminProfileUnavailablePreview() {
     )
 }
 
+/** Shows independent campsite and image failures below a loaded profile. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 900)
 @Composable
 private fun AdminProfileSectionFailuresPreview() {

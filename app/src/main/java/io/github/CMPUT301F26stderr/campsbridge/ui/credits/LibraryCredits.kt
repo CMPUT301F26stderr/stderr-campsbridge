@@ -1,6 +1,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.credits
 
-/** Upstream license credit for a library whose Maven child POM omits inherited terms.
+/** Upstream license credit for dependencies outside the generated Android notices.
  * @param name Published project or artifact names.
  * @param license Original license name.
  * @param sourceLicenseUrl License file in the original source repository.
@@ -11,10 +11,19 @@ internal data class LibraryCredit(
     val sourceLicenseUrl: String,
 )
 
-// Other runtime notices come from the generated OSS reader. These inherited-license entries
-// are missing from its child-POM scan; keep their upstream identities and terms explicit.
+// Include inherited Maven licenses and the server dependencies outside the Android dependency graph.
 internal val AdditionalLibraryCredits =
     listOf(
+        LibraryCredit(
+            "Firebase Admin SDK for Node.js (booking service)",
+            "Apache License 2.0",
+            "https://github.com/firebase/firebase-admin-node/blob/v14.5.0/LICENSE",
+        ),
+        LibraryCredit(
+            "Firebase Functions SDK (booking service)",
+            "MIT License",
+            "https://github.com/firebase/firebase-functions/blob/v7.4.0/LICENSE",
+        ),
         LibraryCredit(
             "Guava failureaccess and listenablefuture",
             "Apache License 2.0",

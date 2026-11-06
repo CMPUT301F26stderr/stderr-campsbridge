@@ -78,16 +78,17 @@ internal class LotteryMembership(
             tx.activeAccount(db, accountId, Role.ENTRANT)
             val lottery = tx.require(ref(id), LotteryDocument)
             val now = clock.instant()
+            tx.activeAccount(db, lottery.ownerId, Role.OWNER)
+            val entryRef = db.document(FirestorePaths.entry(id, accountId))
+            val old = tx.read(entryRef, LotteryEntryDocument)
+            if (joining && old?.state == EntryState.WAITING) return@atomic
+            if (!joining && old?.state == EntryState.WITHDRAWN) return@atomic
             requireOperation(
                 lottery.registrationIsOpen(now),
                 WINDOW_CLOSED,
                 "Registration is closed",
             )
-            tx.activeAccount(db, lottery.ownerId, Role.OWNER)
-            val entryRef = db.document(FirestorePaths.entry(id, accountId))
-            val old = tx.read(entryRef, LotteryEntryDocument)
-            if (joining && old?.state == EntryState.WAITING) return@atomic
-            if (!joining && (old == null || old.state == EntryState.WITHDRAWN)) return@atomic
+            if (!joining && old == null) return@atomic
             requireOperation(
                 old == null || old.state in setOf(EntryState.WAITING, EntryState.WITHDRAWN),
                 INVALID_STATE,
@@ -129,11 +130,6 @@ internal class LotteryMembership(
         db.atomic { tx ->
             tx.activeAccount(db, accountId, Role.ENTRANT)
             val lottery = tx.require(ref(id), LotteryDocument)
-            requireOperation(
-                lottery.bookingIsOpen(clock.instant()),
-                WINDOW_CLOSED,
-                "Booking window is closed",
-            )
             val entryRef = db.document(FirestorePaths.entry(id, accountId))
             val entry = tx.require(entryRef, LotteryEntryDocument)
             val reservation =
@@ -145,6 +141,11 @@ internal class LotteryMembership(
                 )
             requireOperation(reservation == null, ALREADY_USED, "Offer already used")
             if (entry.state == EntryState.DECLINED) return@atomic
+            requireOperation(
+                lottery.bookingIsOpen(clock.instant()),
+                WINDOW_CLOSED,
+                "Booking window is closed",
+            )
             requireOperation(entry.state == EntryState.OFFERED, NOT_ALLOWED, "Entry did not win")
             tx.set(
                 entryRef,

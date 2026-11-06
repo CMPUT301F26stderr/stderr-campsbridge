@@ -44,7 +44,7 @@ class AppContainer(
         FirestoreCampsiteRepository(clients.firestore, clock)
     private val lotteryImplementation = FirestoreLotteryRepository(clients.firestore, clock, random)
     override val lotteries: LotteryRepository = lotteryImplementation
-    override val bookings: BookingRepository = FirestoreBookingRepository(clients.firestore, clock)
+    override val bookings: BookingRepository = FirestoreBookingRepository(clients.firestore, clock, clients.functions)
     private val imageImplementation =
         FirebaseImageRepository(clients.firestore, clients.storage, clock)
     override val images: ImageRepository = imageImplementation
@@ -53,7 +53,7 @@ class AppContainer(
         FirestoreNotificationRepository(clients.firestore, clock)
     val messages: MessageRepository = FirestoreMessageRepository(clients.firestore, clock)
     val moderation: ModerationRepository =
-        FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock)
+        FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock, clients.functions)
 
     override val pendingWork: PendingWork =
         SessionPendingWork(

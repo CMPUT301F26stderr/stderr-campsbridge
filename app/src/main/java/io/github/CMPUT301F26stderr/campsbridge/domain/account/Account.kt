@@ -32,12 +32,12 @@ data class Preferences(
 )
 
 /**
- * Persisted alert and accessibility preferences with finite positive size scales.
+ * Persisted alert and accessibility preferences with usable quarter-to-fourfold size scales.
  *
  * @param notificationsEnabled Whether alerts are enabled; inbox history is still retained.
  * @param colorMode Shared standard or color-blind palette preference.
- * @param fontScale Finite positive application text scale, applied alongside system scaling.
- * @param controlScale Finite positive application control-size scale.
+ * @param fontScale Application text scale from 0.25 to 4.0, applied alongside system scaling.
+ * @param controlScale Application control scale from 0.25 to 4.0; minimum touch targets remain enforced.
  */
 data class AccountSettings(
     val notificationsEnabled: Boolean = true,
@@ -46,8 +46,8 @@ data class AccountSettings(
     val controlScale: Double = 1.0,
 ) {
     init {
-        require(fontScale.isFinite() && fontScale > 0)
-        require(controlScale.isFinite() && controlScale > 0)
+        require(fontScale in 0.25..4.0)
+        require(controlScale in 0.25..4.0)
     }
 }
 

@@ -587,9 +587,7 @@ class LotterySetupViewModelTest {
                             /** Keeps one retired callback after the first range is cancelled.
                              * @param collector Active downstream allocation reader.
                              */
-                            override suspend fun collect(
-                                collector: FlowCollector<List<CalendarNight>>,
-                            ) {
+                            override suspend fun collect(collector: FlowCollector<List<CalendarNight>>) {
                                 if (start == may.atDay(1)) {
                                     retired = collector
                                     collector.emit(listOf(CalendarNight(day, true)))

@@ -56,6 +56,8 @@ import java.util.Locale
  * @param onDismissNotificationEntry Retires the pending root tap.
  * @param onConsumeNotificationEntry Acknowledges an actually opened saved target.
  * @param modifier Host layout; child screens own their own insets.
+ * @param requestedDestination Optional host-owned saved-record handoff.
+ * @param onDestinationOpened Acknowledges the opened handoff.
  */
 @Composable
 fun AppNavigation(
@@ -82,6 +84,8 @@ fun AppNavigation(
     onDismissNotificationEntry: () -> Unit,
     onConsumeNotificationEntry: (NotificationEntry) -> Unit,
     modifier: Modifier = Modifier,
+    requestedDestination: String? = null,
+    onDestinationOpened: () -> Unit = {},
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -315,6 +319,12 @@ fun AppNavigation(
             campsiteSetupFactory,
             availabilityFactory,
         )
+    }
+    LaunchedEffect(requestedDestination) {
+        requestedDestination?.let { destination ->
+            controller.navigate(destination) { launchSingleTop = true }
+            onDestinationOpened()
+        }
     }
     NotificationLogSelectionBinding(controller, notificationLogFactory)
     NotificationEntryNavigation(

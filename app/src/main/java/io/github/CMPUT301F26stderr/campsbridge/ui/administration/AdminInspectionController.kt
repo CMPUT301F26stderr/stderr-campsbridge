@@ -248,9 +248,7 @@ class AdminInspectionController(
     /** Changes the state only while a profile is selected.
      * @param change Produces the updated profile state.
      */
-    private fun updateProfile(
-        change: (AdminInspectionUiState.Profile) -> AdminInspectionUiState.Profile,
-    ) {
+    private fun updateProfile(change: (AdminInspectionUiState.Profile) -> AdminInspectionUiState.Profile) {
         val current = state.value as? AdminInspectionUiState.Profile ?: return
         mutableState.value = change(current)
     }
@@ -258,9 +256,7 @@ class AdminInspectionController(
     /** Changes the state only while an image is selected.
      * @param change Produces the updated image state.
      */
-    private fun updateImage(
-        change: (AdminInspectionUiState.Image) -> AdminInspectionUiState.Image,
-    ) {
+    private fun updateImage(change: (AdminInspectionUiState.Image) -> AdminInspectionUiState.Image) {
         val current = state.value as? AdminInspectionUiState.Image ?: return
         mutableState.value = change(current)
     }

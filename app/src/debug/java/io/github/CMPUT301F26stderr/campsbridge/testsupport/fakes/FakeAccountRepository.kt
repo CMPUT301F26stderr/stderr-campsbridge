@@ -138,6 +138,25 @@ class FakeAccountRepository(
             current.copy(name = profile.name, email = profile.email, phone = profile.phone)
     }
 
+    /** Updates only the name, preserving the latest contacts.
+     * @param id Existing account identity.
+     * @param name Requested nonblank display name.
+     */
+    override suspend fun updateName(
+        id: String,
+        name: String,
+    ) {
+        if (!allowWrites) unexpectedWrite()
+        writes++
+        profileWrites++
+        profileGate?.await()
+        profileFailure?.let { throw it }
+        val current = checkNotNull(account.value)
+        check(current.isActive)
+        profileUpdates += ProfileUpdate(name, current.email, current.phone)
+        account.value = current.copy(name = name)
+    }
+
     /** Requires a configured settings result and records the exact requested replacement.
      * @param id Requested account ID.
      * @param settings Requested settings.

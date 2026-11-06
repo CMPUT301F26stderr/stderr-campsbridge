@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -100,90 +101,93 @@ fun BookingScreen(
         val conflict =
             review && state.error ==
                 BookingStepError.Dates(StaySelectionInput.UNAVAILABLE_NIGHTS)
-        StepScaffold(
-            title = bookingStepTitle(step),
-            progress =
-                stringResource(
-                    R.string.onboarding_step,
-                    step.ordinal + 1,
-                    BookingStep.entries.size,
-                ),
-            onBack = onBack,
-            onNext = {
-                when {
-                    conflict -> onEdit(BookingStep.DATES)
-                    review -> onConfirm()
-                    else -> onNext(step)
-                }
-            },
-            modifier = modifier,
-            nextEnabled = enabled && (!review || conflict || state.canConfirm),
-            isSubmitting = submitting,
-            nextLabel =
-                stringResource(
+        // Retire the previous step's scroll and focus requests before showing the next page.
+        key(step) {
+            StepScaffold(
+                title = bookingStepTitle(step),
+                progress =
+                    stringResource(
+                        R.string.onboarding_step,
+                        step.ordinal + 1,
+                        BookingStep.entries.size,
+                    ),
+                onBack = onBack,
+                onNext = {
                     when {
-                        submitting -> R.string.booking_submitting
-                        conflict -> R.string.booking_choose_dates
-                        review -> R.string.booking_confirm
-                        else -> R.string.next
-                    },
-                ),
-            steps = StepProgress(step.ordinal + 1, BookingStep.entries.size),
-            onCancel = onCancel,
-            exitEnabled = exitsEnabled,
-        ) {
-            BookingSubmissionFeedback(submission, onRecover)
-            if (state.isCheckingReservation) {
-                LoadingContent(stringResource(R.string.booking_recovering))
-            } else if (state.reservationCheckFailed) {
-                FailureContent(
-                    stringResource(R.string.booking_recheck_failed),
-                    { onRetry(BookingReadSource.OPPORTUNITY) },
-                    enabled,
-                )
-            }
-            if (!review) {
-                Text(
-                    state.campsite.details.name,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-            if (!conflict) {
-                state.error?.let {
-                    Text(bookingErrorText(it), color = MaterialTheme.colorScheme.error)
-                }
-            }
-            when (step) {
-                BookingStep.DATES -> {
-                    StayDatesStep(
-                        state,
-                        onMonth,
-                        onDate,
-                        onClearDates,
-                        onRetryVisible,
-                        onRetrySelected,
+                        conflict -> onEdit(BookingStep.DATES)
+                        review -> onConfirm()
+                        else -> onNext(step)
+                    }
+                },
+                modifier = modifier,
+                nextEnabled = enabled && (!review || conflict || state.canConfirm),
+                isSubmitting = submitting,
+                nextLabel =
+                    stringResource(
+                        when {
+                            submitting -> R.string.booking_submitting
+                            conflict -> R.string.booking_choose_dates
+                            review -> R.string.booking_confirm
+                            else -> R.string.next
+                        },
+                    ),
+                steps = StepProgress(step.ordinal + 1, BookingStep.entries.size),
+                onCancel = onCancel,
+                exitEnabled = exitsEnabled,
+            ) {
+                BookingSubmissionFeedback(submission, onRecover)
+                if (state.isCheckingReservation) {
+                    LoadingContent(stringResource(R.string.booking_recovering))
+                } else if (state.reservationCheckFailed) {
+                    FailureContent(
+                        stringResource(R.string.booking_recheck_failed),
+                        { onRetry(BookingReadSource.OPPORTUNITY) },
                         enabled,
                     )
                 }
-
-                BookingStep.GUESTS -> {
-                    GuestsStep(state, onGuests, enabled)
-                }
-
-                BookingStep.TERMS -> {
-                    TermsStep(state, onAccept, onPolicy, enabled)
-                }
-
-                BookingStep.REVIEW -> {
-                    BookingReviewStep(
-                        state,
-                        onEdit,
-                        onQuote,
-                        onPolicy,
-                        enabled,
-                        photo,
-                        onRetryPhoto,
+                if (!review) {
+                    Text(
+                        state.campsite.details.name,
+                        style = MaterialTheme.typography.titleMedium,
                     )
+                }
+                if (!conflict) {
+                    state.error?.let {
+                        Text(bookingErrorText(it), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                when (step) {
+                    BookingStep.DATES -> {
+                        StayDatesStep(
+                            state,
+                            onMonth,
+                            onDate,
+                            onClearDates,
+                            onRetryVisible,
+                            onRetrySelected,
+                            enabled,
+                        )
+                    }
+
+                    BookingStep.GUESTS -> {
+                        GuestsStep(state, onGuests, enabled)
+                    }
+
+                    BookingStep.TERMS -> {
+                        TermsStep(state, onAccept, onPolicy, enabled)
+                    }
+
+                    BookingStep.REVIEW -> {
+                        BookingReviewStep(
+                            state,
+                            onEdit,
+                            onQuote,
+                            onPolicy,
+                            enabled,
+                            photo,
+                            onRetryPhoto,
+                        )
+                    }
                 }
             }
         }

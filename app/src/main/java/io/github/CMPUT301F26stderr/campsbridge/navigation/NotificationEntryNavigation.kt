@@ -116,9 +116,7 @@ private fun notificationTargetRoute(target: NotificationEntryUiState.Ready): Str
 /** Checks the current graph and decoded argument before acknowledgement or duplicate navigation.
  * @param target Original pending target; an unrelated older parent cannot satisfy it.
  */
-private fun NavHostController.isNotificationTarget(
-    target: NotificationEntryUiState.Ready,
-): Boolean {
+private fun NavHostController.isNotificationTarget(target: NotificationEntryUiState.Ready): Boolean {
     val lottery = target.entry.subject.type == SubjectType.LOTTERY
     val pattern =
         if (lottery) {

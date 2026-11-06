@@ -3,6 +3,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
@@ -29,6 +30,13 @@ fun GuestsStep(
         state.campsite.details.maxGuests,
         Modifier.testTag("booking-guests"),
         enabled = enabled,
-        supportingText = stringResource(R.string.up_to_guests, state.campsite.details.maxGuests),
+        supportingText =
+            pluralStringResource(
+                R.plurals.up_to_guests,
+                state.campsite.details.maxGuests
+                    .coerceAtMost(Int.MAX_VALUE.toLong())
+                    .toInt(),
+                state.campsite.details.maxGuests,
+            ),
     )
 }

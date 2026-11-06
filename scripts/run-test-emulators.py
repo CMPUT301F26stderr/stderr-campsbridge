@@ -14,7 +14,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-FIREBASE_SERVICES = ("auth", "firestore", "storage", "hub", "logging", "websocket")
+FIREBASE_SERVICES = ("auth", "firestore", "storage", "functions", "eventarc", "tasks", "hub", "logging", "websocket")
 
 
 @contextmanager
@@ -73,7 +73,7 @@ def run_firebase(root):
         # The CLI supplies the actual service addresses to the test command using its standard env vars.
         return subprocess.call([
             "firebase", "emulators:exec", "--project", "demo-stderr", "--config", config.name,
-            "--only", "auth,firestore,storage", "python3 scripts/run-firebase-tests.py",
+            "--only", "auth,firestore,storage,functions", "python3 scripts/run-firebase-tests.py",
         ], cwd=root, env=environment)
 
 

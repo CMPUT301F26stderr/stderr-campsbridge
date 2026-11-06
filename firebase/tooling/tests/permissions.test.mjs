@@ -167,17 +167,23 @@ test('owner draw seed/outcome/completion and delayed receipt work; seed is immut
   await assertSucceeds(updateDoc(doc(database, 'lotteries/draw'), { drawnAt: now() }));
   await assertSucceeds(setDoc(doc(database, `accounts/entrant/inbox/${id}`), { readAt: null }));
 });
-test('coordinated winning booking succeeds; outsider booking, duplicate booking and payment edits fail', async () => {
+test('reservation writes require the trusted booking boundary; scoped reads and immutable payments remain enforced', async () => {
   await assertFails(booking('other'));
   await assertFails(booking('entrant', 1));
-  await assertSucceeds(booking());
+  await assertFails(booking());
+  await seed({ [`reservations/${reservationId}`]: reservation(),
+    'campsites/site/calendar/2027-05-15': { isOffered: true, reservationId },
+    'campsites/site/calendar/2027-05-16': { isOffered: true, reservationId } });
   await assertFails(booking());
   await assertFails(updateDoc(doc(db('entrant'), `reservations/${reservationId}`), { 'payment.amountCents': 1 }));
   await assertFails(getDoc(doc(db('other'), `reservations/${reservationId}`)));
   await assertSucceeds(getDoc(doc(db('owner'), `reservations/${reservationId}`)));
 });
-test('cancellation requires matching refund, releases nights and retains booking identity', async () => {
-  await assertSucceeds(booking());
+test('clients cannot bypass trusted cancellation with refund or calendar batches', async () => {
+  await assertFails(booking());
+  await seed({ [`reservations/${reservationId}`]: reservation(),
+    'campsites/site/calendar/2027-05-15': { isOffered: true, reservationId },
+    'campsites/site/calendar/2027-05-16': { isOffered: true, reservationId } });
   const cancellation = { at: now(), actorId: 'entrant', initiatedAs: 'ENTRANT', reason: null };
   await assertFails(updateDoc(doc(db('entrant'), `reservations/${reservationId}`), { cancellation }));
   const database = db('entrant');
@@ -185,7 +191,7 @@ test('cancellation requires matching refund, releases nights and retains booking
   b.update(doc(database, `reservations/${reservationId}`), { cancellation, 'payment.refundedAt': now() });
   for (const night of ['2027-05-15', '2027-05-16']) b.update(doc(database, `campsites/site/calendar/${night}`), { reservationId: null });
   event(b, database, 'RESERVATION_CANCELLED', 'RESERVATION', reservationId, ['entrant']);
-  await assertSucceeds(b.commit());
+  await assertFails(b.commit());
   await assertFails(deleteDoc(doc(database, `reservations/${reservationId}`)));
   await assertFails(booking());
 });
@@ -271,8 +277,11 @@ test('booking cannot grant an unrelated account a confirmation receipt', async (
   event(b, database, 'RESERVATION_CONFIRMED', 'RESERVATION', reservationId, ['other']);
   await assertFails(b.commit());
 });
-test('cancellation actor and role cannot be spoofed; an owner rejection succeeds', async () => {
-  await assertSucceeds(booking());
+test('direct cancellation is denied for spoofed and participant roles', async () => {
+  await assertFails(booking());
+  await seed({ [`reservations/${reservationId}`]: reservation(),
+    'campsites/site/calendar/2027-05-15': { isOffered: true, reservationId },
+    'campsites/site/calendar/2027-05-16': { isOffered: true, reservationId } });
   const database = db('owner');
   function reject(actorId, initiatedAs) {
     const b = writeBatch(database);
@@ -281,7 +290,7 @@ test('cancellation actor and role cannot be spoofed; an owner rejection succeeds
   }
   await assertFails(reject('entrant', 'ENTRANT'));
   await assertFails(reject('owner', 'ADMIN'));
-  await assertSucceeds(reject('owner', 'OWNER'));
+  await assertFails(reject('owner', 'OWNER'));
 });
 test('image publication and obsolete cleanup queue are restricted to target ownership', async () => {
   await seed({ 'images/campsite_site': { blobId: 'old', uploadedAt: now() } });

@@ -61,9 +61,7 @@ internal fun <T> Query.observe(codec: DocumentCodec<T>): Flow<List<T>> =
  * @param T Result produced for each document.
  * @param decode Pure projection that validates and translates the snapshot within data code.
  */
-internal fun <T> Query.observe(
-    decode: (com.google.firebase.firestore.DocumentSnapshot) -> T,
-): Flow<List<T>> =
+internal fun <T> Query.observe(decode: (com.google.firebase.firestore.DocumentSnapshot) -> T): Flow<List<T>> =
     callbackFlow {
         val registration =
             addSnapshotListener { snapshot, failure ->

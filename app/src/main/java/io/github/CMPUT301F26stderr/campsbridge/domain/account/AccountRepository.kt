@@ -49,6 +49,15 @@ interface AccountRepository {
         profile: ProfileUpdate,
     )
 
+    /** Changes the name without replacing concurrently edited contact details.
+     * @param id Account identity whose name is changing.
+     * @param name Nonblank display name.
+     */
+    suspend fun updateName(
+        id: String,
+        name: String,
+    )
+
     /**
      * Replaces the account’s alert and accessibility preferences.
      *

@@ -1,6 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.data.booking
 
 import com.google.firebase.firestore.FirebaseFirestore
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.CallableFunctions
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.observe
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.read
@@ -14,12 +15,14 @@ import java.time.Clock
  * Reads complete reservations and delegates coordinated mutations to their transaction owner.
  * @param db Firestore client used for reservation queries and listeners.
  * @param clock Injectable operation time supplied to coordinated writes.
+ * @param functions Authenticated server-operation client for the same project.
  */
 class FirestoreBookingRepository(
     db: FirebaseFirestore,
     clock: Clock,
+    functions: CallableFunctions = CallableFunctions(db.app),
 ) : BookingRepository {
-    private val writes = BookingWrites(db, clock)
+    private val writes = BookingWrites(functions, clock)
     private val queries = BookingQueries(db)
 
     /**

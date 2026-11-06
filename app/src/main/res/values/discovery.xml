@@ -16,6 +16,9 @@
     <string name="discovery_rating_loading">Loading ratings</string>
     <string name="discovery_no_ratings">No ratings</string>
     <string name="discovery_rating_failure">Ratings unavailable</string>
-    <string name="discovery_rating_summary">%1$s / 5 (%2$d ratings)</string>
+    <plurals name="discovery_rating_summary">
+        <item quantity="one">%1$s / 5 (%2$d rating)</item>
+        <item quantity="other">%1$s / 5 (%2$d ratings)</item>
+    </plurals>
     <string name="discovery_retry_row">Retry photo or ratings for %1$s</string>
 </resources>

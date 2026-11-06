@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,6 +32,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,8 +59,10 @@ import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocalDemoMap
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -70,15 +76,36 @@ class OfflineDemoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val directory = File(applicationContext.cacheDir, "offline-demo")
+        val directory = File(applicationContext.filesDir, "offline-demo")
         val factory = viewModelFactory { initializer { DemoHostViewModel(directory) } }
         val host = ViewModelProvider(this, factory)[DemoHostViewModel::class.java]
         setContent {
-            val session by host.session.collectAsStateWithLifecycle()
+            val current by host.session.collectAsStateWithLifecycle()
+            val failure by host.failure.collectAsStateWithLifecycle()
+            val requestedDestination by host.destination.collectAsStateWithLifecycle()
+            val session = current
+            if (session == null) {
+                CampsbridgeTheme {
+                    if (failure) {
+                        TextButton({ host.reset() }) { Text(stringResource(R.string.demo_reset)) }
+                    } else {
+                        LoadingContent()
+                    }
+                }
+                return@setContent
+            }
+            val nextAction by remember(session.store) {
+                session.store.observe {
+                    journeyAction(session.store.clock.instant())
+                }
+            }.collectAsStateWithLifecycle(
+                initialValue = session.store.read { journeyAction(session.store.clock.instant()) },
+            )
+            val savedAreas = rememberSaveableStateHolder()
             CampsbridgeTheme {
                 Column(Modifier.fillMaxSize().statusBarsPadding()) {
                     DemoToolbar(
-                        host::reset,
+                        host::select,
                         { host.reset() },
                         {
                             startActivity(
@@ -102,10 +129,20 @@ class OfflineDemoActivity : ComponentActivity() {
                                 ).putExtra("step", step.name),
                             )
                         },
+                        session.scenario,
+                        nextAction,
+                        host::follow,
+                        failure,
                     )
                     Box(Modifier.weight(1f).consumeWindowInsets(WindowInsets.statusBars)) {
-                        key(session) {
-                            CompositionLocalProvider(LocalViewModelStoreOwner provides session) {
+                        savedAreas.SaveableStateProvider(
+                            "${System.identityHashCode(session.store)}/${session.scenario.name}",
+                        ) {
+                            CompositionLocalProvider(
+                                LocalViewModelStoreOwner provides session,
+                                LocalDemoMap provides
+                                    { pin, select, modifier -> DemoLocationMap(pin, select, modifier) },
+                            ) {
                                 AppRoot(
                                     session.model,
                                     { id -> onboardingViewModelFactory(session.services, id) },
@@ -205,6 +242,8 @@ class OfflineDemoActivity : ComponentActivity() {
                                     { notificationLogViewModelFactory(session.services) },
                                     AndroidNotificationPermission(this@OfflineDemoActivity),
                                     session.notificationEntries,
+                                    requestedDestination,
+                                    host::consumeDestination,
                                 )
                             }
                         }
@@ -216,11 +255,15 @@ class OfflineDemoActivity : ComponentActivity() {
 }
 
 /** Gives the team visible scenario, reset and inspection actions without shell commands.
- * @param onScenario Replaces the local demo graph.
- * @param onReset Restores the currently selected starting scenario.
+ * @param onScenario Opens a retained area/person.
+ * @param onReset Restores the shared baseline after confirmation.
  * @param onGallery Opens the component gallery.
  * @param onTaskExamples Opens direct local examples for individual teammate tasks.
  * @param onPreview Opens a passive onboarding state for inspection.
+ * @param scenario Current person.
+ * @param nextAction Contextual saved-record handoff.
+ * @param onNext Executes that handoff.
+ * @param failed Whether a local operation needs retry.
  */
 @Composable
 private fun DemoToolbar(
@@ -229,75 +272,112 @@ private fun DemoToolbar(
     onGallery: () -> Unit,
     onTaskExamples: () -> Unit,
     onPreview: (OnboardingStep) -> Unit,
+    scenario: DemoScenario,
+    nextAction: DemoJourneyAction,
+    onNext: (DemoJourneyAction) -> Unit,
+    failed: Boolean,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     var previews by remember { mutableStateOf(false) }
     var about by remember { mutableStateOf(false) }
-    Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+    var reset by remember { mutableStateOf(false) }
+    Column {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = Spacing.screen),
-            verticalAlignment = Alignment.CenterVertically,
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    stringResource(R.string.demo_offline),
-                    style = MaterialTheme.typography.labelLarge,
-                )
-                Text(
-                    stringResource(R.string.demo_sample_label),
-                    style = MaterialTheme.typography.labelSmall,
-                )
+            for (area in listOf(DemoScenario.ENTRANT, DemoScenario.OWNER, DemoScenario.ADMIN)) {
+                TextButton({ onScenario(area) }, enabled = area != scenario) { Text(stringResource(area.areaLabel())) }
             }
-            Box {
-                TextButton({ expanded = true }) { Text(stringResource(R.string.demo_tools)) }
-                DropdownMenu(expanded, { expanded = false }) {
-                    for (scenario in DemoScenario.entries) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(scenario.label())) },
-                            onClick = {
-                                expanded = false
-                                onScenario(scenario)
-                            },
+        }
+        if (failed) Text(stringResource(R.string.demo_operation_failed))
+        Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+            Column {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = Spacing.screen),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.demo_offline),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Text(
+                            stringResource(scenario.personLabel()),
+                            style = MaterialTheme.typography.labelSmall,
                         )
                     }
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.demo_about)) },
-                        onClick = {
-                            expanded = false
-                            about = true
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.demo_reset)) },
-                        onClick = {
-                            expanded = false
-                            onReset()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.task_examples)) },
-                        onClick = {
-                            expanded = false
-                            onTaskExamples()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.demo_previews)) },
-                        onClick = {
-                            expanded = false
-                            previews = true
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.demo_gallery)) },
-                        onClick = {
-                            expanded = false
-                            onGallery()
-                        },
-                    )
+                    Box {
+                        TextButton({ expanded = true }) { Text(stringResource(R.string.demo_tools)) }
+                        DropdownMenu(expanded, { expanded = false }) {
+                            for (scenario in DemoScenario.entries) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(scenario.label())) },
+                                    onClick = {
+                                        expanded = false
+                                        onScenario(scenario)
+                                    },
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.demo_about)) },
+                                onClick = {
+                                    expanded = false
+                                    about = true
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.demo_reset)) },
+                                onClick = {
+                                    expanded = false
+                                    reset = true
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.task_examples)) },
+                                onClick = {
+                                    expanded = false
+                                    onTaskExamples()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.demo_previews)) },
+                                onClick = {
+                                    expanded = false
+                                    previews = true
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.demo_gallery)) },
+                                onClick = {
+                                    expanded = false
+                                    onGallery()
+                                },
+                            )
+                        }
+                    }
+                }
+                TextButton({ onNext(nextAction) }, Modifier.fillMaxWidth()) {
+                    Text(stringResource(nextAction.label))
                 }
             }
         }
+    }
+    if (reset) {
+        AlertDialog(
+            onDismissRequest = { reset = false },
+            title = { Text(stringResource(R.string.demo_reset_title)) },
+            text = { Text(stringResource(R.string.demo_reset_question)) },
+            confirmButton = {
+                TextButton({
+                    reset = false
+                    onReset()
+                }) { Text(stringResource(R.string.demo_reset)) }
+            },
+            dismissButton = {
+                TextButton({ reset = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
     if (about) {
         AlertDialog(
@@ -352,4 +432,22 @@ private fun OnboardingStep.label(): Int =
         OnboardingStep.NAME -> R.string.onboarding_name
         OnboardingStep.INTERESTS -> R.string.onboarding_interests_label
         OnboardingStep.OWNER -> R.string.onboarding_host_label
+    }
+
+/** Names the direct area without exposing account setup details. */
+private fun DemoScenario.areaLabel(): Int =
+    when (this) {
+        DemoScenario.ENTRANT -> R.string.demo_camping
+        DemoScenario.OWNER -> R.string.demo_hosting
+        DemoScenario.ADMIN -> R.string.demo_admin_area
+        DemoScenario.NEW_ACCOUNT -> R.string.demo_new_account
+    }
+
+/** Identifies whose actions this area records. */
+private fun DemoScenario.personLabel(): Int =
+    when (this) {
+        DemoScenario.ENTRANT -> R.string.demo_alex
+        DemoScenario.OWNER -> R.string.demo_jordan
+        DemoScenario.ADMIN -> R.string.demo_taylor
+        DemoScenario.NEW_ACCOUNT -> R.string.demo_new_account
     }

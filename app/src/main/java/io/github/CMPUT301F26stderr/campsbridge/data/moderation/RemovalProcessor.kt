@@ -2,9 +2,10 @@ package io.github.CMPUT301F26stderr.campsbridge.data.moderation
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Source
+import io.github.CMPUT301F26stderr.campsbridge.data.booking.BookingWrites
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
-import io.github.CMPUT301F26stderr.campsbridge.data.booking.cancelReservationInTransaction
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.CallableFunctions
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.Fields
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
@@ -32,12 +33,14 @@ import java.time.LocalDate
  * @param images Attachment cleanup owner.
  * @param lotteries Existing lottery cancellation owner.
  * @param clock Shared time used to preserve completed history.
+ * @param functions Authenticated booking client for this environment.
  */
 internal class RemovalProcessor(
     private val db: FirebaseFirestore,
     private val images: ImageRepository,
     private val lotteries: FirestoreLotteryRepository,
     private val clock: Clock,
+    private val functions: CallableFunctions,
 ) {
     /**
      * Drains pending removal work, optionally limited to the original actor; deletes jobs
@@ -220,34 +223,20 @@ internal class RemovalProcessor(
         id: String,
         removal: Removal,
     ) {
-        db.atomic { tx ->
-            val reservation =
-                tx.require(db.document(FirestorePaths.reservation(id)), ReservationDocument)
-            val today =
-                LocalDate.ofInstant(
-                    clock.instant(),
-                    java.time.ZoneId.of(reservation.bookedCampsite.timeZone),
-                )
-            if (reservation.checkOutDate > today && reservation.cancellation == null) {
-                val site =
-                    tx.require(
-                        db.document(FirestorePaths.campsite(reservation.campsiteId)),
-                        CampsiteDocument,
-                    )
-                val role =
-                    when (removal.actorId) {
-                        reservation.entrantId -> Role.ENTRANT
-                        site.ownerId -> Role.OWNER
-                        else -> Role.ADMIN
-                    }
-                cancelReservationInTransaction(
-                    db,
-                    tx,
-                    reservation,
-                    CancellationRequest(id, removal.actorId, role, removal.reason),
-                    clock.instant(),
-                )
-            }
+        val reservation = db.document(FirestorePaths.reservation(id)).read(ReservationDocument) ?: return
+        val today = LocalDate.ofInstant(clock.instant(), java.time.ZoneId.of(reservation.bookedCampsite.timeZone))
+        if (reservation.checkOutDate > today && reservation.cancellation == null) {
+            val site = db.document(FirestorePaths.campsite(reservation.campsiteId)).read(CampsiteDocument) ?: return
+            val role =
+                when (removal.actorId) {
+                    reservation.entrantId -> Role.ENTRANT
+                    site.ownerId -> Role.OWNER
+                    else -> Role.ADMIN
+                }
+            BookingWrites(functions, clock).cancel(
+                CancellationRequest(id, removal.actorId, role, removal.reason),
+                forRemoval = true,
+            )
         }
     }
 }

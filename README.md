@@ -15,7 +15,7 @@ An Android campsite reservation app for CMPUT 301, built by a team of six. Entra
 
 1. Clone this repository and open its root in Android Studio.
 2. Install the SDK required by `app/build.gradle.kts` (currently Android API 37). The Gradle daemon requires JDK 25, as recorded in `gradle/gradle-daemon-jvm.properties`.
-3. Allow Gradle sync to finish, select the `debug` build variant, then run the `app` configuration on an emulator or device. It opens the offline demo without Firebase setup. Use **Demo tools** to switch scenarios, reset sample data, or inspect screens and the component gallery.
+3. Allow Gradle sync to finish, select the `debug` build variant, then run the `app` configuration on an emulator or device. It opens the offline demo without Firebase setup. Use **Camping**, **Hosting** and **Admin** for the shared walkthrough. **Demo tools** contains reset, new-account setup, previews and the component gallery.
 4. [Install the shared pre-commit hooks](CONTRIBUTING.md#install-local-hooks) after cloning. They run automatically on commits.
 5. Before opening a PR, run the same Android checks used by CI:
 
@@ -35,15 +35,15 @@ The checks run Android Lint, local domain/schema/listener/controller tests, and 
 bash scripts/check-firebase.sh
 ```
 
-This starts disposable Auth, Firestore, and Storage emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests remain separate: start an emulator in Android Studio and run the relevant tests under `app/src/androidTest` with the green Run triangle. See [Testing and demo](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo) for terminal and coverage commands.
+This starts disposable Auth, Firestore, Storage, and Functions emulators, runs the rules and Kotlin repository tests, and stops the services afterward. The Kotlin tests use a Robolectric host; they do not need an Android virtual device. Device/UI tests remain separate: start an emulator in Android Studio and run the relevant tests under `app/src/androidTest` with the green Run triangle. See [Testing and demo](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Testing-and-Demo) for terminal and coverage commands.
 
-The default `debug` build opens a populated offline scenario without Firebase setup. Demo tools switches between entrant, owner, administrator and new-account scenarios, resets records, and opens previews or Task examples. Profile editing, workspace switching and private cached photo changes work locally. Discovery and lottery readers use related sample records and a fixed clock; search, filters and ordering use the real rules.
+The default `debug` build opens a shared offline dataset without Firebase setup. Camping, Hosting and Admin open Alex, Jordan and Taylor’s views without discarding data. Campsite and lottery saves, participation, draws, booking and cancellation update the same local records. Contextual demo actions advance time so the walkthrough does not need to wait for registration deadlines. Saved records, selected photos and demo time survive restart; explicit reset restores the starting data.
 
 Owner campsite setup, saved listing details, availability and lottery flows use the existing application code. In Firebase-enabled builds, explicit actions save through the repositories. Accepted name/contact, campsite search/capacity/ordering and lottery-window helpers remain connected. Availability editing and participant filtering use their implemented helpers.
 
-Shared repositories, notification/image readers, Android alert adapters and separate feature graph/factory contracts are available. Inbox, notification settings, the notification log and single-record admin pages show pending feedback until their feature implementations arrive. Offline bookings and cancellations are saved in memory so they show up in Reservations. The offline adapters do not simulate campsite or lottery transactions.
+Shared repositories, notification/image readers, Android alert adapters and separate feature graph/factory contracts are available. Inbox, notification settings, notification inspection and admin profile/image pages use the implemented screens. Offline bookings and cancellations coordinate inventory, simulated payment/refund and Inbox history. Local location selection works without map tiles. See the demo guide below for the remaining boundaries.
 
-Select `firebaseDebug` in Android Studio for real account identity, Firestore and Storage, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.
+Select `firebaseDebug` in Android Studio for real account identity, Firestore, Storage and callable booking operations, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.
 
 ## Maps configuration
 
@@ -79,6 +79,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses t
 
 ### Assigned helper examples
 
-In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors; H03 opens the availability editor and H04 the owner inventory. H05/H06 open independent text-search and guest-capacity examples using the real discovery controller and filter editor. All use local sample records. H07 opens schedule validation and H08 participant filtering with seeded lottery records. Later examples remain labelled pending until their baselines are published. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
+In the `debug` app, open **Demo tools → Task examples** or select the checked-in **Task examples** Android Studio run configuration. H01 display name and H02 contacts use the real profile editors; H03 opens the availability editor and H04 the owner inventory. H05/H06 open independent text-search and guest-capacity examples using the real discovery controller and filter editor. All use local sample records. H07 opens schedule validation and H08 participant filtering with seeded lottery records. H09/H10 exercise Inbox ordering and unread counts, H11 opens booking dates, and H12/H13 show reservation categorization and ordering. Other examples remain labelled pending. Reset restores sample records; activity recreation retains the current example and input. No Firebase setup is needed.
 
 Accepted helper bindings remain connected. Follow the assigned issue for an unfinished function and its tests; a preview or pending example does not complete the task. Release and Firebase builds do not include the debug task host.

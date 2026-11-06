@@ -3,9 +3,16 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.common.time
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+
+/** Optional time signal for hosts with an explicitly controlled clock. */
+interface ObservableClock {
+    val changes: StateFlow<Instant>
+}
 
 /** Suspends until the injected clock reaches a deadline; cancellation propagates.
  * Callers own the coroutine and recalculate their next deadline after returning.
@@ -16,6 +23,10 @@ suspend fun awaitDeadline(
     clock: Clock,
     deadline: Instant,
 ) {
+    if (clock is ObservableClock) {
+        clock.changes.first { it >= deadline }
+        return
+    }
     while (true) {
         currentCoroutineContext().ensureActive()
         val now = clock.instant()

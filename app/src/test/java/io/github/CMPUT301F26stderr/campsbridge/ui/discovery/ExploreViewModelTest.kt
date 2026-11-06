@@ -233,9 +233,7 @@ class ExploreViewModelTest {
                             /** Tracks subscription cleanup while retaining the first retired callback.
                              * @param collector Downstream reader under test.
                              */
-                            override suspend fun collect(
-                                collector: FlowCollector<List<CalendarNight>>,
-                            ) {
+                            override suspend fun collect(collector: FlowCollector<List<CalendarNight>>) {
                                 campsites.observedCalendars.add(Triple(id, start, endExclusive))
                                 campsites.activeCalendarObservers++
                                 try {

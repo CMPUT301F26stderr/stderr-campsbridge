@@ -1,116 +1,258 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
+import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
+import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryOfferDocument
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.AcceptedTerms
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookedCampsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Payment
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.stayNights
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.ALREADY_USED
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CAPACITY_REACHED
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INACTIVE
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INVALID_STATE
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.STALE_QUOTE
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.WINDOW_CLOSED
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import java.time.Clock
+import java.time.LocalDate
+import java.time.ZoneId
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths as Paths
 
-/** In-memory bookings for the offline demo; reset restores the supplied records.
- * @param initial Supplied historical aggregates.
- * @param campsites Fixture campsites that supply owners and booking snapshots.
- * @param clock Fixture time recorded on new bookings.
+/** Coordinates actual local booking, inventory, simulated payments and Inbox records.
+ * @param initial Initial helper reservations.
+ * @param campsites Initial helper listings.
+ * @param clock Isolated helper time.
+ * @param store Shared demo state and controlled time.
  */
 class DemoBookingRepository(
     initial: List<Reservation> = emptyList(),
-    private val campsites: List<Campsite> = emptyList(),
-    private val clock: Clock = Clock.systemUTC(),
+    campsites: List<Campsite> = emptyList(),
+    clock: Clock = Clock.systemUTC(),
+    private val store: DemoStore =
+        DemoStore(
+            buildMap {
+                initial.forEach { put(Paths.reservation(it.id), ReservationDocument.encode(it)) }
+                campsites.forEach { put(Paths.campsite(it.id), CampsiteDocument.encode(it)) }
+            },
+            start = clock.instant(),
+        ),
 ) : BookingRepository {
-    private val records = MutableStateFlow(initial)
-
-    /** Returns the matching reservation, or null.
-     * @param id Requested identity.
+    /** Reads a complete saved stay.
+     * @param id Reservation identity.
      */
-    override suspend fun get(id: String): Reservation? =
-        records.value.firstOrNull { it.id == id }
+    override suspend fun get(id: String) =
+        store.read { get(Paths.reservation(id), ReservationDocument) }
 
-    /** Returns a consuming reservation without a Firebase call.
-     * @param lotteryId Requested lottery.
-     * @param entrantId Requested entrant.
+    /** Finds consumed opportunities, including historical fixture IDs and cancelled stays.
+     * @param lotteryId Lottery identity.
+     * @param entrantId Entrant identity.
      */
     override suspend fun getForOpportunity(
         lotteryId: String,
         entrantId: String,
-    ): Reservation? =
-        records.value.firstOrNull { it.lotteryId == lotteryId && it.entrantId == entrantId }
+    ) =
+        store.read {
+            list("reservations", ReservationDocument).firstOrNull {
+                it.lotteryId == lotteryId &&
+                    it.entrantId == entrantId
+            }
+        }
 
-    /** Emits the current aggregate, or confirmed fixture absence.
-     * @param id Requested identity.
+    /** Observes the complete saved stay.
+     * @param id Reservation identity.
      */
-    override fun observe(id: String): Flow<Reservation?> =
-        records.map { stays -> stays.firstOrNull { it.id == id } }
+    override fun observe(id: String) =
+        store.observe { get(Paths.reservation(id), ReservationDocument) }
 
-    /** Emits only reservations belonging to the requested entrant.
-     * @param entrantId Requested account.
+    /** Observes the person's saved stays.
+     * @param entrantId Entrant identity.
      */
-    override fun observeForEntrant(entrantId: String): Flow<List<Reservation>> =
-        records.map { stays -> stays.filter { it.entrantId == entrantId } }
+    override fun observeForEntrant(entrantId: String) =
+        store.observe {
+            list("reservations", ReservationDocument).filter {
+                it.entrantId ==
+                    entrantId
+            }
+        }
 
-    /** Emits only reservations associated with the requested campsite.
-     * @param campsiteId Requested campsite.
+    /** Observes saved stays at one listing.
+     * @param campsiteId Listing identity.
      */
-    override fun observeForCampsite(campsiteId: String): Flow<List<Reservation>> =
-        records.map { stays -> stays.filter { it.campsiteId == campsiteId } }
+    override fun observeForCampsite(campsiteId: String) =
+        store.observe {
+            list("reservations", ReservationDocument).filter {
+                it.campsiteId ==
+                    campsiteId
+            }
+        }
 
-    /** Emits reservations associated with the requested fixture owner.
-     * @param ownerId Requested owner.
+    /** Observes stays using current immutable listing ownership.
+     * @param ownerId Owner identity.
      */
-    override fun observeForOwner(ownerId: String): Flow<List<Reservation>> {
-        val owned = campsites.filter { it.ownerId == ownerId }.map { it.id }.toSet()
-        return records.map { stays -> stays.filter { it.campsiteId in owned } }
-    }
+    override fun observeForOwner(ownerId: String) =
+        store.observe {
+            val owned = list("campsites", CampsiteDocument).filter { it.ownerId == ownerId }.map { it.id }.toSet()
+            list("reservations", ReservationDocument).filter { it.campsiteId in owned }
+        }
 
-    /** Saves the stay in memory so it shows up in Reservations; calendar nights stay unclaimed.
-     * @param request Requested stay and accepted quote.
-     * @return New reservation identity.
-     * @throws UnsupportedOperationException When this repository has no fixture for the campsite.
+    /** Validates an unused win and commits the entire stay with its confirmation.
+     * @param request Selected dates, group and accepted quote/terms.
+     * @return Saved reservation identity.
      */
-    override suspend fun reserve(request: BookingRequest): String {
-        val details = campsites.firstOrNull { it.id == request.campsiteId }?.details ?: unavailable()
-        val now = clock.instant()
-        val id = "demo-booking-${records.value.size}"
-        records.value +=
-            Reservation(
-                id,
-                request.lotteryId,
-                request.entrantId,
-                request.campsiteId,
-                request.checkInDate,
-                request.checkOutDate,
-                request.guestCount,
-                BookedCampsite(details.name, details.locationLabel, details.location, details.timeZone),
-                AcceptedTerms(request.acceptedRules, request.policyVersion, now),
-                now,
-                Payment(request.expectedTotalCents, now),
+    override suspend fun reserve(request: BookingRequest): String =
+        store.change {
+            active(request.entrantId, Role.ENTRANT)
+            requireOperation(
+                list("reservations", ReservationDocument).none {
+                    it.lotteryId == request.lotteryId &&
+                        it.entrantId == request.entrantId
+                },
+                ALREADY_USED,
+                "Winning offer already consumed",
             )
-        return id
-    }
+            val lottery = require(Paths.lottery(request.lotteryId), LotteryDocument)
+            active(lottery.ownerId, Role.OWNER)
+            val now = store.clock.instant()
+            requireOperation(lottery.bookingIsOpen(now), WINDOW_CLOSED, "Booking window closed")
+            val entry = require(Paths.entry(lottery.id, request.entrantId), LotteryEntryDocument)
+            requireOperation(entry.state == EntryState.OFFERED, NOT_ALLOWED, "No unused winning offer")
+            val offer = require(Paths.offer(lottery.id, request.campsiteId), LotteryOfferDocument)
+            val nights = stayNights(request.checkInDate, request.checkOutDate)
+            requireOperation(offer.nights.containsAll(nights), NOT_ALLOWED, "Dates not offered")
+            val site = require(Paths.campsite(request.campsiteId), CampsiteDocument)
+            requireOperation(site.isPublished && site.ownerId == lottery.ownerId, INACTIVE, "Campsite unavailable")
+            requireOperation(
+                request.checkInDate >= LocalDate.ofInstant(now, ZoneId.of(site.details.timeZone)),
+                WINDOW_CLOSED,
+                "Stay already begun",
+            )
+            requireOperation(request.guestCount <= site.details.maxGuests, CAPACITY_REACHED, "Group exceeds capacity")
+            val total = Math.multiplyExact(site.details.nightlyPriceCents, nights.size.toLong())
+            requireOperation(
+                total == request.expectedTotalCents && request.acceptedRules == site.details.rules &&
+                    request.policyVersion == BookingPolicy.VERSION,
+                STALE_QUOTE,
+                "Price or accepted terms changed",
+            )
+            val calendar = nights.map { get(Paths.night(site.id, it), CalendarNightDocument) }
+            requireOperation(calendar.all { it?.isFree == true }, CONFLICT, "Some nights are no longer free")
+            val id = DocumentKeys.reservation(lottery.id, request.entrantId)
+            val stay =
+                Reservation(
+                    id,
+                    lottery.id,
+                    request.entrantId,
+                    site.id,
+                    request.checkInDate,
+                    request.checkOutDate,
+                    request.guestCount,
+                    BookedCampsite(
+                        site.details.name,
+                        site.details.locationLabel,
+                        site.details.location,
+                        site.details.timeZone,
+                    ),
+                    AcceptedTerms(request.acceptedRules, request.policyVersion, now),
+                    now,
+                    Payment(total, now),
+                )
+            put(Paths.reservation(id), ReservationDocument, stay)
+            calendar.filterNotNull().forEach {
+                put(Paths.night(site.id, it.date), CalendarNightDocument, it.copy(reservationId = id))
+            }
+            reservationNotice(stay, false)
+            id
+        }
 
-    /** Records the cancellation and refund in memory; repeats keep the first result.
-     * @param request Requested cancellation.
-     * @throws UnsupportedOperationException When this repository has no such reservation.
+    /** Authorizes the participant, then refunds and releases only this stay's nights once.
+     * @param request Actor and cancellation attribution.
      */
     override suspend fun cancel(request: CancellationRequest) {
-        val stay = records.value.firstOrNull { it.id == request.reservationId } ?: unavailable()
-        if (stay.cancellation != null) return
-        val now = clock.instant()
-        val cancelled =
-            stay.copy(
-                cancellation = ReservationCancellation(now, request.actorId, request.initiatedAs, request.reason),
-                payment = stay.payment.copy(refundedAt = now),
+        store.change {
+            val actor = active(request.actorId, request.initiatedAs)
+            val stay = require(Paths.reservation(request.reservationId), ReservationDocument)
+            val site = require(Paths.campsite(stay.campsiteId), CampsiteDocument)
+            requireOperation(
+                when (request.initiatedAs) {
+                    Role.ENTRANT -> actor.id == stay.entrantId
+                    Role.OWNER -> actor.id == site.ownerId
+                    Role.ADMIN -> true
+                },
+                NOT_ALLOWED,
+                "Not a participant",
             )
-        records.value = records.value.map { if (it.id == stay.id) cancelled else it }
+            if (stay.cancellation != null) return@change
+            val now = store.clock.instant()
+            requireOperation(
+                LocalDate.ofInstant(now, ZoneId.of(stay.bookedCampsite.timeZone)) < stay.checkOutDate,
+                WINDOW_CLOSED,
+                "Stay has ended",
+            )
+            val calendar =
+                stayNights(stay.checkInDate, stay.checkOutDate).map {
+                    require(Paths.night(stay.campsiteId, it), CalendarNightDocument)
+                }
+            requireOperation(
+                calendar.all { it.reservationId == stay.id },
+                INVALID_STATE,
+                "Reservation/calendar mismatch",
+            )
+            val cancelled =
+                stay.copy(
+                    cancellation = ReservationCancellation(now, actor.id, request.initiatedAs, request.reason),
+                    payment =
+                        stay.payment.copy(
+                            refundedAt =
+                                stay.payment.refundedAt ?: now,
+                        ),
+                )
+            put(Paths.reservation(stay.id), ReservationDocument, cancelled)
+            calendar.forEach { night ->
+                put(Paths.night(stay.campsiteId, night.date), CalendarNightDocument, night.copy(reservationId = null))
+            }
+            reservationNotice(cancelled, true)
+        }
     }
 
-    /** Keeps local demo limitations explicit at the operation boundary. */
-    private fun unavailable(): Nothing =
-        throw UnsupportedOperationException("Booking writes require the Firebase host")
+    /** Creates one stable event and actual receipt inside the originating commit.
+     * @param stay Saved aggregate.
+     * @param cancelled Whether this is a cancellation event.
+     */
+    private fun DemoDocuments.reservationNotice(
+        stay: Reservation,
+        cancelled: Boolean,
+    ) {
+        val type = if (cancelled) NotificationType.RESERVATION_CANCELLED else NotificationType.RESERVATION_CONFIRMED
+        notify(
+            Notification(
+                DocumentKeys.compound(type.name, stay.id),
+                null,
+                type,
+                NotificationSubject(SubjectType.RESERVATION, stay.id),
+                null,
+                if (cancelled) stay.cancellation!!.at else stay.createdAt,
+            ),
+            listOf(stay.entrantId),
+        )
+    }
 }

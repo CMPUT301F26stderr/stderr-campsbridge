@@ -1,5 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
+import android.util.Log
+import io.github.CMPUT301F26stderr.campsbridge.data.image.ImageAttachmentDocument
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
@@ -8,25 +10,25 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageUpload
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.Clock
 import java.util.UUID
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths as Paths
 
-/** Saves demo photos in a private cache directory; attachment relationships stay in memory.
+/** Saves local photo bytes before committing their attachment relationships.
  * @param directory Scenario-owned private cache directory; bytes are never uploaded.
  * @param clock Timestamp source for local attachments.
  * @param samples Packaged read-only photo URLs keyed by their fixture slots.
+ * @param shared Optional durable state; isolated examples keep their private lifecycle.
  */
 class DemoImageRepository(
     private val directory: File,
     private val clock: Clock = Clock.systemUTC(),
     samples: Map<ImageTarget, String> = emptyMap(),
+    private val shared: DemoStore? = null,
 ) : ImageRepository {
     private val sampleAttachments =
         samples.keys.associateWith {
@@ -38,24 +40,33 @@ class DemoImageRepository(
                 attachment.blobId to
                     samples.getValue(target)
             }.toMap()
-    private val attachments = MutableStateFlow(sampleAttachments)
+    private val store =
+        shared
+            ?: DemoStore(
+                sampleAttachments.entries.associate {
+                    Paths.image(it.key) to
+                        ImageAttachmentDocument.encode(it.value)
+                },
+            )
     private val lock = Mutex()
+
+    @Volatile private var closed = false
 
     /** Returns the current local attachment.
      * @param target Requested demo slot.
      */
     override suspend fun get(target: ImageTarget) =
-        attachments.value[target]
+        store.read { get(Paths.image(target), ImageAttachmentDocument) }
 
     /** Observes a local slot without network access.
      * @param target Requested demo slot.
      */
     override fun observe(target: ImageTarget) =
-        attachments.map { it[target] }.distinctUntilChanged()
+        store.observe { get(Paths.image(target), ImageAttachmentDocument) }
 
     /** Observes all attachments in this scenario. */
     override fun observeAll() =
-        attachments.map { it.values.toList() }
+        store.observe { list("images", ImageAttachmentDocument) }
 
     /** Copies and closes selected bytes before publishing a local attachment.
      * @param target Slot to replace.
@@ -67,6 +78,7 @@ class DemoImageRepository(
     ): ImageUpdateResult =
         lock.withLock {
             withContext(Dispatchers.IO) {
+                check(!closed) { "Demo session closed" }
                 check(directory.isDirectory || directory.mkdirs())
                 val file = File(directory, UUID.randomUUID().toString())
                 try {
@@ -79,8 +91,15 @@ class DemoImageRepository(
                     throw failure
                 }
                 val attachment = ImageAttachment(target, file.name, clock.instant())
-                val old = attachments.value[target]
-                attachments.value = attachments.value + (target to attachment)
+                val old = get(target)
+                try {
+                    store.change { put(Paths.image(target), ImageAttachmentDocument, attachment) }
+                } catch (
+                    failure: Exception,
+                ) {
+                    file.delete()
+                    throw failure
+                }
                 val obsolete =
                     old?.blobId?.takeUnless {
                         it in sampleUrls ||
@@ -96,8 +115,9 @@ class DemoImageRepository(
     override suspend fun delete(target: ImageTarget): ImageUpdateResult =
         lock.withLock {
             withContext(Dispatchers.IO) {
-                val old = attachments.value[target]
-                attachments.value = attachments.value - target
+                check(!closed) { "Demo session closed" }
+                val old = get(target)
+                store.change { raw.remove(Paths.image(target)) }
                 val obsolete =
                     old?.blobId?.takeUnless {
                         it in sampleUrls ||
@@ -125,11 +145,28 @@ class DemoImageRepository(
     override suspend fun retryCleanup(blobId: String) =
         lock.withLock {
             withContext(Dispatchers.IO) {
-                check(attachments.value.values.none { it.blobId == blobId })
+                check(store.read { list("images", ImageAttachmentDocument).none { it.blobId == blobId } })
                 if (blobId !in sampleUrls) {
                     val file = File(directory, blobId)
                     check(!file.exists() || file.delete())
                 }
             }
         }
+
+    /** Stops writes; isolated examples remove their cache while shared photos remain saved. */
+    suspend fun close() {
+        closed = true
+        lock.withLock {
+            withContext(Dispatchers.IO) {
+                if (shared != null) return@withContext
+                try {
+                    if (directory.exists() && !directory.deleteRecursively()) {
+                        Log.w("DemoImages", "Could not remove retired demo photo cache")
+                    }
+                } catch (failure: SecurityException) {
+                    Log.w("DemoImages", "Could not remove retired demo photo cache", failure)
+                }
+            }
+        }
+    }
 }

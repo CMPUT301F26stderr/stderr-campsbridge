@@ -223,7 +223,7 @@ class OnboardingViewModel(
             val record = account ?: accounts.create(accountId, ProfileUpdate(name, null, null))
             account = record
             if (record.name != name) {
-                accounts.updateProfile(accountId, ProfileUpdate(name, record.email, record.phone))
+                accounts.updateName(accountId, name)
                 account = record.copy(name = name)
             }
             moveTo(

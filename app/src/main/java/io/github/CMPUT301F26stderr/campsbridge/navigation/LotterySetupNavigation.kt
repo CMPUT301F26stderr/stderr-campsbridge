@@ -1,7 +1,10 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraphBuilder
@@ -11,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocationRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoices
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 
@@ -44,6 +48,21 @@ internal fun NavGraphBuilder.lotterySetupGraph(
                         viewModelStoreOwner = parent,
                         factory = factory(parent.arguments?.getString("lotteryId")),
                     )
+                val requestedSite by parent.savedStateHandle
+                    .getStateFlow<String?>(
+                        "initialCampsite",
+                        null,
+                    ).collectAsStateWithLifecycle()
+                val state by model.state.collectAsStateWithLifecycle()
+                LaunchedEffect(requestedSite, state.choices, state.draft.step) {
+                    val requested = requestedSite
+                    if (requested != null && state.choices is LotteryCampsiteChoices.Content &&
+                        state.draft.step == io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryStep.SITE
+                    ) {
+                        model.chooseCampsite(requested)
+                        parent.savedStateHandle["initialCampsite"] = null
+                    }
+                }
                 LotterySetupRoute(
                     model,
                     { controller.popBackStack(graph, inclusive = true) },

@@ -1,5 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
+import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
@@ -7,38 +9,41 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.DeviceRegistration
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.ProfileUpdate
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import java.time.Clock
 
-/** In-memory account operations for the offline demo; no Firebase or failure-injection hooks.
+/** Local account operations for the offline demo without Firebase.
  * @param initial Scenario's starting profiles.
  * @param clock Timestamp source for new demo records.
+ * @param store Shared local state; isolated by default for helper examples.
  */
 class DemoAccountRepository(
     initial: List<Account>,
     private val clock: Clock = Clock.systemUTC(),
+    private val store: DemoStore =
+        DemoStore(
+            initial.associate {
+                FirestorePaths.account(it.id) to
+                    AccountDocument.encode(it)
+            },
+        ),
 ) : AccountRepository {
-    private val records = MutableStateFlow(initial.associateBy { it.id })
     private val devices = mutableMapOf<Pair<String, String>, DeviceRegistration>()
 
-    /** Reads only this scenario's profile map.
+    /** Reads a saved profile.
      * @param id Requested account identity.
      */
     override suspend fun get(id: String): Account? =
-        records.value[id]
+        store.read { get(FirestorePaths.account(id), AccountDocument) }
 
     /** Observes one identity without opening external listeners.
      * @param id Requested account identity.
      */
     override fun observe(id: String) =
-        records.map { it[id] }.distinctUntilChanged()
+        store.observe { get(FirestorePaths.account(id), AccountDocument) }
 
-    /** Observes the scenario's current profiles. */
+    /** Observes all saved profiles. */
     override fun observeAll() =
-        records.map { it.values.toList() }
+        store.observe { list("accounts", AccountDocument) }
 
     /** Creates one default entrant, preserving existing active facts on retry.
      * @param id Established demo identity.
@@ -47,26 +52,27 @@ class DemoAccountRepository(
     override suspend fun create(
         id: String,
         profile: ProfileUpdate,
-    ): Account {
-        val existing = records.value[id]
-        if (existing != null) {
-            check(existing.isActive)
-            return existing
+    ): Account =
+        store.change {
+            val existing = get(FirestorePaths.account(id), AccountDocument)
+            if (existing != null) {
+                check(existing.isActive)
+                existing
+            } else {
+                Account(
+                    id,
+                    profile.name,
+                    profile.email,
+                    profile.phone,
+                    setOf(Role.ENTRANT),
+                    Preferences(),
+                    AccountSettings(),
+                    clock.instant(),
+                ).also {
+                    put(FirestorePaths.account(id), AccountDocument, it)
+                }
+            }
         }
-        val record =
-            Account(
-                id,
-                profile.name,
-                profile.email,
-                profile.phone,
-                setOf(Role.ENTRANT),
-                Preferences(),
-                AccountSettings(),
-                clock.instant(),
-            )
-        records.update { if (id in it) it else it + (id to record) }
-        return checkNotNull(records.value[id]).also { check(it.isActive) }
-    }
 
     /** Changes profile fields without changing capabilities or preferences.
      * @param id Existing account identity.
@@ -77,6 +83,17 @@ class DemoAccountRepository(
         profile: ProfileUpdate,
     ) {
         edit(id) { it.copy(name = profile.name, email = profile.email, phone = profile.phone) }
+    }
+
+    /** Updates only the name, preserving the latest contacts.
+     * @param id Existing account identity.
+     * @param name Requested nonblank display name.
+     */
+    override suspend fun updateName(
+        id: String,
+        name: String,
+    ) {
+        edit(id) { it.copy(name = name) }
     }
 
     /** Changes only alert and accessibility settings.
@@ -116,7 +133,7 @@ class DemoAccountRepository(
         id: String,
         registration: DeviceRegistration,
     ) {
-        check(records.value[id]?.isActive == true)
+        check(store.read { get(FirestorePaths.account(id), AccountDocument)?.isActive } == true)
         devices[id to registration.installationId] = registration.copy(updatedAt = clock.instant())
     }
 
@@ -135,14 +152,13 @@ class DemoAccountRepository(
      * @param id Existing account identity.
      * @param transform Requested account update.
      */
-    private fun edit(
+    private suspend fun edit(
         id: String,
         transform: (Account) -> Account,
     ) {
-        records.update { current ->
-            val account = checkNotNull(current[id])
-            check(account.isActive)
-            current + (id to transform(account))
+        store.change {
+            val account = active(id)
+            put(FirestorePaths.account(id), AccountDocument, transform(account))
         }
     }
 }

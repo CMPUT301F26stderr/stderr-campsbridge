@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +35,18 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
+
+/** Host-owned offline surface; ordinary application hosts use the configured Maps SDK. */
+val LocalDemoMap =
+    staticCompositionLocalOf<
+        (
+            @Composable (
+                Coordinates?,
+                ((Coordinates) -> Unit)?,
+                Modifier,
+            ) -> Unit
+        )?,
+    > { null }
 
 /** Read-only stored-location map; SDK types and initialization stay in this platform adapter.
  * @param location Confirmed application coordinate to display.
@@ -60,6 +73,11 @@ internal fun CampsiteMapSurface(
     modifier: Modifier = Modifier,
     configured: Boolean = BuildConfig.MAPS_CONFIGURED,
 ) {
+    val local = LocalDemoMap.current
+    if (local != null) {
+        local(location, onSelect, modifier)
+        return
+    }
     if (LocalInspectionMode.current) {
         MapPreview(modifier)
         return

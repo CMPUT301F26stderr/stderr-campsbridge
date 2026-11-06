@@ -9,6 +9,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationA
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -24,6 +25,8 @@ import java.io.ByteArrayInputStream
 import java.time.LocalDate
 
 /** Verifies the populated offline session through its actual repository interfaces. */
+@org.junit.runner.RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [35])
 @OptIn(ExperimentalCoroutinesApi::class)
 class DemoPreviewSessionTest {
     @get:Rule val main = MainDispatcherRule()
@@ -71,8 +74,23 @@ class DemoPreviewSessionTest {
                         }
                     },
                 )
-                val stay = repositories.bookings.get("demo-stay")!!
-                assertEquals(stay, repositories.bookings.observe("demo-stay").first())
+                val stay =
+                    repositories.bookings.get(
+                        io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys.reservation(
+                            "demo-booked",
+                            "demo-account",
+                        ),
+                    )!!
+                assertEquals(
+                    stay,
+                    repositories.bookings
+                        .observe(
+                            io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys.reservation(
+                                "demo-booked",
+                                "demo-account",
+                            ),
+                        ).first(),
+                )
                 assertEquals(
                     stay,
                     repositories.bookings.getForOpportunity(stay.lotteryId, stay.entrantId),
@@ -109,7 +127,11 @@ class DemoPreviewSessionTest {
                     listOf(15, 16),
                     nights
                         .filter {
-                            it.reservationId == "demo-stay"
+                            it.reservationId ==
+                                io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys.reservation(
+                                    "demo-booked",
+                                    "demo-account",
+                                )
                         }.map { it.date.dayOfMonth },
                 )
                 assertTrue(repository.observeCalendar("missing", start, end).first().isEmpty())
@@ -125,7 +147,7 @@ class DemoPreviewSessionTest {
             val store = ViewModelStore().apply { put("host", host) }
             try {
                 runCurrent()
-                val first = host.session.value
+                val first = host.session.filterNotNull().first()
                 val repository = first.services.repositories.notifications
                 val original = repository.getInbox("demo-account")
                 assertTrue(
@@ -162,7 +184,10 @@ class DemoPreviewSessionTest {
                 runCurrent()
                 assertEquals(
                     original,
-                    host.session.value.services.repositories.notifications
+                    host.session
+                        .filterNotNull()
+                        .first { it !== first }
+                        .services.repositories.notifications
                         .getInbox("demo-account"),
                 )
             } finally {
@@ -236,8 +261,8 @@ class DemoPreviewSessionTest {
             }
         }
 
-    /** Unsupported distributed operations never report saved local transactions. */
-    @Test fun unsupportedWritesPreserveTheSeededRecords() =
+    /** Repeated membership is harmless and draws still require the registration deadline. */
+    @Test fun retriesPreserveMembershipAndPrematureDrawIsRejected() =
         runTest {
             val session = DemoSession(DemoScenario.ENTRANT, files.root)
             try {
@@ -251,7 +276,7 @@ class DemoPreviewSessionTest {
                             "demo-open",
                             "demo-account",
                         )
-                    }.isFailure,
+                    }.isSuccess,
                 )
                 assertEquals(draws, repositories.lotteries.observeAll().first())
                 assertEquals(entries, repositories.lotteries.observeEntries("demo-open").first())

@@ -44,36 +44,20 @@ class DemoCampsiteRepositoryTest {
             )
         }
 
-    /** Unavailable writes throw an explicit expected limitation rather than fake success. */
-    @Test fun unsupportedWritesDoNotChangeSuppliedSnapshots() =
+    /** A standalone read fixture still rejects writes from an unknown actor. */
+    @Test fun unknownActorsCannotWriteSuppliedSnapshots() =
         runTest {
             val site = sampleCampsite()
             val repository = DemoCampsiteRepository(listOf(site))
-            val operations: List<suspend () -> Unit> =
-                listOf(
-                    {
-                        repository.createDraft("new", site.ownerId, site.details)
-                        Unit
-                    },
-                    { repository.update(site.id, site.ownerId, site.details) },
-                    { repository.publish(site.id, site.ownerId) },
-                    {
-                        repository.setOffered(
-                            site.id,
-                            site.ownerId,
-                            setOf(LocalDate.of(2027, 5, 14)),
-                            true,
-                        )
-                    },
-                )
-            for (operation in operations) {
-                val failure = runCatching { operation() }.exceptionOrNull()
-                assertTrue(failure is PersistenceFailure)
-                assertEquals(
-                    PersistenceFailure.Reason.NOT_ALLOWED,
-                    (failure as PersistenceFailure).reason,
-                )
-            }
+            assertTrue(
+                runCatching {
+                    repository.update(
+                        site.id,
+                        "missing",
+                        site.details,
+                    )
+                }.exceptionOrNull() is PersistenceFailure,
+            )
             assertEquals(listOf(site), repository.observeAll().first())
         }
 }

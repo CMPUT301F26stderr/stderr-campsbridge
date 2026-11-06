@@ -9,10 +9,12 @@ import com.google.firebase.storage.FirebaseStorage
  *
  * @param firestore Firestore client for the initialized project or emulator.
  * @param storage Storage client that owns uploaded image bytes.
+ * @param functions Trusted booking-operation client for the same project.
  */
 data class FirebaseClients(
     val firestore: FirebaseFirestore,
     val storage: FirebaseStorage,
+    val functions: CallableFunctions = CallableFunctions(firestore.app),
 ) {
     /**
      * Factories binding SDK clients to a configured project or emulator endpoints.
@@ -33,17 +35,20 @@ data class FirebaseClients(
          * @param host Emulator host reachable from the device, such as 10.0.2.2.
          * @param firestorePort Port of the Firestore emulator.
          * @param storagePort Port of the Storage emulator.
+         * @param functionsPort Port of the Functions emulator.
          */
         fun forEmulators(
             app: FirebaseApp,
             host: String,
             firestorePort: Int = 8080,
             storagePort: Int = 9199,
+            functionsPort: Int = 5001,
         ): FirebaseClients {
             require(host.isNotBlank())
             return forApp(app).also {
                 it.firestore.useEmulator(host, firestorePort)
                 it.storage.useEmulator(host, storagePort)
+                it.functions.useEmulator(host, functionsPort)
             }
         }
     }

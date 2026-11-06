@@ -169,8 +169,7 @@ class LotteryListDisplayPreviewProvider : PreviewParameterProvider<LotteryListDi
 @Preview(name = "Large text", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable
 private fun LotteryListDisplayPreview(
-    @PreviewParameter(LotteryListDisplayPreviewProvider::class) state:
-        LotteryListDisplayPreviewState,
+    @PreviewParameter(LotteryListDisplayPreviewProvider::class) state: LotteryListDisplayPreviewState,
 ) {
     val owner = state.category in listOf(LotteryListCategory.PUBLISHED, LotteryListCategory.DRAFTS)
     val categories =

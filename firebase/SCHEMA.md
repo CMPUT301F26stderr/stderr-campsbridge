@@ -47,7 +47,7 @@ accounts/{accountId}/inbox/{notificationId}
   readAt: Timestamp?
 ```
 
-Defaults: entrant role, empty preferences, notifications enabled, standard colors, scales `1.0`, no removal. Roles may overlap; selected UI role is temporary application state. Device identity supplies `accountId`; the exact identity mechanism remains an integration decision. Push tokens do not establish identity. Notifications disabled means suppress alerts while retaining inbox/log history.
+Defaults: entrant role, empty preferences, notifications enabled, standard colors, scales `1.0`, no removal. Application font/control scales are supported from `0.25` through `4.0`; system text scaling and minimum touch targets still apply. Roles may overlap; selected UI role is temporary application state. Device identity supplies `accountId`; the exact identity mechanism remains an integration decision. Push tokens do not establish identity. Notifications disabled means suppress alerts while retaining inbox/log history.
 
 ## Campsites and calendar
 
@@ -152,7 +152,7 @@ reservations/{reservationId}
   }
 ```
 
-`reservationId = reservationKey(lotteryId, entrantId)`: use one collision-free, Firestore-safe encoding helper. The fields remain queryable relationships. Check document existence during booking; cancellation does not remove it. Every occupied night must belong to the lottery offer and be free in the calendar; guest count must fit the campsite.
+`reservationId = reservationKey(lotteryId, entrantId)`: use one collision-free, Firestore-safe encoding helper. The fields remain queryable relationships. Check document existence during booking; cancellation does not remove it. Every occupied night must belong to the lottery offer and be free in the calendar; guest count must fit the campsite. Authenticated callable functions own booking and cancellation transactions; client rules deny reservation mutations and calendar claim/release writes. The functions revalidate the actor, timing, quote, terms and complete inventory range before writing companion payment and notification facts. Repeated cancellation preserves its original attribution and repairs any remaining claims for that reservation.
 
 The campsite snapshot and accepted terms are historical facts, independent of later listing edits. Retain all referenced policy versions in application resources. Owner identity follows immutable campsite ownership. Night count, active/past labels, and cancellation status are derived.
 

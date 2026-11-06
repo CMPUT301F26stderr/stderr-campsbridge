@@ -141,6 +141,7 @@ class FirebaseEmulatorRule : ExternalResource() {
                 firestoreEndpoint.host,
                 firestorePort = firestoreEndpoint.port,
                 storagePort = storageEndpoint.port,
+                functionsPort = localEmulatorEndpoint("FUNCTIONS_EMULATOR_HOST").port,
             )
         clients.firestore.firestoreSettings =
             FirebaseFirestoreSettings

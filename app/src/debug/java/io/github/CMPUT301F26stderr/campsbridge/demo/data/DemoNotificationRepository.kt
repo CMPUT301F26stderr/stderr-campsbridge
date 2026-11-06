@@ -1,5 +1,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.InboxReceiptDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDocument
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
@@ -9,53 +11,61 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationA
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceUnavailable
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import java.time.Clock
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths as Paths
 
 /** Local event history and read acknowledgements; no delivery or announcement simulation.
  * @param records Supplied immutable events.
  * @param inboxes Initial fixture receipts by recipient identity.
- * @param clock Fixed fixture time for local first-read acknowledgement.
+ * @param clock Shared timestamp source for first-read acknowledgement.
+ * @param store Shared event and receipt state.
  */
 class DemoNotificationRepository(
-    private val records: List<Notification> = emptyList(),
+    records: List<Notification> = emptyList(),
     inboxes: Map<String, List<InboxReceipt>> = emptyMap(),
     private val clock: Clock = Clock.systemUTC(),
+    private val store: DemoStore =
+        DemoStore(
+            buildMap {
+                records.forEach { put(Paths.notification(it.id), NotificationDocument.encode(it)) }
+                inboxes.forEach { (id, values) ->
+                    values.forEach { put(Paths.receipt(id, it.notificationId), InboxReceiptDocument.encode(it)) }
+                }
+            },
+        ),
 ) : NotificationRepository {
-    private val receipts = MutableStateFlow(inboxes)
-
     /** Returns the supplied event, or null when absent.
      * @param id Requested actual event identity.
      */
     override suspend fun get(id: String): Notification? =
-        records.firstOrNull { it.id == id }
+        store.read { get(Paths.notification(id), NotificationDocument) }
 
     /** Returns current local receipts without claiming a Firebase server read.
      * @param accountId Current demo account.
      */
     override suspend fun getInbox(accountId: String): List<InboxReceipt> =
-        receipts.value[accountId].orEmpty()
+        store.read { list("${Paths.account(accountId)}/inbox", InboxReceiptDocument) }
 
     /** Assembles audience facts from actual local receipts without modifying them.
      * @param notificationId Requested original event identity.
      */
     override suspend fun getAudience(notificationId: String): NotificationAudience {
-        if (records.none { it.id == notificationId }) {
+        if (get(notificationId) == null) {
             return NotificationAudience.Unavailable(NotificationAudienceUnavailable.EVENT_MISSING)
         }
         val members =
-            receipts.value
-                .mapNotNull { (accountId, inbox) ->
-                    inbox.firstOrNull { it.notificationId == notificationId }?.let {
+            store.read {
+                raw.keys
+                    .filter { path ->
+                        path.startsWith("accounts/") && path.endsWith("/inbox/$notificationId")
+                    }.map { path ->
                         NotificationAudienceMember(
-                            accountId,
+                            path.split('/')[1],
                             NotificationAudienceDelivery.DELIVERED,
-                            it.readAt,
+                            require(path, InboxReceiptDocument).readAt,
                         )
-                    }
-                }.sortedBy { it.accountId }
+                    }.sortedBy { it.accountId }
+            }
         return if (members.isEmpty()) {
             NotificationAudience.NoRecordedInformation
         } else {
@@ -70,17 +80,17 @@ class DemoNotificationRepository(
      * @param accountId Current demo account.
      */
     override fun observeInbox(accountId: String): Flow<List<InboxReceipt>> =
-        receipts.map { it[accountId].orEmpty() }
+        store.observe { list("${Paths.account(accountId)}/inbox", InboxReceiptDocument) }
 
     /** Supplies fixture sender history without simulating announcements.
      * @param senderId Requested demo sender.
      */
     override fun observeSent(senderId: String): Flow<List<Notification>> =
-        flowOf(records.filter { it.senderId == senderId })
+        store.observe { list("notifications", NotificationDocument).filter { it.senderId == senderId } }
 
     /** Supplies the populated fixture event log. */
     override fun observeAll(): Flow<List<Notification>> =
-        flowOf(records)
+        store.observe { list("notifications", NotificationDocument) }
 
     /** Rejects distributed announcement operations rather than fabricating recipients.
      * @param lotteryId Requested saved lottery.
@@ -102,18 +112,10 @@ class DemoNotificationRepository(
         accountId: String,
         notificationId: String,
     ) {
-        require(receipts.value[accountId].orEmpty().any { it.notificationId == notificationId })
-        receipts.value = receipts.value + (
-            accountId to
-                receipts.value.getValue(accountId).map {
-                    if (it.notificationId == notificationId &&
-                        it.readAt == null
-                    ) {
-                        it.copy(readAt = clock.instant())
-                    } else {
-                        it
-                    }
-                }
-        )
+        store.change {
+            val path = Paths.receipt(accountId, notificationId)
+            val receipt = require(path, InboxReceiptDocument)
+            put(path, InboxReceiptDocument, receipt.copy(readAt = receipt.readAt ?: clock.instant()))
+        }
     }
 }
