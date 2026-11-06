@@ -35,7 +35,7 @@ val StandardColors =
         surfaceContainerHigh = Color(0xFFE9EFEA),
         surfaceContainerHighest = Color(0xFFE1E8E2),
         outline = Color(0xFF727D75),
-        outlineVariant = Color(0xFFC3CDC5),
+        outlineVariant = Color(0xFFDCE3DE),
         error = Color(0xFFA83836),
         onError = Color.White,
     )

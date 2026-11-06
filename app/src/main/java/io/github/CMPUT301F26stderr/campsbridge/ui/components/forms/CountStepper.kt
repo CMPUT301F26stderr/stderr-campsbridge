@@ -7,8 +7,12 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.components.forms
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,33 +49,46 @@ fun CountStepper(
     require(minimum <= maximum && value in minimum..maximum)
     val decrease = stringResource(R.string.decrease_count, label)
     val increase = stringResource(R.string.increase_count, label)
-    Row(
-        modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.titleSmall)
-            supportingText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        }
-        IconButton(
-            onClick = { onValueChange(value - 1) },
-            enabled = enabled && value > minimum,
-            modifier = Modifier.semantics { contentDescription = decrease },
-        ) {
-            Text("−", style = MaterialTheme.typography.titleLarge)
-        }
-        Text(
-            value.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.semantics { stateDescription = "$label: $value" },
+    val buttonColors =
+        IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
         )
-        IconButton(
-            onClick = { onValueChange(value + 1) },
-            enabled = enabled && value < maximum,
-            modifier = Modifier.semantics { contentDescription = increase },
+    Surface(
+        modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Row(
+            Modifier.padding(horizontal = Spacing.medium, vertical = Spacing.small),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
-            Text("+", style = MaterialTheme.typography.titleLarge)
+            Column(Modifier.weight(1f)) {
+                Text(label, style = MaterialTheme.typography.titleSmall)
+                supportingText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            }
+            FilledTonalIconButton(
+                onClick = { onValueChange(value - 1) },
+                enabled = enabled && value > minimum,
+                modifier = Modifier.semantics { contentDescription = decrease },
+                colors = buttonColors,
+            ) {
+                Text("−", style = MaterialTheme.typography.titleLarge)
+            }
+            Text(
+                value.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { stateDescription = "$label: $value" },
+            )
+            FilledTonalIconButton(
+                onClick = { onValueChange(value + 1) },
+                enabled = enabled && value < maximum,
+                modifier = Modifier.semantics { contentDescription = increase },
+                colors = buttonColors,
+            ) {
+                Text("+", style = MaterialTheme.typography.titleLarge)
+            }
         }
     }
 }

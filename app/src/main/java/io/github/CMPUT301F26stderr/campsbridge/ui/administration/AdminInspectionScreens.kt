@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -119,7 +121,7 @@ fun AdminProfileScreen(
                         state.photo,
                         stringResource(R.string.profile_photo),
                         onRetryPhoto,
-                        Modifier.size(128.dp),
+                        Modifier.size(128.dp).clip(CircleShape),
                     )
                     if (state.photo.loadState == ImageLoadState.READY &&
                         state.photo.attachment == null
@@ -206,8 +208,15 @@ private fun InspectionField(
     value: String?,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        Text(value?.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided))
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            value?.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided),
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }
 
@@ -391,7 +400,7 @@ fun AdminImageScreen(
                     state.photo,
                     stringResource(R.string.admin_image_inspection),
                     onRetryPhoto,
-                    Modifier.fillMaxWidth().aspectRatio(4f / 3f),
+                    Modifier.fillMaxWidth().aspectRatio(4f / 3f).clip(MaterialTheme.shapes.medium),
                 )
                 if (state.photo.loadState == ImageLoadState.READY &&
                     state.photo.attachment == null

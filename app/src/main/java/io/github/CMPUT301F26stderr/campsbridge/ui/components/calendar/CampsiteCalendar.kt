@@ -177,7 +177,7 @@ private fun CalendarDate(
     val isSelected = date in state.selection
     val label = calendarLabel(day.status, state.labels)
     val background =
-        if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+        if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
     TextButton(
         onClick = { onDateClick(date) },
         enabled = state.selectionEnabled && day.isSelectable,
@@ -186,11 +186,13 @@ private fun CalendarDate(
         colors =
             ButtonDefaults.textButtonColors(
                 containerColor = background,
+                contentColor =
+                    if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                 disabledContainerColor = background,
                 disabledContentColor =
                     when {
-                        !state.selectionEnabled && isSelected -> {
-                            MaterialTheme.colorScheme.primary
+                        isSelected -> {
+                            MaterialTheme.colorScheme.onPrimary
                         }
 
                         !state.selectionEnabled && day.status != CalendarDayStatus.UNAVAILABLE -> {

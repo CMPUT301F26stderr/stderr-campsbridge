@@ -35,6 +35,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AccountAvatar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -77,7 +78,7 @@ fun ProfileScreen(
                 textAlign = TextAlign.Center,
             )
         }
-        Column {
+        NavigationGroup {
             NavigationRow(
                 stringResource(R.string.personal_details),
                 onPersonalDetails,

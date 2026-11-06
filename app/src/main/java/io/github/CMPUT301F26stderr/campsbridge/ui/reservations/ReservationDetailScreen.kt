@@ -18,6 +18,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancell
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.StaySummary
@@ -82,8 +83,10 @@ fun ReservationDetailScreen(
             record.guestCount,
             record.payment.amountCents,
         )
-        NavigationRow(stringResource(R.string.reservation_payment), onPayment)
-        NavigationRow(stringResource(R.string.reservation_accepted_terms), onTerms)
+        NavigationGroup {
+            NavigationRow(stringResource(R.string.reservation_payment), onPayment)
+            NavigationRow(stringResource(R.string.reservation_accepted_terms), onTerms)
+        }
         SummarySection(stringResource(R.string.reservation_stay_details)) {
             DetailRow(
                 stringResource(R.string.campsite_location),

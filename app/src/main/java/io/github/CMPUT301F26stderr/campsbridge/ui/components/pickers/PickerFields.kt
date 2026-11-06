@@ -47,7 +47,7 @@ fun PickerField(
                     role =
                         Role.Button
                 },
-            shape = MaterialTheme.shapes.medium,
+            shape = MaterialTheme.shapes.extraSmall,
             border =
                 BorderStroke(
                     androidx.compose.ui.unit

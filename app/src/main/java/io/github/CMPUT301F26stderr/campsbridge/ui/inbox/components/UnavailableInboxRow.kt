@@ -4,11 +4,11 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxEventStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.UnavailableInboxReceipt
@@ -35,9 +36,11 @@ internal fun UnavailableInboxRow(
         Surface(
             Modifier.fillMaxWidth().testTag("inbox-receipt-${item.receipt.notificationId}"),
             color = MaterialTheme.colorScheme.surface,
+            shape = MaterialTheme.shapes.medium,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         ) {
             Column(
-                Modifier.padding(vertical = Spacing.medium),
+                Modifier.padding(Spacing.medium),
                 verticalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
                 Text(
@@ -58,6 +61,5 @@ internal fun UnavailableInboxRow(
                 }
             }
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }

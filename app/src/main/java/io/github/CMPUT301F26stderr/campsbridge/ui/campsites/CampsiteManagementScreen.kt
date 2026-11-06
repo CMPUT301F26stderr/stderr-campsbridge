@@ -42,6 +42,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.StatusLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -176,48 +177,53 @@ fun CampsiteManagementScreen(
                     if (photo.loadState == ImageLoadState.FAILED || photo.displayFailed) {
                         FailureContent(stringResource(R.string.photo_display_failure), onRetryPhoto)
                     }
-                    Column {
-                        if (!site.isPublished && onResume != null) {
-                            NavigationRow(
-                                stringResource(R.string.campsite_resume),
-                                onResume,
-                                icon = Icons.Default.Edit,
-                            )
-                        }
-                        if (onAvailability != null) {
-                            NavigationRow(
-                                stringResource(R.string.availability_title),
-                                onAvailability,
-                                icon = Icons.Default.DateRange,
-                            )
-                        }
-                        if (onViewLotteries != null) {
-                            NavigationRow(
-                                stringResource(R.string.campsite_lotteries),
-                                onViewLotteries,
-                                icon = Icons.AutoMirrored.Filled.List,
-                            )
-                        }
-                        if (site.isPublished && onCreateLottery != null) {
-                            NavigationRow(
-                                stringResource(R.string.lottery_create),
-                                onCreateLottery,
-                                icon = Icons.Default.Add,
-                            )
-                        }
-                        if (onViewReservations != null) {
-                            NavigationRow(
-                                stringResource(R.string.reservation_view_list),
-                                onViewReservations,
-                                icon = Icons.Default.CheckCircle,
-                            )
-                        }
-                        if (onPreview != null) {
-                            NavigationRow(
-                                stringResource(R.string.campsite_preview),
-                                onPreview,
-                                icon = Icons.Default.Info,
-                            )
+                    if ((!site.isPublished && onResume != null) || onAvailability != null ||
+                        onViewLotteries != null || (site.isPublished && onCreateLottery != null) ||
+                        onViewReservations != null || onPreview != null
+                    ) {
+                        NavigationGroup {
+                            if (!site.isPublished && onResume != null) {
+                                NavigationRow(
+                                    stringResource(R.string.campsite_resume),
+                                    onResume,
+                                    icon = Icons.Default.Edit,
+                                )
+                            }
+                            if (onAvailability != null) {
+                                NavigationRow(
+                                    stringResource(R.string.availability_title),
+                                    onAvailability,
+                                    icon = Icons.Default.DateRange,
+                                )
+                            }
+                            if (onViewLotteries != null) {
+                                NavigationRow(
+                                    stringResource(R.string.campsite_lotteries),
+                                    onViewLotteries,
+                                    icon = Icons.AutoMirrored.Filled.List,
+                                )
+                            }
+                            if (site.isPublished && onCreateLottery != null) {
+                                NavigationRow(
+                                    stringResource(R.string.lottery_create),
+                                    onCreateLottery,
+                                    icon = Icons.Default.Add,
+                                )
+                            }
+                            if (onViewReservations != null) {
+                                NavigationRow(
+                                    stringResource(R.string.reservation_view_list),
+                                    onViewReservations,
+                                    icon = Icons.Default.CheckCircle,
+                                )
+                            }
+                            if (onPreview != null) {
+                                NavigationRow(
+                                    stringResource(R.string.campsite_preview),
+                                    onPreview,
+                                    icon = Icons.Default.Info,
+                                )
+                            }
                         }
                     }
                 }

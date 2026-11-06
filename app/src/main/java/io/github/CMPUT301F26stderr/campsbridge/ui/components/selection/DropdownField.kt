@@ -56,7 +56,7 @@ fun DropdownField(
             onValueChange = {},
             readOnly = true,
             enabled = enabled,
-            shape = MaterialTheme.shapes.medium,
+            shape = MaterialTheme.shapes.extraSmall,
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded && enabled) },
             modifier =

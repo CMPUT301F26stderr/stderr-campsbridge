@@ -33,10 +33,10 @@ fun DetailRow(
         Column(Modifier.weight(1f)) {
             Text(
                 label,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(value, style = MaterialTheme.typography.bodyLarge)
+            Text(value, style = MaterialTheme.typography.bodyMedium)
         }
         if (onEdit != null) TextButton(onEdit) { Text(stringResource(R.string.edit)) }
     }

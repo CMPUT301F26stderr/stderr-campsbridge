@@ -5,14 +5,17 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Links the shared policy reader and notification preference/device settings.
  * @param onPolicies Opens the shared policy menu.
@@ -31,9 +34,11 @@ fun SettingsScreen(
 ) {
     BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.settings_title), modifier, onBack) {
-        NavigationRow(stringResource(R.string.notification_settings_title), onNotifications)
-        NavigationRow(stringResource(R.string.policies_title), onPolicies)
-        NavigationRow(stringResource(R.string.credits_title), onCredits)
+        NavigationGroup(Modifier.padding(top = Spacing.medium)) {
+            NavigationRow(stringResource(R.string.notification_settings_title), onNotifications)
+            NavigationRow(stringResource(R.string.policies_title), onPolicies)
+            NavigationRow(stringResource(R.string.credits_title), onCredits)
+        }
     }
 }
 
