@@ -88,7 +88,7 @@ class BookingPreviewsTest {
                 if (state is BookingUiState.Content && state.draft.step == BookingStep.REVIEW) {
                     compose
                         .onNodeWithText(
-                            context.getString(R.string.reservation_simulated_payment),
+                            context.getString(R.string.booking_payment_notice),
                         ).performScrollTo()
                         .assertIsDisplayed()
                     capture(File(directory, "state-$index-bottom-font-${scale.toInt()}.png"))

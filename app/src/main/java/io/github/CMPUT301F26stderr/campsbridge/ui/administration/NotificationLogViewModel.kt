@@ -16,6 +16,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 /** Owns admin log filters and independent original-event and recipient reads.
  * @param notifications All events and recorded recipients.
@@ -115,7 +116,7 @@ class NotificationLogViewModel(
         if (!closed) audienceReader.show(detail.value.id.takeIf { visible })
     }
 
-    /** Retries only the current audience query. */
+    /** Reloads only the current audience query. */
     fun retryAudience() {
         if (!closed) audienceReader.retry()
     }
@@ -188,7 +189,7 @@ class NotificationLogViewModel(
     private fun publishList() {
         if (closed) return
         val current = state.value
-        val query = current.query.trim()
+        val query = current.query.trim().lowercase(Locale.ROOT)
         val outcome =
             events?.let { rows ->
                 NotificationLogEvents.Content(
@@ -199,10 +200,8 @@ class NotificationLogViewModel(
                                     event.id,
                                     event.senderId.orEmpty(),
                                     event.subject.id,
-                                    event.type.name.replace('_', ' '),
-                                    event.announcement?.title.orEmpty(),
-                                    event.announcement?.body.orEmpty(),
-                                ).any { it.contains(query, ignoreCase = true) }
+                                    event.type.name,
+                                ).any { it.lowercase(Locale.ROOT).contains(query) }
                         }.sortedWith(compareByDescending<Notification> { it.createdAt }.thenBy { it.id }),
                 )
             } ?: if (failed) NotificationLogEvents.Failure else NotificationLogEvents.Loading

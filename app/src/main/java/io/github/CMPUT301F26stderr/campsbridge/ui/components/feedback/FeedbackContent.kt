@@ -36,18 +36,20 @@ fun EmptyContent(message: String) {
  * @param message Localized explanation, not a raw SDK exception.
  * @param onRetry Explicit retry action.
  * @param retryEnabled Whether the owning feature currently permits retrying.
+ * @param retryLabel Distinguishes independent retry actions when a screen has several failed reads.
  */
 @Composable
 fun FailureContent(
     message: String,
     onRetry: () -> Unit,
     retryEnabled: Boolean = true,
+    retryLabel: String = stringResource(R.string.retry),
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         Text(message)
         TextButton(
             onClick = onRetry,
             enabled = retryEnabled,
-        ) { Text(stringResource(R.string.retry)) }
+        ) { Text(retryLabel) }
     }
 }
