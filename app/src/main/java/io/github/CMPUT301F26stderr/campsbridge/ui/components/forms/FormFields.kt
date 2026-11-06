@@ -65,6 +65,6 @@ fun AppTextField(
         supportingText = (errorMessage ?: supportingText)?.let { message -> { Text(message) } },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.extraSmall,
     )
 }

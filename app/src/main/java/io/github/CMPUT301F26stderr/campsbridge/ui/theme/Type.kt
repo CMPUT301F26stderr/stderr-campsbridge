@@ -30,11 +30,16 @@ fun appTypography(scale: Float): Typography {
         defaults.copy(
             headlineLarge = defaults.headlineLarge.copy(fontWeight = FontWeight.SemiBold),
             headlineMedium = defaults.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
-            headlineSmall = defaults.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+            headlineSmall =
+                defaults.headlineSmall.copy(
+                    fontSize = 22.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight.SemiBold,
+                ),
             titleLarge =
                 defaults.titleLarge.copy(
-                    fontSize = 20.sp,
-                    lineHeight = 28.sp,
+                    fontSize = 18.sp,
+                    lineHeight = 26.sp,
                     fontWeight = FontWeight.SemiBold,
                 ),
             titleMedium = defaults.titleMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -70,6 +75,7 @@ private fun scaledStyle(
 ): TextStyle =
     style.copy(
         fontFamily = Inter,
+        letterSpacing = 0.sp,
         fontSize = style.fontSize * scale,
         lineHeight = style.lineHeight * scale,
     )

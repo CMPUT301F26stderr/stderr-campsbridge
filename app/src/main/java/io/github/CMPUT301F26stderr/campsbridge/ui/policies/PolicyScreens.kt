@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -36,11 +37,13 @@ fun PoliciesScreen(
 ) {
     BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.policies_title), modifier, onBack) {
-        NavigationRow(
-            stringResource(R.string.onboarding_guidelines),
-            { onOpen(PolicyId.GUIDELINES) },
-        )
-        NavigationRow(stringResource(R.string.refund_policy_title), { onOpen(PolicyId.REFUND) })
+        NavigationGroup(Modifier.padding(top = Spacing.medium)) {
+            NavigationRow(
+                stringResource(R.string.onboarding_guidelines),
+                { onOpen(PolicyId.GUIDELINES) },
+            )
+            NavigationRow(stringResource(R.string.refund_policy_title), { onOpen(PolicyId.REFUND) })
+        }
     }
 }
 

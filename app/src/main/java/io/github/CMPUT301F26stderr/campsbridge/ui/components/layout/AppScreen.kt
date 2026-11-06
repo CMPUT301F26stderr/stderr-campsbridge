@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,10 +66,15 @@ fun AppScreen(
                         scrolledContainerColor = MaterialTheme.colorScheme.surface,
                     )
                 val heading: @Composable () -> Unit = {
-                    Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
                 if (onBack != null) {
-                    CenterAlignedTopAppBar(
+                    TopAppBar(
                         title = heading,
                         actions = actions,
                         navigationIcon = {

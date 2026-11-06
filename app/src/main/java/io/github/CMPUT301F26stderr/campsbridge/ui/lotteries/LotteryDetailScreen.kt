@@ -21,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.TagLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -165,17 +166,19 @@ fun LotteryDetailScreen(
         } else if ((current.offers as? LotteryOffersState.Content)?.offers?.isEmpty() == true) {
             Text(stringResource(R.string.lottery_no_offers))
         }
-        Column {
-            if (onOpenSection != null) {
-                NavigationRow(stringResource(R.string.lottery_schedule_title), {
-                    onOpenSection(LotteryDetailSection.SCHEDULE)
-                })
-                NavigationRow(stringResource(R.string.lottery_campsites_title), {
-                    onOpenSection(LotteryDetailSection.CAMPSITES)
-                })
-            }
-            if (onParticipants != null && current.lottery.publishedAt != null) {
-                NavigationRow(stringResource(R.string.lottery_participants), onParticipants)
+        if (onOpenSection != null || (onParticipants != null && current.lottery.publishedAt != null)) {
+            NavigationGroup {
+                if (onOpenSection != null) {
+                    NavigationRow(stringResource(R.string.lottery_schedule_title), {
+                        onOpenSection(LotteryDetailSection.SCHEDULE)
+                    })
+                    NavigationRow(stringResource(R.string.lottery_campsites_title), {
+                        onOpenSection(LotteryDetailSection.CAMPSITES)
+                    })
+                }
+                if (onParticipants != null && current.lottery.publishedAt != null) {
+                    NavigationRow(stringResource(R.string.lottery_participants), onParticipants)
+                }
             }
         }
     }
