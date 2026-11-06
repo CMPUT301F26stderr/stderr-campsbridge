@@ -41,7 +41,7 @@ class NotificationLogViewModelTest {
         logTest { f ->
             f.failure.value = IOException("offline")
             val model = f.model()
-            model.editQuery(" trail ")
+            model.editQuery(" owner ")
             model.selectType(NotificationType.OWNER_ANNOUNCEMENT)
             runCurrent()
             assertEquals(NotificationLogEvents.Failure, model.state.value.events)
@@ -50,7 +50,7 @@ class NotificationLogViewModelTest {
             model.retry()
             model.retry()
             runCurrent()
-            assertEquals(" trail ", model.state.value.query)
+            assertEquals(" owner ", model.state.value.query)
             assertEquals(listOf(logEvent()), (model.state.value.events as NotificationLogEvents.Content).events)
             assertEquals(2, f.listRequests)
             assertEquals(1, f.activeLists)
@@ -67,15 +67,22 @@ class NotificationLogViewModelTest {
             f.notifications.records.value = listOf(announcement, system)
             val model = f.model()
             runCurrent()
-            for (query in listOf("TRAIL", "drinking", "owner", "subject/A", "event/A ?1")) {
+            for (query in listOf("OWNER_ANNOUNCEMENT", "owner", "subject/A", "event/A ?1")) {
                 model.editQuery(" $query ")
                 assertEquals(listOf(announcement), (model.state.value.events as NotificationLogEvents.Content).events)
             }
             model.editQuery("")
             model.selectType(NotificationType.LOTTERY_WON)
             assertEquals(listOf(system), (model.state.value.events as NotificationLogEvents.Content).events)
+            model.editQuery("lottery_won")
+            assertEquals(listOf(system), (model.state.value.events as NotificationLogEvents.Content).events)
             model.editQuery("[.*]")
             assertEquals(NotificationLogEvents.Content(emptyList()), model.state.value.events)
+            model.selectType(null)
+            for (query in listOf("TRAIL", "drinking", "owner announcement")) {
+                model.editQuery(query)
+                assertEquals(NotificationLogEvents.Content(emptyList()), model.state.value.events)
+            }
             assertEquals(1, f.listRequests)
             assertTrue(f.notifications.getRequests.isEmpty())
         }

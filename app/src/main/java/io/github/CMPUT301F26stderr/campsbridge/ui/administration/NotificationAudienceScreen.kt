@@ -3,28 +3,32 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudience
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceDelivery
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceMember
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceUnavailable
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -35,110 +39,150 @@ import java.time.ZoneId
 
 /** Displays recorded Inbox facts without acknowledging receipts or inferring Android alerts.
  * @param state One selected event's audience outcome.
- * @param onRetry Retries only a failed audience read.
+ * @param onRetry Reloads the current audience without changing its event or receipts.
+ * @param event Independently loaded event header for this exact audience identity.
  */
 @Composable
 fun NotificationAudienceScreen(
     state: NotificationLogAudienceState,
     onRetry: () -> Unit,
+    event: Notification? = null,
 ) {
     LazyColumn(
-        Modifier.fillMaxSize(),
+        Modifier.testTag("admin-audience-records"),
+        state = rememberLazyListState(),
         contentPadding = PaddingValues(vertical = Spacing.medium),
         verticalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
-        state.id?.let { id ->
-            item("event-id") {
-                SummarySection(stringResource(R.string.log_event_details)) {
-                    DetailRow(stringResource(R.string.log_event_id), id)
-                }
+        item("header") {
+            SummarySection(
+                event?.let { stringResource(notificationTitleResource(it.type)) }
+                    ?: stringResource(R.string.log_event_details),
+            ) {
+                state.id?.let { DetailRow(stringResource(R.string.log_event_id), it) }
             }
         }
-        item("delivery-explanation") {
-            Text(stringResource(R.string.log_delivery_explanation), style = MaterialTheme.typography.bodySmall)
-        }
-        when (state) {
+        when (val result = state) {
             NotificationLogAudienceState.Idle, is NotificationLogAudienceState.Loading -> {
-                item("loading") { LoadingContent(stringResource(R.string.log_audience_loading)) }
+                item("loading") {
+                    LoadingContent(stringResource(R.string.log_audience_loading))
+                }
             }
 
             is NotificationLogAudienceState.Failure -> {
-                item("failure") { FailureContent(stringResource(R.string.log_audience_failed), onRetry) }
+                item("failure") {
+                    FailureContent(stringResource(R.string.log_audience_failed), onRetry)
+                }
             }
 
             is NotificationLogAudienceState.Content -> {
-                when (val audience = state.audience) {
+                when (val audience = result.audience) {
                     NotificationAudience.NoRecordedInformation -> {
-                        item("no-information") { EmptyContent(stringResource(R.string.log_audience_no_information)) }
-                    }
-
-                    is NotificationAudience.Unavailable -> {
-                        item("unavailable") { Text(audienceUnavailableText(audience.reason)) }
+                        item("unknown") {
+                            EmptyContent(stringResource(R.string.log_audience_no_information))
+                        }
                     }
 
                     is NotificationAudience.Recorded -> {
                         if (audience.members.isEmpty()) {
-                            item("empty") { EmptyContent(stringResource(R.string.log_audience_empty)) }
-                        } else {
-                            items(
-                                audience.members,
-                                key = { "recipient:${it.accountId}" },
-                            ) { NotificationLogRecipientRow(it) }
+                            item("empty") {
+                                EmptyContent(stringResource(R.string.log_audience_empty))
+                            }
+                        }
+                        items(
+                            audience.members,
+                            key = { "recipient:${it.accountId}" },
+                        ) { member ->
+                            NotificationLogRecipientRow(member)
+                        }
+                    }
+
+                    is NotificationAudience.Unavailable -> {
+                        item("unavailable") {
+                            EmptyContent(
+                                stringResource(
+                                    when (audience.reason) {
+                                        NotificationAudienceUnavailable.EVENT_MISSING -> {
+                                            R.string.log_event_unavailable
+                                        }
+
+                                        NotificationAudienceUnavailable.SUBJECT_MISSING -> {
+                                            R.string.log_audience_subject_missing
+                                        }
+
+                                        NotificationAudienceUnavailable.UNSUPPORTED_SUBJECT -> {
+                                            R.string.log_audience_unsupported
+                                        }
+                                    },
+                                ),
+                            )
+                        }
+                    }
+                }
+                val unsupported =
+                    result.audience ==
+                        NotificationAudience.Unavailable(
+                            NotificationAudienceUnavailable.UNSUPPORTED_SUBJECT,
+                        )
+                if (!unsupported) {
+                    item("refresh") {
+                        TextButton(onRetry) {
+                            Text(stringResource(R.string.log_audience_refresh))
                         }
                     }
                 }
             }
         }
+        item("meaning") {
+            Text(
+                stringResource(R.string.log_delivery_explanation),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 
-/** Keeps each recorded identity and its actual delivery/read facts together.
- * @param member Captured recipient fact; missing profiles cannot remove it.
+/** Presents the original recipient identity and actual delivery/read facts; names are optional.
+ * @param member Confirmed assembled membership from the existing repository.
  */
 @Composable
 private fun NotificationLogRecipientRow(member: NotificationAudienceMember) {
-    val locale = LocalConfiguration.current.locales[0]
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+    Column(
+        Modifier.fillMaxWidth().testTag("admin-audience-recipient:${member.accountId}"),
+        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+    ) {
         Column(
             Modifier.padding(vertical = Spacing.small),
             verticalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
             Text(member.accountId, style = MaterialTheme.typography.titleSmall)
-            Text(
-                stringResource(
-                    when (member.delivery) {
-                        NotificationAudienceDelivery.PENDING -> R.string.log_delivery_pending
-                        NotificationAudienceDelivery.DELIVERED -> R.string.log_delivery_confirmed
-                    },
-                ),
-            )
             val readAt = member.readAt
-            if (readAt !=
-                null
-            ) {
-                DetailRow(stringResource(R.string.log_read_at), formatDateTime(readAt, ZoneId.systemDefault(), locale))
-            } else if (member.delivery ==
-                NotificationAudienceDelivery.DELIVERED
-            ) {
-                Text(stringResource(R.string.log_unread))
+            when {
+                member.delivery == NotificationAudienceDelivery.PENDING -> {
+                    Text(stringResource(R.string.log_delivery_pending))
+                }
+
+                readAt == null -> {
+                    Text(stringResource(R.string.log_delivery_confirmed))
+                }
+
+                else -> {
+                    Text(
+                        stringResource(
+                            R.string.log_read_at,
+                            formatDateTime(
+                                readAt,
+                                ZoneId.systemDefault(),
+                                LocalConfiguration.current.locales[0],
+                            ),
+                        ),
+                    )
+                }
             }
         }
         HorizontalDivider()
     }
 }
-
-/** Explains an explicit unavailable audience without replacing it with an empty recipient list.
- * @param reason Actual repository outcome for the original event or subject.
- */
-@Composable
-private fun audienceUnavailableText(reason: NotificationAudienceUnavailable): String =
-    stringResource(
-        when (reason) {
-            NotificationAudienceUnavailable.EVENT_MISSING -> R.string.log_event_unavailable
-            NotificationAudienceUnavailable.SUBJECT_MISSING -> R.string.log_audience_subject_missing
-            NotificationAudienceUnavailable.UNSUPPORTED_SUBJECT -> R.string.log_audience_unsupported
-        },
-    )
 
 /** Shows only the route's audience identity; navigation binding owns query start and cleanup.
  * @param model Existing log parent.
@@ -150,6 +194,7 @@ fun NotificationLogAudienceRoute(
     notificationId: String,
 ) {
     val audience by model.audience.collectAsStateWithLifecycle()
+    val detail by model.detail.collectAsStateWithLifecycle()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     NotificationAudienceScreen(
         if (audience.id == notificationId) audience else NotificationLogAudienceState.Loading(notificationId),
@@ -160,5 +205,6 @@ fun NotificationLogAudienceRoute(
                 model.retryAudience()
             }
         },
+        event = detail.event?.takeIf { it.id == notificationId },
     )
 }

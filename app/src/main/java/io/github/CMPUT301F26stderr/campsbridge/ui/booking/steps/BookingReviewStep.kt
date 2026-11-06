@@ -107,7 +107,6 @@ fun BookingReviewStep(
     }
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-        verticalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
         TextButton({ onEdit(BookingStep.DATES) }, enabled = enabled) {
             Text(stringResource(R.string.booking_edit_dates))
@@ -145,5 +144,5 @@ fun BookingReviewStep(
             )
         }
     }
-    Text(stringResource(R.string.reservation_simulated_payment), style = MaterialTheme.typography.bodySmall)
+    Text(stringResource(R.string.booking_payment_notice))
 }
