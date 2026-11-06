@@ -27,10 +27,12 @@ class AdminBrowseTest {
     @get:Rule val compose = createComposeRule()
     private val host = TestAppHost()
 
+    /** Releases the app's readers and ViewModels after each gallery scenario. */
     @After fun close() {
         compose.runOnIdle { host.close() }
     }
 
+    /** Failed images retain searchable gallery rows and the query after inspection. */
     @Test fun failedThumbnailsKeepMetadataRowsAndReturningRetainsTheImageQuery() {
         val target = ImageTarget(ImageTargetType.ACCOUNT, "owner/alpha ?")
         val attachment = ImageAttachment(target, "broken-blob", Instant.EPOCH)
@@ -40,6 +42,7 @@ class AdminBrowseTest {
         host.images.urlFailures[attachment.blobId] = IOException("image offline")
         host.adminImages =
             object : ImageRepository by host.images {
+                /** Keeps saved gallery metadata independent of current slot reads. */
                 override fun observeAll() =
                     metadata
             }
@@ -59,12 +62,14 @@ class AdminBrowseTest {
         compose.onNodeWithText("No matching records").assertIsDisplayed()
     }
 
+    /** A slot with no attachment leaves its saved gallery row available for inspection. */
     @Test fun confirmedAttachmentRemovalDoesNotRemoveItsSavedGalleryRow() {
         val target = ImageTarget(ImageTargetType.CAMPSITE, "site/one")
         val attachment = ImageAttachment(target, "saved-blob", Instant.EPOCH)
         host.accounts.account.value = sampleAccount(setOf(Role.ADMIN))
         host.adminImages =
             object : ImageRepository by host.images {
+                /** Retains uploaded-image metadata while the selected slot has no attachment. */
                 override fun observeAll() =
                     MutableStateFlow(listOf(attachment))
             }

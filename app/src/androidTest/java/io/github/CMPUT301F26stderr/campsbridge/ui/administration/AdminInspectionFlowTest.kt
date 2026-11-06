@@ -39,10 +39,12 @@ class AdminInspectionFlowTest {
     private val parents = FakeAccountRepository(profile)
     private val target = ImageTarget(ImageTargetType.ACCOUNT, profile.id)
 
+    /** Releases the app's readers and ViewModels after each navigation scenario. */
     @After fun close() {
         compose.runOnIdle { host.close() }
     }
 
+    /** Opens the account image slot through the admin gallery with controlled sources. */
     private fun openImage() {
         host.accounts.account.value = sampleAccount(setOf(Role.ADMIN))
         host.adminAccounts = parents
@@ -54,6 +56,7 @@ class AdminInspectionFlowTest {
         compose.onNodeWithText("Image inspection").assertIsDisplayed()
     }
 
+    /** Photo and parent retries stay independent, and confirmed parent facts permit navigation. */
     @Test fun parentAndPhotoRetriesAreIndependentAndOnlyConfirmedFactsEnableNavigation() {
         parents.streamFailure.value = IOException("parent offline")
         host.images.streamFailure.value = IOException("image offline")
@@ -92,6 +95,7 @@ class AdminInspectionFlowTest {
         compose.runOnIdle { assertEquals(1, host.adminBrowseCreations) }
     }
 
+    /** Live parent arrival and disappearance enable and disable its navigation link. */
     @Test fun missingParentCannotBeOpenedAndLivePresenceAndDisappearanceUpdateTheLink() {
         parents.account.value = null
         openImage()
@@ -108,6 +112,7 @@ class AdminInspectionFlowTest {
         compose.runOnIdle { assertEquals(1, parents.observations) }
     }
 
+    /** Attachment changes preserve the parent read, and leaving inspection releases readers. */
     @Test fun attachmentReplacementAndRemovalStayInTheSameSlotAndDoNotRestartItsParent() {
         openImage()
         compose.runOnIdle {
@@ -134,6 +139,7 @@ class AdminInspectionFlowTest {
         }
     }
 
+    /** A confirmed campsite opens its read-only inspector using the saved identity. */
     @Test fun confirmedCampsiteParentOpensReadOnlyInspectionBySavedIdentity() {
         val site = sampleCampsite("site/one ?", profile.id)
         val siteTarget = ImageTarget(ImageTargetType.CAMPSITE, site.id)

@@ -487,6 +487,7 @@ fun AdminImageScreen(
     }
 }
 
+/** Previews a missing image and parent record with the parent link disabled. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 850)
 @Composable
 private fun AdminImageMissingParentPreview() {
@@ -505,6 +506,7 @@ private fun AdminImageMissingParentPreview() {
     }
 }
 
+/** Previews a failed photo with a confirmed profile parent at enlarged text size. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 850, fontScale = 1.5f)
 @Composable
 private fun AdminImageFailedPhotoPreview() {
@@ -523,6 +525,7 @@ private fun AdminImageFailedPhotoPreview() {
     }
 }
 
+/** Previews a loaded campsite image with independently retryable parent metadata. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 850)
 @Composable
 private fun AdminImageParentFailurePreview() {
