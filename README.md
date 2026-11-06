@@ -9,7 +9,6 @@ An Android campsite reservation app for CMPUT 301, built by a team of six. Entra
 - [Issues](https://github.com/CMPUT301F26stderr/stderr-campsbridge/issues): requirements, tasks, bugs, and acceptance criteria.
 - [Projects](https://github.com/orgs/CMPUT301F26stderr/projects): the team's Kanban board.
 - Canva: editable prototypes; keep the design links and exported diagrams in the wiki.
-- [Course requirements](doc/00_requirements.md) and [preparation deliverables](doc/01_prep.md): reference documents.
 
 ## Getting started
 
