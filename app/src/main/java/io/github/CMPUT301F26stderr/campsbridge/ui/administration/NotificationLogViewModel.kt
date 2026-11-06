@@ -116,7 +116,7 @@ class NotificationLogViewModel(
         if (!closed) audienceReader.show(detail.value.id.takeIf { visible })
     }
 
-    /** Retries only the current audience query. */
+    /** Reloads only the current audience query. */
     fun retryAudience() {
         if (!closed) audienceReader.retry()
     }
