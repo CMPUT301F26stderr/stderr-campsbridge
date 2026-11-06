@@ -11,13 +11,16 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminImageRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminProfileRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 
 /** Registers Browse and its read-only profile/image children beneath one shared parent owner.
  * @param controller Current account navigation host.
@@ -58,10 +61,25 @@ internal fun NavGraphBuilder.administrationGraph(
                 )
             }
         }
-        composable(AppDestination.ADMIN_PROFILE, arguments = listOf(navArgument("accountId") {})) {
-            AppScreen(stringResource(R.string.admin_browse), onBack = {
-                controller.popBackStack()
-            }) { EmptyContent(stringResource(R.string.feature_pending)) }
+        composable(
+            AppDestination.ADMIN_PROFILE,
+            arguments = listOf(navArgument("accountId") {}),
+        ) { entry ->
+            val parent =
+                remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_BROWSE) }
+            val model: AdminBrowseViewModel = viewModel(parent, factory = factory)
+            AdminProfileRoute(
+                model = model,
+                accountId = entry.arguments?.getString("accountId").orEmpty(),
+                onBack = { controller.popBackStack() },
+                onCampsite = { id ->
+                    controller.navigate(
+                        AppDestination.campsiteGraph(Role.ADMIN, id, CampsiteDetailContext.INSPECT),
+                    ) {
+                        launchSingleTop = true
+                    }
+                },
+            )
         }
         composable(
             AppDestination.ADMIN_IMAGE,
@@ -71,10 +89,36 @@ internal fun NavGraphBuilder.administrationGraph(
                     },
                     navArgument("targetId") {},
                 ),
-        ) {
-            AppScreen(stringResource(R.string.admin_browse), onBack = {
-                controller.popBackStack()
-            }) { EmptyContent(stringResource(R.string.feature_pending)) }
+        ) { entry ->
+            val parent =
+                remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_BROWSE) }
+            val model: AdminBrowseViewModel = viewModel(parent, factory = factory)
+            val type =
+                ImageTargetType.entries.firstOrNull {
+                    it.name ==
+                        entry.arguments?.getString("targetType")
+                }
+            val id = entry.arguments?.getString("targetId")
+            val target = if (type != null && !id.isNullOrBlank()) ImageTarget(type, id) else null
+            AdminImageRoute(
+                model = model,
+                target = target,
+                onBack = { controller.popBackStack() },
+                onProfile = {
+                    controller.navigate(AppDestination.adminProfile(it)) {
+                        launchSingleTop =
+                            true
+                    }
+                },
+                onCampsite = {
+                    controller.navigate(
+                        AppDestination.campsiteGraph(Role.ADMIN, it, CampsiteDetailContext.INSPECT),
+                    ) {
+                        launchSingleTop =
+                            true
+                    }
+                },
+            )
         }
     }
 }
