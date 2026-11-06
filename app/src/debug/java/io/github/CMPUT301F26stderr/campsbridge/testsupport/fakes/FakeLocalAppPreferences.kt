@@ -1,3 +1,7 @@
+/*
+ * Controlled local reads/writes; each instance starts with fresh account-local values.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

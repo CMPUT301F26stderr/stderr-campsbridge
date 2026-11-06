@@ -1,3 +1,7 @@
+/*
+ * Tests acknowledged campsite details and photo saves with controlled repository outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

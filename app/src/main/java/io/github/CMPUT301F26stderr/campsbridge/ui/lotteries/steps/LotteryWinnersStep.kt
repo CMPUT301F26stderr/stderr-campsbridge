@@ -1,3 +1,7 @@
+/*
+ * Positive maximum winners with fixed unlimited registration, without a cap switch.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.compose.foundation.text.KeyboardOptions

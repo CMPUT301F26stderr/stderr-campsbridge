@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Runs Firebase repository integration and access-rules tests with isolated emulator ports and temporary state.
+
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

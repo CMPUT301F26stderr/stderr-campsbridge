@@ -1,3 +1,7 @@
+/*
+ * Presents caller-owned input with a visible label/error and standard IME behavior.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.forms
 
 import androidx.compose.foundation.layout.fillMaxWidth

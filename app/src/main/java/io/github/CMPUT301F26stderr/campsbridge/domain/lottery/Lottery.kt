@@ -1,3 +1,7 @@
+/*
+ * Defines lottery schedules, campsite allocations and entrant participation states.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.lottery
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation

@@ -1,3 +1,7 @@
+/*
+ * Controlled read-only rating source; unsupported feature writes cannot simulate success.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Reaction

@@ -1,3 +1,7 @@
+/*
+ * Repository dependencies consumed by implemented features, supplied by the selected host.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository

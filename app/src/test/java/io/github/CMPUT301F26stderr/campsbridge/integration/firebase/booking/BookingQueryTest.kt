@@ -1,3 +1,7 @@
+/*
+ * Owner-wide reads derive ownership from campsites and preserve complete retained history.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
 import com.google.firebase.firestore.FirebaseFirestoreException

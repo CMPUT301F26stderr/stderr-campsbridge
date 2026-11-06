@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Checks workflow syntax, shell scripts, hook configuration and the pinned Nix environment.
+
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

@@ -1,3 +1,7 @@
+/*
+ * Realistic feature content without repository construction, derived business rules or writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.compose.foundation.layout.Arrangement

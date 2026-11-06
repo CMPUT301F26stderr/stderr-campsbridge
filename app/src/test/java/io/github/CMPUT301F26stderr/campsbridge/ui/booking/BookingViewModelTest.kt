@@ -1,3 +1,7 @@
+/*
+ * Own-winning facts, scoped inventory and primitive drafts precede any submission wiring.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

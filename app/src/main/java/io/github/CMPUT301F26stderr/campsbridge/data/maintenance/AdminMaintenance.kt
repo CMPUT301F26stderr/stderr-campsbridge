@@ -1,3 +1,7 @@
+/*
+ * Explicit global maintenance for an administrator; ordinary startup uses scoped work.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.maintenance
 
 import com.google.firebase.firestore.FirebaseFirestore

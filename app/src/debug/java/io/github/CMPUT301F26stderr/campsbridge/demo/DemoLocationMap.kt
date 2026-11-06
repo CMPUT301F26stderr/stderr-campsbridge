@@ -1,3 +1,7 @@
+/*
+ * Uses explicit saved coordinates offline; selection edits only the picker's working pin.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.compose.foundation.layout.Column

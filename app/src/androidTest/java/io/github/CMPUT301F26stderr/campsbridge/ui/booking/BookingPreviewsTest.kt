@@ -1,3 +1,7 @@
+/*
+ * Verifies the same themed preview content on a device, without production navigation/writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import android.graphics.Bitmap

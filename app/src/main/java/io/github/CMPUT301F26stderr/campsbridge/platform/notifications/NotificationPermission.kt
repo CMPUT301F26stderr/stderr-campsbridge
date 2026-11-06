@@ -1,3 +1,7 @@
+/*
+ * Inspects Android notification permission and channel settings and builds their settings intents.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.Manifest

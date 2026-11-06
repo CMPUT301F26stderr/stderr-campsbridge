@@ -1,3 +1,7 @@
+/*
+ * Represents campsite setup input, staged photos and explicit save or publication progress.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.SelectedPhoto

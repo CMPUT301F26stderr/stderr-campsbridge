@@ -1,3 +1,7 @@
+/*
+ * Tests retained setup input and injected validation independently of persistence stages.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

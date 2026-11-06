@@ -1,3 +1,7 @@
+/*
+ * Represents calendar inventory, selection and available actions independently of persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import java.time.DayOfWeek

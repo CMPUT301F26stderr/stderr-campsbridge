@@ -1,3 +1,7 @@
+/*
+ * Renders distinct loading, empty-result and failure feedback with caller-owned recovery actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback
 
 import androidx.compose.foundation.layout.Arrangement

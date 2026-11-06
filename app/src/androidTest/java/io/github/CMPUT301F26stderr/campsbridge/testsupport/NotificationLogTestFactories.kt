@@ -1,3 +1,7 @@
+/*
+ * Supplies the real graph owner using only this host's controlled log and context sources.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.lifecycle.ViewModelProvider

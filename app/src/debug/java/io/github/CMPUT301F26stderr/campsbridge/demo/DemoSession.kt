@@ -1,3 +1,7 @@
+/*
+ * Owns separate demo people and their screen models over one shared local dataset.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.lifecycle.SavedStateHandle

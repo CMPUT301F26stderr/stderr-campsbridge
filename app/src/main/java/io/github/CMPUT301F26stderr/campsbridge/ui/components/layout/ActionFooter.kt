@@ -1,3 +1,8 @@
+/*
+ * Reachable white actions in AppScreen.bottomContent, with bounded overflow for large text. The caller supplies
+ * bounded screen constraints; at most half is used by footer content.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.compose.foundation.layout.Arrangement

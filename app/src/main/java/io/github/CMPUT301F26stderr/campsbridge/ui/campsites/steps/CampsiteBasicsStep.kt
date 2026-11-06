@@ -1,3 +1,7 @@
+/*
+ * Name and optional description; raw values are owned by the parent draft.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import androidx.compose.runtime.Composable

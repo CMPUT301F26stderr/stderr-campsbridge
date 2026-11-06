@@ -1,3 +1,7 @@
+/*
+ * Verifies the same default launcher Android Studio runs, with no external Firebase services.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import android.content.Context

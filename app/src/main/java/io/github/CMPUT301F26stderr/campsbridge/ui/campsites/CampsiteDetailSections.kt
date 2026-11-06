@@ -1,3 +1,8 @@
+/*
+ * Renders saved campsite descriptions, amenities, rules, maps and related lotteries under the shared detail
+ * parent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement

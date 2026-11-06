@@ -1,3 +1,7 @@
+/*
+ * Connects submitted criteria and visible-row read lifetime to the graph-owned model.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.compose.foundation.lazy.rememberLazyListState

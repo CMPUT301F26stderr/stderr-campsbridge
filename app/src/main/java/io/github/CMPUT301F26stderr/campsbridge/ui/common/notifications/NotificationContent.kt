@@ -1,3 +1,7 @@
+/*
+ * Represents immutable event content and independent linked-record read outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation

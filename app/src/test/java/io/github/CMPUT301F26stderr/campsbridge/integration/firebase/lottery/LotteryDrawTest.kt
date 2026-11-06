@@ -1,3 +1,7 @@
+/*
+ * Tests draw outcomes, the completion barrier and deterministic recovery from persisted work.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import com.google.firebase.firestore.Source

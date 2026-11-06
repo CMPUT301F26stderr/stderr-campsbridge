@@ -1,3 +1,7 @@
+/*
+ * Displays the current stay, price and terms for review, with explicit approval and edit actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 
 import androidx.compose.foundation.layout.Arrangement

@@ -1,3 +1,7 @@
+/*
+ * Transient local selection; bytes remain lazy and are never saved in UI state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageUpload

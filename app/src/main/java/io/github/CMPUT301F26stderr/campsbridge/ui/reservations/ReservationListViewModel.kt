@@ -1,3 +1,7 @@
+/*
+ * Reads one actor's saved stays and projects the active rows.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.lifecycle.SavedStateHandle

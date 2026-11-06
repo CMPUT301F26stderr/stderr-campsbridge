@@ -1,3 +1,7 @@
+/*
+ * Owns draft, configuration, offer revision and publication transactions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.DocumentSnapshot

@@ -1,3 +1,8 @@
+/*
+ * Firebase-backed implementation for two-participant reservation conversations and recipient read
+ * acknowledgements.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.messaging
 
 import com.google.firebase.firestore.FirebaseFirestore

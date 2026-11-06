@@ -1,3 +1,7 @@
+/*
+ * Presents controlled name input and the device-identity explanation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps
 
 import androidx.compose.foundation.text.KeyboardActions

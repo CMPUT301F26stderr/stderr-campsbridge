@@ -1,3 +1,7 @@
+/*
+ * Follows the real launcher across separate people, preserving one shared local history.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import android.content.Context

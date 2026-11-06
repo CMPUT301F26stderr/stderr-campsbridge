@@ -1,3 +1,7 @@
+/*
+ * One ordinary Material row retaining actual event identity/time through context failures.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox.components
 
 import androidx.compose.foundation.clickable

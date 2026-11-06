@@ -1,3 +1,7 @@
+/*
+ * Explicit Firestore codec for DeviceRegistration, deriving identity from the document path.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.account
 
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentCodec

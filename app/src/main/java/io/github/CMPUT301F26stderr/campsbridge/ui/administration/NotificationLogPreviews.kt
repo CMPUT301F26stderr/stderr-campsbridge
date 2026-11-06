@@ -1,3 +1,7 @@
+/*
+ * Supplies notification log, event-detail and recipient states for passive themed previews.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.runtime.Composable

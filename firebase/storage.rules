@@ -1,3 +1,6 @@
+// Controls image reads, intent-backed uploads and owner or admin deletion using
+// Firestore attachment identities.
+
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {

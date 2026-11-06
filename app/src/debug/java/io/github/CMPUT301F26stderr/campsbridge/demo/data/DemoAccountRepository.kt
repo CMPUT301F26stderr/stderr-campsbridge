@@ -1,3 +1,7 @@
+/*
+ * Local account operations for the offline demo without Firebase.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument

@@ -1,3 +1,7 @@
+/*
+ * Real setup/navigation contracts for acknowledged details and attachment saves.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner

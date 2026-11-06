@@ -1,3 +1,7 @@
+/*
+ * Optional owner rules and the same packaged refund policy used by booking.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import androidx.compose.material3.Text

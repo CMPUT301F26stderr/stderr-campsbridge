@@ -1,3 +1,7 @@
+/*
+ * Reads immutable event/context facts without owning receipts, UI copy or navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository

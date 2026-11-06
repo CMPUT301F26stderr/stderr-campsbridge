@@ -1,3 +1,7 @@
+/*
+ * Supplies matching current-schema Firestore documents and application models for persistence tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures
 
 import com.google.firebase.Timestamp

@@ -1,3 +1,7 @@
+/*
+ * Saved overview shared by entrants, owner previews and admin inspection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement

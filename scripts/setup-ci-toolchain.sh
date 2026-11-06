@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Exposes the current Nix shell's JDK and tool paths to subsequent GitHub Actions steps.
+
 set -euo pipefail
 
 : "${JAVA_HOME:?Run this script inside the hooks or default Nix shell}"

@@ -1,3 +1,7 @@
+/*
+ * Tests Android alert construction and publication through real SDK objects with controlled platform behavior.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.Manifest

@@ -1,3 +1,7 @@
+/*
+ * Tests local lottery setup with injected schedule outcomes independently of save transactions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

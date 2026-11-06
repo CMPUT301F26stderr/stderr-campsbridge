@@ -1,3 +1,7 @@
+/*
+ * Upstream license credit for dependencies outside the generated Android notices.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.credits
 
 /** Upstream license credit for dependencies outside the generated Android notices.

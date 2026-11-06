@@ -1,3 +1,7 @@
+/*
+ * The same cell permissions govern production taps, stale callbacks and date clearing.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

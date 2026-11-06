@@ -1,3 +1,7 @@
+/*
+ * Binds list state and visible-row read ownership without performing a write.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.lazy.rememberLazyListState

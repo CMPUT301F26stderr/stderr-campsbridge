@@ -1,3 +1,7 @@
+/*
+ * Reads the same draft's facts and opens explicit edit sections, without claiming persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import androidx.compose.material3.Text

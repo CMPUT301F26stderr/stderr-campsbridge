@@ -1,3 +1,7 @@
+/*
+ * Only the resumed destination may deliver a shared account's explicit navigation request.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.foundation.layout.Box

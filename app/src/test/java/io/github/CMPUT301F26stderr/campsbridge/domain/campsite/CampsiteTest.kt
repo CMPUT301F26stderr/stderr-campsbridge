@@ -1,3 +1,7 @@
+/*
+ * Tests listing validity and derived inventory visibility.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.campsite
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal

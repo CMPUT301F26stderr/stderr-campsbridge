@@ -1,3 +1,7 @@
+/*
+ * Registers two workspace entries sharing one lazily acquired account-root receipt owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

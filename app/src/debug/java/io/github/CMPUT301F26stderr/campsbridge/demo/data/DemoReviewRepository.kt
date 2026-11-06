@@ -1,3 +1,7 @@
+/*
+ * Supplies an explicitly empty read-only review dataset for offline inspection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Reaction

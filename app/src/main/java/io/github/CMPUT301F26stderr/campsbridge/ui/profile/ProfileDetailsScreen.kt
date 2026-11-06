@@ -1,3 +1,7 @@
+/*
+ * Personal editor with separate photo actions and explicit name saving.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.BackHandler

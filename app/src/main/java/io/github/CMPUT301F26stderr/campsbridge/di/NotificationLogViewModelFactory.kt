@@ -1,3 +1,7 @@
+/*
+ * Supplies the read-only log with the host's existing event and context readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

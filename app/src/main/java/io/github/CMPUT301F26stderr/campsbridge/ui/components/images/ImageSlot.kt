@@ -1,3 +1,7 @@
+/*
+ * Presents image facts, unsaved selection, explicit actions, and recoverable feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.images
 
 import androidx.compose.foundation.layout.Arrangement

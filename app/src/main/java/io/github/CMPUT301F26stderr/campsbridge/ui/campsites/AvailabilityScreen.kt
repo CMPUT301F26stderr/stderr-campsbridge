@@ -1,3 +1,7 @@
+/*
+ * Owner availability from frames 09.04/09.08 using the ordinary shared calendar and actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.BackHandler

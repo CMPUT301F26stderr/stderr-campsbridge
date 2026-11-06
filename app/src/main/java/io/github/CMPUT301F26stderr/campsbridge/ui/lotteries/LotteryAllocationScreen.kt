@@ -1,3 +1,7 @@
+/*
+ * Displays a working lottery allocation through the shared calendar; changes stay local until applied.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.Arrangement

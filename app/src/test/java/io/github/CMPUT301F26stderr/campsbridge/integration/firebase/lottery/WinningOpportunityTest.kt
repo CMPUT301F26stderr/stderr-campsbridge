@@ -1,3 +1,7 @@
+/*
+ * Tests declining unused wins; reservation consumption is owned by booking tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import com.google.firebase.firestore.Source

@@ -1,3 +1,7 @@
+/*
+ * Binds one actual graph owner; only a live resumed route delivers its current handoff.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.compose.runtime.Composable

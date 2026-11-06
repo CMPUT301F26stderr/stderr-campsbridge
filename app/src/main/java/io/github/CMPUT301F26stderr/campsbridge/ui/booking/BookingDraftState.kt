@@ -1,3 +1,7 @@
+/*
+ * Retains user input and exact approvals independently of reads and reservation commands.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

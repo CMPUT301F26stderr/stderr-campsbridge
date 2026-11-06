@@ -1,3 +1,7 @@
+/*
+ * Tests production profile routes and editors with controlled persistence and parser outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.ui.test.assertCountEquals

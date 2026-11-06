@@ -1,3 +1,7 @@
+/*
+ * A labeled Material field opening an external picker without pretending to be editable text.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers
 
 import androidx.compose.foundation.BorderStroke

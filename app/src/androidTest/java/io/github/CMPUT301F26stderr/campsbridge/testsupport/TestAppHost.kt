@@ -1,3 +1,7 @@
+/*
+ * Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi

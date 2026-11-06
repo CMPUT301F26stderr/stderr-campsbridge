@@ -1,3 +1,7 @@
+/*
+ * Controlled reservation aggregate; unsupported operations fail rather than simulate success.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository

@@ -1,3 +1,7 @@
+/*
+ * Represents the owner's inventory tabs and their independent read outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

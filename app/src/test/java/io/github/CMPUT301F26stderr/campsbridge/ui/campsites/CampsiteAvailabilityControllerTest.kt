@@ -1,3 +1,7 @@
+/*
+ * Lead-owned range/save orchestration contracts; comparison results are supplied test fixtures.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

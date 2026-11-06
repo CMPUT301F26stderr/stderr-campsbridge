@@ -1,3 +1,7 @@
+/*
+ * Owns one short onboarding flow; account facts remain in the repository.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.lifecycle.SavedStateHandle

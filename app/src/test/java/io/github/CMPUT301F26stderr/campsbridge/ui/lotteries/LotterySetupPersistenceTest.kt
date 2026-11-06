@@ -1,3 +1,7 @@
+/*
+ * Actual form callers of the stateless writer: guards, retained intent and read-only restoration.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

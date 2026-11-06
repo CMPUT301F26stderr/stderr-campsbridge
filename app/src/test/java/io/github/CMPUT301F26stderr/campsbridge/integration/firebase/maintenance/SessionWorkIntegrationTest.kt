@@ -1,3 +1,7 @@
+/*
+ * Real, authenticated foreground discovery and operations; pure tests own scheduling time.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.maintenance
 
 import com.google.firebase.firestore.MetadataChanges

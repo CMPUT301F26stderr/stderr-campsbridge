@@ -1,3 +1,7 @@
+/*
+ * Displays recorded Inbox facts without acknowledging receipts or inferring Android alerts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Arrangement

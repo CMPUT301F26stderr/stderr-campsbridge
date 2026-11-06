@@ -1,3 +1,7 @@
+/*
+ * Supplies passive normal, held, failed and unread preference states without repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

@@ -1,3 +1,7 @@
+/*
+ * Raw count and exact decimal input using the existing shared parser feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import androidx.compose.foundation.text.KeyboardOptions

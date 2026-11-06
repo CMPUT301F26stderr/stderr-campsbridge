@@ -1,3 +1,7 @@
+/*
+ * Supplies related local account, lottery and reservation fixtures for isolated task examples.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

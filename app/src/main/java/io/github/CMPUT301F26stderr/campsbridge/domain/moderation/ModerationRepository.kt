@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for account/listing removal and resumable cleanup of dependent active state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.moderation
 
 /**

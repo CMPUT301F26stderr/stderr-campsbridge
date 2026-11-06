@@ -1,3 +1,7 @@
+/*
+ * Firebase-backed implementation for account persistence, preferences, roles, and installation token registration.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.account
 
 import com.google.firebase.firestore.FirebaseFirestore

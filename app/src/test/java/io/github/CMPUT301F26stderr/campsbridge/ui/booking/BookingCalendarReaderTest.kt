@@ -1,3 +1,7 @@
+/*
+ * Two precise inventory scopes stay independent without duplicating an in-month subscription.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

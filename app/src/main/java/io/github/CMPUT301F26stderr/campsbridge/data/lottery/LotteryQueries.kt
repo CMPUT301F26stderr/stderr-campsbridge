@@ -1,3 +1,7 @@
+/*
+ * Owns lottery read queries and the join through canonical campsite offer membership.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.DocumentSnapshot

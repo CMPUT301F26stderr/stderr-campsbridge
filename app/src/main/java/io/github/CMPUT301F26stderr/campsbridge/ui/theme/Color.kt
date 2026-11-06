@@ -1,3 +1,7 @@
+/*
+ * Defines the shared Material color palettes for standard and color-blind presentation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.material3.lightColorScheme

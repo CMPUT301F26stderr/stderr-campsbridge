@@ -1,3 +1,7 @@
+/*
+ * Saves local photo bytes before committing their attachment relationships.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import android.util.Log

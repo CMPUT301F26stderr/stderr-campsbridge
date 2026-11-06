@@ -1,3 +1,7 @@
+/*
+ * Binds current account matching and repository sources to the parent graph owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

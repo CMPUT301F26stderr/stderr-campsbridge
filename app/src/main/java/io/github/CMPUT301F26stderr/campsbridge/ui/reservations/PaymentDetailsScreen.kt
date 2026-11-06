@@ -1,3 +1,7 @@
+/*
+ * Reads original payment and confirmed refund facts from the same saved aggregate.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.material3.Text

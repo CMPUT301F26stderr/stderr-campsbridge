@@ -1,3 +1,7 @@
+/*
+ * Hosts debug-only onboarding examples with local fixtures and controlled input rules.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import android.os.Bundle

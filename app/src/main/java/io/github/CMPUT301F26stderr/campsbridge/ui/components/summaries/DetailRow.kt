@@ -1,3 +1,7 @@
+/*
+ * Readable label/value pair with an optional contextual edit action.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries
 
 import androidx.compose.foundation.layout.Arrangement

@@ -1,3 +1,7 @@
+/*
+ * Displays a caller-owned bounded count; disabled bounds avoid arithmetic overflow.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.forms
 
 import androidx.compose.foundation.layout.Arrangement

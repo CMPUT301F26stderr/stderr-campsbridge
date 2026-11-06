@@ -1,3 +1,7 @@
+/*
+ * Contracts for action callbacks and submission feedback shared by all forms.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import androidx.compose.material3.MaterialTheme

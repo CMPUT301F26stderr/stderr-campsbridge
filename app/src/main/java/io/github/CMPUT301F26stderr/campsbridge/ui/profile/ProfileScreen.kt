@@ -1,3 +1,7 @@
+/*
+ * Shows the profile menu beneath the workspace's shared frame.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement

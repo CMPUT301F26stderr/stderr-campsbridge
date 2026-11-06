@@ -1,3 +1,7 @@
+/*
+ * Registers the read-only event list and ID-only children beneath one independent log parent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

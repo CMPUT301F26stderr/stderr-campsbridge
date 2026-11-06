@@ -1,3 +1,7 @@
+/*
+ * Compact saved capacity and nightly price, wrapping together at enlarged text sizes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components
 
 import androidx.compose.foundation.layout.Arrangement

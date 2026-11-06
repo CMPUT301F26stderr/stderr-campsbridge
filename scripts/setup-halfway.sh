@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Configures the selected Firebase project and deploys the halfway rules, indexes and booking functions. Demo
+# fixture seeding is a separate command with explicit actor UIDs.
+
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

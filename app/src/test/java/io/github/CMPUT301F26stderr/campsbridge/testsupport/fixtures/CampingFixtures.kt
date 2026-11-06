@@ -1,3 +1,7 @@
+/*
+ * Valid starting values; each test changes only the facts relevant to its scenario.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

@@ -1,3 +1,7 @@
+/*
+ * Controlled server facts, independent live offers and explicit mutation outcomes for tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.DrawResult

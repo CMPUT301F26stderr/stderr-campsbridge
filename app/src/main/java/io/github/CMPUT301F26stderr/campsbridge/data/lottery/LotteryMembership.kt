@@ -1,3 +1,7 @@
+/*
+ * Owns entrant join, withdrawal and decline transactions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.FirebaseFirestore

@@ -1,3 +1,7 @@
+/*
+ * Tests the admin parent's binding to its selected inspection reader.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

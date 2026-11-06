@@ -1,3 +1,7 @@
+/*
+ * Verifies the actual root controller against isolated offline scenario dependencies.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.lifecycle.ViewModelStore

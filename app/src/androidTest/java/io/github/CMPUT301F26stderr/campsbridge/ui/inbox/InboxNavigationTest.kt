@@ -1,3 +1,7 @@
+/*
+ * Actual account-root Inbox and saved targets preserve explicit action and source lifetimes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.ui.test.assertHasNoClickAction

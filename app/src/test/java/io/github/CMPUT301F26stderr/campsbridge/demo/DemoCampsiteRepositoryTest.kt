@@ -1,3 +1,7 @@
+/*
+ * Keeps offline campsite inspection truthful about snapshot reads and unsupported changes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoCampsiteRepository

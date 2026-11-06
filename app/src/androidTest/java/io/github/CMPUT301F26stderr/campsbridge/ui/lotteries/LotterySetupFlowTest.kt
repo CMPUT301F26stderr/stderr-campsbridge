@@ -1,3 +1,7 @@
+/*
+ * Tests production lottery setup routes and native dialogs with explicitly controlled schedule outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import android.view.KeyEvent

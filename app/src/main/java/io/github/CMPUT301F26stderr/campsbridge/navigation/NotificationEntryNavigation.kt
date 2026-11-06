@@ -1,3 +1,7 @@
+/*
+ * Opens a resolved root tap through the actual ready account's registered graph.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

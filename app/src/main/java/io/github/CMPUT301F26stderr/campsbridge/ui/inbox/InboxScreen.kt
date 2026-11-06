@@ -1,3 +1,7 @@
+/*
+ * Displays persistent account history within the workspace's shared screen frame.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.foundation.layout.Arrangement

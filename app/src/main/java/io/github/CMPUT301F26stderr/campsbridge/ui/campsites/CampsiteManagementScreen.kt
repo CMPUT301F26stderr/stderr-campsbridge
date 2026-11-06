@@ -1,3 +1,7 @@
+/*
+ * Displays a saved owner's campsite summary with navigation to its registered management actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement

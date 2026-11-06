@@ -1,3 +1,7 @@
+/*
+ * Tests geographic value boundaries before coordinates reach any SDK or map.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.shared
 
 import org.junit.Assert.assertEquals

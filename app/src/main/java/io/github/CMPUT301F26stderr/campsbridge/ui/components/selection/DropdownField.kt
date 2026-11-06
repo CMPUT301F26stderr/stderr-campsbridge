@@ -1,3 +1,7 @@
+/*
+ * Material dropdown whose visible choice remains owned by its caller.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
 import androidx.compose.foundation.layout.fillMaxWidth

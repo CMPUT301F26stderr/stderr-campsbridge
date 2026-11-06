@@ -1,3 +1,7 @@
+/*
+ * Defines resolved Android alert content and the platform publication boundary.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject

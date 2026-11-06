@@ -1,3 +1,7 @@
+/*
+ * Tests captured inbox delivery, first-read acknowledgements and event history queries.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.notification
 
 import com.google.firebase.firestore.FirebaseFirestoreException

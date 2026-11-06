@@ -1,3 +1,7 @@
+/*
+ * Formats prices, dates and timestamps using explicit currency and campsite timezone inputs.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.format
 
 import java.math.BigDecimal

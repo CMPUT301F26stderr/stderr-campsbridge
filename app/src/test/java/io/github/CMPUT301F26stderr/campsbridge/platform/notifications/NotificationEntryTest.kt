@@ -1,3 +1,7 @@
+/*
+ * Tests notification-tap encoding and validation independently of Activity launch and navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.app.Application

@@ -1,3 +1,7 @@
+/*
+ * Real Explore/campsite/choices/lottery navigation and shared entrant mutation callbacks.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.ui.test.assertIsDisplayed

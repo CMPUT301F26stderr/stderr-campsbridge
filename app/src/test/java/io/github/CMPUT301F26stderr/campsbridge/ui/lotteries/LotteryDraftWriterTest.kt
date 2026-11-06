@@ -1,3 +1,7 @@
+/*
+ * Save-stage contracts use controlled outcomes; real transaction invariants stay in Firebase.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer

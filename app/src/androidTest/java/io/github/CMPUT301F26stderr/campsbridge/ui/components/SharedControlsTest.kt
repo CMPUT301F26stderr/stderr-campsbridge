@@ -1,3 +1,7 @@
+/*
+ * Contracts for controlled shared components and their accessibility actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import android.view.KeyEvent

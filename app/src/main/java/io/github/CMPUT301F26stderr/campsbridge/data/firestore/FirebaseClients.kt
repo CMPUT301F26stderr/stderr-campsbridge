@@ -1,3 +1,7 @@
+/*
+ * Creates Firebase clients for the selected cloud project or emulator endpoints before repositories use them.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import com.google.firebase.FirebaseApp

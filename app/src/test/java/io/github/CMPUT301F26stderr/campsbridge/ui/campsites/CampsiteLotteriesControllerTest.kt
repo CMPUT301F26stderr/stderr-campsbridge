@@ -1,3 +1,7 @@
+/*
+ * Actual campsite associations scope shared participation and visible allocation readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

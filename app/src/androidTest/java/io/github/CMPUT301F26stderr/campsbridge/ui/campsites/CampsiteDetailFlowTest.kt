@@ -1,3 +1,7 @@
+/*
+ * Exercises real saved-reader children, caller contexts and scoped read failures.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.material3.Button

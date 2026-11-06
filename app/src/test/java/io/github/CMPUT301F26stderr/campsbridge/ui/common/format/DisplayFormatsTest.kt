@@ -1,3 +1,7 @@
+/*
+ * Deterministic formatting and timezone input contracts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.format
 
 import org.junit.Assert.assertEquals

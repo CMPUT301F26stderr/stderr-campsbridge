@@ -1,3 +1,7 @@
+/*
+ * Displays the selected campsite's rules and packaged policy for explicit booking approval.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 
 import androidx.compose.foundation.layout.Arrangement

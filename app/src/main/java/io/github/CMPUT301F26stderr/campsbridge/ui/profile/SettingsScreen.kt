@@ -1,3 +1,7 @@
+/*
+ * Links the shared policy reader and notification preference/device settings.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.BackHandler

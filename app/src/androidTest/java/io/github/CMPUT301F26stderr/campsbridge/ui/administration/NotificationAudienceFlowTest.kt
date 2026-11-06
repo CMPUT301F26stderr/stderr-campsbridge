@@ -1,3 +1,7 @@
+/*
+ * Tests recipient facts, independent retry and cleanup through production navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.test.assertIsDisplayed

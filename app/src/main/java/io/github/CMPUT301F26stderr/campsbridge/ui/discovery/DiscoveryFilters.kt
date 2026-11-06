@@ -1,3 +1,7 @@
+/*
+ * Defines applied discovery criteria, working filter drafts and validation feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput

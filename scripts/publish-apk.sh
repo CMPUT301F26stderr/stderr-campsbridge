@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Publishes verified debug and signed release APKs as beta when their commit is still current on main.
+
 set -euo pipefail
 
 : "${GITHUB_REPOSITORY:?GitHub repository is required}"

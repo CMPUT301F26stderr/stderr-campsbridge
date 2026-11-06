@@ -1,3 +1,7 @@
+/*
+ * Verifies navigation retention and cleanup independently of feature controllers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.lifecycle.ViewModel

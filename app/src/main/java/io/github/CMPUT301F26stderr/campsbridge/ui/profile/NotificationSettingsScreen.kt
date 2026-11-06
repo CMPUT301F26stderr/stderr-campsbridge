@@ -1,3 +1,7 @@
+/*
+ * Keeps saved app preference, account read feedback and actual Android allowance separate.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.BackHandler

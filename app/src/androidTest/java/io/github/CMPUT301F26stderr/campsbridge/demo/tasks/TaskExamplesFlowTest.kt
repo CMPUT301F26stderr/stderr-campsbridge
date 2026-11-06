@@ -1,3 +1,7 @@
+/*
+ * Exercises task navigation, reset, recreation, and pending states without Firebase.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import android.content.Context

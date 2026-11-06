@@ -1,3 +1,7 @@
+/*
+ * Tests malformed-data diagnostics and required structure; domain value matrices live elsewhere.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument

@@ -1,3 +1,7 @@
+/*
+ * Registers one workspace's profile/menu/editors and offline policy readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

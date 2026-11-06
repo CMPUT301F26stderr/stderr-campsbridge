@@ -1,3 +1,7 @@
+/*
+ * Bounded child reader owned and closed by the saved lottery ViewModel.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository

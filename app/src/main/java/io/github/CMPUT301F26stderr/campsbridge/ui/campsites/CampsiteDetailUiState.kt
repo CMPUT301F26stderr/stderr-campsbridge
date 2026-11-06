@@ -1,3 +1,7 @@
+/*
+ * Represents saved campsite reads and the caller context shared by read-only detail children.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

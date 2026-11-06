@@ -1,3 +1,7 @@
+/*
+ * Tests discovery, filter and listing-detail navigation with controlled search outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.compose.ui.test.assertCountEquals

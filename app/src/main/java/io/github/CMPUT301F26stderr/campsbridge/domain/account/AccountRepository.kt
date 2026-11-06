@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for account persistence, preferences, roles, and installation token registration.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.account
 
 import kotlinx.coroutines.flow.Flow

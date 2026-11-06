@@ -1,3 +1,8 @@
+/*
+ * Configures the Android app, signed release build, dependencies, test suites, coverage and generated API
+ * documentation.
+ */
+
 plugins {
     jacoco
     alias(libs.plugins.android.application)

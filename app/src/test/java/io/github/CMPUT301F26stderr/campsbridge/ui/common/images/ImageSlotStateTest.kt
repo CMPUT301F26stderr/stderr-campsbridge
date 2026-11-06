@@ -1,3 +1,7 @@
+/*
+ * Pure availability contracts for shared image controls and controller action guards.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment

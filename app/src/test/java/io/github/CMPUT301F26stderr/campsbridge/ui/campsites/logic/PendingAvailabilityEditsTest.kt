@@ -1,3 +1,7 @@
+/*
+ * Executable F08 contracts; no Firebase, coroutines, clock or UI setup is needed.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 
 import org.junit.Assert.assertEquals

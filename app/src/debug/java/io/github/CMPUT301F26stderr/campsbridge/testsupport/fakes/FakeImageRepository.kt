@@ -1,3 +1,7 @@
+/*
+ * Controlled image boundary for presentation tests; never uploads or deletes Storage bytes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment

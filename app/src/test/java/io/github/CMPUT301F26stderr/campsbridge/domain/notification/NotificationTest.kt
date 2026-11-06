@@ -1,3 +1,7 @@
+/*
+ * Tests announcement content and event subject relationships.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.notification
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures

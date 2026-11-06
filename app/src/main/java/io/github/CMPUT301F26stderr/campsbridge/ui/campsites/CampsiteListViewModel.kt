@@ -1,3 +1,7 @@
+/*
+ * Owns the owner's inventory tab and reads, separately from setup or write operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

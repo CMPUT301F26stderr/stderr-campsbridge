@@ -1,3 +1,7 @@
+/*
+ * Retains only the active root flow's navigation stores across configuration changes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.lifecycle.ViewModel

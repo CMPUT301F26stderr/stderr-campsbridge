@@ -1,3 +1,7 @@
+/*
+ * Coherent sample records shared by the offline workspace.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

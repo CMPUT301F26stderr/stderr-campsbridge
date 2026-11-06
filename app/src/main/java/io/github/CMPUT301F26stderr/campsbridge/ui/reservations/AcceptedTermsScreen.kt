@@ -1,3 +1,7 @@
+/*
+ * Shows the exact saved rules and policy version without substituting current listing terms.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.material3.Text

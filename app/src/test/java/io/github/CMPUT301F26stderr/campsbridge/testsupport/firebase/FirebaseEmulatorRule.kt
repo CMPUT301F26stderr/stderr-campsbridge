@@ -1,3 +1,7 @@
+/*
+ * Binds tests to isolated Firebase emulator clients, controlled time and disposable fixture state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase
 
 import android.content.ComponentName

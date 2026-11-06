@@ -1,3 +1,8 @@
+/*
+ * Tests fixture relationships, validation and repeatable seed or reset operations with a controlled in-memory
+ * backend.
+ */
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

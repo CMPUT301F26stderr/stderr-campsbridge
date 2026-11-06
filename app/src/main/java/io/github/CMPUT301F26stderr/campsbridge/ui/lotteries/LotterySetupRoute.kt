@@ -1,3 +1,7 @@
+/*
+ * Connects local parent input to ordinary content and one explicit allocation child.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.activity.compose.BackHandler

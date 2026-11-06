@@ -1,3 +1,7 @@
+/*
+ * Keeps missing-event history read-only without inventing its title or creation time.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox.components
 
 import androidx.compose.foundation.layout.Arrangement

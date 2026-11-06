@@ -1,3 +1,7 @@
+/*
+ * Represents saved lottery facts, participation and independent child reads for owner or entrant detail.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation

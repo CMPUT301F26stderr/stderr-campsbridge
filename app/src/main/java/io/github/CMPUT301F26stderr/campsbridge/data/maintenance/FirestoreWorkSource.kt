@@ -1,3 +1,7 @@
+/*
+ * Discovers work from owner lotteries and entrant/owner reservations without global scans.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.maintenance
 
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.observeRelated

@@ -1,3 +1,7 @@
+/*
+ * Acceptance contracts for shared form feedback and confirmation actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import android.view.KeyEvent

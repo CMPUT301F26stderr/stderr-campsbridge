@@ -1,3 +1,7 @@
+/*
+ * Keeps a bounded thumbnail while the saved row remains independently readable.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.foundation.layout.Box

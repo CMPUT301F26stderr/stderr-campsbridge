@@ -1,3 +1,7 @@
+/*
+ * Owner inventory content; the workspace frame belongs to navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement

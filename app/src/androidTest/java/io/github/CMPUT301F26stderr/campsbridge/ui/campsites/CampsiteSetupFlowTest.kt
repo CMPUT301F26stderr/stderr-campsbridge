@@ -1,3 +1,7 @@
+/*
+ * Tests production campsite setup routes, step content and reader return with controlled photo-picker results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner

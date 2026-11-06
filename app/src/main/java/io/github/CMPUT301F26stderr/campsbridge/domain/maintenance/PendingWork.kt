@@ -1,3 +1,7 @@
+/*
+ * Defines account capabilities and foreground recovery operations independently of Firebase and Android.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.maintenance
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

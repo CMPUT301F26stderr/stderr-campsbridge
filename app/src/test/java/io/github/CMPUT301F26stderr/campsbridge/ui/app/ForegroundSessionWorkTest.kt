@@ -1,3 +1,7 @@
+/*
+ * Tests foreground recovery composed with alert initialization and observation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import android.content.Intent

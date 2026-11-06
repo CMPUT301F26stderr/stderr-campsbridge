@@ -1,3 +1,7 @@
+/*
+ * Owns submitted discovery criteria and scoped reads, separately from its filter child.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.lifecycle.SavedStateHandle

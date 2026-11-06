@@ -1,3 +1,7 @@
+/*
+ * Defines campsite ratings, threaded replies and account reactions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.review
 
 import java.time.Instant

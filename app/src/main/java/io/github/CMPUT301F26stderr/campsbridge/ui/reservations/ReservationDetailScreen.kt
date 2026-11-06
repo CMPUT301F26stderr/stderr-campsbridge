@@ -1,3 +1,7 @@
+/*
+ * Displays booked history, saved-page links and explicit cancellation confirmation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.material3.MaterialTheme

@@ -1,3 +1,7 @@
+/*
+ * Tests reservation conversations and atomic alert creation; notification tests own delivery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.messaging
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument

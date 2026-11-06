@@ -1,3 +1,7 @@
+/*
+ * Content contracts: supplied state and callbacks, independent of repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.compose.runtime.CompositionLocalProvider

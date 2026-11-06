@@ -1,3 +1,7 @@
+/*
+ * Verifies the shared credit catalog and the actual Android asset packaging.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.assets
 
 import org.junit.Assert.assertEquals

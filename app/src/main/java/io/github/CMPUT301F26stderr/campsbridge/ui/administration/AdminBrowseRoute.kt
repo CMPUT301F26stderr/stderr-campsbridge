@@ -1,3 +1,7 @@
+/*
+ * Binds graph-owned inputs and only the currently visible thumbnail readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState

@@ -1,3 +1,7 @@
+/*
+ * Supplies readable win/loss/saved history and independent source/context failure variants.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

@@ -1,3 +1,7 @@
+/*
+ * Owns one saved record and its explicit actions across overview, payment and terms.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * F13 contracts for exact endpoints and ordered first-failure feedback without a clock.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic
 
 import org.junit.Assert.assertEquals

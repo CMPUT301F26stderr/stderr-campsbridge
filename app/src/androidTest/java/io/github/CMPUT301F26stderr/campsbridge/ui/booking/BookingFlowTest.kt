@@ -1,3 +1,7 @@
+/*
+ * Actual ID-scoped graph verifies step content, policy/Back, restoration and saved-ID handoff.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.compose.material3.Button

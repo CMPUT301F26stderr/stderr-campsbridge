@@ -1,3 +1,7 @@
+/*
+ * Entrant detail keeps membership/consumption sources separate and masks unfinished draws.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.ViewModelStore

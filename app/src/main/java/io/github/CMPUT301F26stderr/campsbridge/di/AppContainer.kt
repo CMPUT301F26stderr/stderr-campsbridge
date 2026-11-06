@@ -1,3 +1,7 @@
+/*
+ * Application-scoped persistence composition root; platform services are wired in AppServices.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.FirestoreAccountRepository

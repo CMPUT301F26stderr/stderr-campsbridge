@@ -1,3 +1,7 @@
+/*
+ * Represents account receipt reads and independently resolved event rows, counts and input feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject

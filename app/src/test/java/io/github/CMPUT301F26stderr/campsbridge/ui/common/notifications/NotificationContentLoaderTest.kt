@@ -1,3 +1,7 @@
+/*
+ * Immutable event facts survive independent subject outcomes without receipt writes or observers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

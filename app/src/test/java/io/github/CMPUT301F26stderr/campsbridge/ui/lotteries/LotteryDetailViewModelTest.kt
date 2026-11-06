@@ -1,3 +1,7 @@
+/*
+ * Tests saved-owner lottery reads and independently recoverable child sources.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.ViewModelStore

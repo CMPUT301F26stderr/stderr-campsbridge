@@ -1,3 +1,7 @@
+/*
+ * Supplies passive booking facts without repositories, clocks, commands or navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy

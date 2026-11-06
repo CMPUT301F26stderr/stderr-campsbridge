@@ -1,3 +1,7 @@
+/*
+ * Shared lottery summary with caller-derived state and deadline text.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components
 
 import androidx.compose.foundation.layout.Arrangement

@@ -1,3 +1,7 @@
+/*
+ * Shows actual receipt state through text and emphasis, without marking it read.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox.components
 
 import androidx.compose.material3.MaterialTheme

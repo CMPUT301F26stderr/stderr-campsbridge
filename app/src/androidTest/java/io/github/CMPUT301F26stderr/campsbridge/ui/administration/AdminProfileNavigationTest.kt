@@ -1,3 +1,7 @@
+/*
+ * Tests admin graph ownership and encoded identities across read-only related navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.test.assertIsDisplayed

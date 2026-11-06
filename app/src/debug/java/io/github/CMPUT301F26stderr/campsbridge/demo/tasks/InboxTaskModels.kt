@@ -1,3 +1,7 @@
+/*
+ * Isolates ordering or count while retaining actual event hydration and receipt actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader

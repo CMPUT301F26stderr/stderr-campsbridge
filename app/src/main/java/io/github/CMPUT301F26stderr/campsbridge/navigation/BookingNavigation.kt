@@ -1,3 +1,7 @@
+/*
+ * Registers one ID-scoped winner parent with four steps and its packaged-policy child.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember

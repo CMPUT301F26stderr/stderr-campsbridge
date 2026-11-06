@@ -1,3 +1,7 @@
+/*
+ * Startup contracts using the real ViewModel and controlled repository boundaries.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.lifecycle.ViewModelStore

@@ -1,3 +1,7 @@
+/*
+ * Adapts known inventory to allocation-only date actions without enabling owner offer edits.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead

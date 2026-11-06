@@ -1,3 +1,7 @@
+/*
+ * Reads a target slot under the existing Browse owner, never a copied attachment or URL.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.runtime.Composable

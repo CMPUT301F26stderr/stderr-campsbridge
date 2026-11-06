@@ -1,3 +1,7 @@
+/*
+ * Scopes the entire wizard to one entry; its ViewModel owns steps and saved input.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

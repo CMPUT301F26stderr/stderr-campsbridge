@@ -1,3 +1,8 @@
+/*
+ * Compiles the declarative halfway fixture and seeds or resets its linked Firestore and Storage data. Binds demo
+ * people to their real Firebase UIDs and supports cloud setup before deployment.
+ */
+
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');

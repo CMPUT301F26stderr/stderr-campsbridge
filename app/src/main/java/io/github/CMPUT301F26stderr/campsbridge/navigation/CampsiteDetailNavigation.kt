@@ -1,3 +1,7 @@
+/*
+ * Registers saved children with entrant actions confined to the actual VIEW graph.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import android.net.Uri

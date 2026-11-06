@@ -1,3 +1,7 @@
+/*
+ * Tests Storage bytes, publication and deferred deletion, independently of removal cascades.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.image
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument

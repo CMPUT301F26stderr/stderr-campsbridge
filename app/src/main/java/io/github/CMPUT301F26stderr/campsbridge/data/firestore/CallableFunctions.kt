@@ -1,3 +1,8 @@
+/*
+ * Calls authenticated booking functions using Firebase's callable HTTP protocol. Auth tokens come from the same
+ * application as Firestore; no device/push token is needed.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import com.google.firebase.FirebaseApp

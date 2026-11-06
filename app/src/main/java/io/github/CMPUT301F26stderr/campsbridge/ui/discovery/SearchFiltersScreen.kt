@@ -1,3 +1,7 @@
+/*
+ * Binds the working editor to its actual parent, consuming no repository write.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.activity.compose.BackHandler

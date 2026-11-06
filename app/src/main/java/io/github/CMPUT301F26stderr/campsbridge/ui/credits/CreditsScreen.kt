@@ -1,3 +1,7 @@
+/*
+ * Connects packaged credits, ordinary web links and Google's generated license reader.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.credits
 
 import android.content.Intent

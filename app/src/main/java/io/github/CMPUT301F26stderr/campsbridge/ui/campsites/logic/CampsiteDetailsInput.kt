@@ -1,3 +1,7 @@
+/*
+ * Validates raw campsite details into listing facts or ordered field feedback before persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails

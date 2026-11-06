@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for two-participant reservation conversations and recipient read acknowledgements.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.messaging
 
 import kotlinx.coroutines.flow.Flow

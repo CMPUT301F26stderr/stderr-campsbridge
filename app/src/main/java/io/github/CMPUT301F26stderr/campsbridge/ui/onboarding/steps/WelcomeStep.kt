@@ -1,3 +1,7 @@
+/*
+ * Presents the approved welcome artwork and one entry action without account operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps
 
 import androidx.compose.foundation.layout.Arrangement

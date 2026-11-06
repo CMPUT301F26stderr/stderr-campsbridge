@@ -1,3 +1,7 @@
+/*
+ * Tests notification log filters and independent event, context and graph lifetimes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

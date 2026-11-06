@@ -1,3 +1,7 @@
+/*
+ * Honors a permitted preference, otherwise choosing entrant, owner, then admin.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

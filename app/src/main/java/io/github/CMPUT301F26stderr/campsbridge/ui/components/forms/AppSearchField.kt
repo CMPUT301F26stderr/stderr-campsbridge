@@ -1,3 +1,7 @@
+/*
+ * Shared rounded search input with an optional explicit submit action alongside the query.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.forms
 
 import androidx.compose.foundation.layout.fillMaxWidth

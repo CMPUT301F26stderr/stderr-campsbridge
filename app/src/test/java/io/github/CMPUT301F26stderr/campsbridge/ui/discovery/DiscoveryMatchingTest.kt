@@ -1,3 +1,7 @@
+/*
+ * Tests location and occupied-night matching independently of general text and guest-capacity predicates.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

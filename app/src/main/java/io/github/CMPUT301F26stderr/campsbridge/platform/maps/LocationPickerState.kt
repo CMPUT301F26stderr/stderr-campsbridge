@@ -1,3 +1,7 @@
+/*
+ * Local working pin; applying or abandoning it belongs to the calling route.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 
 import androidx.compose.runtime.Stable

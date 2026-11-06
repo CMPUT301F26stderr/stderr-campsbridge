@@ -1,3 +1,7 @@
+/*
+ * Verifies production Navigation/ViewModel ownership through actual activity recreation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import android.content.Intent

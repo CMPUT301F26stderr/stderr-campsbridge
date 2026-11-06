@@ -1,3 +1,7 @@
+/*
+ * Verifies that application scaling composes with system scaling exactly once.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.foundation.layout.Column

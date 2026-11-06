@@ -1,3 +1,7 @@
+/*
+ * Registers discovery/filter lifetime and a separate saved public listing reader.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember

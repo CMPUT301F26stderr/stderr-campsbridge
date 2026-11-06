@@ -1,3 +1,7 @@
+/*
+ * Exercises the shared offline write contracts through the same repositories as the screens.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

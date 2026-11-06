@@ -1,3 +1,7 @@
+/*
+ * Registers scoped lottery lists and saved-detail children under their existing navigation owners.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember

@@ -1,3 +1,7 @@
+/*
+ * Gives one ready account foreground ownership of persistence recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.PendingWork

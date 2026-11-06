@@ -1,3 +1,7 @@
+/*
+ * Shared rounded geometry for Material fields, cards, sheets and supporting surfaces.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape

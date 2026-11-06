@@ -1,3 +1,7 @@
+/*
+ * Owns only a saveable working pin; the calling setup graph owns Apply/Cancel effects.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 
 import androidx.activity.compose.BackHandler

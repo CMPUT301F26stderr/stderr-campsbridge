@@ -1,3 +1,7 @@
+/*
+ * Binds feature ViewModels to shared repositories, the current account and completed input rules.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

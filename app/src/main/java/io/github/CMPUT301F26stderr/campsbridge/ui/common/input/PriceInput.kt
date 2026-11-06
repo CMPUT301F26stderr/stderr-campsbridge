@@ -1,3 +1,7 @@
+/*
+ * Parses decimal CAD prices into exact cents or field feedback without floating-point arithmetic.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.input
 
 import java.math.BigDecimal

@@ -1,3 +1,7 @@
+/*
+ * One editable count with integrated bounded controls; invalid raw input remains editable.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.forms
 
 import androidx.compose.foundation.text.KeyboardOptions

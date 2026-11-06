@@ -1,3 +1,7 @@
+/*
+ * Stages an optional photo; no upload action exists before the explicit review save.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import androidx.compose.foundation.layout.aspectRatio

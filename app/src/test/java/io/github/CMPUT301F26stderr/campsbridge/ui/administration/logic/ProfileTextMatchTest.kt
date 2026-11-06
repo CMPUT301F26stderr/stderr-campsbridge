@@ -1,3 +1,7 @@
+/*
+ * Tests profile search across identity and optional contact fields.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences

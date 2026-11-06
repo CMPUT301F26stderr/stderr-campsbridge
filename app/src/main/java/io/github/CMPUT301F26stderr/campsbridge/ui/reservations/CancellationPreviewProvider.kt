@@ -1,3 +1,7 @@
+/*
+ * Supplies passive confirmation, progress and failure states without repository operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.runtime.Composable

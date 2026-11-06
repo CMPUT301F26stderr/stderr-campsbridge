@@ -1,3 +1,7 @@
+/*
+ * Deterministic F02 contract tests; no Android, persistence or production parser fallback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic
 
 import org.junit.Assert.assertEquals

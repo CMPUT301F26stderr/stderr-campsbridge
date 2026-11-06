@@ -1,3 +1,7 @@
+/*
+ * Coordinates the confirmed capability with root-owned workspace selection and actual navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.runtime.Composable

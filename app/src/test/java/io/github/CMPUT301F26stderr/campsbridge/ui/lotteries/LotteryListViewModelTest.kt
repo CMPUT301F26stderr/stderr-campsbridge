@@ -1,3 +1,7 @@
+/*
+ * Scoped queries, category precedence, linked-source honesty and read-owner lifetime.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * Admin browse tabs, search and rows; the route owns the ViewModel and navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.clickable

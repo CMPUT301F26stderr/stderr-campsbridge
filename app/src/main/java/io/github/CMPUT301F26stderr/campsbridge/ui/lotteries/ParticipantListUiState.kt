@@ -1,3 +1,7 @@
+/*
+ * Represents participant records, independently loaded profile labels and result-filter outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

@@ -1,3 +1,7 @@
+/*
+ * Read-only profile facts and three independently retryable source sections.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Arrangement

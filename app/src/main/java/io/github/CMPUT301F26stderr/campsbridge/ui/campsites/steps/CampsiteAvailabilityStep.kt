@@ -1,3 +1,7 @@
+/*
+ * Shows requested offer changes over a confirmed month without saving on selection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import androidx.compose.material3.Text

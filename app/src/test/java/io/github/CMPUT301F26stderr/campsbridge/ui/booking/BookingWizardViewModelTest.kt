@@ -1,3 +1,7 @@
+/*
+ * Explicit wizard actions retain one draft and require current terms/price approval.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

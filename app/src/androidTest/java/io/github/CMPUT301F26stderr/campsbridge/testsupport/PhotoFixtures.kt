@@ -1,3 +1,7 @@
+/*
+ * Native activity-result boundary with controlled results and captured launch intents.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import android.app.Activity

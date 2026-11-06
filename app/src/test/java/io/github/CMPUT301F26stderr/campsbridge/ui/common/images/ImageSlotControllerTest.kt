@@ -1,3 +1,7 @@
+/*
+ * Behavioral contracts for a real image controller with controlled persistence dependencies.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment

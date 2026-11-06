@@ -1,3 +1,7 @@
+/*
+ * Owns one saved target and its independent owner/entrant read sections.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

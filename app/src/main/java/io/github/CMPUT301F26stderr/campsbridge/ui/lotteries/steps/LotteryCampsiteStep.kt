@@ -1,3 +1,7 @@
+/*
+ * One owned published choice and one explicitly applied night allocation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.compose.material.icons.Icons

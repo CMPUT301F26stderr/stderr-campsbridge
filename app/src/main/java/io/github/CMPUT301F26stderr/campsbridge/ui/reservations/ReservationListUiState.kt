@@ -1,3 +1,7 @@
+/*
+ * Represents active reservation rows, actor filters and independent referenced-profile reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation

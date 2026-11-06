@@ -1,3 +1,7 @@
+/*
+ * Tests session alert eligibility and delivery bookkeeping with controlled publication effects.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import android.content.Intent

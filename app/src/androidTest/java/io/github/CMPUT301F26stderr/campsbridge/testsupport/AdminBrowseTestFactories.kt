@@ -1,3 +1,7 @@
+/*
+ * Uses the same graph owner with controllable read-only dependencies.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.lifecycle.ViewModelProvider

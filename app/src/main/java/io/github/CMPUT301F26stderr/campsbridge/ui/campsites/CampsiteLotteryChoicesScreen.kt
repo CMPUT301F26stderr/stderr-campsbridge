@@ -1,3 +1,7 @@
+/*
+ * Same-parent choice list; an allocation failure cannot hide a real associated lottery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement

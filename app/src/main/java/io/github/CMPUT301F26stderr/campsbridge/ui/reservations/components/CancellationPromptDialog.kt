@@ -1,3 +1,7 @@
+/*
+ * Reuses the shared scrollable confirmation and field controls for both actor roles.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.foundation.layout.Arrangement

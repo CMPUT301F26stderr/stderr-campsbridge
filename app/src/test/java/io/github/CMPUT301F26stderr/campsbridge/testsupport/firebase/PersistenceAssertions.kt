@@ -1,3 +1,7 @@
+/*
+ * Asserts a domain rejection while allowing unexpected infrastructure failures to escape unchanged.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure

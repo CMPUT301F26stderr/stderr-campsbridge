@@ -1,3 +1,7 @@
+/*
+ * Shared inventory rendering emits actions without owning persistence or selection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import androidx.compose.runtime.CompositionLocalProvider

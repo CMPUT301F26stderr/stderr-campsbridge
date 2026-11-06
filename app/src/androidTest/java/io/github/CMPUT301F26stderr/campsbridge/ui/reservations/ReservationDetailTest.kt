@@ -1,3 +1,7 @@
+/*
+ * Real saved-reader graph verifies children, historical content and caller/observer lifetime.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.material3.Button

@@ -1,3 +1,7 @@
+/*
+ * History retains event facts and exposes recovery at the row that owns the failed work.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.ui.test.assertHasNoClickAction

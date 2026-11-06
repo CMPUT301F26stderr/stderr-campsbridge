@@ -1,3 +1,7 @@
+/*
+ * Registers owner inventory, campsite setup and saved management routes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember

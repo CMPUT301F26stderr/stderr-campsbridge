@@ -1,3 +1,7 @@
+/*
+ * Reads complete reservations and delegates coordinated mutations to their transaction owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.booking
 
 import com.google.firebase.firestore.FirebaseFirestore

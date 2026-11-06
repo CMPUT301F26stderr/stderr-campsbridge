@@ -1,3 +1,7 @@
+/*
+ * Local listing and inventory operations shared by every demonstration area.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument

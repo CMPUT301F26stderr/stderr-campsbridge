@@ -1,3 +1,7 @@
+/*
+ * Defines registered routes and builders that pass saved record identities between screens.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import android.net.Uri

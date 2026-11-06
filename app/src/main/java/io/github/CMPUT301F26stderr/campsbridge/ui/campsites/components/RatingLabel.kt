@@ -1,3 +1,7 @@
+/*
+ * Formats optional rating facts without confusing empty reviews with a failed source.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components
 
 import androidx.compose.runtime.Composable

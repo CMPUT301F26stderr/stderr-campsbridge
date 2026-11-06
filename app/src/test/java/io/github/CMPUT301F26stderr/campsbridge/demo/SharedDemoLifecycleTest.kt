@@ -1,3 +1,7 @@
+/*
+ * Verifies local durability and time transitions independently of feature screen rendering.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.lifecycle.ViewModelStore

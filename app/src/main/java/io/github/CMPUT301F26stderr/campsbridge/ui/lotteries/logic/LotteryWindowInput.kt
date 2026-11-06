@@ -1,3 +1,7 @@
+/*
+ * Validates ordered registration and booking windows with deterministic first-error feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic
 
 import java.time.Instant

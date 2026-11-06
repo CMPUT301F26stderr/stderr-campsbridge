@@ -1,3 +1,7 @@
+/*
+ * Connects the list's lifecycle, visible photos and saved-ID navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.foundation.lazy.rememberLazyListState

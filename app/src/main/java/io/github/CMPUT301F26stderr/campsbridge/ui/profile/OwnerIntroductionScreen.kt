@@ -1,3 +1,7 @@
+/*
+ * Existing-account hosting introduction, reusing onboarding's informational content.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.compose.BackHandler

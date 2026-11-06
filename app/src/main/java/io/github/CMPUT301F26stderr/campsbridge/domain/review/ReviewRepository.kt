@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for campsite ratings, threaded replies, and per-account reactions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.review
 
 import kotlinx.coroutines.flow.Flow

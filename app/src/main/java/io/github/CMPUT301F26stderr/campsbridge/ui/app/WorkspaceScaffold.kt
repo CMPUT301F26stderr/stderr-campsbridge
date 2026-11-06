@@ -1,3 +1,7 @@
+/*
+ * Supplies one shared feature frame and a capability-limited workspace switcher.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.foundation.layout.Box

@@ -1,3 +1,7 @@
+/*
+ * Direct supplied-input inspection for schedule validation, without lottery publication.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.foundation.layout.Arrangement

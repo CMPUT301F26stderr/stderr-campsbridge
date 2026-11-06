@@ -1,3 +1,7 @@
+/*
+ * Read-only selected record lifetime; section failures and retries never replace siblings.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository

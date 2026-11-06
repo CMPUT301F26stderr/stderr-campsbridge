@@ -1,3 +1,7 @@
+/*
+ * Shares saved-page feedback and scrolling without acquiring a reader or owning navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.activity.compose.BackHandler

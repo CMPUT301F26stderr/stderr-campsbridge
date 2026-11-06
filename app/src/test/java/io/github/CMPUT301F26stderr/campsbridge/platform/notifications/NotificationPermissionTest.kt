@@ -1,3 +1,7 @@
+/*
+ * Tests Android permission inspection and settings intents through controlled platform shadows.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.Manifest

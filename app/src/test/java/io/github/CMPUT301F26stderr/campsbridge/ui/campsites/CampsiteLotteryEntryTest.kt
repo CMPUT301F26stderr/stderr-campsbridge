@@ -1,3 +1,7 @@
+/*
+ * The saved campsite retains one parent while its lottery child owns independent work.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

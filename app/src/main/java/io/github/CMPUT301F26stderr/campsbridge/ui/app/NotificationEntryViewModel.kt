@@ -1,3 +1,7 @@
+/*
+ * Retains one root tap and resolves its saved target only for a matching ready session.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.lifecycle.SavedStateHandle

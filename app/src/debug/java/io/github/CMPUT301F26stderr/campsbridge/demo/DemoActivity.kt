@@ -1,3 +1,7 @@
+/*
+ * Debug-only shared-component gallery; does not initialize application repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import android.os.Bundle

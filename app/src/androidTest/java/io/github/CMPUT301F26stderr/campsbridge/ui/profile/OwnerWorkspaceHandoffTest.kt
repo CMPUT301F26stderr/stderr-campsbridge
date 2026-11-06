@@ -1,3 +1,7 @@
+/*
+ * Independent account observers may confirm owner capability at different times.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.runtime.getValue

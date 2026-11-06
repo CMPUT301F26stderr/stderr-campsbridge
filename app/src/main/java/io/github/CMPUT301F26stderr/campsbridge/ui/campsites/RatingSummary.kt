@@ -1,3 +1,7 @@
+/*
+ * Derives rating display facts while keeping empty reviews separate from failed reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review

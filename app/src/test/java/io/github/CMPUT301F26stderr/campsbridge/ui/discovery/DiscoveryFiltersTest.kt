@@ -1,3 +1,7 @@
+/*
+ * Optional working criteria validate before replacing the applied filter.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import org.junit.Assert.assertEquals

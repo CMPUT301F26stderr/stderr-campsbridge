@@ -1,3 +1,7 @@
+/*
+ * Groups related facts or inputs in one shared Material section without owning their state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries
 
 import androidx.compose.foundation.layout.Arrangement

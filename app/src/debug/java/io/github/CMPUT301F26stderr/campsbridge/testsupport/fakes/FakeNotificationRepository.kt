@@ -1,3 +1,7 @@
+/*
+ * Controlled immutable event reads; other operations require a deliberately added consumer.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement

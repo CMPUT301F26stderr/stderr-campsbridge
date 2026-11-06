@@ -1,3 +1,7 @@
+/*
+ * Matches location and stay dates against listing facts and confirmed offered, unclaimed nights.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

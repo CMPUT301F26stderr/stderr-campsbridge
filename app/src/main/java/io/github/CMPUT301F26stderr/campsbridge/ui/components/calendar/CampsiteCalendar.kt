@@ -1,3 +1,7 @@
+/*
+ * Displays inventory and supplied selection without performing persistence operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import androidx.compose.foundation.horizontalScroll
