@@ -13,8 +13,8 @@ if [[ "${GITHUB_REF:-}" != refs/heads/main ||
 fi
 
 apk_path="${1:?APK path is required}"
-if [[ ! -s "$apk_path" || "${apk_path##*/}" != app-debug.apk ]]; then
-    echo 'Expected a nonempty app-debug.apk from this CI run.' >&2
+if [[ ! -s "$apk_path" || "${apk_path##*/}" != app-release.apk ]]; then
+    echo 'Expected a nonempty app-release.apk from this CI run.' >&2
     exit 1
 fi
 
@@ -26,7 +26,7 @@ fi
 
 notes_file="$(mktemp)"
 trap 'rm -f -- "$notes_file"' EXIT
-printf 'Latest verified debug APK from main commit %s.\n\n[CI run](https://github.com/%s/actions/runs/%s).\n\nThis beta prerelease is updated after successful main checks.\n' \
+printf 'Halfway Firebase release APK from main commit %s.\n\n[CI run](https://github.com/%s/actions/runs/%s).\n\nThis beta prerelease is updated after successful main checks.\n' \
     "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > "$notes_file"
 
 release_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \

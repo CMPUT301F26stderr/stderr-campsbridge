@@ -43,8 +43,6 @@ bash scripts/check-firebase.sh
 
 The command installs pinned Node test dependencies, starts disposable Auth/Firestore/Storage/Functions services for `demo-stderr`, runs both suites, and shuts down the services. Each invocation reserves random available loopback ports for the services, Firestore websocket, hub and logging; Kotlin and rules tests use the addresses exported by the CLI. Temporary configuration and hub files are isolated per run so self-hosted runners can share a VM. The checked-in configuration keeps the usual ports for manual development. The command does not import or export persistent data. Kotlin tests reset Firestore and Storage between scenarios and use an authenticated Robolectric host with real SDK clients. No Android virtual device is required. CI requires this suite in the `Firebase contracts` job.
 
-Pending work:
+Prepare each target project and rehearsal with the [Halfway setup and seed commands](tooling/README.md). They configure anonymous Auth, deploy the matching rules/indexes and booking functions, and populate records for the installed actors.
 
-- Enable anonymous Auth and deploy the booking functions with the agreed rules/indexes in the configured cloud project.
-- Connected installed-app verification, closed-app scheduling and FCM push delivery. Ready foreground sessions already run account-scoped draw/inbox recovery; global removal/image recovery remains an explicit administrative operation.
-- Fixture seeding commands; see [tooling conventions](tooling/README.md).
+Closed-app scheduling and FCM push delivery remain outside the Halfway app. Ready foreground sessions already run account-scoped draw/inbox recovery; global removal/image recovery remains an explicit administrative operation.

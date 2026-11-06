@@ -18,7 +18,7 @@ class PublishApkTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.apk = self.root / "build output" / "app-debug.apk"
+        self.apk = self.root / "build output" / "app-release.apk"
         self.apk.parent.mkdir()
         self.apk.write_bytes(b"fixture APK")
         self.calls = self.root / "calls.jsonl"
@@ -63,7 +63,7 @@ class PublishApkTest(unittest.TestCase):
     def test_invalid_context_or_artifact_never_calls_github(self):
         wrong_name = self.root / "artifact.zip"
         wrong_name.write_bytes(b"fixture archive")
-        empty_apk = self.root / "empty" / "app-debug.apk"
+        empty_apk = self.root / "empty" / "app-release.apk"
         empty_apk.parent.mkdir()
         empty_apk.touch()
         cases = [({"GITHUB_REF": "refs/pull/42/merge"}, self.apk),

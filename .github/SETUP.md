@@ -31,13 +31,13 @@ File checks cover the PR/push diff; secret scanning covers the checkout. Manual 
 
 The current stale-review rule can dismiss approval after a formatting commit. Approve the formatted revision again when required; the formatter makes no further commit if its files are clean. An uncorrectable formatting error fails the formatting workflow and needs a manual fix. Neither automation merges PRs. Both workflows take effect after they are present on the default branch.
 
-After Android checks pass, CI uploads `app-debug.apk` directly. A missing APK or failed upload fails the Android job. Android reports upload even when checks fail. Actions artifacts are retained for 14 days.
+After Android checks pass, CI uploads the signed `app-release.apk` directly. A missing APK or failed upload fails the Android job. Android reports upload even when checks fail. Actions artifacts are retained for 14 days.
 
 Android checks also generate `app/build/dokka/html/` and upload it as the run's API documentation artifact. Generation or upload failure fails the Android job and therefore `CI ready`. Dokka generation does not enforce KDoc coverage.
 
 After `CI ready` passes on a main push or manual main run, CI calls [`pages.yml`](workflows/pages.yml). It combines the documentation artifact from that run with the checked-in site assets and deploys one GitHub Pages site: `/` is the landing page, `/storyboard/` is the interactive prototype, and `/docs/` is the generated API reference. Pull requests generate documentation without deploying. Use the **CI** workflow for manual publication; Pages must use GitHub Actions as its publishing source.
 
-After `CI ready` passes, main pushes and manual main runs publish that run's APK to the rolling `beta` prerelease. Pull requests do not publish. Within CI, only the publishing job has `contents: write`; it also has `actions: read` to download the verified artifact. `scripts/publish-apk.sh` creates or updates the prerelease, moves its tag to the verified commit, and replaces `app-debug.apk`. Superseded commits do not publish. Keep the tag and asset name synchronized with the [README download link](../README.md#testing). Release assets remain available until replaced or removed.
+After `CI ready` passes, main pushes and manual main runs publish that run's APK to the rolling `beta` prerelease. Pull requests do not publish. Within CI, only the publishing job has `contents: write`; it also has `actions: read` to download the verified artifact. `scripts/publish-apk.sh` creates or updates the prerelease, moves its tag to the verified commit, and replaces `app-release.apk`. Superseded commits do not publish. Keep the tag and asset name synchronized with the [README download link](../README.md#testing). Release assets remain available until replaced or removed.
 
 Firebase deployment and AI review are not part of the current workflow.
 

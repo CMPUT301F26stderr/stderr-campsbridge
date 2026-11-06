@@ -1,0 +1,102 @@
+{
+  "checkpoint": "halfway",
+  "anonymousAuth": true,
+  "functionServiceRoles": ["roles/cloudbuild.builds.builder", "roles/datastore.user"],
+  "publicCallables": ["reserve", "cancelReservation"],
+  "timeZone": "America/Edmonton",
+  "actors": {
+    "host": { "name": "Jordan Lee", "roles": ["ENTRANT", "OWNER"] },
+    "entrant": { "name": "Alex Chen", "roles": ["ENTRANT"] },
+    "other": { "name": "Morgan Park", "roles": ["ENTRANT"] },
+    "admin": { "name": "Taylor Brooks", "roles": ["ADMIN"] }
+  },
+  "campsites": [
+    {
+      "id": "halfway-river",
+      "owner": "host",
+      "name": "River Camp",
+      "description": "A quiet riverside clearing beneath the pines, with walking trails along the Athabasca River.",
+      "latitude": 52.8734,
+      "longitude": -118.0814,
+      "locationLabel": "Jasper, Alberta",
+      "maxGuests": 6,
+      "nightlyPriceCents": 6500,
+      "amenities": ["water", "flush-toilets", "picnic-table"],
+      "tags": ["lakeside"],
+      "rules": "Quiet hours begin at 10 pm. Keep food secured and leave the clearing clean.",
+      "published": true,
+      "photo": "photos/jasper.jpg",
+      "offeredDayOffsets": [-10, -9, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    },
+    {
+      "id": "halfway-draft",
+      "owner": "host",
+      "name": "Forest clearing",
+      "description": "A sheltered pitch among the trees.",
+      "latitude": 51.1784,
+      "longitude": -115.5708,
+      "locationLabel": "Banff, Alberta",
+      "maxGuests": 4,
+      "nightlyPriceCents": 8000,
+      "amenities": ["picnic-table"],
+      "tags": ["national-parks"],
+      "rules": "Leave the clearing clean.",
+      "published": false,
+      "offeredDayOffsets": []
+    }
+  ],
+  "lotteries": [
+    {
+      "id": "halfway-open",
+      "title": "Riverside live draw",
+      "campsiteId": "halfway-river",
+      "nightOffsets": [14, 15, 16, 17],
+      "registrationOpensSeconds": -600,
+      "registrationClosesSeconds": 180,
+      "bookingOpensSeconds": 180,
+      "bookingClosesSeconds": 86400,
+      "winnerCount": 1,
+      "outcomes": {}
+    },
+    {
+      "id": "halfway-won",
+      "title": "Your spring escape",
+      "campsiteId": "halfway-river",
+      "nightOffsets": [18, 19, 20, 21],
+      "registrationOpensSeconds": -172800,
+      "registrationClosesSeconds": -3600,
+      "bookingOpensSeconds": -3600,
+      "bookingClosesSeconds": 86400,
+      "winnerCount": 1,
+      "outcomes": { "entrant": "OFFERED", "other": "LOST" }
+    },
+    {
+      "id": "halfway-booked",
+      "title": "Riverside weekend",
+      "campsiteId": "halfway-river",
+      "nightOffsets": [22, 23],
+      "registrationOpensSeconds": -259200,
+      "registrationClosesSeconds": -172800,
+      "bookingOpensSeconds": -172800,
+      "bookingClosesSeconds": 86400,
+      "winnerCount": 1,
+      "outcomes": { "entrant": "OFFERED" }
+    },
+    {
+      "id": "halfway-past",
+      "title": "Early camping break",
+      "campsiteId": "halfway-river",
+      "nightOffsets": [-10, -9],
+      "registrationOpensSeconds": -2592000,
+      "registrationClosesSeconds": -2505600,
+      "bookingOpensSeconds": -2505600,
+      "bookingClosesSeconds": -2419200,
+      "winnerCount": 1,
+      "outcomes": { "entrant": "OFFERED" }
+    }
+  ],
+  "reservations": [
+    { "lotteryId": "halfway-booked", "entrant": "entrant", "checkInDayOffset": 22, "nightCount": 2, "guestCount": 2 },
+    { "lotteryId": "halfway-past", "entrant": "entrant", "checkInDayOffset": -10, "nightCount": 2, "guestCount": 2 }
+  ]
+}

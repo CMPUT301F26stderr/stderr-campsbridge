@@ -2,6 +2,10 @@
   "name": "campsbridge-booking-functions",
   "private": true,
   "main": "index.js",
+  "scripts": {
+    "seed": "node seed-halfway.js",
+    "test:seed": "node --test seed-halfway.test.js"
+  },
   "engines": {
     "node": "22"
   },

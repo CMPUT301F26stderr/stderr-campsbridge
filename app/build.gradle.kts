@@ -43,6 +43,8 @@ android {
             matchingFallbacks += "debug"
         }
         release {
+            // Use the existing installation key for the trusted Halfway distribution.
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = false
             }

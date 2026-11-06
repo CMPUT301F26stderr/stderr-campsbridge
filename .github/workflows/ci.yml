@@ -74,7 +74,7 @@ jobs:
       - name: Lint, test, build, and generate API documentation
         env:
           ORG_GRADLE_PROJECT_mapsApiKey: ${{ secrets.MAPS_API_KEY }}
-        run: nix develop .#default --no-update-lock-file --command bash scripts/check.sh :app:unitCoverageReport :app:pureLogicCoverage :app:dokkaGeneratePublicationHtml --stacktrace
+        run: nix develop .#default --no-update-lock-file --command bash scripts/check.sh :app:lintRelease :app:assembleRelease :app:unitCoverageReport :app:pureLogicCoverage :app:dokkaGeneratePublicationHtml --stacktrace
       - name: Make cached Gradle launchers executable
         if: always()
         run: |
@@ -82,10 +82,10 @@ jobs:
           if [[ -d "$gradle_distributions" ]]; then
             find "$gradle_distributions" -type f -path '*/bin/gradle' -exec chmod +x {} +
           fi
-      - name: Upload internal build
+      - name: Upload release build
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/release/app-release.apk
           archive: false
           overwrite: true
           if-no-files-found: error
@@ -236,13 +236,13 @@ jobs:
       - name: Download the verified APK
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: app-debug.apk
+          name: app-release.apk
           path: ${{ runner.temp }}/beta-apk-${{ github.run_id }}-${{ github.run_attempt }}
           skip-decompress: true
       - name: Update beta prerelease
         env:
           GH_TOKEN: ${{ github.token }}
-          APK_PATH: ${{ runner.temp }}/beta-apk-${{ github.run_id }}-${{ github.run_attempt }}/app-debug.apk
+          APK_PATH: ${{ runner.temp }}/beta-apk-${{ github.run_id }}-${{ github.run_attempt }}/app-release.apk
         run: nix develop .#repository --no-update-lock-file --command bash scripts/publish-apk.sh "$APK_PATH"
 
   pages:
