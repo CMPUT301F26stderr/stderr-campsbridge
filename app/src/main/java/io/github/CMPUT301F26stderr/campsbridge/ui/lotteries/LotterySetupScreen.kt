@@ -22,6 +22,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepTransition
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps.LotteryBasicsStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps.LotteryCampsiteStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps.LotteryReviewStep
@@ -118,100 +119,102 @@ fun LotterySetupScreen(
         if (state.discardPrompt) LotteryDiscardDialog(onConfirmDiscard, onDismissDiscard)
         return
     }
-    val canEdit = !submitting && !state.discardPrompt
-    val step = state.draft.step
-    val review = step == LotteryStep.REVIEW
-    StepScaffold(
-        stringResource(R.string.lottery_create),
-        stringResource(R.string.onboarding_step, step.ordinal + 1, LotteryStep.entries.size),
-        onBack,
-        { if (review) onPublish() else onNext() },
-        modifier,
-        nextEnabled = canEdit && (!review || state.configuration != null),
-        isSubmitting = submitting,
-        nextLabel = stringResource(if (review) R.string.lottery_publish else R.string.next),
-        steps = StepProgress(step.ordinal + 1, LotteryStep.entries.size),
-        onCancel = onCancel,
-        secondaryLabel = if (review) stringResource(R.string.save_draft) else null,
-        onSecondaryAction = if (review) onSaveDraft else null,
-        secondaryEnabled = canEdit && state.configuration != null,
-        submittingAction =
-            if (state.saveAction == LotterySaveAction.DRAFT && review) {
-                StepAction.SECONDARY
-            } else {
-                StepAction.PRIMARY
-            },
-    ) {
-        Text(lotteryStepTitle(step), style = MaterialTheme.typography.headlineSmall)
-        if (submitting) {
-            Text(
-                stringResource(
-                    when (state.savePhase) {
-                        LotterySavePhase.SAVING_DETAILS -> R.string.lottery_saving_details
-                        LotterySavePhase.SAVING_OFFER -> R.string.lottery_saving_offer
-                        LotterySavePhase.PUBLISHING -> R.string.lottery_publishing
-                        else -> R.string.lottery_recovering
-                    },
-                ),
-            )
-        }
-        if (state.saveFailure != null) {
-            FailureContent(
-                stringResource(R.string.lottery_save_failed),
-                onRetrySave,
-                retryEnabled = !submitting && state.configuration != null,
-            )
-        }
-        if (state.publicationTooLate) Text(stringResource(R.string.lottery_publication_too_late))
-        if (review && state.choices == LotteryCampsiteChoices.Failure) {
-            FailureContent(
-                stringResource(R.string.lottery_site_failure),
-                onRetryChoices,
-                !submitting,
-            )
-        }
-        when (step) {
-            LotteryStep.BASICS -> {
-                LotteryBasicsStep(
-                    state.draft,
-                    state.errors.titleRequired,
-                    onTitle,
-                    onDescription,
+    StepTransition(state, { it.draft.step.ordinal }, modifier) { state ->
+        val canEdit = !submitting && !state.discardPrompt
+        val step = state.draft.step
+        val review = step == LotteryStep.REVIEW
+        StepScaffold(
+            stringResource(R.string.lottery_create),
+            stringResource(R.string.onboarding_step, step.ordinal + 1, LotteryStep.entries.size),
+            onBack,
+            { if (review) onPublish() else onNext() },
+            Modifier,
+            nextEnabled = canEdit && (!review || state.configuration != null),
+            isSubmitting = submitting,
+            nextLabel = stringResource(if (review) R.string.lottery_publish else R.string.next),
+            steps = StepProgress(step.ordinal + 1, LotteryStep.entries.size),
+            onCancel = onCancel,
+            secondaryLabel = if (review) stringResource(R.string.save_draft) else null,
+            onSecondaryAction = if (review) onSaveDraft else null,
+            secondaryEnabled = canEdit && state.configuration != null,
+            submittingAction =
+                if (state.saveAction == LotterySaveAction.DRAFT && review) {
+                    StepAction.SECONDARY
+                } else {
+                    StepAction.PRIMARY
+                },
+        ) {
+            Text(lotteryStepTitle(step), style = MaterialTheme.typography.headlineSmall)
+            if (submitting) {
+                Text(
+                    stringResource(
+                        when (state.savePhase) {
+                            LotterySavePhase.SAVING_DETAILS -> R.string.lottery_saving_details
+                            LotterySavePhase.SAVING_OFFER -> R.string.lottery_saving_offer
+                            LotterySavePhase.PUBLISHING -> R.string.lottery_publishing
+                            else -> R.string.lottery_recovering
+                        },
+                    ),
                 )
             }
-
-            LotteryStep.SITE -> {
-                LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices)
-            }
-
-            LotteryStep.REGISTRATION -> {
-                LotteryWindowStep(
-                    state,
-                    LotterySchedulePoint.REGISTRATION_OPEN,
-                    LotterySchedulePoint.REGISTRATION_CLOSE,
-                    initialMonth,
-                    onDate,
-                    onTime,
+            if (state.saveFailure != null) {
+                FailureContent(
+                    stringResource(R.string.lottery_save_failed),
+                    onRetrySave,
+                    retryEnabled = !submitting && state.configuration != null,
                 )
             }
-
-            LotteryStep.BOOKING -> {
-                LotteryWindowStep(
-                    state,
-                    LotterySchedulePoint.BOOKING_OPEN,
-                    LotterySchedulePoint.BOOKING_CLOSE,
-                    initialMonth,
-                    onDate,
-                    onTime,
+            if (state.publicationTooLate) Text(stringResource(R.string.lottery_publication_too_late))
+            if (review && state.choices == LotteryCampsiteChoices.Failure) {
+                FailureContent(
+                    stringResource(R.string.lottery_site_failure),
+                    onRetryChoices,
+                    !submitting,
                 )
             }
+            when (step) {
+                LotteryStep.BASICS -> {
+                    LotteryBasicsStep(
+                        state.draft,
+                        state.errors.titleRequired,
+                        onTitle,
+                        onDescription,
+                    )
+                }
 
-            LotteryStep.WINNERS -> {
-                LotteryWinnersStep(state, onWinners)
-            }
+                LotteryStep.SITE -> {
+                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices)
+                }
 
-            LotteryStep.REVIEW -> {
-                LotteryReviewStep(state, onEdit, onConfirmZone, enabled = canEdit)
+                LotteryStep.REGISTRATION -> {
+                    LotteryWindowStep(
+                        state,
+                        LotterySchedulePoint.REGISTRATION_OPEN,
+                        LotterySchedulePoint.REGISTRATION_CLOSE,
+                        initialMonth,
+                        onDate,
+                        onTime,
+                    )
+                }
+
+                LotteryStep.BOOKING -> {
+                    LotteryWindowStep(
+                        state,
+                        LotterySchedulePoint.BOOKING_OPEN,
+                        LotterySchedulePoint.BOOKING_CLOSE,
+                        initialMonth,
+                        onDate,
+                        onTime,
+                    )
+                }
+
+                LotteryStep.WINNERS -> {
+                    LotteryWinnersStep(state, onWinners)
+                }
+
+                LotteryStep.REVIEW -> {
+                    LotteryReviewStep(state, onEdit, onConfirmZone, enabled = canEdit)
+                }
             }
         }
     }
