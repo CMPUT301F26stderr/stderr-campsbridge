@@ -57,6 +57,7 @@ import java.time.ZoneId
  * @param onRetryCampsites Retries only the failed owner-scoped campsite source.
  * @param onRetryPhoto Retries only the attachment or transient display URL.
  * @param onCampsite Opens a saved listing through read-only admin inspection.
+ * @param onImage Opens this account's current photo for inspection.
  * @param modifier Caller layout.
  */
 @Composable
@@ -67,6 +68,7 @@ fun AdminProfileScreen(
     onRetryCampsites: () -> Unit,
     onRetryPhoto: () -> Unit,
     onCampsite: (String) -> Unit,
+    onImage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppScreen(stringResource(R.string.admin_profile_inspection), modifier, onBack = onBack) {
@@ -127,6 +129,11 @@ fun AdminProfileScreen(
                         state.photo.attachment == null
                     ) {
                         EmptyContent(stringResource(R.string.admin_no_profile_photo))
+                    }
+                    if (state.photo.loadState == ImageLoadState.READY &&
+                        state.photo.attachment != null
+                    ) {
+                        NavigationRow(stringResource(R.string.admin_inspect_profile_photo), onImage)
                     }
                 } else {
                     Text(stringResource(R.string.admin_profile_dependents_unavailable))
@@ -262,7 +269,7 @@ private fun inspectionPreviewAccount() =
  */
 @Composable
 private fun ProfileInspectionPreview(state: AdminInspectionUiState.Profile) {
-    CampsbridgeTheme { AdminProfileScreen(state, {}, {}, {}, {}, {}) }
+    CampsbridgeTheme { AdminProfileScreen(state, {}, {}, {}, {}, {}, {}) }
 }
 
 /** Shows a loaded profile, owned campsite, and photo slot. */

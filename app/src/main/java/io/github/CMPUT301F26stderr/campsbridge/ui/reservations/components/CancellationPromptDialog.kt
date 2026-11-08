@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.CancellationPhase
@@ -43,6 +46,7 @@ internal fun CancellationPromptDialog(
     val submitting = state.phase == CancellationPhase.CANCELLING
     if (!submitting && (state.phase != CancellationPhase.IDLE || !state.canRequest)) return
     val owner = context == ReservationContext.OWNER
+    val locale = LocalConfiguration.current.locales[0]
     ConfirmationDialog(
         title =
             stringResource(
@@ -65,7 +69,24 @@ internal fun CancellationPromptDialog(
         destructive = true,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
-            Text(stringResource(R.string.reservation_refund_consequence))
+            if (record != null) {
+                Text(record.bookedCampsite.name)
+                Text(
+                    stringResource(
+                        R.string.stay_dates,
+                        formatDate(record.checkInDate, locale),
+                        formatDate(record.checkOutDate, locale),
+                    ),
+                )
+                Text(
+                    stringResource(
+                        R.string.reservation_refund_amount_consequence,
+                        formatCad(record.payment.amountCents, locale),
+                    ),
+                )
+            } else {
+                Text(stringResource(R.string.reservation_refund_consequence))
+            }
             AppTextField(
                 prompt.reason,
                 onReason,

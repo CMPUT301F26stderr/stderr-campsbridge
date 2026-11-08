@@ -10,6 +10,7 @@ import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.offeredNightCalendarState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarLabels
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -34,7 +35,11 @@ fun CampsiteAvailabilityStep(
     onRetry: () -> Unit,
 ) {
     Text(stringResource(R.string.campsite_calendar_hint))
-    CampsiteCalendar(offeredNightCalendarState(month, inventory, requested), onMonth, onDate)
+    CampsiteCalendar(
+        offeredNightCalendarState(month, inventory, requested, labels = CalendarLabels.OFFERED_NIGHTS),
+        onMonth,
+        onDate,
+    )
     when (inventory) {
         CalendarInventoryRead.Loading -> {
             LoadingContent()

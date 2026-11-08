@@ -62,6 +62,7 @@ class OfflineDemoTest {
             compose.onNodeWithText("Jordan Lee").assertIsDisplayed()
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("New account").performClick()
+            awaitVisible("Get started")
             compose.onNodeWithText("Get started").performClick()
             compose.onNodeWithText("Find a campsite").performClick()
             compose.onNodeWithText("Next").performClick()

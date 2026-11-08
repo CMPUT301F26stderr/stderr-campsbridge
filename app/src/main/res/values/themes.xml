@@ -4,4 +4,10 @@
     <style name="Theme.Campsbridge" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowLightStatusBar">true</item>
     </style>
+    <style name="Theme.Campsbridge.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_campsite</item>
+        <item name="postSplashScreenTheme">@style/Theme.Campsbridge</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>

@@ -36,6 +36,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepTransition
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import java.time.LocalDate
 import java.time.YearMonth
@@ -158,205 +159,207 @@ fun CampsiteSetupScreen(
         }
         return
     }
-    val draft = state.draft
-    val review = draft.step == CampsiteStep.REVIEW
-    val submitting = state.savePhase != CampsiteSavePhase.IDLE
-    val canEdit = !submitting && !state.photoNeedsRecovery && !state.publicationPending
-    val retrying = state.saveFailure != null
-    val retryPublication = review && retrying && state.saveAction == CampsiteSaveAction.PUBLISH
-    val retryDraft = review && retrying && state.saveAction == CampsiteSaveAction.DRAFT
-    val saveAction = if (retryDraft) onRetrySave else onSaveDraft
-    val publishAction = if (retryPublication) onRetrySave else onPublish
-    val canSave =
-        validateCampsiteDetails(draft) is CampsiteDetailsInput.Value &&
-            !state.photoReselectionRequired &&
-            (draft.requestedAvailability.isEmpty() || !state.availabilityComparisonPending)
-    StepScaffold(
-        title = stringResource(R.string.campsite_setup_title),
-        progress = stringResource(R.string.campsite_setup_step, draft.step.ordinal + 1, 8),
-        onBack = onBack,
-        onNext = { if (review) publishAction?.invoke() else onNext() },
-        modifier = modifier,
-        nextEnabled = if (review) canSave && publishAction != null else canEdit,
-        isSubmitting = submitting,
-        exitEnabled = !state.photoNeedsRecovery && !state.publicationPending,
-        nextLabel =
-            stringResource(
-                when {
-                    retryPublication -> R.string.campsite_retry_publish
-                    review -> R.string.publish
-                    else -> R.string.next
-                },
-            ),
-        steps = StepProgress(draft.step.ordinal + 1, 8),
-        onCancel = onCancel,
-        secondaryLabel =
-            if (review) {
+    StepTransition(state, { it.draft.step.ordinal }, modifier) { state ->
+        val draft = state.draft
+        val review = draft.step == CampsiteStep.REVIEW
+        val submitting = state.savePhase != CampsiteSavePhase.IDLE
+        val canEdit = !submitting && !state.photoNeedsRecovery && !state.publicationPending
+        val retrying = state.saveFailure != null
+        val retryPublication = review && retrying && state.saveAction == CampsiteSaveAction.PUBLISH
+        val retryDraft = review && retrying && state.saveAction == CampsiteSaveAction.DRAFT
+        val saveAction = if (retryDraft) onRetrySave else onSaveDraft
+        val publishAction = if (retryPublication) onRetrySave else onPublish
+        val canSave =
+            validateCampsiteDetails(draft) is CampsiteDetailsInput.Value &&
+                !state.photoReselectionRequired &&
+                (draft.requestedAvailability.isEmpty() || !state.availabilityComparisonPending)
+        StepScaffold(
+            title = stringResource(R.string.campsite_setup_title),
+            progress = stringResource(R.string.campsite_setup_step, draft.step.ordinal + 1, 8),
+            onBack = onBack,
+            onNext = { if (review) publishAction?.invoke() else onNext() },
+            modifier = Modifier,
+            nextEnabled = if (review) canSave && publishAction != null else canEdit,
+            isSubmitting = submitting,
+            exitEnabled = !state.photoNeedsRecovery && !state.publicationPending,
+            nextLabel =
                 stringResource(
-                    if (retryDraft) R.string.campsite_retry_save else R.string.save_draft,
-                )
-            } else {
-                null
-            },
-        onSecondaryAction = if (review) ({ saveAction?.invoke() }) else null,
-        secondaryEnabled =
-            canSave && saveAction != null && !state.publicationPending &&
-                !(state.photoNeedsRecovery && state.saveAction == CampsiteSaveAction.PUBLISH),
-        submittingAction =
-            if (state.saveAction == CampsiteSaveAction.PUBLISH) {
-                StepAction.PRIMARY
-            } else {
-                StepAction.SECONDARY
-            },
-        onSkip =
-            if (draft.step == CampsiteStep.PHOTO) {
-                (
-                    {
-                        onDiscardPhoto()
-                        onNext()
+                    when {
+                        retryPublication -> R.string.campsite_retry_publish
+                        review -> R.string.publish
+                        else -> R.string.next
+                    },
+                ),
+            steps = StepProgress(draft.step.ordinal + 1, 8),
+            onCancel = onCancel,
+            secondaryLabel =
+                if (review) {
+                    stringResource(
+                        if (retryDraft) R.string.campsite_retry_save else R.string.save_draft,
+                    )
+                } else {
+                    null
+                },
+            onSecondaryAction = if (review) ({ saveAction?.invoke() }) else null,
+            secondaryEnabled =
+                canSave && saveAction != null && !state.publicationPending &&
+                    !(state.photoNeedsRecovery && state.saveAction == CampsiteSaveAction.PUBLISH),
+            submittingAction =
+                if (state.saveAction == CampsiteSaveAction.PUBLISH) {
+                    StepAction.PRIMARY
+                } else {
+                    StepAction.SECONDARY
+                },
+            onSkip =
+                if (draft.step == CampsiteStep.PHOTO) {
+                    (
+                        {
+                            onDiscardPhoto()
+                            onNext()
+                        }
+                    )
+                } else {
+                    null
+                },
+        ) {
+            Text(
+                stringResource(campsiteStepTitle(draft.step)),
+                style = MaterialTheme.typography.headlineMedium,
+            )
+            when (draft.step) {
+                CampsiteStep.BASICS -> {
+                    CampsiteBasicsStep(
+                        draft.name,
+                        draft.description,
+                        state.errors.nameRequired,
+                        onName,
+                        onDescription,
+                    )
+                }
+
+                CampsiteStep.PHOTO -> {
+                    CampsitePhotoStep(
+                        state.photoIntent,
+                        state.savedPhoto,
+                        state.photoReselectionRequired,
+                        state.photoSelectionFailed,
+                        onChoosePhoto,
+                        onDiscardPhoto,
+                        onRemovePhoto,
+                        onRetryPhoto,
+                    )
+                }
+
+                CampsiteStep.LOCATION -> {
+                    CampsiteLocationStep(draft, state.errors, onLabel, onZone, onChooseLocation)
+                }
+
+                CampsiteStep.CAPACITY_PRICE -> {
+                    CampsiteCapacityPriceStep(draft, state.errors, onCapacity, onPrice)
+                }
+
+                CampsiteStep.OPTIONS -> {
+                    CampsiteOptionsStep(draft.amenities, draft.tags, onAmenity, onTag)
+                }
+
+                CampsiteStep.RULES -> {
+                    CampsiteRulesStep(draft.rules, onRules, onOpenPolicy)
+                }
+
+                CampsiteStep.AVAILABILITY -> {
+                    CampsiteAvailabilityStep(
+                        state.month,
+                        state.inventory,
+                        draft.requestedAvailability,
+                        onMonth,
+                        onDate,
+                        onRetryCalendar,
+                    )
+                }
+
+                CampsiteStep.REVIEW -> {
+                    if (submitting) {
+                        Text(
+                            stringResource(
+                                when (state.savePhase) {
+                                    CampsiteSavePhase.PUBLISHING -> {
+                                        R.string.campsite_publishing
+                                    }
+
+                                    CampsiteSavePhase.RECOVERING -> {
+                                        R.string.campsite_checking_save
+                                    }
+
+                                    CampsiteSavePhase.SAVING_PHOTO -> {
+                                        R.string.campsite_saving_photo
+                                    }
+
+                                    CampsiteSavePhase.SAVING_AVAILABILITY -> {
+                                        R.string.campsite_saving_availability
+                                    }
+
+                                    else -> {
+                                        R.string.campsite_saving_details
+                                    }
+                                },
+                            ),
+                        )
+                    } else if (state.saveFailure != null) {
+                        InlineNotice(
+                            stringResource(R.string.campsite_save_failure_title),
+                            stringResource(
+                                if (state.publicationPending) {
+                                    R.string.campsite_publication_recovery
+                                } else if (state.photoNeedsRecovery) {
+                                    R.string.campsite_photo_recovery
+                                } else {
+                                    when (state.saveFailure) {
+                                        CampsiteSaveFailure.DETAILS -> {
+                                            R.string.campsite_details_save_failure
+                                        }
+
+                                        CampsiteSaveFailure.PHOTO -> {
+                                            R.string.campsite_photo_save_failure
+                                        }
+
+                                        CampsiteSaveFailure.RECOVERY -> {
+                                            R.string.campsite_save_recovery_failure
+                                        }
+
+                                        CampsiteSaveFailure.PHOTO_RESELECTION -> {
+                                            R.string.campsite_photo_reselect
+                                        }
+
+                                        CampsiteSaveFailure.AVAILABILITY -> {
+                                            R.string.campsite_availability_save_failure
+                                        }
+
+                                        CampsiteSaveFailure.PUBLICATION -> {
+                                            R.string.campsite_publication_failure
+                                        }
+
+                                        CampsiteSaveFailure.AVAILABILITY_PENDING -> {
+                                            R.string.campsite_date_save_pending
+                                        }
+                                    }
+                                },
+                            ),
+                            tone = NoticeTone.ERROR,
+                        )
                     }
-                )
-            } else {
-                null
-            },
-    ) {
-        Text(
-            stringResource(campsiteStepTitle(draft.step)),
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        when (draft.step) {
-            CampsiteStep.BASICS -> {
-                CampsiteBasicsStep(
-                    draft.name,
-                    draft.description,
-                    state.errors.nameRequired,
-                    onName,
-                    onDescription,
-                )
-            }
-
-            CampsiteStep.PHOTO -> {
-                CampsitePhotoStep(
-                    state.photoIntent,
-                    state.savedPhoto,
-                    state.photoReselectionRequired,
-                    state.photoSelectionFailed,
-                    onChoosePhoto,
-                    onDiscardPhoto,
-                    onRemovePhoto,
-                    onRetryPhoto,
-                )
-            }
-
-            CampsiteStep.LOCATION -> {
-                CampsiteLocationStep(draft, state.errors, onLabel, onZone, onChooseLocation)
-            }
-
-            CampsiteStep.CAPACITY_PRICE -> {
-                CampsiteCapacityPriceStep(draft, state.errors, onCapacity, onPrice)
-            }
-
-            CampsiteStep.OPTIONS -> {
-                CampsiteOptionsStep(draft.amenities, draft.tags, onAmenity, onTag)
-            }
-
-            CampsiteStep.RULES -> {
-                CampsiteRulesStep(draft.rules, onRules, onOpenPolicy)
-            }
-
-            CampsiteStep.AVAILABILITY -> {
-                CampsiteAvailabilityStep(
-                    state.month,
-                    state.inventory,
-                    draft.requestedAvailability,
-                    onMonth,
-                    onDate,
-                    onRetryCalendar,
-                )
-            }
-
-            CampsiteStep.REVIEW -> {
-                if (submitting) {
-                    Text(
-                        stringResource(
-                            when (state.savePhase) {
-                                CampsiteSavePhase.PUBLISHING -> {
-                                    R.string.campsite_publishing
-                                }
-
-                                CampsiteSavePhase.RECOVERING -> {
-                                    R.string.campsite_checking_save
-                                }
-
-                                CampsiteSavePhase.SAVING_PHOTO -> {
-                                    R.string.campsite_saving_photo
-                                }
-
-                                CampsiteSavePhase.SAVING_AVAILABILITY -> {
-                                    R.string.campsite_saving_availability
-                                }
-
-                                else -> {
-                                    R.string.campsite_saving_details
-                                }
-                            },
-                        ),
-                    )
-                } else if (state.saveFailure != null) {
-                    InlineNotice(
-                        stringResource(R.string.campsite_save_failure_title),
-                        stringResource(
-                            if (state.publicationPending) {
-                                R.string.campsite_publication_recovery
-                            } else if (state.photoNeedsRecovery) {
-                                R.string.campsite_photo_recovery
-                            } else {
-                                when (state.saveFailure) {
-                                    CampsiteSaveFailure.DETAILS -> {
-                                        R.string.campsite_details_save_failure
-                                    }
-
-                                    CampsiteSaveFailure.PHOTO -> {
-                                        R.string.campsite_photo_save_failure
-                                    }
-
-                                    CampsiteSaveFailure.RECOVERY -> {
-                                        R.string.campsite_save_recovery_failure
-                                    }
-
-                                    CampsiteSaveFailure.PHOTO_RESELECTION -> {
-                                        R.string.campsite_photo_reselect
-                                    }
-
-                                    CampsiteSaveFailure.AVAILABILITY -> {
-                                        R.string.campsite_availability_save_failure
-                                    }
-
-                                    CampsiteSaveFailure.PUBLICATION -> {
-                                        R.string.campsite_publication_failure
-                                    }
-
-                                    CampsiteSaveFailure.AVAILABILITY_PENDING -> {
-                                        R.string.campsite_date_save_pending
-                                    }
-                                }
-                            },
-                        ),
-                        tone = NoticeTone.ERROR,
-                    )
+                    if (state.photoReselectionRequired &&
+                        state.saveFailure != CampsiteSaveFailure.PHOTO_RESELECTION
+                    ) {
+                        Text(stringResource(R.string.campsite_photo_reselect))
+                    }
+                    if (state.availabilityComparisonPending &&
+                        draft.requestedAvailability.isNotEmpty() &&
+                        state.saveFailure != CampsiteSaveFailure.AVAILABILITY_PENDING
+                    ) {
+                        Text(stringResource(R.string.campsite_date_save_pending))
+                    }
+                    CampsiteReviewStep(draft, state.photoIntent, onEdit, editingEnabled = canEdit)
                 }
-                if (state.photoReselectionRequired &&
-                    state.saveFailure != CampsiteSaveFailure.PHOTO_RESELECTION
-                ) {
-                    Text(stringResource(R.string.campsite_photo_reselect))
-                }
-                if (state.availabilityComparisonPending &&
-                    draft.requestedAvailability.isNotEmpty() &&
-                    state.saveFailure != CampsiteSaveFailure.AVAILABILITY_PENDING
-                ) {
-                    Text(stringResource(R.string.campsite_date_save_pending))
-                }
-                CampsiteReviewStep(draft, state.photoIntent, onEdit, editingEnabled = canEdit)
             }
         }
     }

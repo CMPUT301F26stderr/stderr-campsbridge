@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
@@ -174,17 +173,30 @@ fun AppNavigation(
             Role.ENTRANT -> entrantItems
             Role.ADMIN -> adminItems
         }
+    val immediateTransition = remember { mutableStateOf<Pair<String, String>?>(null) }
+
+    /** Switches tabs without treating them as a deeper page.
+     * @param destination Primary route to open or restore.
+     */
+    fun openPrimary(destination: String) {
+        val source = controller.currentBackStackEntry?.id
+        controller.navigate(destination) {
+            popUpTo(controller.graph.id) { saveState = true }
+            restoreState = true
+            launchSingleTop = true
+        }
+        immediateTransition.value =
+            source?.let { from ->
+                controller.currentBackStackEntry?.id?.let { to -> from to to }
+            }
+    }
     val selectPrimary: (String) -> Unit = { destination ->
         if (selectedItems.any { it.id == destination }) {
             selectedPrimaries = selectedPrimaries + (state.workspace.name to destination)
             if (controller.currentDestination?.hierarchy?.none { it.route == destination } ==
                 true
             ) {
-                controller.navigate(destination) {
-                    popUpTo(controller.graph.id) { saveState = true }
-                    restoreState = true
-                    launchSingleTop = true
-                }
+                openPrimary(destination)
             }
         }
     }
@@ -200,14 +212,15 @@ fun AppNavigation(
             } ==
             true
         ) {
-            controller.navigate(selectedPrimaries[workspace.name] ?: defaultPrimary(workspace)) {
-                popUpTo(controller.graph.id) { saveState = true }
-                restoreState = true
-                launchSingleTop = true
-            }
+            openPrimary(selectedPrimaries[workspace.name] ?: defaultPrimary(workspace))
         }
     }
-    NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
+    AppNavHost(
+        controller,
+        defaultPrimary(initialWorkspace),
+        modifier,
+        immediateTransition,
+    ) {
         administrationGraph(
             controller,
             state,

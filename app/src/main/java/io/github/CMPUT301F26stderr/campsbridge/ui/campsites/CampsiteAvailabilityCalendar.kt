@@ -7,6 +7,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarLabels
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarState
 import java.time.LocalDate
@@ -17,12 +18,14 @@ import java.time.YearMonth
  * @param inventory Known range or pending/failure.
  * @param requested Local explicit desired values.
  * @param selected Working selection, distinct from requested edits in the standalone editor.
+ * @param labels Meaning of confirmed inventory for the calling screen.
  */
 internal fun offeredNightCalendarState(
     month: YearMonth,
     inventory: CalendarInventoryRead,
     requested: Map<LocalDate, Boolean>,
     selected: Set<LocalDate> = requested.keys,
+    labels: CalendarLabels = CalendarLabels.AVAILABILITY,
 ): CalendarState {
     val known = inventory as? CalendarInventoryRead.Content
     val nights = known?.nights.orEmpty().associateBy { it.date }
@@ -54,5 +57,6 @@ internal fun offeredNightCalendarState(
         days,
         CalendarSelection.Dates(selected),
         selectionEnabled = known != null,
+        labels = if (known != null) labels else CalendarLabels.AVAILABILITY,
     )
 }
