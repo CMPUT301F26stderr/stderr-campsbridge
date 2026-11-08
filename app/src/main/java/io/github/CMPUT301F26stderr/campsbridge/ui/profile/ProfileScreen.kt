@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
@@ -93,7 +94,11 @@ fun ProfileScreen(
             )
             workspaceContent()
             if (Role.OWNER !in content.account.roles && onStartHosting != null) {
-                NavigationRow(stringResource(R.string.onboarding_host_label), onStartHosting)
+                NavigationRow(
+                    stringResource(R.string.onboarding_host_label),
+                    onStartHosting,
+                    icon = Icons.Default.Home,
+                )
             }
             if (onSettings !=
                 null
