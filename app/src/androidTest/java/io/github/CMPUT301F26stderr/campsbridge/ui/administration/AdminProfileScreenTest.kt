@@ -44,6 +44,7 @@ class AdminProfileScreenTest {
                     { siteRetries++ },
                     { photoRetries++ },
                     {},
+                    onImage = {},
                 )
             }
         }
@@ -78,6 +79,7 @@ class AdminProfileScreenTest {
                     {},
                     {},
                     {},
+                    onImage = {},
                 )
             }
         }
@@ -96,6 +98,7 @@ class AdminProfileScreenTest {
                     {},
                     {},
                     {},
+                    onImage = {},
                 )
             }
         }
@@ -122,6 +125,7 @@ class AdminProfileScreenTest {
                     {},
                     {},
                     { selected = it },
+                    onImage = {},
                 )
             }
         }

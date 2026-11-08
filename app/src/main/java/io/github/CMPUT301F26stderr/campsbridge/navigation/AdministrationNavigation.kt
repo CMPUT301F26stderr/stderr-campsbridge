@@ -62,6 +62,13 @@ internal fun NavGraphBuilder.administrationGraph(
                     model,
                     onProfile = { controller.navigate(AppDestination.adminProfile(it)) },
                     onImage = { controller.navigate(AppDestination.adminImage(it)) },
+                    onCampsite = { id ->
+                        controller.navigate(
+                            AppDestination.campsiteGraph(Role.ADMIN, id, CampsiteDetailContext.INSPECT),
+                        ) {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
         }
@@ -76,6 +83,7 @@ internal fun NavGraphBuilder.administrationGraph(
                 model = model,
                 accountId = entry.arguments?.getString("accountId").orEmpty(),
                 onBack = { controller.popBackStack() },
+                onImage = { controller.navigate(AppDestination.adminImage(it)) },
                 onCampsite = { id ->
                     controller.navigate(
                         AppDestination.campsiteGraph(Role.ADMIN, id, CampsiteDetailContext.INSPECT),

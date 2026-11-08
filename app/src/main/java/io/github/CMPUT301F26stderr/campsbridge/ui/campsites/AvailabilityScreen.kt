@@ -23,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarLabels
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
@@ -132,6 +133,7 @@ fun AvailabilityScreen(
                             calendar.inventory,
                             calendar.requested,
                             state.selectedDates,
+                            labels = CalendarLabels.OFFERED_NIGHTS,
                         ),
                         onMonth,
                         { date ->

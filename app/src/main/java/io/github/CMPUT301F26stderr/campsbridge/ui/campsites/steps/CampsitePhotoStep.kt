@@ -6,6 +6,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,19 +59,29 @@ fun CampsitePhotoStep(
             Modifier.fillMaxWidth().aspectRatio(16f / 9f),
         )
     }
-    Text(stringResource(R.string.campsite_photo_optional))
+    Text(
+        stringResource(R.string.campsite_photo_optional),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
     if (intent is CampsitePhotoIntent.Replace) {
         Text(
             stringResource(R.string.campsite_photo_selected),
         )
     }
     if (intent == CampsitePhotoIntent.Remove) Text(stringResource(R.string.campsite_photo_removed))
-    if (reselect) Text(stringResource(R.string.campsite_photo_reselect))
-    if (selectionFailed) Text(stringResource(R.string.campsite_photo_selection_failure))
+    if (reselect) {
+        Text(stringResource(R.string.campsite_photo_reselect), color = MaterialTheme.colorScheme.error)
+    }
+    if (selectionFailed) {
+        Text(stringResource(R.string.campsite_photo_selection_failure), color = MaterialTheme.colorScheme.error)
+    }
     if (saved.loadState == ImageLoadState.FAILED || saved.displayFailed) {
         FailureContent(stringResource(R.string.photo_display_failure), onRetry)
     }
-    TextButton(onChoose) { Text(stringResource(R.string.campsite_choose_photo)) }
+    OutlinedButton(onChoose, Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.campsite_choose_photo))
+    }
     if (intent != CampsitePhotoIntent.Keep || reselect) {
         TextButton(onDiscard) { Text(stringResource(R.string.campsite_discard_photo)) }
     }

@@ -74,6 +74,7 @@ private const val METADATA_SEPARATOR = " · "
  * @param onRetryThumbnail Retries one failed thumbnail.
  * @param onProfile Opens a profile by account ID.
  * @param onImage Opens an image slot.
+ * @param onCampsite Opens a saved campsite in read-only inspection.
  * @param modifier Caller layout.
  */
 @Composable
@@ -90,6 +91,7 @@ fun AdminBrowseScreen(
     onRetryThumbnail: (ImageTarget) -> Unit,
     onProfile: (String) -> Unit,
     onImage: (ImageTarget) -> Unit,
+    onCampsite: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -191,7 +193,7 @@ fun AdminBrowseScreen(
                                 ).joinToString(METADATA_SEPARATOR),
                                 photos[target] ?: ImageSlotState(),
                                 { onRetryThumbnail(target) },
-                                { onImage(target) },
+                                { onCampsite(campsite.id) },
                             )
                         }
                     }
@@ -366,6 +368,7 @@ private fun AdminBrowsePreviewFrame(
                 rememberLazyListState(),
                 rememberLazyListState(),
                 rememberLazyGridState(),
+                {},
                 {},
                 {},
                 {},
