@@ -64,7 +64,7 @@ fun NavigationRow(
     val colors = MaterialTheme.colorScheme
     val contentColor = if (enabled) colors.onSurface else colors.onSurface.copy(alpha = 0.38f)
     Column(
-        modifier.fillMaxWidth().clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+        modifier.fillMaxWidth(),
     ) {
         ListItem(
             headlineContent = { Text(title, color = contentColor) },
@@ -83,7 +83,8 @@ fun NavigationRow(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 56.dp * LocalControlScale.current.coerceAtLeast(1f)),
+                    .heightIn(min = 56.dp * LocalControlScale.current.coerceAtLeast(1f))
+                    .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
             colors =
                 ListItemDefaults.colors(
                     containerColor = colors.surface,
