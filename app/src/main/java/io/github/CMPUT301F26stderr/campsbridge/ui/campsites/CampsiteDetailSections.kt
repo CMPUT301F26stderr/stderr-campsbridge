@@ -264,7 +264,6 @@ fun CampsiteAvailabilityScreen(
                     offeredNightCalendarState(month, inventory, emptyMap())
                         .copy(selectionEnabled = false),
                     onMonthChange,
-                    {},
                 )
             }
         }

@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.policies
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,7 +34,6 @@ fun PoliciesScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.policies_title), modifier, onBack) {
         NavigationGroup(Modifier.padding(top = Spacing.medium)) {
             NavigationRow(
@@ -58,7 +56,6 @@ fun PolicyReaderScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(onBack = onBack)
     AppScreen(
         stringResource(content?.title ?: R.string.policy_unavailable_title),
         modifier,

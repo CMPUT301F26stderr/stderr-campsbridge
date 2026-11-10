@@ -4,8 +4,9 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,9 +33,8 @@ fun SettingsScreen(
     onNotifications: () -> Unit = {},
     onCredits: () -> Unit = {},
 ) {
-    BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.settings_title), modifier, onBack) {
-        NavigationGroup(Modifier.padding(top = Spacing.medium)) {
+        NavigationGroup(Modifier.verticalScroll(rememberScrollState()).padding(top = Spacing.medium)) {
             NavigationRow(stringResource(R.string.notification_settings_title), onNotifications)
             NavigationRow(stringResource(R.string.policies_title), onPolicies)
             NavigationRow(stringResource(R.string.credits_title), onCredits)

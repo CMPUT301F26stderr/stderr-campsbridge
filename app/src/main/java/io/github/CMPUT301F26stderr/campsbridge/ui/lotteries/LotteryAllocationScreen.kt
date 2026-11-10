@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -20,12 +21,11 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.NightRangeCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
@@ -36,7 +36,7 @@ import java.time.YearMonth
  * @param onBack Discards only unapplied child edits.
  * @param onApply Applies known eligible working nights to the parent.
  * @param onMonth Changes the required visible-month range.
- * @param onDate Toggles one allowed date action.
+ * @param onSelectionChange Replaces the working nights after adding or removing a range.
  * @param onRetryInventory Retries the required inventory range.
  * @param onRetryChoices Retries the selected campsite source.
  */
@@ -46,7 +46,7 @@ fun LotteryAllocationScreen(
     onBack: () -> Unit,
     onApply: () -> Unit,
     onMonth: (YearMonth) -> Unit,
-    onDate: (LocalDate) -> Unit,
+    onSelectionChange: (Set<LocalDate>) -> Unit,
     onRetryInventory: () -> Unit,
     onRetryChoices: () -> Unit,
 ) {
@@ -106,16 +106,20 @@ fun LotteryAllocationScreen(
                         }
 
                         is CalendarInventoryRead.Content -> {
-                            CampsiteCalendar(
+                            NightRangeCalendar(
                                 lotteryAllocationCalendarState(allocation),
                                 onMonth,
-                                onDate,
+                                onSelectionChange,
                             )
                         }
                     }
-                    SummarySection(stringResource(R.string.lottery_selected_nights)) {
-                        LotteryAllocatedNights(allocation.selected)
-                    }
+                    Text(
+                        pluralStringResource(
+                            R.plurals.lottery_allocated_nights,
+                            allocation.selected.size,
+                            allocation.selected.size,
+                        ),
+                    )
                     if (allocation.invalidSelection) {
                         Text(
                             stringResource(R.string.lottery_allocation_invalid),

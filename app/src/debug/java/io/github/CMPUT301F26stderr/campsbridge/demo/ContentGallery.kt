@@ -46,7 +46,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDa
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarState
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.NightRangeCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.StatusLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.ImageSlot
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
@@ -149,7 +149,7 @@ internal fun ContentGallery(
                                 day != 20,
                             )
                     }
-                CampsiteCalendar(
+                NightRangeCalendar(
                     CalendarState(
                         month,
                         days,
@@ -157,16 +157,7 @@ internal fun ContentGallery(
                         selectionEnabled = true,
                     ),
                     { month = it },
-                    { date ->
-                        dates =
-                            if (date in
-                                dates
-                            ) {
-                                dates - date
-                            } else {
-                                dates + date
-                            }
-                    },
+                    { dates = it },
                 )
             }
         }

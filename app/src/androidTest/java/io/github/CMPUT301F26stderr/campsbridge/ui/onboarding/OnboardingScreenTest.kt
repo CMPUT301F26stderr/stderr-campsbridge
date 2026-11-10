@@ -28,9 +28,10 @@ import org.junit.Test
 class OnboardingScreenTest {
     @get:Rule val compose = createComposeRule()
 
-    /** Welcome opens guidelines locally and reports only its real continuation action. */
+    /** Welcome reports guidelines and continuation actions to its route. */
     @Test fun welcomeAndGuidelines() {
         var next = 0
+        var guidelines = 0
         compose.setContent {
             CampsbridgeTheme {
                 OnboardingScreen(
@@ -42,11 +43,12 @@ class OnboardingScreenTest {
                     {},
                     {},
                     {},
+                    onGuidelines = { guidelines++ },
                 )
             }
         }
         compose.onNodeWithText("Guidelines").performClick()
-        compose.onNodeWithContentDescription("Back").performClick()
+        compose.runOnIdle { assertEquals(1, guidelines) }
         compose.onNodeWithText("Get started").performClick()
         compose.runOnIdle { assertEquals(1, next) }
     }

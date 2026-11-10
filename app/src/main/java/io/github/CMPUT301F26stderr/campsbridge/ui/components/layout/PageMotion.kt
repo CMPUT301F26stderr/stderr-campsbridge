@@ -11,7 +11,7 @@ import androidx.compose.animation.core.tween
 private const val PAGE_DURATION_MILLIS = 240
 
 /** Brings a full page in without fading or resizing it.
- * @param direction Travel direction, using Start or End for layout-aware navigation.
+ * @param direction Physical page travel direction, shared by all destinations.
  * @param gestureDriven Whether progress should follow the Back gesture directly.
  */
 internal fun <T> AnimatedContentTransitionScope<T>.pageEnter(

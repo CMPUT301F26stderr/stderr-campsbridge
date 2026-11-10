@@ -5,7 +5,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.credits
 
 import android.content.Intent
-import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,7 +33,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Connects packaged credits, ordinary web links and Google's generated license reader.
  * @param onBack Returns to the caller's Settings.
- * @param onLicense Opens a complete bundled font or Java API license.
+ * @param onLicense Opens a complete bundled asset or Java API license.
  */
 @Composable
 fun CreditsRoute(
@@ -64,7 +63,7 @@ fun CreditsRoute(
  * @param catalog Packaged photography metadata.
  * @param onBack Returns to Settings.
  * @param onLibraries Opens the generated runtime dependency notices.
- * @param onLicense Opens a complete offline font or Java API license.
+ * @param onLicense Opens a complete offline asset or Java API license.
  * @param onOpenLink Opens the selected creator, source or license URL.
  * @param modifier Caller layout.
  */
@@ -77,7 +76,6 @@ fun CreditsScreen(
     onOpenLink: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.credits_title), modifier, onBack) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -95,6 +93,11 @@ fun CreditsScreen(
                     supportingText = library.license,
                 )
             }
+            NavigationRow(
+                stringResource(R.string.credits_material_icons),
+                { onLicense(BundledLicense.MATERIAL_ICONS) },
+                supportingText = stringResource(R.string.credits_material_icons_body),
+            )
             HorizontalDivider()
             Text(
                 stringResource(R.string.credits_photos),
@@ -165,6 +168,7 @@ enum class BundledLicense(
 ) {
     INTER("inter", R.string.credits_font_license, "licenses/Inter-OFL.txt"),
     DESUGAR("desugar", R.string.credits_java_license, "licenses/desugar-jdk-libs-LICENSE.txt"),
+    MATERIAL_ICONS("material-icons", R.string.credits_material_icons, "licenses/material-icons-LICENSE.txt"),
 }
 
 /** Displays complete bundled license text without a browser or network dependency.
@@ -184,7 +188,6 @@ fun BundledLicenseScreen(
                 .bufferedReader()
                 .use { it.readText() }
         }
-    BackHandler(onBack = onBack)
     AppScreen(stringResource(license.title), onBack = onBack) {
         Text(text, Modifier.fillMaxSize().verticalScroll(rememberScrollState()))
     }

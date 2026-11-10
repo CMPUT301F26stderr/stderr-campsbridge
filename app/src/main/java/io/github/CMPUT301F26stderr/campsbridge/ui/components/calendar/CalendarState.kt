@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -26,10 +25,9 @@ data class CalendarDayState(
 
 /**
  * Immutable calendar content; omitted dates are unavailable and unselectable.
- * @param month Displayed month, changed only by the owning caller.
+ * @param month Loaded inventory month, updated when the stock picker requests another month.
  * @param days Known date presentations.
  * @param selection Highlighted dates, independent of inventory.
- * @param firstWeekday First column in each week.
  * @param selectionEnabled Whether date actions are enabled for the whole calendar.
  * @param labels Meaning of known inventory; unknown ranges retain availability labels.
  */
@@ -37,7 +35,6 @@ data class CalendarState(
     val month: YearMonth,
     val days: Map<LocalDate, CalendarDayState> = emptyMap(),
     val selection: CalendarSelection = CalendarSelection.None,
-    val firstWeekday: DayOfWeek = DayOfWeek.MONDAY,
     val selectionEnabled: Boolean = false,
     val labels: CalendarLabels = CalendarLabels.AVAILABILITY,
 )

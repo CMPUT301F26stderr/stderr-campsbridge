@@ -4,6 +4,8 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +23,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +53,13 @@ fun ChoiceCard(
 ) {
     val colors = MaterialTheme.colorScheme
     val contentColor = if (enabled) colors.onSurface else colors.onSurface.copy(alpha = 0.38f)
+    val selection = updateTransition(selected, label = "Choice selection")
+    val borderColor by selection.animateColor(label = "Choice border") {
+        if (it) colors.primary else colors.outlineVariant
+    }
+    val iconContainerColor by selection.animateColor(label = "Choice icon container") {
+        if (it) colors.primaryContainer else colors.surfaceContainer
+    }
     OutlinedCard(
         modifier =
             modifier
@@ -66,7 +76,7 @@ fun ChoiceCard(
         border =
             BorderStroke(
                 if (selected) 2.dp else 1.dp,
-                if (selected) colors.primary else colors.outlineVariant,
+                borderColor,
             ),
     ) {
         Row(
@@ -75,7 +85,7 @@ fun ChoiceCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Surface(
-                color = if (selected) colors.primaryContainer else colors.surfaceContainer,
+                color = iconContainerColor,
                 contentColor = if (enabled) colors.primary else contentColor,
                 shape = MaterialTheme.shapes.small,
             ) {

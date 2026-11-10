@@ -13,7 +13,6 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigationevent.NavigationEvent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.pageEnter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.pageExit
 
@@ -40,27 +39,21 @@ fun AppNavHost(
             if ((initialState.id to targetState.id) == immediateTransition?.value) {
                 EnterTransition.None
             } else {
-                pageEnter(SlideDirection.Start)
+                pageEnter(SlideDirection.Left)
             }
         },
         exitTransition = {
             if ((initialState.id to targetState.id) == immediateTransition?.value) {
                 ExitTransition.None
             } else {
-                pageExit(SlideDirection.Start)
+                pageExit(SlideDirection.Left)
             }
         },
-        popEnterTransition = { pageEnter(SlideDirection.End) },
-        popExitTransition = { pageExit(SlideDirection.End) },
-        predictivePopEnterTransition = { edge -> pageEnter(backDirection(edge), gestureDriven = true) },
-        predictivePopExitTransition = { edge -> pageExit(backDirection(edge), gestureDriven = true) },
+        popEnterTransition = { pageEnter(SlideDirection.Right) },
+        popExitTransition = { pageExit(SlideDirection.Right) },
+        predictivePopEnterTransition = { pageEnter(SlideDirection.Right, gestureDriven = true) },
+        predictivePopExitTransition = { pageExit(SlideDirection.Right, gestureDriven = true) },
         sizeTransform = null,
         builder = builder,
     )
 }
-
-/** Follows the physical gesture edge, including in right-to-left layouts.
- * @param edge Edge reported by Navigation Compose for this Back gesture.
- */
-private fun backDirection(edge: Int): SlideDirection =
-    if (edge == NavigationEvent.EDGE_RIGHT) SlideDirection.Left else SlideDirection.Right

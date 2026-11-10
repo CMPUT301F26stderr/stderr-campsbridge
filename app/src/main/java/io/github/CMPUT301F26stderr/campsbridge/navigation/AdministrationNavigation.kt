@@ -22,7 +22,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseView
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminImageRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminProfileRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 
@@ -30,16 +29,12 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContex
  * @param controller Current account navigation host.
  * @param state Confirmed session used by the shared workspace frame.
  * @param onSelectWorkspace Root-owned capability selection.
- * @param items Implemented admin primary peers only.
- * @param onSelectDestination Retained primary navigation.
  * @param factory Explicit repository/predicate dependencies for the Browse owner.
  */
 internal fun NavGraphBuilder.administrationGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
-    items: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     factory: ViewModelProvider.Factory,
 ) {
     navigation(
@@ -54,9 +49,6 @@ internal fun NavGraphBuilder.administrationGraph(
                 state,
                 onSelectWorkspace,
                 stringResource(R.string.admin_browse),
-                items,
-                AppDestination.ADMIN_BROWSE,
-                onSelectDestination,
             ) {
                 AdminBrowseRoute(
                     model,

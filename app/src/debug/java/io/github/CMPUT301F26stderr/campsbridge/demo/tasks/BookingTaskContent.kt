@@ -47,7 +47,7 @@ internal fun BookingDatesTaskExample(
                     StayDatesStep(
                         current,
                         model::changeMonth,
-                        model::selectDate,
+                        model::selectStayDates,
                         model::clearDates,
                         model::retryVisibleInventory,
                         model::retrySelectedInventory,

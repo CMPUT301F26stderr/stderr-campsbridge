@@ -1,7 +1,3 @@
-/*
- * Shared inventory rendering emits actions without owning persistence or selection.
- */
-
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import androidx.compose.runtime.CompositionLocalProvider
@@ -9,175 +5,93 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.assertWidthIsAtLeast
-import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.test.platform.app.InstrumentationRegistry
-import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.onCalendarDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
-import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
-/** Shared inventory rendering emits actions without owning persistence or selection. */
+/** Stock Material inspection keeps inventory labels separate from editable selections. */
 class CampsiteCalendarTest {
     @get:Rule val compose = createComposeRule()
     private val month = YearMonth.of(2027, 5)
-    private val first = month.atDay(1)
+    private val first = month.atDay(14)
 
-    /** Navigation requests a month; only externally supplied state changes the display. */
-    @Test fun monthNavigationIsControlled() {
+    /** Stock month navigation requests the new inventory month without writing dates. */
+    @Test fun monthNavigationLoadsInventory() {
         var state by mutableStateOf(CalendarState(month))
         val requests = mutableListOf<YearMonth>()
-        compose.setContent { CampsbridgeTheme { CampsiteCalendar(state, requests::add, {}) } }
-        compose.onNodeWithContentDescription("Previous month").performClick()
-        compose.onNodeWithContentDescription("Next month").performClick()
-        compose.runOnIdle {
-            assertEquals(
-                listOf(month.minusMonths(1), month.plusMonths(1)),
-                requests,
-            )
-        }
-        compose.onNodeWithText("May 2027").assertIsDisplayed()
-        compose.runOnIdle { state = state.copy(month = month.plusMonths(1)) }
-        compose.onNodeWithText("June 2027").assertIsDisplayed()
-        compose.runOnIdle { assertEquals(2, requests.size) }
-    }
-
-    /** Supplied selectability, rather than display color, determines which taps are delivered. */
-    @Test fun datesExposeSelectionAndRespectDisabledState() {
-        val calls = mutableListOf<LocalDate>()
-        val state =
-            CalendarState(
-                month,
-                days =
-                    mapOf(
-                        first to CalendarDayState(CalendarDayStatus.AVAILABLE, true),
-                        first.plusDays(1) to CalendarDayState(CalendarDayStatus.OCCUPIED, false),
-                        first.plusDays(3) to CalendarDayState(CalendarDayStatus.UNAVAILABLE, true),
-                    ),
-                selection = CalendarSelection.Dates(setOf(first)),
-                selectionEnabled = true,
-            )
-        compose.setContent { CampsbridgeTheme { CampsiteCalendar(state, {}, calls::add) } }
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        compose
-            .onNodeWithTag("calendar-date-$first")
-            .assertContentDescriptionEquals(
-                first.format(
-                    DateTimeFormatter
-                        .ofLocalizedDate(FormatStyle.FULL)
-                        .withLocale(context.resources.configuration.locales[0]),
-                ),
-            ).assert(
-                SemanticsMatcher.expectValue(
-                    SemanticsProperties.StateDescription,
-                    context.getString(R.string.calendar_available),
-                ),
-            ).assertIsSelected()
-            .performScrollTo()
-            .performClick()
-        compose
-            .onNodeWithTag("calendar-date-${first.plusDays(1)}")
-            .assert(
-                SemanticsMatcher.expectValue(
-                    SemanticsProperties.StateDescription,
-                    context.getString(R.string.calendar_occupied),
-                ),
-            ).assertIsNotEnabled()
-            .performTouchInput { click() }
-        compose
-            .onNodeWithTag("calendar-date-${first.plusDays(2)}")
-            .assert(
-                SemanticsMatcher.expectValue(
-                    SemanticsProperties.StateDescription,
-                    context.getString(R.string.calendar_unavailable),
-                ),
-            ).assertIsNotEnabled()
-        compose.onNodeWithTag("calendar-date-${first.plusDays(3)}").performScrollTo().performClick()
-        compose.runOnIdle { assertEquals(listOf(first, first.plusDays(3)), calls) }
-    }
-
-    /** A caller-owned operation disables both month navigation and selectable dates. */
-    @Test fun disabledCalendarRejectsMonthAndDateActions() {
-        var calls = 0
-        val state =
-            CalendarState(
-                month,
-                mapOf(first to CalendarDayState(CalendarDayStatus.AVAILABLE, true)),
-                selectionEnabled = true,
-            )
         compose.setContent {
-            CampsbridgeTheme { CampsiteCalendar(state, { calls++ }, { calls++ }, enabled = false) }
+            CampsbridgeTheme {
+                CampsiteCalendar(state, {
+                    requests += it
+                    state = state.copy(month = it)
+                })
+            }
         }
-        compose.onNodeWithContentDescription("Previous month").assertIsNotEnabled()
-        compose.onNodeWithContentDescription("Next month").assertIsNotEnabled()
-        compose.onNodeWithTag("calendar-date-$first").assertIsNotEnabled()
-        compose.runOnIdle { assertEquals(0, calls) }
+        compose.onNodeWithContentDescription("Change to next month").performClick()
+        compose.onNodeWithText("June 2027").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(listOf(month.plusMonths(1)), requests) }
+        compose.onNodeWithContentDescription("Change to previous month").performClick()
+        compose.onNodeWithText("May 2027").assertIsDisplayed()
     }
 
-    /** Read-only stays highlight nights through the night before checkout without writes. */
-    @Test fun readOnlyRangeExcludesCheckout() {
-        var calls = 0
+    /** Inspection distinguishes occupied, available and unknown dates through readable text. */
+    @Test fun inventoryRemainsReadableOutsideDateCells() {
         val state =
-            CalendarState(month, selection = CalendarSelection.Stay(first, first.plusDays(2)))
-        compose.setContent { CampsbridgeTheme { CampsiteCalendar(state, {}, { calls++ }) } }
-        compose.onNodeWithTag("calendar-date-$first").assertIsSelected().assertIsNotEnabled()
-        compose.onNodeWithTag("calendar-date-${first.plusDays(1)}").assertIsSelected()
-        compose.onNodeWithTag("calendar-date-${first.plusDays(2)}").assertIsNotSelected()
-        compose.runOnIdle { assertEquals(0, calls) }
+            CalendarState(
+                month,
+                mapOf(
+                    first to CalendarDayState(CalendarDayStatus.AVAILABLE),
+                    first.plusDays(1) to CalendarDayState(CalendarDayStatus.OCCUPIED),
+                ),
+            )
+        compose.setContent { CampsbridgeTheme { CampsiteCalendar(state, {}) } }
+        compose.onNodeWithText("Available: May 14, 2027").assertIsDisplayed()
+        compose.onNodeWithText("Occupied: May 15, 2027").assertIsDisplayed()
+        compose.onCalendarDate(first.plusDays(2)).assertIsNotEnabled()
+        compose.onCalendarDate(first.plusDays(1)).performClick().assertIsSelected()
+        compose.onNodeWithText("May 15, 2027: Occupied").assertIsDisplayed()
+        compose.onNodeWithText("Add range").assertDoesNotExist()
     }
 
-    /** Enlarged text and controls retain accessible targets and reachable late-week dates. */
+    /** Enlarged text preserves stock touch targets and date inspection. */
     @Test fun enlargedCalendarRemainsUsable() {
-        val last = month.atDay(30) // Sunday exercises horizontal reachability at enlarged sizes.
-        var selected: LocalDate? = null
+        val last = month.atDay(30)
         compose.setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, 2f)) {
                 CampsbridgeTheme(AccountSettings(controlScale = 1.5)) {
                     CampsiteCalendar(
-                        CalendarState(
-                            month,
-                            days =
-                                mapOf(
-                                    last to CalendarDayState(CalendarDayStatus.AVAILABLE, true),
-                                ),
-                            selectionEnabled = true,
-                        ),
+                        CalendarState(month, mapOf(last to CalendarDayState(CalendarDayStatus.AVAILABLE))),
                         {},
-                        { selected = it },
                     )
                 }
             }
         }
         compose
-            .onNodeWithTag("calendar-date-$last")
+            .onCalendarDate(last)
             .performScrollTo()
             .assertIsDisplayed()
-            .assertWidthIsAtLeast(72.dp)
-            .performClick()
-        compose.runOnIdle { assertEquals(last, selected) }
+            .assert(
+                SemanticsMatcher("At least 72 dp at the screen density") { node ->
+                    node.boundsInRoot.width >= with(compose.density) { 72.dp.toPx() } - 1f
+                },
+            ).performClick()
+        compose.onCalendarDate(last).assertIsSelected()
     }
 }

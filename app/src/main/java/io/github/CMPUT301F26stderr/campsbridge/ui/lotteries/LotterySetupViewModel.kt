@@ -353,6 +353,26 @@ class LotterySetupViewModel(
         return true
     }
 
+    /** Replaces working nights after an explicit range addition or removal.
+     * @param dates Complete working selection; new dates must be free in the loaded month.
+     */
+    fun selectAllocationDates(dates: Set<LocalDate>) {
+        val current = state.value
+        val allocation = current.allocation ?: return
+        val known = allocation.inventory as? CalendarInventoryRead.Content ?: return
+        if (exitRequested.value || current.discardPrompt) return
+        val added = dates - allocation.selected
+        if (added.any { date ->
+                YearMonth.from(date) != allocation.month ||
+                    known.nights.none { it.date == date && it.isFree }
+            }
+        ) {
+            return
+        }
+        publish(current.copy(allocation = allocation.copy(selected = dates.toSet(), invalidSelection = false)))
+        reconcileCalendar()
+    }
+
     /** Toggles a known eligible night, or removes an already-selected invalidated night.
      * @param date Actual visible calendar date.
      */

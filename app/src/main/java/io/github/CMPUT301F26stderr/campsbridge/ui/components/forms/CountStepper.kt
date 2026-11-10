@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,11 +20,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionTooltip
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**
@@ -68,26 +73,30 @@ fun CountStepper(
                 Text(label, style = MaterialTheme.typography.titleSmall)
                 supportingText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
-            FilledTonalIconButton(
-                onClick = { onValueChange(value - 1) },
-                enabled = enabled && value > minimum,
-                modifier = Modifier.semantics { contentDescription = decrease },
-                colors = buttonColors,
-            ) {
-                Text("−", style = MaterialTheme.typography.titleLarge)
+            ActionTooltip(decrease) {
+                FilledTonalIconButton(
+                    onClick = { onValueChange(value - 1) },
+                    enabled = enabled && value > minimum,
+                    modifier = Modifier.semantics { contentDescription = decrease },
+                    colors = buttonColors,
+                ) {
+                    Icon(painterResource(R.drawable.ic_remove), contentDescription = null)
+                }
             }
             Text(
                 value.toString(),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.semantics { stateDescription = "$label: $value" },
             )
-            FilledTonalIconButton(
-                onClick = { onValueChange(value + 1) },
-                enabled = enabled && value < maximum,
-                modifier = Modifier.semantics { contentDescription = increase },
-                colors = buttonColors,
-            ) {
-                Text("+", style = MaterialTheme.typography.titleLarge)
+            ActionTooltip(increase) {
+                FilledTonalIconButton(
+                    onClick = { onValueChange(value + 1) },
+                    enabled = enabled && value < maximum,
+                    modifier = Modifier.semantics { contentDescription = increase },
+                    colors = buttonColors,
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                }
             }
         }
     }

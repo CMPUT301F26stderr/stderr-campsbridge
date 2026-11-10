@@ -4,20 +4,19 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxEventStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.UnavailableInboxReceipt
@@ -33,16 +32,10 @@ internal fun UnavailableInboxRow(
     onRetryItem: (String) -> Unit,
 ) {
     Column {
-        Surface(
-            Modifier.fillMaxWidth().testTag("inbox-receipt-${item.receipt.notificationId}"),
-            color = MaterialTheme.colorScheme.surface,
-            shape = MaterialTheme.shapes.medium,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        ) {
-            Column(
-                Modifier.padding(Spacing.medium),
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
-            ) {
+        ListItem(
+            modifier = Modifier.fillMaxWidth().testTag("inbox-receipt-${item.receipt.notificationId}"),
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+            headlineContent = {
                 Text(
                     stringResource(
                         when (item.status) {
@@ -51,15 +44,19 @@ internal fun UnavailableInboxRow(
                             InboxEventStatus.UNAVAILABLE -> R.string.inbox_event_unavailable
                         },
                     ),
-                    style = MaterialTheme.typography.titleMedium,
                 )
-                InboxReadLabel(item.receipt.readAt == null)
-                if (item.status != InboxEventStatus.LOADING) {
-                    TextButton({ onRetryItem(item.receipt.notificationId) }) {
-                        Text(stringResource(R.string.inbox_retry_item))
+            },
+            supportingContent = {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                    InboxReadLabel(item.receipt.readAt == null)
+                    if (item.status != InboxEventStatus.LOADING) {
+                        TextButton({ onRetryItem(item.receipt.notificationId) }) {
+                            Text(stringResource(R.string.inbox_retry_item))
+                        }
                     }
                 }
-            }
-        }
+            },
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }

@@ -20,7 +20,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceMenu
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
@@ -45,8 +44,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.SettingsScreen
  * @param state Confirmed session used by the primary frame and role picker.
  * @param onSelectWorkspace Root-owned workspace selection.
  * @param profileFactory Dependencies for the shared parent profile model.
- * @param navigationItems Registered peer destinations only.
- * @param onSelectDestination Parent-owned primary navigation.
  * @param onOwnerWorkspaceReady Opens the selected owner primary after removing the introduction.
  * @param notificationPermission Explicit platform inspection/settings dependency.
  */
@@ -56,8 +53,6 @@ internal fun NavGraphBuilder.profileGraph(
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
     profileFactory: ViewModelProvider.Factory,
-    navigationItems: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     onOwnerWorkspaceReady: () -> Unit,
     notificationPermission: NotificationPermission,
 ) {
@@ -70,9 +65,6 @@ internal fun NavGraphBuilder.profileGraph(
             WorkspaceScaffold(
                 state,
                 onSelectWorkspace,
-                navigationItems = navigationItems,
-                selectedDestination = AppDestination.profileGraph(workspace),
-                onSelectDestination = onSelectDestination,
             ) {
                 ProfileRoute(
                     model,

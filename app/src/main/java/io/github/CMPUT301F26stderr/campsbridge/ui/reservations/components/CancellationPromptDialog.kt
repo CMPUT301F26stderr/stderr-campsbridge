@@ -9,8 +9,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
@@ -67,6 +72,7 @@ internal fun CancellationPromptDialog(
         confirmLabel = stringResource(cancellationAction(context)),
         cancelLabel = stringResource(R.string.reservation_keep_action),
         destructive = true,
+        progressDescription = stringResource(cancellationProgress(context)),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
             if (record != null) {
@@ -96,10 +102,22 @@ internal fun CancellationPromptDialog(
                 minLines = 2,
             )
             state.failure?.let { reason ->
-                Text(stringResource(cancellationFailureMessage(reason)), color = MaterialTheme.colorScheme.error)
+                val message = stringResource(cancellationFailureMessage(reason))
+                Text(
+                    message,
+                    Modifier.semantics {
+                        error(message)
+                        liveRegion = LiveRegionMode.Polite
+                    },
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
-            if (state.notCancelled) Text(stringResource(R.string.reservation_still_active))
-            if (submitting) Text(stringResource(cancellationProgress(context)))
+            if (state.notCancelled) {
+                Text(
+                    stringResource(R.string.reservation_still_active),
+                    Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
         }
     }
 }

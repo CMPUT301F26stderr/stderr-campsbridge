@@ -76,6 +76,7 @@ internal fun LotteryMembershipActions(
             isSubmitting = state.action == LotteryMembershipAction.LEAVE,
             confirmLabel = stringResource(R.string.lottery_leave_confirm),
             destructive = true,
+            progressDescription = stringResource(R.string.lottery_leaving_waitlist),
         )
     }
 }

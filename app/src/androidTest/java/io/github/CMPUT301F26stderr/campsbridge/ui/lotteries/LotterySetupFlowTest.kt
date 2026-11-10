@@ -9,8 +9,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.assertIsNotSelected
-import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -27,6 +25,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.addCalendarNights
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
@@ -115,10 +114,9 @@ class LotterySetupFlowTest {
         compose.onNodeWithText(site.details.name).performClick()
         allocate(day)
         compose.onNodeWithText("Allocate nights").performClick()
-        compose.onNodeWithTag("calendar-date-${day.plusDays(1)}").performClick()
+        compose.addCalendarNights(day.plusDays(1))
         restoration.emulateSavedInstanceStateRestore()
-        compose.onNodeWithTag("calendar-date-$day").assertIsSelected()
-        compose.onNodeWithTag("calendar-date-${day.plusDays(1)}").assertIsSelected()
+        compose.onNodeWithText("Remove May 14–15, 2027").performScrollTo().assertIsDisplayed()
         pressBack()
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
         compose.onNodeWithText("1 night allocated").assertIsDisplayed()
@@ -126,8 +124,8 @@ class LotterySetupFlowTest {
         compose.onNodeWithText("0 nights allocated").assertIsDisplayed()
         compose.onNodeWithText("Allocate nights").performClick()
         compose.onNodeWithText("America/Vancouver").assertIsDisplayed()
-        compose.onNodeWithTag("calendar-date-$day").assertIsNotSelected()
-        compose.onNodeWithTag("calendar-date-${day.plusDays(1)}").performClick()
+        compose.onNodeWithText("Remove May 14, 2027").assertDoesNotExist()
+        compose.addCalendarNights(day.plusDays(1))
         compose.onNodeWithText("Apply nights").performClick()
         compose.onNodeWithText("1 night allocated").assertIsDisplayed()
         compose.runOnIdle {
@@ -160,13 +158,13 @@ class LotterySetupFlowTest {
             ).assertIsDisplayed()
         compose.runOnIdle { host.campsites.calendarFailure.value = null }
         compose.onNodeWithText("Retry").performClick()
-        compose.onNodeWithTag("calendar-date-$day").performClick()
+        compose.addCalendarNights(day)
         compose.runOnIdle { host.campsites.calendarFailure.value = IOException("offline again") }
         compose.onNodeWithText("Apply nights").assertIsNotEnabled()
         compose.onNodeWithText("1 night allocated").assertIsDisplayed()
         compose.runOnIdle { host.campsites.calendarFailure.value = null }
         compose.onNodeWithText("Retry").performClick()
-        compose.onNodeWithTag("calendar-date-$day").assertIsSelected()
+        compose.onNodeWithText("Remove May 14, 2027").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Apply nights").performClick()
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
         compose.runOnIdle {
@@ -503,7 +501,7 @@ class LotterySetupFlowTest {
      */
     private fun allocate(date: LocalDate) {
         compose.onNodeWithText("Allocate nights").performClick()
-        compose.onNodeWithTag("calendar-date-$date").performClick()
+        compose.addCalendarNights(date)
         compose.onNodeWithText("Apply nights").performClick()
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
     }

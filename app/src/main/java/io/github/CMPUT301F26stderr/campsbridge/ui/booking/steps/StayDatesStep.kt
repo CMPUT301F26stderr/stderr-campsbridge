@@ -27,7 +27,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInvent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.StayDateRangeCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -38,7 +38,7 @@ import java.time.ZoneId
 /** Prototype 07.02 with shared calendar, actual deadline and explicit occupied-night feedback.
  * @param state Current draft and confirmed inventory; no writes occur in this content.
  * @param onMonth Changes the displayed month only.
- * @param onDate Delivers a selectable cell to the parent.
+ * @param onDatesChange Updates arrival and exclusive checkout together.
  * @param onClear Clears all endpoints.
  * @param onRetryVisible Retries only failed displayed inventory.
  * @param onRetrySelected Retries only failed stay confirmation.
@@ -48,7 +48,7 @@ import java.time.ZoneId
 fun StayDatesStep(
     state: BookingUiState.Content,
     onMonth: (YearMonth) -> Unit,
-    onDate: (LocalDate) -> Unit,
+    onDatesChange: (LocalDate?, LocalDate?) -> Unit,
     onClear: () -> Unit,
     onRetryVisible: () -> Unit,
     onRetrySelected: () -> Unit,
@@ -100,10 +100,12 @@ fun StayDatesStep(
             }
         }
     }
-    CampsiteCalendar(
+    StayDateRangeCalendar(
         bookingCalendarState(state),
+        state.draft.checkIn,
+        state.draft.checkOut,
         onMonth,
-        onDate,
+        onDatesChange,
         Modifier.testTag("booking-calendar"),
         enabled = enabled,
     )

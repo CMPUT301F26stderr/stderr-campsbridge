@@ -16,7 +16,6 @@ import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
@@ -83,18 +82,12 @@ internal fun NavGraphBuilder.reservationGraph(
  * @param controller Current account navigation host.
  * @param state Ready session and actual selected workspace.
  * @param onSelectWorkspace Root-owned workspace selection.
- * @param ownerItems Actual owner primary peers.
- * @param entrantItems Actual entrant primary peers.
- * @param onSelectDestination Retained primary navigation.
  * @param factory Scoped list dependencies for the current actor and optional campsite filter.
  */
 internal fun NavGraphBuilder.reservationListGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
-    ownerItems: List<WorkspaceNavigationItem>,
-    entrantItems: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     factory: (ReservationContext, String?) -> ViewModelProvider.Factory,
 ) {
     for (context in ReservationContext.entries) {
@@ -105,9 +98,6 @@ internal fun NavGraphBuilder.reservationListGraph(
                 state,
                 onSelectWorkspace,
                 stringResource(R.string.my_reservations),
-                if (context == ReservationContext.OWNER) ownerItems else entrantItems,
-                route,
-                onSelectDestination,
             ) {
                 ReservationListRoute(model) { id ->
                     controller.navigate(AppDestination.reservationDetail(id, context)) {

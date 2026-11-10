@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,7 +44,6 @@ fun OwnerIntroductionScreen(
     val content = state as? ProfileUiState.Content
     val activating = content?.operation == ProfileOperation.ENABLING_OWNER
     val busy = activating || selectingWorkspace
-    BackHandler { if (!busy) onBack() }
     AppScreen(
         stringResource(R.string.onboarding_host_label),
         modifier,

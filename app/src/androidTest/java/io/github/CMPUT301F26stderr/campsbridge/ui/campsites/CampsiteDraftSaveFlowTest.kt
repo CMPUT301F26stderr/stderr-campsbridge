@@ -9,6 +9,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -24,6 +26,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.ControlledPhotoPicker
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.addCalendarNights
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixturePhotoUri
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
@@ -178,7 +181,8 @@ class CampsiteDraftSaveFlowTest {
     @Test fun pendingDateChangesCannotBeDroppedBySavingDetailsOnly() {
         start()
         repeat(6) { compose.onNodeWithText("Next").performClick() }
-        compose.onNodeWithTag("calendar-date-2027-05-14").performScrollTo().performClick()
+        compose.addCalendarNights(LocalDate.of(2027, 5, 14))
+        compose.onNode(hasText("Offer nights") and hasClickAction()).performScrollTo().performClick()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Save draft").assertIsNotEnabled().performClick()
         compose
@@ -200,8 +204,8 @@ class CampsiteDraftSaveFlowTest {
         }
         start()
         repeat(6) { compose.onNodeWithText("Next").performClick() }
-        compose.onNodeWithTag("calendar-date-$second").performScrollTo().performClick()
-        compose.onNodeWithTag("calendar-date-$first").performScrollTo().performClick()
+        compose.addCalendarNights(first, second)
+        compose.onNode(hasText("Offer nights") and hasClickAction()).performScrollTo().performClick()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Save draft").assertIsEnabled().performClick()
         compose

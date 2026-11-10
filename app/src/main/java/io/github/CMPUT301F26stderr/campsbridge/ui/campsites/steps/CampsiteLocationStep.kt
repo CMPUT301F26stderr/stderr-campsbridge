@@ -4,10 +4,17 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDraft
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
@@ -28,7 +35,14 @@ fun CampsiteLocationStep(
     onZone: (String) -> Unit,
     onChoose: (() -> Unit)?,
 ) {
-    AppTextField(draft.locationLabel, onLabel, stringResource(R.string.campsite_location_label))
+    val zoneFocus = remember { FocusRequester() }
+    AppTextField(
+        draft.locationLabel,
+        onLabel,
+        stringResource(R.string.campsite_location_label),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(onNext = { zoneFocus.requestFocus() }),
+    )
     draft.location?.let {
         Text(stringResource(R.string.campsite_coordinates, it.latitude, it.longitude))
     }
@@ -42,7 +56,9 @@ fun CampsiteLocationStep(
         draft.timeZone,
         onZone,
         stringResource(R.string.campsite_time_zone),
+        modifier = Modifier.focusRequester(zoneFocus),
         supportingText = stringResource(R.string.campsite_zone_hint),
+        revealError = errors.timeZoneInvalid && !errors.locationRequired,
         errorMessage =
             if (errors.timeZoneInvalid) {
                 stringResource(

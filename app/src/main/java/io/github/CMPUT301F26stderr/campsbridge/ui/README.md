@@ -13,7 +13,7 @@ Prefer Jetpack and Android platform components. Use official Google SDKs for Fir
 | Screens, forms, dialogs, navigation | Compose, Material 3, and Jetpack Navigation |
 | Featured carousel | Compose carousel or `HorizontalPager`; ranking remains application logic |
 | Date/range selection | Material 3 `DatePicker` / `DateRangePicker` |
-| Booked/free-night calendar | Shared `CampsiteCalendar`, composed from Material controls and ordinary layouts |
+| Booked/free-night calendar | Google Material 3 date and range pickers, with inventory summaries outside the calendar |
 | Photo selection | Android Photo Picker through Activity Result contracts |
 | Maps | Google Maps Compose; project/API setup is required |
 | QR scanning | Google Code Scanner; depends on Google Play services |
@@ -68,7 +68,7 @@ Date-range picker endpoints represent arrival and checkout; checkout is excluded
 ## Components and state
 
 - Follow the agreed prototypes and shared theme. Use standard Material components when they fit.
-- Share feature components such as `CampsiteCalendar` and `CampsiteMap`, with application models and callbacks as their public API. Keep specialized library details within their integration components.
+- Share feature components such as the calendar wrappers and `CampsiteMap`, with application models and callbacks as their public API. Keep specialized library details within their integration components.
 - Screen content receives state and callbacks. Routes connect ViewModels and navigation. Reusable components do not construct repositories or acquire ViewModels.
 - Keep lottery eligibility, availability validation, booking, refunds, and persistence in application/repository logic. Date-picker selection must still validate every occupied night.
 - Trigger writes through explicit user actions. Display confirmed success only after the repository operation succeeds.

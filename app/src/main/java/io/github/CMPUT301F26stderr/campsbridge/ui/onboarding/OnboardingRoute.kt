@@ -12,9 +12,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 /** Connects one navigation-scoped draft owner to repository-free screen content.
  * @param factory Explicit onboarding dependencies and saved-state construction.
+ * @param onGuidelines Opens the navigation-owned packaged policy reader.
  */
 @Composable
-fun OnboardingRoute(factory: ViewModelProvider.Factory) {
+fun OnboardingRoute(
+    factory: ViewModelProvider.Factory,
+    onGuidelines: () -> Unit,
+) {
     val model: OnboardingViewModel = viewModel(factory = factory)
     val state by model.state.collectAsStateWithLifecycle()
     OnboardingScreen(
@@ -26,5 +30,6 @@ fun OnboardingRoute(factory: ViewModelProvider.Factory) {
         model::editPreferences,
         model::skipInterests,
         model::retryLoad,
+        onGuidelines = onGuidelines,
     )
 }

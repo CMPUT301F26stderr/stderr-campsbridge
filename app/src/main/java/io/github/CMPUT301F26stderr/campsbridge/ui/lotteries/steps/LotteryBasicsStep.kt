@@ -4,8 +4,10 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDraft
@@ -28,6 +30,9 @@ fun LotteryBasicsStep(
         onTitle,
         stringResource(R.string.lottery_title),
         errorMessage = if (titleRequired) stringResource(R.string.lottery_title_required) else null,
+        reserveSupportingSpace = true,
+        revealError = titleRequired,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
     )
     AppTextField(
         draft.description,

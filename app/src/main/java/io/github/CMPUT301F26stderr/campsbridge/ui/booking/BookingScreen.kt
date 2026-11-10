@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +37,7 @@ import java.time.YearMonth
  * @param onNext Reports the displayed step.
  * @param onCancel Requests draft abandonment.
  * @param onMonth Requests a displayed calendar month.
- * @param onDate Reports a selectable date.
+ * @param onDatesChange Updates arrival and exclusive checkout together.
  * @param onClearDates Requests clearing endpoints.
  * @param onGuests Reports raw guest input.
  * @param onAccept Reports acceptance and the exact displayed rules/policy.
@@ -68,7 +67,7 @@ fun BookingScreen(
     onNext: (BookingStep) -> Unit,
     onCancel: () -> Unit,
     onMonth: (YearMonth) -> Unit,
-    onDate: (LocalDate) -> Unit,
+    onDatesChange: (LocalDate?, LocalDate?) -> Unit,
     onClearDates: () -> Unit,
     onGuests: (String) -> Unit,
     onAccept: (Boolean, String, String) -> Unit,
@@ -99,7 +98,6 @@ fun BookingScreen(
     val exitsEnabled =
         !submitting && submission != BookingSubmission.Recovering &&
             !discardPrompt && !exitPending
-    BackHandler { if (exitsEnabled) onBack() }
     if (state is BookingUiState.Content) {
         StepTransition(state, { it.draft.step.ordinal }, modifier) { state ->
             val step = state.draft.step
@@ -167,7 +165,7 @@ fun BookingScreen(
                             StayDatesStep(
                                 state,
                                 onMonth,
-                                onDate,
+                                onDatesChange,
                                 onClearDates,
                                 onRetryVisible,
                                 onRetrySelected,
@@ -251,6 +249,15 @@ fun BookingScreen(
             isSubmitting = submitting || submission == BookingSubmission.Recovering,
             confirmLabel = stringResource(R.string.booking_discard),
             cancelLabel = stringResource(R.string.booking_keep_draft),
+            destructive = true,
+            progressDescription =
+                stringResource(
+                    if (submission == BookingSubmission.Recovering) {
+                        R.string.booking_recovering
+                    } else {
+                        R.string.booking_submitting
+                    },
+                ),
         )
     }
 }

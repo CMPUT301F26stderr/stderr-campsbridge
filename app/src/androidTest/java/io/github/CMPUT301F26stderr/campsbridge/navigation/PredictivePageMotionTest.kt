@@ -21,6 +21,7 @@ import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventDispatcherOwner
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -58,10 +59,14 @@ class PredictivePageMotionTest {
                 controller = rememberNavController()
                 AppNavHost(controller, "home") {
                     composable("home") {
-                        Box(Modifier.fillMaxSize().background(Color.Red).testTag("home"))
+                        AppScreen("Home") {
+                            Box(Modifier.fillMaxSize().background(Color.Red).testTag("home"))
+                        }
                     }
                     composable("detail") {
-                        Box(Modifier.fillMaxSize().background(Color.Blue).testTag("detail"))
+                        AppScreen("Detail", onBack = { controller.popBackStack() }) {
+                            Box(Modifier.fillMaxSize().background(Color.Blue).testTag("detail"))
+                        }
                     }
                 }
             }
@@ -90,6 +95,9 @@ class PredictivePageMotionTest {
         assertEquals((original.right - original.left).value, (rightDragged.right - rightDragged.left).value, 0.01f)
         assertEquals((original.bottom - original.top).value, (rightDragged.bottom - rightDragged.top).value, 0.01f)
         compose.runOnIdle { input.backCompleted() }
+        compose.mainClock.advanceTimeBy(80)
+        val leaving = compose.onNodeWithTag("detail").getUnclippedBoundsInRoot()
+        assertTrue("Completed Back should exit right from either gesture edge", leaving.left > original.left)
         compose.mainClock.advanceTimeBy(400)
         compose.waitForIdle()
         compose.onNodeWithTag("detail").assertDoesNotExist()

@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -23,8 +22,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -34,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.LocalValidationAttempt
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -82,6 +88,8 @@ fun StepScaffold(
     contentArrangement: Arrangement.Vertical = Arrangement.spacedBy(Spacing.medium),
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
+    var validationAttempt by remember { mutableIntStateOf(0) }
     require((secondaryLabel == null) == (onSecondaryAction == null)) {
         "A secondary action needs both a label and a callback"
     }
@@ -93,7 +101,6 @@ fun StepScaffold(
     ) {
         "Secondary submission needs a secondary action"
     }
-    BackHandler(enabled = isSubmitting || !exitEnabled) {}
     AppScreen(
         title = title,
         modifier = modifier,
@@ -110,7 +117,11 @@ fun StepScaffold(
             Column(Modifier.fillMaxWidth().padding(Spacing.screen)) {
                 AppActionButton(
                     nextLabel,
-                    onNext,
+                    {
+                        validationAttempt++
+                        focusManager.clearFocus()
+                        onNext()
+                    },
                     Modifier.fillMaxWidth(),
                     enabled = nextEnabled && !isSubmitting,
                     isSubmitting = isSubmitting && submittingAction == StepAction.PRIMARY,
@@ -119,7 +130,11 @@ fun StepScaffold(
                     Spacer(Modifier.height(Spacing.small))
                     AppActionButton(
                         secondaryLabel,
-                        onSecondaryAction,
+                        {
+                            validationAttempt++
+                            focusManager.clearFocus()
+                            onSecondaryAction()
+                        },
                         Modifier.fillMaxWidth(),
                         enabled = secondaryEnabled && !isSubmitting,
                         isSubmitting = isSubmitting && submittingAction == StepAction.SECONDARY,
@@ -169,8 +184,11 @@ fun StepScaffold(
                         .heightIn(min = maxHeight)
                         .padding(bottom = Spacing.large),
                     verticalArrangement = contentArrangement,
-                    content = content,
-                )
+                ) {
+                    CompositionLocalProvider(LocalValidationAttempt provides validationAttempt) {
+                        content()
+                    }
+                }
             }
         }
     }
