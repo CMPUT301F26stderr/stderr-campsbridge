@@ -36,6 +36,8 @@ fun NameStep(
         stringResource(R.string.onboarding_name),
         enabled = enabled,
         errorMessage = if (required) stringResource(R.string.onboarding_name_required) else null,
+        reserveSupportingSpace = true,
+        revealError = required,
         keyboardOptions =
             KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,

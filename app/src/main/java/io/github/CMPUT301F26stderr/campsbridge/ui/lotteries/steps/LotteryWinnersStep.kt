@@ -33,6 +33,8 @@ fun LotteryWinnersStep(
                 null
             },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        reserveSupportingSpace = true,
+        revealError = state.errors.winnerCount != null,
     )
     Text(stringResource(R.string.lottery_winners_hint))
     Text(stringResource(R.string.lottery_unlimited))

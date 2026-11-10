@@ -16,7 +16,6 @@ import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
@@ -28,6 +27,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteLocationRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
@@ -38,8 +38,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
  * @param controller Account-owned navigation host.
  * @param state Confirmed session.
  * @param onSelectWorkspace Root-owned capability-limited selection.
- * @param navigationItems Registered owner peers.
- * @param onSelectDestination Primary tab selection.
  * @param listFactory Inventory constructor dependencies.
  * @param detailFactory Saved reader dependencies for an ID/context.
  * @param availabilityFactory Dependencies for the separate saved inventory editor.
@@ -49,8 +47,6 @@ internal fun NavGraphBuilder.campsiteGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
-    navigationItems: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     listFactory: ViewModelProvider.Factory,
     detailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     setupFactory: (String?) -> ViewModelProvider.Factory,
@@ -62,13 +58,13 @@ internal fun NavGraphBuilder.campsiteGraph(
             state,
             onSelectWorkspace,
             title = stringResource(R.string.my_campsites),
-            navigationItems = navigationItems,
-            selectedDestination = AppDestination.ownerCampsites(),
-            onSelectDestination = onSelectDestination,
+            floatingActionButton = {
+                CreateAction(stringResource(R.string.campsite_create)) {
+                    controller.navigate(AppDestination.campsiteSetupGraph()) { launchSingleTop = true }
+                }
+            },
         ) {
-            CampsiteListRoute(model, onCreate = {
-                controller.navigate(AppDestination.campsiteSetupGraph()) { launchSingleTop = true }
-            }) { id ->
+            CampsiteListRoute(model) { id ->
                 controller.navigate(
                     AppDestination.campsiteGraph(
                         Role.OWNER,

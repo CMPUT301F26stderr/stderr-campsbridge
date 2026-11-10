@@ -4,8 +4,10 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 
@@ -29,6 +31,9 @@ fun CampsiteBasicsStep(
         onName,
         stringResource(R.string.campsite_name),
         errorMessage = if (nameRequired) stringResource(R.string.campsite_name_required) else null,
+        reserveSupportingSpace = true,
+        revealError = nameRequired,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
     )
     AppTextField(
         description,

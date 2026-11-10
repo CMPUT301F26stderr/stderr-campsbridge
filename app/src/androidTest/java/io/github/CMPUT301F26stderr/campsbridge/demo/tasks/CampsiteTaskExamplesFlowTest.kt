@@ -16,6 +16,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.pressBack
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.addCalendarNights
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.onCalendarDate
 import org.junit.Rule
 import org.junit.Test
 
@@ -29,8 +31,8 @@ class CampsiteTaskExamplesFlowTest {
             compose.onNodeWithTag("task-catalogue").performScrollToNode(hasTestTag("H03"))
             compose.onNodeWithTag("H03").performClick()
             compose.onNodeWithText("May 2027").assertIsDisplayed()
-            compose.onNodeWithTag("calendar-date-2027-05-13").performScrollTo().assertIsNotEnabled()
-            compose.onNodeWithTag("calendar-date-2027-05-11").performScrollTo().performClick()
+            compose.onCalendarDate(java.time.LocalDate.parse("2027-05-13")).performScrollTo().assertIsNotEnabled()
+            compose.addCalendarNights(java.time.LocalDate.of(2027, 5, 11))
             compose.onNodeWithText("Withdraw nights").performScrollTo().performClick()
             compose.onNodeWithText("Save changes").assertIsEnabled()
         }

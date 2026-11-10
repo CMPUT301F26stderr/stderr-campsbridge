@@ -4,14 +4,19 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -19,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.LocalValidationAttempt
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.ImageSlot
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
@@ -45,6 +51,8 @@ fun ProfileDetailsScreen(
     photoBusy: Boolean = false,
     photoContent: @Composable () -> Unit = {},
 ) {
+    val focusManager = LocalFocusManager.current
+    var validationAttempt by remember { mutableIntStateOf(0) }
     val content = state as? ProfileUiState.Content
     val saving = content?.operation == ProfileOperation.SAVING_NAME
     val canExit =
@@ -53,7 +61,6 @@ fun ProfileDetailsScreen(
                 (content.operation == ProfileOperation.IDLE && content.completedEditor == null)
         ) &&
             !photoBusy
-    BackHandler { if (canExit) onBack() }
     AppScreen(
         stringResource(R.string.personal_details),
         modifier,
@@ -64,7 +71,11 @@ fun ProfileDetailsScreen(
                 ActionFooter {
                     AppActionButton(
                         stringResource(R.string.save_name),
-                        onSave,
+                        {
+                            validationAttempt++
+                            focusManager.clearFocus()
+                            onSave()
+                        },
                         Modifier.fillMaxWidth(),
                         enabled =
                             content.operation == ProfileOperation.IDLE &&
@@ -77,30 +88,34 @@ fun ProfileDetailsScreen(
             }
         },
     ) {
-        ProfileStateContent(state, onRetry) { current ->
-            photoContent()
-            current.personalDraft?.let { draft ->
-                AppTextField(
-                    draft.nameText,
-                    onNameChange,
-                    stringResource(R.string.onboarding_name),
-                    enabled = current.operation == ProfileOperation.IDLE,
-                    errorMessage =
-                        if (current.nameError) {
-                            stringResource(
-                                R.string.onboarding_name_required,
-                            )
-                        } else {
-                            null
-                        },
-                )
+        CompositionLocalProvider(LocalValidationAttempt provides validationAttempt) {
+            ProfileStateContent(state, onRetry) { current ->
+                photoContent()
+                current.personalDraft?.let { draft ->
+                    AppTextField(
+                        draft.nameText,
+                        onNameChange,
+                        stringResource(R.string.onboarding_name),
+                        enabled = current.operation == ProfileOperation.IDLE,
+                        reserveSupportingSpace = true,
+                        revealError = current.nameError,
+                        errorMessage =
+                            if (current.nameError) {
+                                stringResource(
+                                    R.string.onboarding_name_required,
+                                )
+                            } else {
+                                null
+                            },
+                    )
+                }
+                if (current.nameValidationPending) {
+                    Text(
+                        stringResource(R.string.name_validation_pending),
+                    )
+                }
+                if (current.saveFailed) Text(stringResource(R.string.onboarding_save_failure))
             }
-            if (current.nameValidationPending) {
-                Text(
-                    stringResource(R.string.name_validation_pending),
-                )
-            }
-            if (current.saveFailed) Text(stringResource(R.string.onboarding_save_failure))
         }
     }
 }

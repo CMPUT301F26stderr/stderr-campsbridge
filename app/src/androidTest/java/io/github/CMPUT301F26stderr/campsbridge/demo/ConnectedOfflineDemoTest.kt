@@ -19,6 +19,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.google.firebase.FirebaseApp
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.onCalendarDate
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -48,8 +49,8 @@ class ConnectedOfflineDemoTest {
             compose.onNodeWithTag(winTag).performScrollTo().performClick()
             open("Book your stay")
             compose.onNodeWithTag("booking-calendar").performScrollTo()
-            compose.onNodeWithTag("calendar-date-2027-05-18").performScrollTo().performClick()
-            compose.onNodeWithTag("calendar-date-2027-05-20").performScrollTo().performClick()
+            compose.onCalendarDate(java.time.LocalDate.parse("2027-05-18")).performScrollTo().performClick()
+            compose.onCalendarDate(java.time.LocalDate.parse("2027-05-20")).performScrollTo().performClick()
             compose.onNodeWithText("Next").performClick()
             compose.onNodeWithText("Next").performClick()
             open("I have read and accept these rules and the reservation policy.")

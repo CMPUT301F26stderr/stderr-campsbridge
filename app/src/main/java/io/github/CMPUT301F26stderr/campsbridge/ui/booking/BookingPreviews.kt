@@ -175,7 +175,7 @@ internal fun BookingPreviewContent(
             onNext = {},
             onCancel = {},
             onMonth = {},
-            onDate = {},
+            onDatesChange = { _, _ -> },
             onClearDates = {},
             onGuests = {},
             onAccept = { _, _, _ -> },

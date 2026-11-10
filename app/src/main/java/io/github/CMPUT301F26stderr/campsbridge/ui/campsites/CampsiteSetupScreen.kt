@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,7 +63,7 @@ import java.time.YearMonth
  * @param onRemovePhoto Stages explicit removal.
  * @param onRetryPhoto Retries saved attachment display.
  * @param onMonth Changes visible inventory month.
- * @param onDate Changes one desired offered state.
+ * @param onOfferedChange Stages offered or withdrawn nights after range selection.
  * @param onRetryCalendar Retries the visible month.
  * @param onOpenPolicy Opens packaged refund reader.
  * @param modifier Caller layout.
@@ -97,7 +96,7 @@ fun CampsiteSetupScreen(
     onRemovePhoto: () -> Unit,
     onRetryPhoto: () -> Unit,
     onMonth: (YearMonth) -> Unit,
-    onDate: (LocalDate) -> Unit,
+    onOfferedChange: (Set<LocalDate>, Boolean) -> Unit,
     onRetryCalendar: () -> Unit,
     onOpenPolicy: () -> Unit,
     modifier: Modifier = Modifier,
@@ -106,11 +105,6 @@ fun CampsiteSetupScreen(
     onRetrySave: (() -> Unit)? = null,
     onPublish: (() -> Unit)? = null,
 ) {
-    BackHandler {
-        if (state !is CampsiteSetupUiState.PublicationRecovery) {
-            if (state is CampsiteSetupUiState.Content) onBack() else onCancel()
-        }
-    }
     if (state !is CampsiteSetupUiState.Content) {
         val visible = (state as? CampsiteSetupUiState.ConfirmDiscard)?.previous ?: state
         AppScreen(
@@ -272,7 +266,7 @@ fun CampsiteSetupScreen(
                         state.inventory,
                         draft.requestedAvailability,
                         onMonth,
-                        onDate,
+                        onOfferedChange,
                         onRetryCalendar,
                     )
                 }
@@ -492,7 +486,7 @@ private fun SetupPreviewContent(state: CampsiteSetupUiState) {
             {},
             {},
             {},
-            {},
+            { _, _ -> },
             {},
             {},
             onChooseLocation = {},

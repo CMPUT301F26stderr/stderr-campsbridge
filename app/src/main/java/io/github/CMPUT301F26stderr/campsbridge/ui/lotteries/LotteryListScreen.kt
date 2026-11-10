@@ -7,21 +7,12 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.PrimaryTabRow
@@ -43,10 +34,12 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.LocalFloatingActionPadding
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.LotteryCard
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -62,7 +55,6 @@ import java.time.LocalDate
  * @param onRetry Retries failed sources.
  * @param modifier Caller layout.
  * @param listState Category's saveable scroll owner.
- * @param onCreate Optional real setup entry.
  * @param campsiteId Optional active owner association filter.
  * @param onClearCampsite Clears that filter without changing saved records.
  * @param contexts Independently observed campsite facts for visible resolved rows.
@@ -78,7 +70,6 @@ fun LotteryListScreen(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
-    onCreate: (() -> Unit)? = null,
     campsiteId: String? = null,
     onClearCampsite: () -> Unit = {},
     contexts: Map<String, LotteryOffersState> = emptyMap(),
@@ -88,7 +79,12 @@ fun LotteryListScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(vertical = Spacing.medium),
+            contentPadding =
+                PaddingValues(
+                    top = Spacing.medium,
+                    bottom =
+                        Spacing.medium + LocalFloatingActionPadding.current,
+                ),
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             if (campsiteId != null) {
@@ -188,22 +184,6 @@ fun LotteryListScreen(
                             },
                         )
                     }
-                }
-            }
-        }
-        onCreate?.let { action ->
-            Row(
-                Modifier.fillMaxWidth().padding(vertical = Spacing.medium),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                ExtendedFloatingActionButton(
-                    onClick = action,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(Modifier.width(Spacing.small))
-                    Text(stringResource(R.string.lottery_create))
                 }
             }
         }
@@ -394,7 +374,10 @@ private fun LotteryListPreview(
     @PreviewParameter(LotteryListPreviewProvider::class) state: LotteryListUiState,
 ) {
     CampsbridgeTheme {
-        AppScreen(stringResource(R.string.my_lotteries)) {
+        AppScreen(
+            stringResource(R.string.my_lotteries),
+            floatingActionButton = { CreateAction(stringResource(R.string.lottery_create), {}) },
+        ) {
             LotteryListScreen(
                 state,
                 LotteryListCategory.PUBLISHED,
@@ -402,7 +385,6 @@ private fun LotteryListPreview(
                 {},
                 {},
                 {},
-                onCreate = {},
                 contexts =
                     (state as? LotteryListUiState.Content)?.items.orEmpty().associate {
                         val site = previewCampsite()

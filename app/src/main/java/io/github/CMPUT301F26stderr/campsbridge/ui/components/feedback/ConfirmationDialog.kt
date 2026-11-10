@@ -6,16 +6,24 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -31,6 +39,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param destructive Uses the shared error emphasis for destructive confirmation.
  * @param cancelLabel Explicit nonmutating alternative, defaulting to Cancel.
  * @param supportingContent Optional caller-owned input/feedback below the consequence.
+ * @param progressDescription Visible and announced status while confirmation is pending.
  */
 @Composable
 fun ConfirmationDialog(
@@ -43,6 +52,7 @@ fun ConfirmationDialog(
     confirmLabel: String = stringResource(R.string.confirm),
     destructive: Boolean = false,
     cancelLabel: String = stringResource(R.string.cancel),
+    progressDescription: String = stringResource(R.string.working),
     supportingContent: (@Composable () -> Unit)? = null,
 ) {
     val confirmColor =
@@ -60,6 +70,16 @@ fun ConfirmationDialog(
                 verticalArrangement = Arrangement.spacedBy(Spacing.medium),
             ) {
                 Text(description)
+                if (isSubmitting) {
+                    Row(
+                        Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                        Text(progressDescription)
+                    }
+                }
                 supportingContent?.invoke()
             }
         },

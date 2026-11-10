@@ -55,7 +55,7 @@ class PageMotionTest {
                 },
         )
 
-    /** Forward and Back slides move in the layout direction and settle without resizing pages. */
+    /** Forward slides left and Back slides right in either layout without resizing pages. */
     @Test
     fun pagePushAndBackSlideInBothLayoutDirections() {
         compose.mainClock.autoAdvance = false
@@ -96,12 +96,12 @@ class PageMotionTest {
         compose.runOnIdle { layoutDirection.value = LayoutDirection.Rtl }
         compose.onNodeWithText("Push").performClick()
         compose.mainClock.advanceTimeBy(120)
-        assertPageMidSlide("page-detail", LayoutDirection.Rtl)
+        assertPageMidSlide("page-detail", LayoutDirection.Ltr)
         compose.mainClock.advanceTimeBy(200)
         compose.waitForIdle()
         Espresso.pressBack()
         compose.mainClock.advanceTimeBy(120)
-        assertPageMidSlide("page-home", LayoutDirection.Rtl, enteringFromEnd = true)
+        assertPageMidSlide("page-home", LayoutDirection.Ltr, enteringFromEnd = true)
     }
 
     /** A primary switch is immediate, while a detail opened from it still slides. */

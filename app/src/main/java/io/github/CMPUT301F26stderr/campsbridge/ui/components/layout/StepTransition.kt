@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.focusProperties
@@ -41,7 +42,14 @@ fun <T> StepTransition(
             if (step(initialState) == step(targetState)) {
                 (EnterTransition.None togetherWith ExitTransition.None).using(null)
             } else {
-                val direction = if (step(targetState) > step(initialState)) SlideDirection.Start else SlideDirection.End
+                val direction =
+                    if (step(targetState) >
+                        step(initialState)
+                    ) {
+                        SlideDirection.Left
+                    } else {
+                        SlideDirection.Right
+                    }
                 (pageEnter(direction) togetherWith pageExit(direction)).using(null)
             }
         },
@@ -62,7 +70,12 @@ fun <T> StepTransition(
                     }
             }
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).then(interactions)) {
-            content(visibleState)
+            CompositionLocalProvider(
+                LocalScreenInteractionEnabled provides
+                    (LocalScreenInteractionEnabled.current && step(visibleState) == step(state)),
+            ) {
+                content(visibleState)
+            }
         }
     }
 }

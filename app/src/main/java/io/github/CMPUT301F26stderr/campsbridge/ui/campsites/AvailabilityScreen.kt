@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -24,7 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInvent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarLabels
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.NightRangeCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -66,7 +65,6 @@ fun AvailabilityScreen(
     val content = state as? AvailabilityUiState.Content
     val work = content?.availability
     val saving = work?.isSaving == true
-    BackHandler { if (!saving) onBack() }
     AppScreen(
         stringResource(R.string.availability_title),
         modifier,
@@ -127,7 +125,7 @@ fun AvailabilityScreen(
                     } else if (state.saved) {
                         Text(stringResource(R.string.availability_saved))
                     }
-                    CampsiteCalendar(
+                    NightRangeCalendar(
                         offeredNightCalendarState(
                             calendar.month,
                             calendar.inventory,
@@ -136,18 +134,7 @@ fun AvailabilityScreen(
                             labels = CalendarLabels.OFFERED_NIGHTS,
                         ),
                         onMonth,
-                        { date ->
-                            onSelectDates(
-                                if (date in
-                                    state.selectedDates
-                                ) {
-                                    state.selectedDates - date
-                                } else {
-                                    state.selectedDates +
-                                        date
-                                },
-                            )
-                        },
+                        onSelectDates,
                         enabled = !saving && !discardPrompt,
                     )
                     when (calendar.inventory) {
@@ -209,6 +196,7 @@ fun AvailabilityScreen(
             onDismissDiscard,
             isSubmitting = saving,
             confirmLabel = stringResource(R.string.campsite_discard_confirm),
+            destructive = true,
         )
     }
 }

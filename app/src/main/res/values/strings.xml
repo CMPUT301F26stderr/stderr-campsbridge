@@ -54,6 +54,12 @@
     <string name="photo_remove_failure">Could not remove photo</string>
     <string name="photo_selection_failure">Could not read selected photo</string>
     <string name="photo_display_failure">Could not display photo</string>
+    <string name="calendar_add_range">Add range</string>
+    <string name="calendar_remove_range">Remove %1$s</string>
+    <string name="calendar_range_hint">Choose the first and last night, then add the range. Tap the same date twice for one night.</string>
+    <string name="calendar_range_unavailable">Every night in the range must be available to select.</string>
+    <string name="calendar_inventory_summary">This month</string>
+    <string name="calendar_date_status">%1$s: %2$s</string>
     <string name="calendar_title">Availability</string>
     <string name="calendar_previous_month">Previous month</string>
     <string name="calendar_next_month">Next month</string>

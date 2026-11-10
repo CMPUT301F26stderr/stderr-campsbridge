@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,7 +56,6 @@ fun NotificationSettingsScreen(
     modifier: Modifier = Modifier,
     settingsUnavailable: Boolean = false,
 ) {
-    BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.notification_settings_title), modifier, onBack) {
         Column(
             Modifier

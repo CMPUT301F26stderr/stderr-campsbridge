@@ -7,7 +7,6 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -18,8 +17,10 @@ import androidx.test.espresso.Espresso.pressBack
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.addCalendarNights
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.onCalendarDate
 import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -47,20 +48,15 @@ class AvailabilityEditorTest {
         host.campsites.calendarNights.value = listOf(CalendarNight(second, true, "reservation"))
         host.campsites.offerHandler = { _, _, _, _ -> gate.await() }
         start()
-        compose.onNodeWithTag("calendar-date-$second").assertIsNotEnabled()
-        compose
-            .onNodeWithTag(
-                "calendar-date-$first",
-            ).performScrollTo()
-            .performClick()
-            .assertIsSelected()
+        compose.onCalendarDate(second).assertIsNotEnabled()
+        compose.addCalendarNights(first)
         compose.onNodeWithText("Selected nights: 1").performScrollTo().assertIsDisplayed()
         compose.runOnIdle { assertEquals(0, host.campsites.writeCalls) }
         compose.onNodeWithText("Offer nights").performScrollTo().performClick()
         compose.onNodeWithText("Save changes").performClick()
         compose.onNodeWithContentDescription("Saving date changes").assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
-        compose.onNodeWithContentDescription("Next month").assertIsNotEnabled()
+        compose.onNodeWithTag("material-range-calendar").assertIsNotEnabled()
         pressBack()
         compose.onNodeWithText("Availability").assertIsDisplayed()
         compose.runOnIdle {
@@ -107,7 +103,7 @@ class AvailabilityEditorTest {
             first,
             second,
         )) {
-            compose.onNodeWithTag("calendar-date-$date").performScrollTo().performClick()
+            compose.addCalendarNights(date)
         }
         compose.onNodeWithText("Offer nights").performScrollTo().performClick()
         compose.onNodeWithText("Save changes").performClick()
@@ -138,7 +134,7 @@ class AvailabilityEditorTest {
     @Test fun unsavedWithdrawalCanKeepEditingOrDiscardWithoutAWrite() {
         host.campsites.calendarNights.value = listOf(CalendarNight(first, true))
         start()
-        compose.onNodeWithTag("calendar-date-$first").performScrollTo().performClick()
+        compose.addCalendarNights(first)
         compose.onNodeWithText("Withdraw nights").performScrollTo().performClick()
         pressBack()
         compose.onNodeWithText("Discard unsaved date changes?").assertIsDisplayed()
@@ -157,7 +153,7 @@ class AvailabilityEditorTest {
     /** Missing F08 is explicit in the real route and cannot silently authorize a save. */
     @Test fun missingComparisonKeepsTheEditorPreviewableAndSavePending() {
         start(comparisonAvailable = false)
-        compose.onNodeWithTag("calendar-date-$first").performScrollTo().performClick()
+        compose.addCalendarNights(first)
         compose.onNodeWithText("Offer nights").performScrollTo().performClick()
         compose
             .onNodeWithText(
@@ -183,10 +179,10 @@ class AvailabilityEditorTest {
                 "Could not load this month. Your date changes are retained.",
             ).performScrollTo()
             .assertIsDisplayed()
-        compose.onNodeWithTag("calendar-date-$first").assertIsNotEnabled()
+        compose.onCalendarDate(first).assertIsNotEnabled()
         compose.runOnIdle { host.campsites.calendarFailure.value = null }
         compose.onNodeWithText("Retry").performScrollTo().performClick()
-        compose.onNodeWithTag("calendar-date-$first").performScrollTo().assertIsEnabled()
+        compose.onCalendarDate(first).performScrollTo().assertIsEnabled()
         compose.runOnIdle {
             assertEquals(listOf(site.id, site.id), host.campsites.readIds)
             assertEquals(0, host.campsites.writeCalls)

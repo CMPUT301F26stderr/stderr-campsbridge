@@ -13,6 +13,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Shared emphasis for notices; the visible title must communicate the meaning too. */
@@ -35,7 +40,10 @@ fun InlineNotice(
 ) {
     val colors = MaterialTheme.colorScheme
     Surface(
-        modifier.fillMaxWidth(),
+        modifier.fillMaxWidth().semantics(mergeDescendants = true) {
+            liveRegion = LiveRegionMode.Polite
+            if (tone == NoticeTone.ERROR) error(message)
+        },
         shape = MaterialTheme.shapes.medium,
         color = if (tone == NoticeTone.ERROR) colors.errorContainer else colors.surfaceContainerLow,
         contentColor =
@@ -51,7 +59,7 @@ fun InlineNotice(
             Modifier.padding(Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(title, Modifier.semantics { heading() }, style = MaterialTheme.typography.titleSmall)
             Text(message, style = MaterialTheme.typography.bodyMedium)
             action?.invoke()
         }

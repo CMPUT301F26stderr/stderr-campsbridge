@@ -16,8 +16,8 @@ import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
@@ -31,18 +31,12 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.ParticipantListRoute
  * @param controller Account navigation host.
  * @param state Ready session and selected workspace.
  * @param onSelectWorkspace Root-owned capability switch.
- * @param navigationItems Registered owner peers.
- * @param entrantItems Registered entrant peers.
- * @param onSelectDestination Retained primary navigation.
  * @param factory Scoped constructor keyed by context and optional campsite association.
  */
 internal fun NavGraphBuilder.lotteryListGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
-    navigationItems: List<WorkspaceNavigationItem>,
-    entrantItems: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     factory: (LotteryContext, String?) -> ViewModelProvider.Factory,
 ) {
     for (pattern in listOf(
@@ -71,20 +65,16 @@ internal fun NavGraphBuilder.lotteryListGraph(
                     LotteryContext.OWNER
                 }
             val model: LotteryListViewModel = viewModel(factory = factory(context, id))
+            val createAction: @androidx.compose.runtime.Composable () -> Unit = {
+                if (context == LotteryContext.OWNER) {
+                    CreateAction(stringResource(R.string.lottery_create)) {
+                        controller.navigate(AppDestination.LOTTERY_SETUP) { launchSingleTop = true }
+                    }
+                }
+            }
             val content: @androidx.compose.runtime.Composable () -> Unit = {
                 LotteryListRoute(
                     model,
-                    onCreate =
-                        if (context == LotteryContext.OWNER) {
-                            {
-                                controller.navigate(AppDestination.LOTTERY_SETUP) {
-                                    launchSingleTop =
-                                        true
-                                }
-                            }
-                        } else {
-                            null
-                        },
                 ) { item ->
                     controller.navigate(
                         if (item.lottery.publishedAt ==
@@ -105,14 +95,14 @@ internal fun NavGraphBuilder.lotteryListGraph(
                     state,
                     onSelectWorkspace,
                     stringResource(R.string.my_lotteries),
-                    if (context == LotteryContext.OWNER) navigationItems else entrantItems,
-                    pattern,
-                    onSelectDestination,
+                    floatingActionButton = createAction,
                 ) { content() }
             } else {
-                AppScreen(stringResource(R.string.campsite_lotteries), onBack = {
-                    controller.popBackStack()
-                }) { content() }
+                AppScreen(
+                    stringResource(R.string.campsite_lotteries),
+                    onBack = { controller.popBackStack() },
+                    floatingActionButton = createAction,
+                ) { content() }
             }
         }
     }

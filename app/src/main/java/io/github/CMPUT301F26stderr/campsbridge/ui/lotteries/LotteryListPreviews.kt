@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
@@ -187,7 +188,10 @@ private fun LotteryListDisplayPreview(
             )
         }
     CampsbridgeTheme {
-        AppScreen(stringResource(R.string.my_lotteries)) {
+        AppScreen(
+            stringResource(R.string.my_lotteries),
+            floatingActionButton = { if (owner) CreateAction(stringResource(R.string.lottery_create), {}) },
+        ) {
             LotteryListScreen(
                 state.state,
                 state.category,
@@ -196,7 +200,6 @@ private fun LotteryListDisplayPreview(
                 {},
                 {},
                 contexts = state.contexts,
-                onCreate = if (owner) ({}) else null,
             )
         }
     }

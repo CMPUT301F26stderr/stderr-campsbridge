@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -81,7 +80,6 @@ fun LotterySetupScreen(
     onRetrySave: () -> Unit = {},
     onRetryLoad: () -> Unit = {},
 ) {
-    BackHandler(onBack = onBack)
     val submitting = state.savePhase != LotterySavePhase.IDLE
     if (state.targetLoad != LotteryTargetLoad.READY || state.publicationPending) {
         AppScreen(
@@ -237,6 +235,7 @@ private fun LotteryDiscardDialog(
         onDismiss,
         onDismiss,
         confirmLabel = stringResource(R.string.lottery_discard_confirm),
+        destructive = true,
     )
 }
 

@@ -4,15 +4,10 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,9 +29,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.InterestsStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.NameStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.OwnerIntroductionStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.WelcomeStep
-import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
-import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -50,6 +42,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onSkip Finish without saving optional interests.
  * @param onRetryLoad Retry a failed initial read.
  * @param modifier Caller layout.
+ * @param onGuidelines Opens the packaged guidelines destination.
  */
 @Composable
 fun OnboardingScreen(
@@ -62,15 +55,8 @@ fun OnboardingScreen(
     onSkip: () -> Unit,
     onRetryLoad: () -> Unit,
     modifier: Modifier = Modifier,
+    onGuidelines: () -> Unit = {},
 ) {
-    var guidelines by rememberSaveable { mutableStateOf(false) }
-    if (guidelines && !state.unavailable) {
-        PolicyReaderScreen(policyContent(PolicyId.GUIDELINES), onBack = { guidelines = false })
-        return
-    }
-    BackHandler(enabled = state.step != OnboardingStep.WELCOME && !state.unavailable) {
-        if (!state.isSubmitting) onBack()
-    }
     StepTransition(state, { it.step.ordinal }, modifier) { state ->
         when {
             state.unavailable -> {
@@ -98,7 +84,7 @@ fun OnboardingScreen(
             }
 
             state.step == OnboardingStep.WELCOME -> {
-                WelcomeStep(onNext, { guidelines = true })
+                WelcomeStep(onNext, onGuidelines)
             }
 
             else -> {

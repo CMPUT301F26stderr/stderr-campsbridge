@@ -60,7 +60,7 @@ fun BookingRoute(
         onNext = model::next,
         onCancel = model::requestExit,
         onMonth = model::changeMonth,
-        onDate = model::selectDate,
+        onDatesChange = model::selectStayDates,
         onClearDates = model::clearDates,
         onGuests = model::editGuests,
         onAccept = model::acceptTerms,

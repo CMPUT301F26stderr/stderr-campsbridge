@@ -7,6 +7,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDraft
@@ -30,7 +31,9 @@ fun CampsiteCapacityPriceStep(
         draft.maxGuestsText,
         onCapacity,
         stringResource(R.string.campsite_max_guests),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+        reserveSupportingSpace = true,
+        revealError = errors.capacity != null,
         errorMessage =
             if (errors.capacity !=
                 null
@@ -45,6 +48,7 @@ fun CampsiteCapacityPriceStep(
         onPrice,
         stringResource(R.string.campsite_nightly_price),
         supportingText = stringResource(R.string.campsite_currency_code),
+        revealError = errors.capacity == null && errors.price != null,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         errorMessage =
             if (errors.price !=

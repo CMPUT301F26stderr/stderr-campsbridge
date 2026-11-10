@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Groups related facts or inputs in one shared Material section without owning their state.
@@ -49,7 +51,7 @@ fun SummarySection(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
-                Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                Text(title, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
                 action?.invoke()
             }
             content()

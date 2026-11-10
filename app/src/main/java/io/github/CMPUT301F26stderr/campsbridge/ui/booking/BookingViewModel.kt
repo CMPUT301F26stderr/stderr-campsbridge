@@ -445,6 +445,18 @@ class BookingViewModel(
         updateDraft(draftState.value.copy(checkOut = date, reviewedTotalCents = null))
     }
 
+    /** Updates both Material picker endpoints together; existing eligibility checks still gate Next.
+     * @param start Inclusive arrival, or null to clear the selection.
+     * @param end Exclusive checkout, or null while choosing it.
+     */
+    fun selectStayDates(
+        start: LocalDate?,
+        end: LocalDate?,
+    ) {
+        if (!canEdit(BookingStep.DATES)) return
+        updateDraft(draftState.value.copy(checkIn = start, checkOut = end, reviewedTotalCents = null))
+    }
+
     /** Applies only a currently selectable displayed cell as arrival or excluded checkout.
      * @param date Local date actually tapped in the visible calendar.
      */

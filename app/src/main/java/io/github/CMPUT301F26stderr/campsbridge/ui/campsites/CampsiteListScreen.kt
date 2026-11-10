@@ -7,21 +7,12 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
@@ -32,10 +23,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.CampsiteRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.LocalFloatingActionPadding
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -47,7 +40,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onRetry Retries the source.
  * @param listState Saveable scroll context supplied by the route.
  * @param modifier Caller layout.
- * @param onCreate Starts a real registered setup flow when supplied.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +51,6 @@ fun CampsiteListScreen(
     onRetry: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
     modifier: Modifier = Modifier,
-    onCreate: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxSize()) {
         PrimaryTabRow(selectedTabIndex = tab.ordinal) {
@@ -84,7 +75,12 @@ fun CampsiteListScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(vertical = Spacing.medium),
+            contentPadding =
+                PaddingValues(
+                    top = Spacing.medium,
+                    bottom =
+                        Spacing.medium + LocalFloatingActionPadding.current,
+                ),
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             when (state) {
@@ -139,22 +135,6 @@ fun CampsiteListScreen(
                 }
             }
         }
-        onCreate?.let { action ->
-            Row(
-                Modifier.fillMaxWidth().padding(vertical = Spacing.medium),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                ExtendedFloatingActionButton(
-                    onClick = action,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(Modifier.width(Spacing.small))
-                    Text(stringResource(R.string.campsite_create))
-                }
-            }
-        }
     }
 }
 
@@ -174,7 +154,6 @@ private fun CampsiteListPreview() {
             {},
             {},
             {},
-            onCreate = {},
         )
     }
 }
@@ -190,7 +169,6 @@ private fun CampsiteListFailurePreview() {
             {},
             {},
             {},
-            onCreate = {},
         )
     }
 }
@@ -206,7 +184,6 @@ private fun CampsiteListEmptyPreview() {
             {},
             {},
             {},
-            onCreate = {},
         )
     }
 }
@@ -217,6 +194,9 @@ private fun CampsiteListEmptyPreview() {
 @Composable
 private fun CampsiteListPreviewFrame(content: @Composable () -> Unit) {
     CampsbridgeTheme {
-        AppScreen(stringResource(R.string.campsites)) { content() }
+        AppScreen(
+            stringResource(R.string.campsites),
+            floatingActionButton = { CreateAction(stringResource(R.string.campsite_create), {}) },
+        ) { content() }
     }
 }

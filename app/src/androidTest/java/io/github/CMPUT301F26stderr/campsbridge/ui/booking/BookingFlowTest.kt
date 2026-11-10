@@ -46,6 +46,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepo
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.onCalendarDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -131,7 +132,7 @@ class BookingFlowTest {
         compose.onNodeWithText("Review your stay").assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()
         open("Edit dates")
-        compose.onNodeWithTag("calendar-date-$start").performScrollTo().assertIsDisplayed()
+        compose.onCalendarDate(start).performScrollTo().assertIsDisplayed()
         next()
         compose.onNodeWithText("Review your stay").assertIsDisplayed()
         compose.runOnIdle {
@@ -151,7 +152,7 @@ class BookingFlowTest {
             .onNodeWithText(
                 "Date selection is not available yet.",
             ).assertIsDisplayed()
-        compose.onNodeWithTag("calendar-date-$start").performScrollTo().assertIsNotEnabled()
+        compose.onCalendarDate(start).performScrollTo().assertIsNotEnabled()
         next()
         compose.onNodeWithText("Choose an arrival date.").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Number of guests").assertDoesNotExist()
@@ -162,7 +163,7 @@ class BookingFlowTest {
         sites.calendarFailure.value = IOException("inventory offline")
         start()
         compose.onNodeWithText("Could not load these nights.").assertIsDisplayed()
-        compose.onNodeWithTag("calendar-date-$start").performScrollTo().assertIsNotEnabled()
+        compose.onCalendarDate(start).performScrollTo().assertIsNotEnabled()
         compose.runOnIdle { sites.calendarFailure.value = null }
         open("Retry calendar")
         selectStay()
@@ -265,10 +266,10 @@ class BookingFlowTest {
         bookings.opportunityHandler = { _, _ -> throw IOException("server unavailable") }
         start()
         compose.onNodeWithText("Could not confirm this booking opportunity.").assertIsDisplayed()
-        compose.onNodeWithTag("calendar-date-$start").assertDoesNotExist()
+        compose.onCalendarDate(start).assertDoesNotExist()
         compose.runOnIdle { bookings.opportunityHandler = { _, _ -> null } }
         compose.onNodeWithText("Retry").assertIsDisplayed().performClick()
-        compose.onNodeWithTag("calendar-date-$start").performScrollTo().assertIsEnabled()
+        compose.onCalendarDate(start).performScrollTo().assertIsEnabled()
         compose.runOnIdle { assertEquals(1, creations) }
     }
 
@@ -277,12 +278,11 @@ class BookingFlowTest {
         sites.calendarNights.value =
             sites.calendarNights.value + CalendarNight(end, true, "another")
         start()
-        compose.onNodeWithTag("calendar-date-$end").performScrollTo().assertIsNotEnabled()
-        compose.onNodeWithTag("calendar-date-$start").performScrollTo().performClick()
+        compose.onCalendarDate(end).performScrollTo().assertIsNotEnabled()
+        compose.onCalendarDate(start).performScrollTo().performClick()
         compose
-            .onNodeWithTag(
-                "calendar-date-$end",
-            ).performScrollTo()
+            .onCalendarDate(end)
+            .performScrollTo()
             .assertIsEnabled()
             .performClick()
         next()
@@ -323,7 +323,7 @@ class BookingFlowTest {
         compose.onNodeWithText(draw.title).performClick()
         open("Book your stay")
         compose.onNodeWithText("Choose dates").assertIsDisplayed()
-        compose.onNodeWithTag("calendar-date-$start").performScrollTo().assertIsEnabled()
+        compose.onCalendarDate(start).performScrollTo().assertIsEnabled()
         pressBack()
         compose.onNodeWithText(draw.title).assertIsDisplayed()
         compose.runOnIdle { assertEquals(1, actual.lotteryDetailCreations) }
@@ -516,12 +516,12 @@ class BookingFlowTest {
         // The calendar has horizontal scrolling inside the wizard's vertical scroll owner.
         compose.onNodeWithTag("booking-calendar").performScrollTo()
         compose
-            .onNodeWithTag("calendar-date-$start")
+            .onCalendarDate(start)
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
         compose
-            .onNodeWithTag("calendar-date-$end")
+            .onCalendarDate(end)
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()

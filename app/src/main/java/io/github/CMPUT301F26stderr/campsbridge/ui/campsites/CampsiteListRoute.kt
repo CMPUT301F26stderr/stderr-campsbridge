@@ -15,13 +15,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 /** Binds list state and visible-row read ownership without performing a write.
  * @param model Primary-destination inventory owner.
- * @param onCreate Starts a new local setup parent.
  * @param onOpenCampsite Navigation by saved identity.
  */
 @Composable
 fun CampsiteListRoute(
     model: CampsiteListViewModel,
-    onCreate: () -> Unit,
     onOpenCampsite: (String) -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -44,6 +42,5 @@ fun CampsiteListRoute(
         onOpenCampsite,
         model::retry,
         list,
-        onCreate = onCreate,
     )
 }

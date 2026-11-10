@@ -4,19 +4,27 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.forms
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -40,21 +48,43 @@ fun AppSearchField(
     onSearch: (() -> Unit)? = null,
     enabled: Boolean = true,
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    val submit: () -> Unit = {
+        if (enabled) {
+            onSearch?.invoke()
+            keyboard?.hide()
+            focusManager.clearFocus()
+        }
+    }
     OutlinedTextField(
         value,
         onValueChange,
-        modifier.fillMaxWidth().heightIn(min = 56.dp * LocalControlScale.current),
+        modifier.fillMaxWidth().heightIn(min = 56.dp * LocalControlScale.current).focusRequester(focusRequester),
         label = { Text(label) },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-        trailingIcon =
-            onSearch?.let { submit ->
-                {
-                    TextButton(
-                        submit,
+        trailingIcon = {
+            Row {
+                if (value.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            onValueChange("")
+                            focusRequester.requestFocus()
+                            keyboard?.show()
+                        },
                         enabled = enabled,
-                    ) { Text(stringResource(R.string.discovery_search)) }
+                    ) {
+                        Icon(Icons.Default.Close, stringResource(R.string.clear_search))
+                    }
                 }
-            },
+                if (onSearch != null) {
+                    TextButton(submit, enabled = enabled) {
+                        Text(stringResource(R.string.discovery_search))
+                    }
+                }
+            }
+        },
         shape = CircleShape,
         singleLine = true,
         enabled = enabled,
@@ -69,6 +99,6 @@ fun AppSearchField(
                         ImeAction.Search
                     },
             ),
-        keyboardActions = KeyboardActions(onSearch = { if (enabled) onSearch?.invoke() }),
+        keyboardActions = KeyboardActions(onSearch = { submit() }, onDone = { submit() }),
     )
 }

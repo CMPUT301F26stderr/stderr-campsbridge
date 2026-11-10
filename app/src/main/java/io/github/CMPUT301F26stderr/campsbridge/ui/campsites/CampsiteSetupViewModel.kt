@@ -558,6 +558,21 @@ class CampsiteSetupViewModel(
         }
     }
 
+    /** Stages an explicit range action through the shared availability owner.
+     * @param dates Known unoccupied nights chosen in the calendar.
+     * @param offered Whether to offer or withdraw these nights.
+     */
+    fun setRequestedOffered(
+        dates: Set<LocalDate>,
+        offered: Boolean,
+    ) {
+        if (editable() == null) return
+        availability?.let {
+            it.setRequestedOffered(dates, offered)
+            reflectAvailability(it.state.value)
+        }
+    }
+
     /** Toggles a known unoccupied date's desired value through the shared availability owner.
      * @param date Date the owner edited.
      */

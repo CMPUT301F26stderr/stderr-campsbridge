@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
@@ -31,7 +32,7 @@ data class WorkspaceNavigationItem(
     val badge: String? = null,
 )
 
-/** White Material workspace navigation with wrapping labels and caller-owned selection.
+/** Material workspace navigation with compact labels and caller-owned selection.
  * @param items Destinations supplied by the owning graph.
  * @param selectedId Current selected identity.
  * @param onSelect Navigation request.
@@ -52,24 +53,26 @@ fun WorkspaceNavigation(
         tonalElevation = 0.dp,
     ) {
         items.forEach { item ->
-            NavigationBarItem(
-                selected = item.id == selectedId,
-                onClick = { onSelect(item.id) },
-                icon = {
-                    BadgedBox(badge = { item.badge?.let { Badge { Text(it) } } }) {
-                        Icon(item.icon, contentDescription = null)
-                    }
-                },
-                label = {
-                    Text(
-                        item.label,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                },
-            )
+            key(item.id) {
+                NavigationBarItem(
+                    selected = item.id == selectedId,
+                    onClick = { onSelect(item.id) },
+                    icon = {
+                        BadgedBox(badge = { item.badge?.let { Badge { Text(it) } } }) {
+                            Icon(item.icon, contentDescription = null)
+                        }
+                    },
+                    label = {
+                        Text(
+                            item.label,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    },
+                )
+            }
         }
     }
 }
