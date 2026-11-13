@@ -137,6 +137,7 @@ fun notificationEntryViewModelFactory(services: AppServices): ViewModelProvider.
                     repositories.notifications,
                     repositories.lotteries,
                     repositories.bookings,
+                    repositories.messages,
                 ),
                 createSavedStateHandle(),
             )

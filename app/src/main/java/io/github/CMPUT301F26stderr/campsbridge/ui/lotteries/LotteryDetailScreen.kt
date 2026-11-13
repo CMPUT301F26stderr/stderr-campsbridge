@@ -45,6 +45,18 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onReservation Opens the confirmed consuming reservation.
  * @param onBooking Opens the registered single-site winner flow.
  * @param onOpenSection Registered detail children, absent in isolated examples.
+ * @param onEditDetails Registered organizer details editor, gated by current ownership.
+ * @param onEditAllocations Opens the current participant's owned allocation editor.
+ * @param onEditOwners Opens saved member context and the organizer's membership picker.
+ * @param onChooseCampsite Opens the saved multiple-offer chooser.
+ * @param onAnnounce Opens the published lottery's explicit participant announcement form.
+ * @param announcementSent The child confirmed immutable-event storage.
+ * @param onDismissAnnouncement Hides only the local saved-result feedback.
+ * @param decline Independent unused-win command state.
+ * @param onRequestDecline Opens decline confirmation.
+ * @param onDismissDecline Keeps the opportunity without writing.
+ * @param onConfirmDecline Submits the confirmed decline.
+ * @param onRetryDecline Retries the failed command explicitly.
  */
 @Composable
 fun LotteryDetailScreen(
@@ -65,14 +77,26 @@ fun LotteryDetailScreen(
     onReservation: ((String) -> Unit)? = null,
     onBooking: ((String, String) -> Unit)? = null,
     onOpenSection: ((LotteryDetailSection) -> Unit)? = null,
+    onEditDetails: (() -> Unit)? = null,
+    onEditAllocations: (() -> Unit)? = null,
+    onEditOwners: (() -> Unit)? = null,
+    onChooseCampsite: (() -> Unit)? = null,
+    onAnnounce: (() -> Unit)? = null,
+    announcementSent: Boolean = false,
+    onDismissAnnouncement: () -> Unit = {},
+    decline: LotteryDeclineUiState = LotteryDeclineUiState(),
+    onRequestDecline: () -> Unit = {},
+    onDismissDecline: () -> Unit = {},
+    onConfirmDecline: () -> Unit = {},
+    onRetryDecline: () -> Unit = {},
 ) {
     val content = state as? LotteryDetailUiState.Content
-    val bookingOffer =
+    val bookingOffers =
         content
-            ?.takeIf {
-                it.opportunity == LotteryOpportunityRead.Unused &&
-                    it.lifecycle == LotteryLifecycle.BOOKING_OPEN && onBooking != null
-            }?.let { (it.offers as? LotteryOffersState.Content)?.offers?.singleOrNull() }
+            ?.takeIf { winningOpportunityIsAvailable(it, decline) }
+            ?.let { (it.offers as? LotteryOffersState.Content)?.offers }
+            .orEmpty()
+    val canBook = (bookingOffers.size == 1 && onBooking != null) || (bookingOffers.size > 1 && onChooseCampsite != null)
     val reservation =
         (content?.opportunity as? LotteryOpportunityRead.Reserved)
             ?.reservation
@@ -80,7 +104,7 @@ fun LotteryDetailScreen(
     val participation = content?.participation
     val hasActions =
         content != null && (
-            bookingOffer != null || reservation != null || content.canContinue || content.canDraw ||
+            canBook || reservation != null || content.canContinue || content.canDraw ||
                 content.isDrawing || content.drawFailed || participation?.canJoin == true ||
                 participation?.canLeave == true || participation?.action != null ||
                 participation?.error != null || participation?.isConfirmingLeave == true
@@ -91,12 +115,19 @@ fun LotteryDetailScreen(
         onBack,
         onRetry,
         modifier,
+        backEnabled = !decline.isSubmitting,
         bottomContent = {
-            if (content != null && hasActions) {
+            if (hasActions || decline.canDecline || decline.isSubmitting || decline.failed || decline.isAwaitingEntry) {
                 ActionFooter {
-                    if (bookingOffer != null && onBooking != null) {
+                    if (content != null && canBook) {
                         AppActionButton(stringResource(R.string.booking_title), {
-                            onBooking(content.lottery.id, bookingOffer.offer.campsiteId)
+                            if (bookingOffers.size ==
+                                1
+                            ) {
+                                onBooking?.invoke(content.lottery.id, bookingOffers.single().offer.campsiteId)
+                            } else {
+                                onChooseCampsite?.invoke()
+                            }
                         }, Modifier.fillMaxWidth())
                     }
                     if (reservation != null && onReservation != null) {
@@ -104,15 +135,18 @@ fun LotteryDetailScreen(
                             onReservation(reservation.id)
                         }, Modifier.fillMaxWidth())
                     }
-                    LotteryMembershipActions(
-                        content.participation,
-                        onJoin,
-                        onRequestLeave,
-                        onDismissLeave,
-                        onConfirmLeave,
-                    )
-                    LotteryDrawActions(content, onDraw)
-                    if (content.canContinue) {
+                    if (content != null) {
+                        LotteryMembershipActions(
+                            content.participation,
+                            onJoin,
+                            onRequestLeave,
+                            onDismissLeave,
+                            onConfirmLeave,
+                        )
+                    }
+                    if (content != null) LotteryDrawActions(content, onDraw)
+                    LotteryDeclineActions(decline, onRequestDecline, onDismissDecline, onConfirmDecline, onRetryDecline)
+                    if (content?.canContinue == true) {
                         AppActionButton(
                             stringResource(R.string.lottery_continue_setup),
                             onContinue,
@@ -147,7 +181,6 @@ fun LotteryDetailScreen(
                     },
                     formatDateTime(
                         deadline,
-                        lotteryDisplayZone(current.offers),
                         LocalConfiguration.current.locales[0],
                     ),
                 ),
@@ -155,31 +188,55 @@ fun LotteryDetailScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        if (announcementSent) {
+            Text(stringResource(R.string.announcement_saved))
+            androidx.compose.material3.TextButton(
+                onDismissAnnouncement,
+            ) { Text(stringResource(R.string.announcement_dismiss)) }
+        }
+        if (onAnnounce != null && current.lottery.publishedAt != null) {
+            NavigationRow(stringResource(R.string.announcement_entry), onAnnounce)
+        }
         val pendingIsInHeading =
             current.lifecycle == LotteryLifecycle.DRAW_PENDING &&
                 (current.membership as? LotteryMembershipRead.Content)?.status ==
                 LotteryMembershipStatus.RESULTS_PENDING
         if (!pendingIsInHeading) LotteryMembershipReadContent(current.membership, onRetryMembership)
         LotteryOpportunityContent(current.opportunity, onRetryOpportunity)
+        if (onEditOwners != null && current.lottery.cancellation == null) {
+            NavigationRow(stringResource(R.string.lottery_owners_entry), onEditOwners)
+        }
+        if (onEditAllocations != null && current.lottery.cancellation == null) {
+            NavigationRow(stringResource(R.string.lottery_allocations_title), onEditAllocations)
+        }
+        if (current.canEditDetails && onEditDetails != null) {
+            NavigationRow(stringResource(R.string.lottery_edit_entry), onEditDetails)
+        }
         if (current.offers == LotteryOffersState.Failure) {
             FailureContent(stringResource(R.string.lottery_offers_failed), onRetryOffers)
         } else if ((current.offers as? LotteryOffersState.Content)?.offers?.isEmpty() == true) {
             Text(stringResource(R.string.lottery_no_offers))
         }
         if (onOpenSection != null || (onParticipants != null && current.lottery.publishedAt != null)) {
-            NavigationGroup {
-                if (onOpenSection != null) {
-                    NavigationRow(stringResource(R.string.lottery_schedule_title), {
-                        onOpenSection(LotteryDetailSection.SCHEDULE)
-                    })
-                    NavigationRow(stringResource(R.string.lottery_campsites_title), {
-                        onOpenSection(LotteryDetailSection.CAMPSITES)
-                    })
-                }
-                if (onParticipants != null && current.lottery.publishedAt != null) {
-                    NavigationRow(stringResource(R.string.lottery_participants), onParticipants)
-                }
-            }
+            NavigationGroup(
+                buildList<@Composable () -> Unit> {
+                    if (onOpenSection != null) {
+                        add {
+                            NavigationRow(stringResource(R.string.lottery_schedule_title), {
+                                onOpenSection(LotteryDetailSection.SCHEDULE)
+                            })
+                        }
+                        add {
+                            NavigationRow(stringResource(R.string.lottery_campsites_title), {
+                                onOpenSection(LotteryDetailSection.CAMPSITES)
+                            })
+                        }
+                    }
+                    if (onParticipants != null && current.lottery.publishedAt != null) {
+                        add { NavigationRow(stringResource(R.string.lottery_participants), onParticipants) }
+                    }
+                },
+            )
         }
     }
 }

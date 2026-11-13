@@ -68,7 +68,7 @@ class LotteryParticipantsControllerTest {
             reader.setVisible(true)
             for (value in listOf(
                 null,
-                parent.copy(ownerId = "other"),
+                parent.copy(ownerId = "other", participantOwnerIds = setOf("other")),
                 parent.copy(publishedAt = null),
                 parent.copy(id = "other"),
             )) {

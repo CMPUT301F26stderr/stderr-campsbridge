@@ -167,7 +167,7 @@ class NotificationEntryViewModel(
 
                 is NotificationSubjectContent.LotteryContent -> {
                     when {
-                        subject.lottery.ownerId == account.id && Role.OWNER in account.roles -> {
+                        account.id in subject.lottery.participantOwnerIds && Role.OWNER in account.roles -> {
                             Role.OWNER
                         }
 
@@ -199,7 +199,9 @@ class NotificationEntryViewModel(
                     }
                 }
 
-                NotificationSubjectContent.Unavailable, NotificationSubjectContent.Unsupported -> {
+                is NotificationSubjectContent.MessageContent,
+                NotificationSubjectContent.Unavailable, NotificationSubjectContent.Unsupported,
+                -> {
                     null
                 }
             }

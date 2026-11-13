@@ -4,7 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic
 
-/** Result contract for the reserved display-name parsing task. */
+/** Result contract for display-name parsing. */
 sealed interface DisplayNameInput {
     /** Empty input after trimming must show a required-field error. */
     data object Required : DisplayNameInput

@@ -22,9 +22,11 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryOffersState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.ParticipantListRoute
 
 /** Registers account-scoped primary lists and the owner-management association filter.
@@ -77,9 +79,7 @@ internal fun NavGraphBuilder.lotteryListGraph(
                     model,
                 ) { item ->
                     controller.navigate(
-                        if (item.lottery.publishedAt ==
-                            null
-                        ) {
+                        if (item.canContinueDraft) {
                             AppDestination.lotterySetupGraph(item.lottery.id)
                         } else {
                             AppDestination.lotteryDetail(item.lottery.id, context)
@@ -113,14 +113,14 @@ internal fun NavGraphBuilder.lotteryListGraph(
  * @param factory Dependencies keyed by actual saved ID and explicit caller context.
  * @param onReservation Actual registered consuming-record destination, absent in isolated hosts.
  * @param onBooking Actual registered single-site winner flow, absent in isolated hosts.
- * @param onCampsite Actual saved campsite calendar, absent in isolated hosts.
+ * @param onCampsite Saved calendar with the viewer's context and the listing's actual owner, if loaded.
  */
 internal fun NavGraphBuilder.lotteryDetailGraph(
     controller: NavHostController,
     factory: (String, LotteryContext) -> ViewModelProvider.Factory,
     onReservation: ((String) -> Unit)? = null,
     onBooking: ((String, String) -> Unit)? = null,
-    onCampsite: ((String, LotteryContext) -> Unit)? = null,
+    onCampsite: ((String, LotteryContext, String?) -> Unit)? = null,
 ) {
     for (context in LotteryContext.entries) {
         val pattern = AppDestination.lotteryDetailPattern(context)
@@ -180,7 +180,16 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                         },
                         onCampsite =
                             onCampsite?.let { open ->
-                                { campsiteId -> open(campsiteId, context) }
+                                { campsiteId ->
+                                    val offers = (model.state.value as? LotteryDetailUiState.Content)?.offers
+                                    val ownerId =
+                                        (offers as? LotteryOffersState.Content)
+                                            ?.offers
+                                            ?.firstOrNull { it.offer.campsiteId == campsiteId }
+                                            ?.campsite
+                                            ?.ownerId
+                                    open(campsiteId, context, ownerId)
+                                }
                             },
                     )
                 }

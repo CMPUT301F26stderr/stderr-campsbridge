@@ -1,0 +1,9 @@
+<resources>
+    <string name="inbox_received">Received</string>
+    <string name="inbox_sent">Sent</string>
+    <string name="sent_search">Search</string>
+    <string name="sent_failed">Could not load sent notifications.</string>
+    <string name="sent_empty">No sent notifications yet.</string>
+    <string name="sent_no_matches">No sent notifications match your search.</string>
+    <string name="sent_message">Message</string>
+</resources>

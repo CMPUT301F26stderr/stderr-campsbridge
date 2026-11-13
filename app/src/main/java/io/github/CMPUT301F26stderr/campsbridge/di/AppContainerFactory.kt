@@ -88,6 +88,7 @@ class AppContainerFactory(
                     repositories.notifications,
                     repositories.lotteries,
                     repositories.bookings,
+                    repositories.messages,
                 ),
                 AndroidNotificationPermission(context),
                 DataStoreAlertDeliveryStore(store),

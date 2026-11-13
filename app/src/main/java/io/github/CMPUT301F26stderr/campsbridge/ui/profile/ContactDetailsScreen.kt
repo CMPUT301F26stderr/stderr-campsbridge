@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.LocalValidationAttempt
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
@@ -48,6 +49,11 @@ fun ContactDetailsScreen(
 ) {
     val focusManager = LocalFocusManager.current
     var validationAttempt by remember { mutableIntStateOf(0) }
+    val submit = {
+        validationAttempt++
+        focusManager.clearFocus()
+        onSave()
+    }
     val content = state as? ProfileUiState.Content
     val saving = content?.operation == ProfileOperation.SAVING_CONTACTS
     val canExit =
@@ -63,11 +69,7 @@ fun ContactDetailsScreen(
                 ActionFooter {
                     AppActionButton(
                         stringResource(R.string.save_contacts),
-                        {
-                            validationAttempt++
-                            focusManager.clearFocus()
-                            onSave()
-                        },
+                        submit,
                         Modifier.fillMaxWidth(),
                         enabled =
                             content.operation == ProfileOperation.IDLE &&
@@ -126,7 +128,13 @@ fun ContactDetailsScreen(
                         stringResource(R.string.contact_validation_pending),
                     )
                 }
-                if (current.saveFailed) Text(stringResource(R.string.onboarding_save_failure))
+                if (current.saveFailed) {
+                    FailureContent(
+                        stringResource(R.string.onboarding_save_failure),
+                        submit,
+                        retryEnabled = current.operation == ProfileOperation.IDLE && !current.contactValidationPending,
+                    )
+                }
             }
         }
     }

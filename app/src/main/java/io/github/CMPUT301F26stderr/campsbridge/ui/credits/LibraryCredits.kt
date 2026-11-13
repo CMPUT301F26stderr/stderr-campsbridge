@@ -19,6 +19,21 @@ internal data class LibraryCredit(
 internal val AdditionalLibraryCredits =
     listOf(
         LibraryCredit(
+            "WeChatQRCode",
+            "Apache License 2.0",
+            "https://github.com/jenly1314/WeChatQRCode/blob/2.6.0/LICENSE",
+        ),
+        LibraryCredit(
+            "CameraScan",
+            "Apache License 2.0",
+            "https://github.com/jenly1314/CameraScan/blob/1.5.0/LICENSE",
+        ),
+        LibraryCredit(
+            "OpenCV",
+            "Apache License 2.0",
+            "https://github.com/opencv/opencv/blob/4.12.0/LICENSE",
+        ),
+        LibraryCredit(
             "Firebase Admin SDK for Node.js (booking service)",
             "Apache License 2.0",
             "https://github.com/firebase/firebase-admin-node/blob/v14.5.0/LICENSE",

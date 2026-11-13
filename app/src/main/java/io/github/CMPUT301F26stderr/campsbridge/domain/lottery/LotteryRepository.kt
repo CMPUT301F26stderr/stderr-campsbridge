@@ -36,6 +36,33 @@ interface LotteryRepository {
      */
     fun observeForOwner(ownerId: String): Flow<List<Lottery>>
 
+    /** Observes lotteries containing this owner, including collaborations organized by others.
+     * @param ownerId Participating owner identity.
+     */
+    fun observeParticipating(ownerId: String): Flow<List<Lottery>>
+
+    /** Changes collaboration membership without removing the organizer or an owner's outstanding offers.
+     * @param id Editable lottery identity.
+     * @param ownerId Organizer requesting the change.
+     * @param participantOwnerIds Complete desired membership; added accounts must be active owners.
+     */
+    suspend fun updateParticipants(
+        id: String,
+        ownerId: String,
+        participantOwnerIds: Set<String>,
+    )
+
+    /** Atomically replaces this participant's allocations, preserving all other owners' offers.
+     * @param id Editable lottery identity.
+     * @param ownerId Acting owner whose allocations are replaced.
+     * @param offers Complete desired allocation set; empty clears that owner's offers.
+     */
+    suspend fun replaceOwnerOffers(
+        id: String,
+        ownerId: String,
+        offers: List<LotteryOffer>,
+    )
+
     /**
      * Observes the campsite/night allocations belonging to a lottery.
      *

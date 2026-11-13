@@ -5,6 +5,7 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -107,7 +108,19 @@ internal fun LotteryMembershipReadContent(
         }
 
         is LotteryMembershipRead.Content -> {
-            Text(lotteryMembershipLabel(membership.status))
+            Text(
+                lotteryMembershipLabel(membership.status),
+                style =
+                    when (membership.status) {
+                        LotteryMembershipStatus.WON, LotteryMembershipStatus.LOST, LotteryMembershipStatus.DECLINED -> {
+                            MaterialTheme.typography.titleMediumEmphasized
+                        }
+
+                        else -> {
+                            MaterialTheme.typography.bodyLarge
+                        }
+                    },
+            )
         }
     }
 }

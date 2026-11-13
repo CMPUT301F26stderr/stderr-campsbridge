@@ -9,7 +9,10 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.Maintenance
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.PendingWork
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.MessageRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.moderation.ModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReviewRepository
 
@@ -20,7 +23,10 @@ interface AppRepositories {
     val lotteries: LotteryRepository
     val bookings: BookingRepository
     val notifications: NotificationRepository
+    val messages: MessageRepository
+    val moderation: ModerationRepository
     val reviews: ReviewRepository
     val images: ImageRepository
     val pendingWork: PendingWork
+    val maintenance: Maintenance
 }

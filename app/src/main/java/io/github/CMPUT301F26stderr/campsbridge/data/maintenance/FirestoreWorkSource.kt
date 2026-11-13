@@ -1,5 +1,5 @@
 /*
- * Discovers work from owner lotteries and entrant/owner reservations without global scans.
+ * Discovers work from participating lotteries and entrant/owner reservations without global scans.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.data.maintenance
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 
 /**
- * Discovers work from owner lotteries and entrant/owner reservations without global scans.
+ * Discovers work from participating lotteries and entrant/owner reservations without global scans.
  * @param lotteries Lottery observations and the shared draw operation.
  * @param bookings Reservation observations deriving owner membership through campsites.
  * @param deliveries Parent-scoped durable job discovery and fan-out.
@@ -38,16 +38,16 @@ internal class FirestoreWorkSource(
     override fun observe(session: WorkSession): Flow<List<PendingOperation>> =
         flow {
             coroutineScope {
-                val ownedLotteries =
+                val participatingLotteries =
                     (
                         if (Role.OWNER in session.roles) {
-                            lotteries.observeForOwner(session.accountId)
+                            lotteries.observeParticipating(session.accountId)
                         } else {
                             flowOf(emptyList())
                         }
                     ).shareIn(this, SharingStarted.Lazily, replay = 1)
                 val draws =
-                    ownedLotteries.map { records ->
+                    participatingLotteries.map { records ->
                         records
                             .filter {
                                 it.publishedAt != null && it.cancellation == null &&
@@ -57,7 +57,7 @@ internal class FirestoreWorkSource(
                             }
                     }
                 val lotteryJobs =
-                    observeRelated(ownedLotteries.map { records -> records.map { it.id } }) { id ->
+                    observeRelated(participatingLotteries.map { records -> records.map { it.id } }) { id ->
                         deliveries.observe(DeliveryScope.Lottery(id))
                     }
                 val entrantStays =

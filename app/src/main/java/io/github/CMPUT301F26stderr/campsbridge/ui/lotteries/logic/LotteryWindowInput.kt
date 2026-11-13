@@ -6,7 +6,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic
 
 import java.time.Instant
 
-/** Ordered-window feedback supplied by the reserved F13 implementation. */
+/** Ordered-window feedback produced by the F13 validation rule. */
 sealed interface LotteryWindowInput {
     /** Registration opening precedes closing, then booking opens and closes in order. */
     data object Valid : LotteryWindowInput

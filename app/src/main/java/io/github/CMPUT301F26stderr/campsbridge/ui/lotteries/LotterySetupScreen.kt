@@ -33,7 +33,7 @@ import java.time.YearMonth
 
 /** Six step contents with explicit save progress, retry and authoritative target restoration.
  * @param state Local parent input and read outcomes.
- * @param initialMonth Site-clock month for an unselected native date.
+ * @param initialMonth Shared display-zone month for an unselected native date.
  * @param onBack Moves within this parent or requests abandonment.
  * @param onNext Validates the current step.
  * @param onCancel Requests explicit abandonment.
@@ -48,7 +48,6 @@ import java.time.YearMonth
  * @param onTime Confirms one local schedule time.
  * @param onWinners Changes raw positive winner-count input.
  * @param onEdit Returns to the requested step from review.
- * @param onConfirmZone Accepts displayed local times in the selected site's current zone.
  * @param onSaveDraft Saves valid reviewed input under its retained identity.
  * @param onPublish Publishes valid reviewed input after the current-clock check.
  * @param onRetrySave Retries retained intent or resolves uncertain publication.
@@ -73,7 +72,6 @@ fun LotterySetupScreen(
     onTime: (LotterySchedulePoint, LocalTime) -> Unit,
     onWinners: (String) -> Unit,
     onEdit: (LotteryStep) -> Unit,
-    onConfirmZone: () -> Unit,
     modifier: Modifier = Modifier,
     onSaveDraft: () -> Unit = {},
     onPublish: () -> Unit = {},
@@ -211,7 +209,7 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.REVIEW -> {
-                    LotteryReviewStep(state, onEdit, onConfirmZone, enabled = canEdit)
+                    LotteryReviewStep(state, onEdit, enabled = canEdit)
                 }
             }
         }
@@ -277,7 +275,6 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
                                             LocalTime.of(9, 0),
                                         )
                                 }.toMap(),
-                        scheduleZone = site.details.timeZone,
                         maximumWinnersText = "2",
                     ),
                 choices = LotteryCampsiteChoices.Content(listOf(site)),
@@ -317,7 +314,6 @@ private fun LotterySetupPreview(
             {},
             { _, _ -> },
             { _, _ -> },
-            {},
             {},
             {},
         )

@@ -20,7 +20,12 @@ fun notificationLogViewModelFactory(services: AppServices): ViewModelProvider.Fa
             val repositories = services.repositories
             NotificationLogViewModel(
                 repositories.notifications,
-                NotificationContentLoader(repositories.notifications, repositories.lotteries, repositories.bookings),
+                NotificationContentLoader(
+                    repositories.notifications,
+                    repositories.lotteries,
+                    repositories.bookings,
+                    repositories.messages,
+                ),
                 createSavedStateHandle(),
             )
         }

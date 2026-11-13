@@ -24,6 +24,7 @@ internal fun TestAppHost.inboxFactory(): (String) -> ViewModelProvider.Factory =
                             notifications = notifications,
                             lotteries = lotteries,
                             bookings = bookings,
+                            messages = messages,
                         ),
                 )
             }

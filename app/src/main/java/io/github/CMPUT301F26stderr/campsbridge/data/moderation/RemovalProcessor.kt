@@ -23,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INVALID_STATE
@@ -46,35 +47,49 @@ internal class RemovalProcessor(
     private val clock: Clock,
     private val functions: CallableFunctions,
 ) {
-    /**
-     * Drains pending removal work, optionally limited to the original actor; deletes jobs
-     * only after cleanup.
-     *
-     * @param actorId Account ID responsible for the requested operation.
+    /** Resumes the requested target and the owned-site jobs created by its account cleanup.
+     * @param target Account or campsite whose recorded removal was authorized by the repository.
      */
-    suspend fun resumeFor(actorId: String?) {
+    suspend fun resume(target: ImageTarget) {
+        process(target)
+        if (target.type == ImageTargetType.ACCOUNT) {
+            val sites = db.collection("campsites").whereEqualTo("ownerId", target.id).read(CampsiteDocument)
+            for (site in sites) process(ImageTarget(ImageTargetType.CAMPSITE, site.id))
+        }
+    }
+
+    /** Drains global recorded work for the explicitly authorized administrative maintenance path. */
+    suspend fun resumeAll() {
         // Account removal may enqueue campsite jobs, so drain until there are no jobs.
         while (true) {
-            val pending = db.collection("_removals")
-            val query = if (actorId == null) pending else pending.whereEqualTo("actorId", actorId)
             val jobs =
-                query
+                db
+                    .collection("_removals")
                     .get(Source.SERVER)
                     .await()
                     .documents
             if (jobs.isEmpty()) return
-            for (job in jobs) {
-                val target = DocumentKeys.target(job.id)
-                val removal = Fields(job.reference.path, job.data!!).removal()
-                if (target.type == ImageTargetType.ACCOUNT) {
-                    cleanupAccount(target.id, removal)
-                } else {
-                    cleanupSite(target.id, removal)
-                }
-                images.delete(target)
-                job.reference.delete().await()
-            }
+            for (job in jobs) process(DocumentKeys.target(job.id))
         }
+    }
+
+    /** Keeps one target's job until dependent cleanup and attachment removal both finish.
+     * @param target Durable job identity; an absent job is already complete.
+     */
+    private suspend fun process(target: ImageTarget) {
+        val ref = db.collection("_removals").document(DocumentKeys.attachment(target))
+        val job = ref.get(Source.SERVER).await()
+        if (!job.exists()) return
+        val removal = Fields(ref.path, checkNotNull(job.data)).removal()
+        if (target.type ==
+            ImageTargetType.ACCOUNT
+        ) {
+            cleanupAccount(target.id, removal)
+        } else {
+            cleanupSite(target.id, removal)
+        }
+        images.delete(target)
+        ref.delete().await()
     }
 
     /**
@@ -165,7 +180,7 @@ internal class RemovalProcessor(
     }
 
     /**
-     * Cancels active owned lotteries that include the site and refunds uncompleted
+     * Cancels active participating lotteries that include the site and refunds uncompleted
      * reservations.
      *
      * @param id Campsite document ID.
@@ -175,11 +190,11 @@ internal class RemovalProcessor(
         id: String,
         removal: Removal,
     ) {
-        // Ownership-scoped reads also work for self-removal; a global offer scan requires admin.
+        // Membership-scoped reads find collaborations without a global offer scan.
         val site = db.document(FirestorePaths.campsite(id)).read(CampsiteDocument) ?: return
-        val ownedLotteries =
-            db.collection("lotteries").whereEqualTo("ownerId", site.ownerId).read(LotteryDocument)
-        for (lottery in ownedLotteries) {
+        val participatingLotteries =
+            db.collection("lotteries").whereArrayContains("participantOwnerIds", site.ownerId).read(LotteryDocument)
+        for (lottery in participatingLotteries) {
             val offer = db.document(FirestorePaths.offer(lottery.id, id)).get(Source.SERVER).await()
             if (offer.exists()) cancelLottery(lottery.id, removal)
         }

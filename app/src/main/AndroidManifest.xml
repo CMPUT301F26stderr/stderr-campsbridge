@@ -21,6 +21,10 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${mapsApiKey}" />
         <activity
+            android:name=".platform.qr.QrScannerActivity"
+            android:exported="false"
+            android:theme="@style/CameraScanTheme" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

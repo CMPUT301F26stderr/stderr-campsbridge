@@ -64,6 +64,12 @@ internal class LotteryQueries(
     fun observeForOwner(ownerId: String) =
         db.collection("lotteries").whereEqualTo("ownerId", ownerId).observe(LotteryDocument)
 
+    /** Observes the owner's organized and shared lotteries through explicit membership.
+     * @param ownerId Participating owner identity.
+     */
+    fun observeParticipating(ownerId: String) =
+        db.collection("lotteries").whereArrayContains("participantOwnerIds", ownerId).observe(LotteryDocument)
+
     /**
      * Observes the campsite/night allocations belonging to a lottery.
      *
@@ -98,7 +104,7 @@ internal class LotteryQueries(
             .observe(LotteryEntryDocument)
 
     /**
-     * Joins matching offer identities with the site's owner's published, noncancelled lotteries.
+     * Joins matching offers with published lotteries containing the campsite's actual owner.
      * Orders registration opening first, then stable ID; time eligibility remains caller-owned.
      * @param campsiteId Published campsite whose associated lotteries are requested.
      */
@@ -121,7 +127,7 @@ internal class LotteryQueries(
                     val published =
                         db
                             .collection("lotteries")
-                            .whereEqualTo("ownerId", ownerId)
+                            .whereArrayContains("participantOwnerIds", ownerId)
                             .whereNotEqualTo("publishedAt", null)
                             .observe(LotteryDocument)
                     combine(memberships, published) { ids, lotteries ->

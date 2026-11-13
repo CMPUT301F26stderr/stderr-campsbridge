@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import java.time.Clock
 
 /** Named server stages; the form owns the coroutine and guards overlapping actions. */
 enum class LotterySavePhase { IDLE, RECOVERING, SAVING_DETAILS, SAVING_OFFER, PUBLISHING }
@@ -18,16 +19,20 @@ enum class LotterySavePhase { IDLE, RECOVERING, SAVING_DETAILS, SAVING_OFFER, PU
 /** Requested confirmed outcome, retained by the form across explicit retries. */
 enum class LotterySaveAction { DRAFT, PUBLISH }
 
+/** Separates draft creation from the Final editors' organizer details and owned allocations. */
+enum class LotterySaveScope { DRAFT, DETAILS, ALLOCATIONS }
+
 /** Frozen reviewed input for one retained target; this is local operation state, not a document.
  * @param id Identity allocated before suspension.
  * @param ownerId Confirmed current owner.
  * @param title Validated display title.
  * @param description Optional description.
  * @param configuration Validated windows and maximum winners.
- * @param offer The single chosen campsite and sorted nonempty nights.
+ * @param offers Complete desired allocations owned by the acting person.
  * @param allowCreate Whether this form may create a missing target; false for a saved draft.
  * @param action Requested draft or publication result.
  * @param publicationUncertain A prior publication still needs server confirmation before mutation.
+ * @param scope Fields this editor intends to save; saved-record editors never create or publish.
  */
 data class LotterySaveRequest(
     val id: String,
@@ -35,10 +40,11 @@ data class LotterySaveRequest(
     val title: String,
     val description: String,
     val configuration: LotteryConfiguration,
-    val offer: LotteryOffer,
+    val offers: List<LotteryOffer>,
     val allowCreate: Boolean,
     val action: LotterySaveAction = LotterySaveAction.DRAFT,
     val publicationUncertain: Boolean = false,
+    val scope: LotterySaveScope = LotterySaveScope.DRAFT,
 )
 
 /** Confirmed completion versus an explicit retry or unavailable target. */
@@ -66,14 +72,14 @@ sealed interface LotterySaveResult {
         val publicationUncertain: Boolean = false,
     ) : LotterySaveResult
 
-    /** The target is missing, belongs to another owner or is cancelled. */
+    /** The target is missing, cancelled or unavailable for the requested editing scope. */
     data object Unavailable : LotterySaveResult
 }
 
 /** Server-confirmed restoration without automatic writes or an assumed empty offer set. */
 sealed interface LotteryDraftRead {
     /** An editable record and every server-confirmed allocation.
-     * @param lottery Actual owned unpublished record.
+     * @param lottery Actual record accessible to this editor.
      * @param offers All confirmed allocations, including old ones requiring reconciliation.
      */
     data class Content(
@@ -100,11 +106,13 @@ sealed interface LotteryDraftRead {
 
 /** Reconciles one frozen save against server facts; the form owns identity and action guards.
  * @param lotteries Existing repository owning transactions and server-only reads.
+ * @param clock Time used to distinguish open published allocation editing from frozen inventory.
  */
 class LotteryDraftWriter(
     private val lotteries: LotteryRepository,
+    private val clock: Clock = Clock.systemUTC(),
 ) {
-    /** Saves details, reconciles one allocation, then optionally publishes the same target.
+    /** Saves the requested fields, replacing owned allocations atomically when included.
      * Every attempt reads current server facts before deciding which stages need writes.
      * Cancellation propagates; publication acknowledgement failures receive a read-only check.
      * @param request Frozen reviewed input and retained identity.
@@ -120,13 +128,23 @@ class LotteryDraftWriter(
             onPhase(stage)
             val existing = lotteries.get(request.id)
             currentCoroutineContext().ensureActive()
-            if (existing == null && (!request.allowCreate || publicationUncertain)) {
+            if (existing == null &&
+                (!request.allowCreate || publicationUncertain || request.scope != LotterySaveScope.DRAFT)
+            ) {
                 return LotterySaveResult.Unavailable
             }
-            if (existing != null && !available(existing, request.id, request.ownerId)) {
+            if (existing != null && !available(existing, request.id, request.ownerId, request.scope)) {
                 return LotterySaveResult.Unavailable
             }
-            if (existing?.publishedAt != null) return LotterySaveResult.Published(existing.id)
+            if (existing?.publishedAt != null && (request.scope == LotterySaveScope.DRAFT || publicationUncertain)) {
+                return LotterySaveResult.Published(existing.id)
+            }
+            if (request.scope != LotterySaveScope.DRAFT && request.action == LotterySaveAction.PUBLISH) {
+                return LotterySaveResult.Unavailable
+            }
+            if (existing != null && request.scope == LotterySaveScope.ALLOCATIONS && !sameDetails(existing, request)) {
+                return LotterySaveResult.Unavailable
+            }
             publicationUncertain = false
 
             stage = LotterySavePhase.SAVING_DETAILS
@@ -140,11 +158,13 @@ class LotteryDraftWriter(
                     request.configuration,
                 )
             currentCoroutineContext().ensureActive()
-            if (!available(saved, request.id, request.ownerId)) return LotterySaveResult.Unavailable
-            if (saved.publishedAt != null) return LotterySaveResult.Published(saved.id)
-            if (saved.title != request.title || saved.description != request.description ||
-                saved.configuration != request.configuration
+            if (!available(saved, request.id, request.ownerId, request.scope)) return LotterySaveResult.Unavailable
+            if (saved.publishedAt != null &&
+                request.scope == LotterySaveScope.DRAFT
             ) {
+                return LotterySaveResult.Published(saved.id)
+            }
+            if (request.scope != LotterySaveScope.ALLOCATIONS && !sameDetails(saved, request)) {
                 lotteries.update(
                     request.id,
                     request.ownerId,
@@ -155,22 +175,15 @@ class LotteryDraftWriter(
                 currentCoroutineContext().ensureActive()
             }
 
-            stage = LotterySavePhase.SAVING_OFFER
-            onPhase(stage)
-            val confirmed = lotteries.getOffers(request.id)
-            currentCoroutineContext().ensureActive()
-            for (old in confirmed
-                .filterNot {
-                    it.campsiteId == request.offer.campsiteId
-                }.sortedBy { it.campsiteId }) {
-                lotteries.removeOffer(request.id, request.ownerId, old.campsiteId)
+            if (request.scope != LotterySaveScope.DETAILS) {
+                stage = LotterySavePhase.SAVING_OFFER
+                onPhase(stage)
+                val confirmed = lotteries.getOffers(request.id)
                 currentCoroutineContext().ensureActive()
-            }
-            if (confirmed.firstOrNull { it.campsiteId == request.offer.campsiteId } !=
-                request.offer
-            ) {
-                lotteries.setOffer(request.id, request.ownerId, request.offer)
-                currentCoroutineContext().ensureActive()
+                if (confirmed.size != request.offers.size || confirmed.toSet() != request.offers.toSet()) {
+                    lotteries.replaceOwnerOffers(request.id, request.ownerId, request.offers)
+                    currentCoroutineContext().ensureActive()
+                }
             }
             if (request.action == LotterySaveAction.PUBLISH) {
                 stage = LotterySavePhase.PUBLISHING
@@ -195,10 +208,12 @@ class LotteryDraftWriter(
      * Cancellation propagates; confirmed absence stays distinct from failed reads.
      * @param id Actual saved target.
      * @param ownerId Current owner whose editable target is requested.
+     * @param scope Draft authoring or the selected saved-record editor.
      */
     suspend fun read(
         id: String,
         ownerId: String,
+        scope: LotterySaveScope = LotterySaveScope.DRAFT,
     ): LotteryDraftRead =
         try {
             val lottery = lotteries.get(id)
@@ -208,11 +223,17 @@ class LotteryDraftWriter(
                     LotteryDraftRead.Missing
                 }
 
-                !available(lottery, id, ownerId) -> {
+                !available(lottery, id, ownerId, scope) -> {
                     LotteryDraftRead.Unavailable
                 }
 
-                lottery.publishedAt != null -> {
+                lottery.publishedAt != null && (
+                    scope == LotterySaveScope.DRAFT ||
+                        (
+                            scope == LotterySaveScope.ALLOCATIONS &&
+                                clock.instant() >= lottery.configuration.registrationOpensAt
+                        )
+                ) -> {
                     LotteryDraftRead.Published(id)
                 }
 
@@ -269,11 +290,25 @@ class LotteryDraftWriter(
      * @param lottery Actual server record.
      * @param id Expected retained identity.
      * @param ownerId Expected current owner.
+     * @param scope Organizer-only fields or the participant's own allocations.
      */
     private fun available(
         lottery: Lottery,
         id: String,
         ownerId: String,
+        scope: LotterySaveScope = LotterySaveScope.DRAFT,
     ): Boolean =
-        lottery.id == id && lottery.ownerId == ownerId && lottery.cancellation == null
+        lottery.id == id && ownerId in lottery.participantOwnerIds && lottery.cancellation == null &&
+            (scope == LotterySaveScope.ALLOCATIONS || lottery.ownerId == ownerId)
+
+    /** Compares shared fields so allocation-only saves cannot claim unrelated edits succeeded.
+     * @param lottery Confirmed current server record.
+     * @param request Frozen input submitted by the editor.
+     */
+    private fun sameDetails(
+        lottery: Lottery,
+        request: LotterySaveRequest,
+    ): Boolean =
+        lottery.title == request.title && lottery.description == request.description &&
+            lottery.configuration == request.configuration
 }

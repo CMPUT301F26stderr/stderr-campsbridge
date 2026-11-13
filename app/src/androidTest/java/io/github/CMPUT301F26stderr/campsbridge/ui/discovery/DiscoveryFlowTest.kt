@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -20,6 +21,8 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.pressBack
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.components.DiscoveryToolbar
@@ -47,6 +50,31 @@ class DiscoveryFlowTest {
     /** Releases every graph-owned reader and pending operation. */
     @After fun close() {
         compose.runOnIdle { host.close() }
+    }
+
+    /** DS-01: each real result card displays its own place, capacity and saved rating aggregate. */
+    @Test fun resultCardsKeepSummaryFactsWithTheirSavedCampsite() {
+        val at = a.createdAt
+        host.reviews.ratings(a.id).value =
+            listOf(
+                Review(a.id, "reviewer-one", 4, null, at, at),
+                Review(a.id, "reviewer-two", 5, null, at, at),
+            )
+        host.reviews.ratings(b.id).value = listOf(Review(b.id, "reviewer-three", 2, null, at, at))
+        start(
+            listOf(
+                a.copy(details = a.details.copy(maxGuests = 8)),
+                b.copy(details = b.details.copy(maxGuests = 4)),
+            ),
+        )
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(a.details.name))
+        compose.onNode(hasText(a.details.name) and hasClickAction()).assertIsDisplayed().assert(
+            hasText("Jasper") and hasText("Up to 8 guests") and hasText("4.5 / 5 (2 ratings)"),
+        )
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(b.details.name))
+        compose.onNode(hasText(b.details.name) and hasClickAction()).assertIsDisplayed().assert(
+            hasText("Banff") and hasText("Up to 4 guests") and hasText("2.0 / 5 (1 rating)"),
+        )
     }
 
     /** Typing retains submitted results; Search opens the actual saved ID and returns to its query. */
@@ -219,9 +247,11 @@ class DiscoveryFlowTest {
         compose.runOnIdle { assertEquals(2, searches) }
     }
 
-    /** Opens production discovery with known fixture decisions, never a copied matching algorithm. */
-    private fun start() {
-        host.campsites.records.value = listOf(a, b)
+    /** Opens production discovery with known fixture decisions.
+     * @param campsites Saved result records using the fixture identities.
+     */
+    private fun start(campsites: List<Campsite> = listOf(a, b)) {
+        host.campsites.records.value = campsites
         val decisions =
             mapOf(
                 (a.id to "") to true,

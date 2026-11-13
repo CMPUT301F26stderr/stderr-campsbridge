@@ -6,7 +6,7 @@ The visual intent, interaction patterns, and approved prototypes are recorded in
 
 ## Dependency policy
 
-Prefer Jetpack and Android platform components. Use official Google SDKs for Firebase, maps, and scanning. Allow a small number of established libraries when they remove substantial infrastructure work.
+Prefer Jetpack and Android platform components. Use official Google SDKs for Firebase and maps. Allow a small number of established libraries when they remove substantial infrastructure work.
 
 | Feature | Preferred approach |
 | --- | --- |
@@ -16,12 +16,14 @@ Prefer Jetpack and Android platform components. Use official Google SDKs for Fir
 | Booked/free-night calendar | Google Material 3 date and range pickers, with inventory summaries outside the calendar |
 | Photo selection | Android Photo Picker through Activity Result contracts |
 | Maps | Google Maps Compose; project/API setup is required |
-| QR scanning | Google Code Scanner; depends on Google Play services |
-| QR generation | ZXing; generate from the stable campsite identity |
+| QR scanning | WeChatQRCode 2.6.0 with bundled OpenCV/models, behind the internal Activity Result adapter |
+| QR generation | OpenCV QR encoder; generate locally from the stable campsite identity |
 | Remote image display | Coil for downloading, decoding, resizing, caching, and loading/error states |
 | CSV export | A small tested encoder with correct escaping, connected to Android file creation/sharing APIs |
 
-Coil and ZXing are the initial community-library exceptions. Check Android/Compose compatibility and licensing when selecting versions. Add application dependencies through the Gradle version catalog; development tools are configured separately from Android runtime dependencies.
+Coil and WeChatQRCode are the current community-library integrations. Keep versions in the Gradle version catalog and notices in the existing credits workflow. Development tools are configured separately from Android runtime dependencies.
+
+`platform/qr/rememberQrScanner` returns an explicit launch action and reports decoded text, cancellation, permission denial or startup failure. The adapter owns camera/model initialization; its caller parses `CampsiteQrPayload` and opens saved content. QR feature entry points remain pending. Run `createCampsiteQrBitmap` on a worker thread; the caller owns the bitmap. QR images are generated display data and are not uploaded.
 
 ## Shared foundation
 
@@ -94,5 +96,5 @@ The profile currently connects this path to its existing account's image slot. T
 
 - [Jetpack libraries](https://developer.android.com/jetpack)
 - [Date pickers](https://developer.android.com/develop/ui/compose/components/datepickers), [carousel](https://developer.android.com/develop/ui/compose/components/carousel), and [accessibility](https://developer.android.com/develop/ui/compose/accessibility)
-- [Photo Picker](https://developer.android.com/training/data-storage/shared/photo-picker), [Google Code Scanner](https://developers.google.com/ml-kit/vision/barcode-scanning/code-scanner), and [Maps Compose](https://github.com/googlemaps/android-maps-compose)
-- [Image loading guidance](https://developer.android.com/develop/ui/compose/graphics/images/loading), [Coil](https://github.com/coil-kt/coil), and [ZXing](https://github.com/zxing/zxing)
+- [Photo Picker](https://developer.android.com/training/data-storage/shared/photo-picker), [WeChatQRCode](https://github.com/jenly1314/WeChatQRCode/tree/2.6.0), and [Maps Compose](https://github.com/googlemaps/android-maps-compose)
+- [Image loading guidance](https://developer.android.com/develop/ui/compose/graphics/images/loading) and [Coil](https://github.com/coil-kt/coil)

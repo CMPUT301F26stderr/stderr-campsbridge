@@ -7,8 +7,10 @@ package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.review.ReactionDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.review.ReviewDocument
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.PersistenceFixtures
 import org.junit.Assert.assertEquals
@@ -19,6 +21,48 @@ import org.junit.Test
 
 /** Owns malformed-data diagnostics and required structure; domain value matrices live elsewhere. */
 class DocumentDecodingTest {
+    /** Participation is required, unique and includes the organizer without coercing stored types. */
+    @Test fun rejectsMalformedLotteryParticipants() {
+        val path = "lotteries/shared"
+        val fields = PersistenceFixtures.lotteryFields
+        val invalid =
+            listOf(
+                fields - "participantOwnerIds",
+                fields + ("participantOwnerIds" to listOf("owner", "owner")),
+                fields + ("participantOwnerIds" to listOf("owner-b")),
+                fields + ("participantOwnerIds" to emptyList<String>()),
+                fields + ("participantOwnerIds" to "owner"),
+                fields + ("participantOwnerIds" to listOf("owner", 7L)),
+            )
+        invalid.forEach { data ->
+            val failure =
+                assertThrows(DocumentDecodingException::class.java) {
+                    LotteryDocument.decode(path, data)
+                }
+            assertEquals(path, failure.documentPath)
+        }
+    }
+
+    /** Optional ratings keep integer validation and cannot coerce malformed stored feedback. */
+    @Test fun rejectsInvalidNonNullRatingsAndStoredTypes() {
+        val path = "campsites/site/reviews/entrant"
+        val fields =
+            mapOf<String, Any?>(
+                "rating" to 4L,
+                "body" to "A peaceful stay",
+                "createdAt" to CampingFixtures.now.stored(),
+                "updatedAt" to CampingFixtures.now.stored(),
+            )
+        for (value in listOf(0L, 6L, 4.0, "4")) {
+            assertThrows(DocumentDecodingException::class.java) {
+                ReviewDocument.decode(path, fields + ("rating" to value))
+            }
+        }
+        assertThrows(DocumentDecodingException::class.java) {
+            ReviewDocument.decode(path, fields + ("body" to 7L))
+        }
+    }
+
     /** Required fields cannot silently default or change their Firestore storage type. */
     @Test fun rejectsMissingAndWronglyTypedRequiredFields() {
         val path = "reservations/4:draw7:entrant"

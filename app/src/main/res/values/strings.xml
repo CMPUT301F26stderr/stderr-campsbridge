@@ -74,4 +74,7 @@
     <string name="calendar_selected_legend">✓ Selected</string>
     <string name="calendar_unavailable_mark">–</string>
     <string name="calendar_occupied_mark">×</string>
+    <string name="photo_saved_confirmed">Photo saved</string>
+    <string name="photo_removed_confirmed">Photo removed</string>
+    <string name="photo_cleanup_pending">Old file cleanup is pending.</string>
 </resources>

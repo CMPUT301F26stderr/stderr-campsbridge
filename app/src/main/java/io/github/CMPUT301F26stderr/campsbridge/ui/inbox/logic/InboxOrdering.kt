@@ -10,6 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxItem
 /**
  * Orders inbox items by newest event time (createdAt descending), then by exact event ID (ascending).
  * Preserves input rows and does not mutate the original list.
+ * @param items Loaded rows to order without changing their content.
  */
 fun sortInboxItems(items: List<InboxItem>): List<InboxItem> {
     if (items.isEmpty()) return emptyList()

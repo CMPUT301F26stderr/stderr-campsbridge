@@ -39,6 +39,7 @@ class LotteryDraftWriterTest {
                 .copy(
                     id = input.id,
                     ownerId = input.ownerId,
+                    participantOwnerIds = setOf(input.ownerId),
                     title = input.title,
                     description = input.description,
                     configuration = input.configuration,
@@ -58,17 +59,7 @@ class LotteryDraftWriterTest {
                     }
                 }
         }
-        repository.setOfferHandler = { id, _, next ->
-            repository.serverOffers[id] =
-                repository.serverOffers[id].orEmpty().filterNot {
-                    it.campsiteId == next.campsiteId
-                } +
-                next
-        }
-        repository.removeOfferHandler = { id, _, site ->
-            repository.serverOffers[id] =
-                repository.serverOffers[id].orEmpty().filterNot { it.campsiteId == site }
-        }
+        repository.replaceOwnerOffersHandler = { id, _, next -> repository.serverOffers[id] = next }
         repository.publishHandler = { id, _ ->
             repository.records.value =
                 repository.records.value.map {
@@ -84,7 +75,7 @@ class LotteryDraftWriterTest {
             val request = request().copy(title = "May camping 🌲", description = "  Quiet stays  ")
             assertEquals(LotterySaveResult.Saved(draft.id), writer.save(request) { phases.add(it) })
             assertEquals(
-                listOf("get:draft", "create:draft", "offers:draft", "set:chosen"),
+                listOf("get:draft", "create:draft", "offers:draft", "replace:draft"),
                 repository.events,
             )
             assertEquals(
@@ -103,7 +94,7 @@ class LotteryDraftWriterTest {
             assertEquals(listOf(offer), repository.offerRequests)
         }
 
-    /** Every old site is removed before the chosen allocation and final publication. */
+    /** The owner allocation set is replaced in one operation before final publication. */
     @Test fun oneSitePublicationReconcilesEveryServerOffer() =
         runTest {
             repository.records.value = listOf(draft)
@@ -120,9 +111,7 @@ class LotteryDraftWriterTest {
                 listOf(
                     "get:draft",
                     "offers:draft",
-                    "remove:a-old",
-                    "remove:z-old",
-                    "set:chosen",
+                    "replace:draft",
                     "publish:draft",
                 ),
                 repository.events,
@@ -162,7 +151,7 @@ class LotteryDraftWriterTest {
     @Test fun heldAllocationRetainsItsStageUntilAcknowledged() =
         runTest {
             val gate = CompletableDeferred<Unit>()
-            repository.setOfferHandler = { _, _, _ -> gate.await() }
+            repository.replaceOwnerOffersHandler = { _, _, _ -> gate.await() }
             val phases = mutableListOf<LotterySavePhase>()
             val operation = async { writer.save(request()) { phases.add(it) } }
             runCurrent()
@@ -191,16 +180,16 @@ class LotteryDraftWriterTest {
             assertEquals(1, repository.detailsRequests.size)
         }
 
-    /** Stale empty live offers cannot bypass a failed server reconciliation after removal. */
-    @Test fun uncertainRemovalAndStaleEmptyEmissionCannotPermitPublication() =
+    /** A lost replacement acknowledgement cannot bypass failed server reconciliation before publication. */
+    @Test fun uncertainReplacementAndStaleEmptyEmissionCannotPermitPublication() =
         runTest {
             repository.records.value = listOf(draft)
             repository.serverOffers[draft.id] = listOf(LotteryOffer("old", offer.nights))
             repository.liveOffers.value = mapOf(draft.id to emptyList())
-            val remove = checkNotNull(repository.removeOfferHandler)
-            repository.removeOfferHandler = { id, owner, site ->
-                remove(id, owner, site)
-                throw IOException("remove acknowledgement lost")
+            val replace = checkNotNull(repository.replaceOwnerOffersHandler)
+            repository.replaceOwnerOffersHandler = { id, owner, next ->
+                replace(id, owner, next)
+                throw IOException("replacement acknowledgement lost")
             }
             val request = request(LotterySaveAction.PUBLISH)
             assertEquals(
@@ -213,12 +202,11 @@ class LotteryDraftWriterTest {
                 writer.save(request),
             )
             assertFalse(
-                repository.events.any { it.startsWith("publish:") || it.startsWith("set:") },
+                repository.events.any { it.startsWith("publish:") },
             )
             repository.getOffersHandler = null
             assertEquals(LotterySaveResult.Saved(draft.id), writer.save(request))
-            assertEquals(1, repository.events.count { it == "remove:old" })
-            assertEquals(1, repository.events.count { it == "set:chosen" })
+            assertEquals(1, repository.events.count { it == "replace:draft" })
             assertEquals(1, repository.events.count { it == "publish:draft" })
             assertEquals(3, repository.events.count { it == "offers:draft" })
         }
@@ -226,8 +214,8 @@ class LotteryDraftWriterTest {
     /** A server-confirmed allocation survives lost acknowledgement without a second set. */
     @Test fun uncertainOfferSaveDoesNotRepeatTheConfirmedAllocation() =
         runTest {
-            val save = checkNotNull(repository.setOfferHandler)
-            repository.setOfferHandler = { id, owner, next ->
+            val save = checkNotNull(repository.replaceOwnerOffersHandler)
+            repository.replaceOwnerOffersHandler = { id, owner, next ->
                 save(id, owner, next)
                 throw IOException("offer acknowledgement lost")
             }
@@ -312,7 +300,7 @@ class LotteryDraftWriterTest {
             val candidates =
                 listOf(
                     emptyList(),
-                    listOf(draft.copy(ownerId = "another-owner")),
+                    listOf(draft.copy(ownerId = "another-owner", participantOwnerIds = setOf("another-owner"))),
                     listOf(
                         draft.copy(cancellation = Cancellation(CampingFixtures.now, "owner", null)),
                     ),
@@ -523,7 +511,7 @@ class LotteryDraftWriterTest {
             draft.title,
             draft.description,
             draft.configuration,
-            offer,
+            listOf(offer),
             allowCreate = true,
             action = action,
         )

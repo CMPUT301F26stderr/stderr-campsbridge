@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="admin_maintenance_resume">Resume pending work</string>
+    <string name="admin_maintenance_running">Resuming pending work…</string>
+    <string name="admin_maintenance_retry">Retry pending work</string>
+    <string name="admin_maintenance_description">Finish saved removals, draws, Inbox deliveries and file cleanup.</string>
+    <string name="admin_maintenance_complete">Recovery pass finished.</string>
+    <string name="admin_maintenance_failed">Recovery stopped. Completed steps are saved.</string>
     <string name="admin_inspect_profile_photo">Inspect profile photo</string>
     <string name="admin_browse">Browse</string>
     <string name="admin_profiles">Profiles</string>

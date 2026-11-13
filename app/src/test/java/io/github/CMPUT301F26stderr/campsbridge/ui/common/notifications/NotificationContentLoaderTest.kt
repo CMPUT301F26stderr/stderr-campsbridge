@@ -6,6 +6,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
@@ -13,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import kotlinx.coroutines.CancellationException
@@ -40,7 +42,10 @@ class NotificationContentLoaderTest {
     private val notifications = FakeNotificationRepository()
     private val lotteries = FakeLotteryRepository(listOf(lottery))
     private val bookings = FakeBookingRepository(listOf(reservation))
-    private val loader = NotificationContentLoader(notifications, lotteries, bookings)
+    private val message =
+        Message("message", reservation.id, "owner", "The gate is beside the trail", CampingFixtures.now)
+    private val messages = FakeMessageRepository(listOf(message))
+    private val loader = NotificationContentLoader(notifications, lotteries, bookings, messages)
 
     /** Both draw outcomes retain the original event and reference the actual saved lottery. */
     @Test fun winnerAndLoserUseTheSameActualLotteryContext() =
@@ -183,15 +188,54 @@ class NotificationContentLoaderTest {
             )
         }
 
-    /**
-     * Final message subjects keep history without calling an unrelated reader or inventing a
-     * route.
-     */
-    @Test fun messageSubjectIsExplicitlyUnsupported() =
+    /** Message identity resolves through its saved reservation without acknowledging either record. */
+    @Test fun messageSubjectUsesItsSavedConversation() =
         runTest {
-            assertSubject(NotificationType.NEW_MESSAGE, NotificationSubjectContent.Unsupported)
+            assertSubject(NotificationType.NEW_MESSAGE, NotificationSubjectContent.MessageContent(message, reservation))
+            assertEquals(listOf(message.id), messages.getRequests)
+            assertEquals(listOf(reservation.id), bookings.getRequests)
             assertTrue(lotteries.events.isEmpty())
+            assertTrue(notifications.readRequests.isEmpty())
+            assertTrue(messages.readRequests.isEmpty())
+        }
+
+    /** Confirmed message absence preserves the event without guessing a reservation ID. */
+    @Test fun missingMessageRetainsUnavailableContext() =
+        runTest {
+            messages.records.value = emptyList()
+            assertSubject(NotificationType.NEW_MESSAGE, NotificationSubjectContent.Unavailable)
             assertTrue(bookings.getRequests.isEmpty())
+        }
+
+    /** Message read failures stay distinct from confirmed absence. */
+    @Test fun failedMessageRetainsFailedContext() =
+        runTest {
+            messages.getHandler = { throw IOException("message offline") }
+            assertSubject(NotificationType.NEW_MESSAGE, NotificationSubjectContent.Failure)
+            assertTrue(bookings.getRequests.isEmpty())
+        }
+
+    /** A saved message cannot supply a conversation when its reservation is unavailable. */
+    @Test fun missingMessageReservationRetainsUnavailableContext() =
+        runTest {
+            bookings.records.value = emptyList()
+            assertSubject(NotificationType.NEW_MESSAGE, NotificationSubjectContent.Unavailable)
+            assertEquals(listOf(reservation.id), bookings.getRequests)
+        }
+
+    /** Failed conversation context does not discard the immutable event or claim absence. */
+    @Test fun failedMessageReservationRetainsFailedContext() =
+        runTest {
+            bookings.getHandler = { throw IOException("conversation offline") }
+            assertSubject(NotificationType.NEW_MESSAGE, NotificationSubjectContent.Failure)
+        }
+
+    /** The caller owns cancellation during the message lookup as well as the original event read. */
+    @Test fun messageReadCancellationPropagates() =
+        runTest {
+            notifications.records.value = listOf(event(NotificationType.NEW_MESSAGE))
+            messages.getHandler = { throw CancellationException("message cancelled") }
+            assertCancelled()
         }
 
     /**

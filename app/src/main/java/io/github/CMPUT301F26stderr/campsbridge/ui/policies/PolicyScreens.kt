@@ -35,13 +35,13 @@ fun PoliciesScreen(
     modifier: Modifier = Modifier,
 ) {
     AppScreen(stringResource(R.string.policies_title), modifier, onBack) {
-        NavigationGroup(Modifier.padding(top = Spacing.medium)) {
-            NavigationRow(
-                stringResource(R.string.onboarding_guidelines),
-                { onOpen(PolicyId.GUIDELINES) },
-            )
-            NavigationRow(stringResource(R.string.refund_policy_title), { onOpen(PolicyId.REFUND) })
-        }
+        NavigationGroup(
+            listOf(
+                { NavigationRow(stringResource(R.string.onboarding_guidelines), { onOpen(PolicyId.GUIDELINES) }) },
+                { NavigationRow(stringResource(R.string.refund_policy_title), { onOpen(PolicyId.REFUND) }) },
+            ),
+            Modifier.padding(top = Spacing.medium),
+        )
     }
 }
 

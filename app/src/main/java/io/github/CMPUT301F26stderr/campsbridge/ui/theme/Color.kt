@@ -4,14 +4,14 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.expressiveLightColorScheme
 import androidx.compose.ui.graphics.Color
 
 val ForestGreen = Color(0xFF00874A)
 val Ink = Color(0xFF18231D)
 
 val StandardColors =
-    lightColorScheme(
+    expressiveLightColorScheme().copy(
         primary = ForestGreen,
         onPrimary = Color.White,
         primaryContainer = Color(0xFFD8F2DF),

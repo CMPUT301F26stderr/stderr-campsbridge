@@ -6,8 +6,13 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,12 +30,13 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param message Localized status text.
  */
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun LoadingContent(message: String = stringResource(R.string.loading)) {
     Column(
         Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
-        CircularProgressIndicator()
+        LoadingIndicator()
         Text(message)
     }
 }
@@ -58,18 +64,25 @@ fun FailureContent(
     retryEnabled: Boolean = true,
     retryLabel: String = stringResource(R.string.retry),
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
-        Text(
-            message,
-            Modifier.semantics {
-                error(message)
-                liveRegion = LiveRegionMode.Polite
-            },
-            color = MaterialTheme.colorScheme.error,
-        )
-        TextButton(
-            onClick = onRetry,
-            enabled = retryEnabled,
-        ) { Text(retryLabel) }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+    ) {
+        Column(Modifier.padding(Spacing.medium), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+            Text(
+                message,
+                Modifier.semantics {
+                    error(message)
+                    liveRegion = LiveRegionMode.Polite
+                },
+            )
+            TextButton(
+                onClick = onRetry,
+                enabled = retryEnabled,
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onErrorContainer),
+            ) { Text(retryLabel) }
+        }
     }
 }

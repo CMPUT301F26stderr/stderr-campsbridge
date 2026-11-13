@@ -1,0 +1,14 @@
+<resources>
+    <string name="moderation_remove_rating">Remove rating</string>
+    <string name="moderation_remove_text">Remove written review</string>
+    <string name="moderation_rating_question">Remove rating?</string>
+    <string name="moderation_text_question">Remove written review?</string>
+    <string name="moderation_rating_body">Remove the stars saved by %1$s. Their written review and its replies will remain.</string>
+    <string name="moderation_text_body">Remove the written review saved by %1$s. Their rating and any replies will remain.</string>
+    <string name="moderation_progress">Removing feedback…</string>
+    <string name="moderation_wait">Finishing the selected component removal.</string>
+    <string name="moderation_rating_done">Rating removed</string>
+    <string name="moderation_text_done">Written review removed</string>
+    <string name="moderation_confirmed">The selected component for %1$s was removed. Other feedback remains unchanged.</string>
+    <string name="moderation_failed">Removal for %1$s did not finish. Retry the same component.</string>
+</resources>

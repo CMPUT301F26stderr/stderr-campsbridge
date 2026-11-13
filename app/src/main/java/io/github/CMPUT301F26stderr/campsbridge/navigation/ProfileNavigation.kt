@@ -90,20 +90,21 @@ internal fun NavGraphBuilder.profileGraph(
                                 true
                         }
                     },
-                    workspaceContent = {
-                        if (state.account.roles.size >
-                            1
-                        ) {
-                            WorkspaceMenu(state, onSelectWorkspace) { open ->
-                                NavigationRow(
-                                    stringResource(R.string.switch_workspace),
-                                    open,
-                                    supportingText = roleLabel(state.workspace),
-                                    enabled = !state.isSelectingWorkspace,
-                                )
+                    workspaceContent =
+                        if (state.account.roles.size > 1) {
+                            {
+                                WorkspaceMenu(state, onSelectWorkspace) { open ->
+                                    NavigationRow(
+                                        stringResource(R.string.switch_workspace),
+                                        open,
+                                        supportingText = roleLabel(state.workspace),
+                                        enabled = !state.isSelectingWorkspace,
+                                    )
+                                }
                             }
-                        }
-                    },
+                        } else {
+                            null
+                        },
                 )
             }
         }

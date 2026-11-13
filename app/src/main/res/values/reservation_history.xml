@@ -1,0 +1,9 @@
+<resources>
+    <string name="reservation_past">Past</string>
+    <string name="reservation_cancelled">Cancelled</string>
+    <string name="reservation_completed">Completed</string>
+    <string name="reservation_past_empty">No past reservations.</string>
+    <string name="reservation_past_filtered_empty">No past reservations for this campsite.</string>
+    <string name="reservation_cancelled_empty">No cancelled reservations.</string>
+    <string name="reservation_cancelled_filtered_empty">No cancelled reservations for this campsite.</string>
+</resources>

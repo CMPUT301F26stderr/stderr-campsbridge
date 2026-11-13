@@ -37,9 +37,9 @@ import kotlinx.coroutines.launch
  * @param accounts Account observation dependency.
  * @param images Image dependency shared with the profile-photo integration.
  * @param savedState Navigation-owned small editor inputs.
- * @param parseName Reserved display-name parser, absent until reviewed.
- * @param parseEmail Reserved optional-email parser, absent until reviewed.
- * @param parsePhone Reserved optional-phone parser, absent until reviewed.
+ * @param parseName Display-name parser; null exposes missing validation in isolated hosts.
+ * @param parseEmail Optional-email parser; null exposes missing validation in isolated hosts.
+ * @param parsePhone Optional-phone parser; null exposes missing validation in isolated hosts.
  */
 class ProfileViewModel(
     private val accountId: String,

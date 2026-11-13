@@ -24,6 +24,8 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.CampsiteFacts
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.ratingLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
@@ -46,6 +48,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onRetryRatings Retries only the failed rating read.
  * @param onOpenSection Opens a child within the same saved reader graph.
  * @param lotteryActions Optional current entrant actions owned by the saved route.
+ * @param onReviews Opens saved rating and written feedback when registered.
+ * @param onRemove Requests admin confirmation for this active saved listing.
  */
 @Composable
 fun CampsiteDetailScreen(
@@ -60,6 +64,8 @@ fun CampsiteDetailScreen(
     onRetryRatings: () -> Unit = {},
     onOpenSection: (CampsiteDetailSection) -> Unit = {},
     lotteryActions: (@Composable () -> Unit)? = null,
+    onReviews: (() -> Unit)? = null,
+    onRemove: (() -> Unit)? = null,
 ) {
     AppScreen(
         stringResource(R.string.campsite),
@@ -149,16 +155,31 @@ fun CampsiteDetailScreen(
                             )
                         }
                     }
-                    NavigationGroup {
-                        for (section in listOf(
-                            CampsiteDetailSection.ABOUT,
-                            CampsiteDetailSection.MAP,
-                            CampsiteDetailSection.AVAILABILITY,
-                            CampsiteDetailSection.RULES,
-                        )) {
-                            NavigationRow(campsiteSectionTitle(section), { onOpenSection(section) })
-                        }
+                    if (context == CampsiteDetailContext.INSPECT && site.removal == null && onRemove != null) {
+                        AppActionButton(
+                            stringResource(R.string.admin_remove_site),
+                            onRemove,
+                            Modifier.fillMaxWidth(),
+                            style = ActionStyle.DESTRUCTIVE_OUTLINED,
+                        )
                     }
+                    NavigationGroup(
+                        buildList<@Composable () -> Unit> {
+                            if (onReviews !=
+                                null
+                            ) {
+                                add { NavigationRow(stringResource(R.string.reviews_title), onReviews) }
+                            }
+                            for (section in listOf(
+                                CampsiteDetailSection.ABOUT,
+                                CampsiteDetailSection.MAP,
+                                CampsiteDetailSection.AVAILABILITY,
+                                CampsiteDetailSection.RULES,
+                            )) {
+                                add { NavigationRow(campsiteSectionTitle(section), { onOpenSection(section) }) }
+                            }
+                        },
+                    )
                 }
             }
         }

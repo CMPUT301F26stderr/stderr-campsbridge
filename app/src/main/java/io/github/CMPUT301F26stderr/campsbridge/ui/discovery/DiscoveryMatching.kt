@@ -8,7 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import java.time.LocalDate
 import java.util.Locale
 
-/** Matches the human-readable location independently of the reserved general text predicate.
+/** Matches the human-readable location independently of the general text predicate.
  * @param label Stored location label.
  * @param query Applied location query.
  */

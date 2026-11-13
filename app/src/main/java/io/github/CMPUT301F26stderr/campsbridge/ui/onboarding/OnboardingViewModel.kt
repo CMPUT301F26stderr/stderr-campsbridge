@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
  * @param accounts Profile persistence and capability confirmation.
  * @param preferences Account-local completion and workspace preferences.
  * @param savedState Navigation-owned step and unsaved input; never stores repository objects.
- * @param parseName Reserved pure contract, or null while that implementation is pending.
+ * @param parseName Display-name parser; production supplies the completed helper.
  */
 class OnboardingViewModel(
     private val accountId: String,

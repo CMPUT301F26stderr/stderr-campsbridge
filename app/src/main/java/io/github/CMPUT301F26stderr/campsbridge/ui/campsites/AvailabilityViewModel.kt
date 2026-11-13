@@ -27,7 +27,7 @@ import java.time.ZoneId
  * @param campsites Parent read and inventory operations.
  * @param clock Initial displayed month in the saved listing's zone.
  * @param savedState Primitive editor restoration store.
- * @param remainingEdits Reserved F08 dependency, absent until its implementation is reviewed.
+ * @param remainingEdits F08 comparison helper; null exposes missing support in isolated hosts.
  */
 class AvailabilityViewModel(
     private val ownerId: String,

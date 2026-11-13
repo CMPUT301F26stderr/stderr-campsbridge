@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
+import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
@@ -36,6 +37,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.STALE_QUOTE
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.WINDOW_CLOSED
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import java.time.Clock
 import java.time.LocalDate
@@ -144,7 +146,12 @@ class DemoBookingRepository(
             val nights = stayNights(request.checkInDate, request.checkOutDate)
             requireOperation(offer.nights.containsAll(nights), NOT_ALLOWED, "Dates not offered")
             val site = require(Paths.campsite(request.campsiteId), CampsiteDocument)
-            requireOperation(site.isPublished && site.ownerId == lottery.ownerId, INACTIVE, "Campsite unavailable")
+            requireOperation(
+                site.isPublished && site.ownerId in lottery.participantOwnerIds,
+                INACTIVE,
+                "Campsite unavailable",
+            )
+            active(site.ownerId, Role.OWNER)
             requireOperation(
                 request.checkInDate >= LocalDate.ofInstant(now, ZoneId.of(site.details.timeZone)),
                 WINDOW_CLOSED,
@@ -205,37 +212,75 @@ class DemoBookingRepository(
                 NOT_ALLOWED,
                 "Not a participant",
             )
-            if (stay.cancellation != null) return@change
-            val now = store.clock.instant()
-            requireOperation(
-                LocalDate.ofInstant(now, ZoneId.of(stay.bookedCampsite.timeZone)) < stay.checkOutDate,
-                WINDOW_CLOSED,
-                "Stay has ended",
-            )
-            val calendar =
-                stayNights(stay.checkInDate, stay.checkOutDate).map {
-                    require(Paths.night(stay.campsiteId, it), CalendarNightDocument)
-                }
-            requireOperation(
-                calendar.all { it.reservationId == stay.id },
-                INVALID_STATE,
-                "Reservation/calendar mismatch",
-            )
-            val cancelled =
-                stay.copy(
-                    cancellation = ReservationCancellation(now, actor.id, request.initiatedAs, request.reason),
-                    payment =
-                        stay.payment.copy(
-                            refundedAt =
-                                stay.payment.refundedAt ?: now,
-                        ),
-                )
-            put(Paths.reservation(stay.id), ReservationDocument, cancelled)
-            calendar.forEach { night ->
-                put(Paths.night(stay.campsiteId, night.date), CalendarNightDocument, night.copy(reservationId = null))
-            }
-            reservationNotice(cancelled, true)
+            cancelSaved(stay, request)
         }
+    }
+
+    /** Reuses cancellation after the target's first removal has already authorized cleanup.
+     * @param reservationId Affected saved stay.
+     * @param removal Original account or campsite removal attribution.
+     */
+    internal suspend fun cancelForRemoval(
+        reservationId: String,
+        removal: Removal,
+    ) {
+        store.change {
+            val stay = require(Paths.reservation(reservationId), ReservationDocument)
+            val site = require(Paths.campsite(stay.campsiteId), CampsiteDocument)
+            val entrant = require(Paths.account(stay.entrantId), AccountDocument)
+            requireOperation(
+                site.removal == removal || entrant.removal == removal,
+                NOT_ALLOWED,
+                "No recorded removal authority",
+            )
+            val role =
+                when (removal.actorId) {
+                    stay.entrantId -> Role.ENTRANT
+                    site.ownerId -> Role.OWNER
+                    else -> Role.ADMIN
+                }
+            cancelSaved(stay, CancellationRequest(stay.id, removal.actorId, role, removal.reason))
+        }
+    }
+
+    /** Commits cancellation, refund, inventory release and notice in the same local transaction.
+     * @param stay Saved stay whose authority was checked by the caller.
+     * @param request Retained cancellation attribution.
+     */
+    private fun DemoDocuments.cancelSaved(
+        stay: Reservation,
+        request: CancellationRequest,
+    ) {
+        if (stay.cancellation != null) return
+        val now = store.clock.instant()
+        requireOperation(
+            LocalDate.ofInstant(now, ZoneId.of(stay.bookedCampsite.timeZone)) < stay.checkOutDate,
+            WINDOW_CLOSED,
+            "Stay has ended",
+        )
+        val calendar =
+            stayNights(stay.checkInDate, stay.checkOutDate).map {
+                require(Paths.night(stay.campsiteId, it), CalendarNightDocument)
+            }
+        requireOperation(
+            calendar.all { it.reservationId == stay.id },
+            INVALID_STATE,
+            "Reservation/calendar mismatch",
+        )
+        val cancelled =
+            stay.copy(
+                cancellation = ReservationCancellation(now, request.actorId, request.initiatedAs, request.reason),
+                payment =
+                    stay.payment.copy(
+                        refundedAt =
+                            stay.payment.refundedAt ?: now,
+                    ),
+            )
+        put(Paths.reservation(stay.id), ReservationDocument, cancelled)
+        calendar.forEach { night ->
+            put(Paths.night(stay.campsiteId, night.date), CalendarNightDocument, night.copy(reservationId = null))
+        }
+        reservationNotice(cancelled, true)
     }
 
     /** Creates one stable event and actual receipt inside the originating commit.

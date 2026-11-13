@@ -22,10 +22,14 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
  * @param onOpenSection Opens a child within this saved-reader graph.
  * @param onOpenPolicy Opens the selected exact packaged policy.
  * @param onPreview Opens the separate owner preview graph.
- * @param onCreateLottery Opens new single-site lottery setup for a published owned listing.
+ * @param onCreateLottery Opens lottery setup with this published owned listing preselected.
  * @param onViewLotteries Opens the real owner list scoped to this listing's allocations.
  * @param onViewReservations Opens the registered reservation list filtered by this saved site.
  * @param onOpenLottery Opens an actual entrant lottery detail; absent in preview/inspection.
+ * @param onEdit Opens published listing details in their separate saved editor.
+ * @param onShowQr Opens the published identity's generated promotional code.
+ * @param onReviews Opens actual saved feedback in this reader's workspace.
+ * @param onRemove Requests explicit admin confirmation for the current saved listing.
  */
 @Composable
 fun CampsiteDetailRoute(
@@ -40,6 +44,10 @@ fun CampsiteDetailRoute(
     onViewLotteries: (() -> Unit)? = null,
     onViewReservations: (() -> Unit)? = null,
     onOpenLottery: ((String) -> Unit)? = null,
+    onEdit: (() -> Unit)? = null,
+    onShowQr: (() -> Unit)? = null,
+    onReviews: (() -> Unit)? = null,
+    onRemove: (() -> Unit)? = null,
     onBack: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -74,6 +82,8 @@ fun CampsiteDetailRoute(
                     context = model.context,
                     onRetryRatings = model::retryRatings,
                     onOpenSection = onOpenSection,
+                    onReviews = onReviews,
+                    onRemove = onRemove,
                     lotteryActions =
                         if (model.context == CampsiteDetailContext.VIEW &&
                             onOpenLottery != null &&
@@ -84,7 +94,6 @@ fun CampsiteDetailRoute(
                                 if (site != null) {
                                     CampsiteLotteryEntry(
                                         lotteries,
-                                        site.details.timeZone,
                                         model::retryLotteries,
                                         model::retryLotteryMembership,
                                         model::joinLottery,
@@ -165,5 +174,7 @@ fun CampsiteDetailRoute(
         onCreateLottery = onCreateLottery,
         onViewLotteries = onViewLotteries,
         onViewReservations = onViewReservations,
+        onEdit = onEdit,
+        onShowQr = onShowQr,
     )
 }

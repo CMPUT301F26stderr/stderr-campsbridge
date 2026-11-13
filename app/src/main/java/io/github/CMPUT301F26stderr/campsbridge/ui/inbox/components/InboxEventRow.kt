@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
@@ -31,7 +30,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneId
 
 /** One ordinary Material row retaining actual event identity/time through context failures.
  * @param item Loaded immutable event and original receipt state.
@@ -53,14 +51,9 @@ internal fun InboxEventRow(
         !item.isLoading &&
             (
                 item.subject is NotificationSubjectContent.LotteryContent ||
-                    item.subject is NotificationSubjectContent.ReservationContent
+                    item.subject is NotificationSubjectContent.ReservationContent ||
+                    item.subject is NotificationSubjectContent.MessageContent
             )
-    val clickable =
-        if (canOpen) {
-            Modifier.clickable(role = Role.Button, onClick = { onOpen(event.id) })
-        } else {
-            Modifier
-        }
     val title = event.announcement?.title ?: stringResource(notificationTitleResource(event.type))
     val context =
         when (val subject = item.subject) {
@@ -84,7 +77,12 @@ internal fun InboxEventRow(
                 )
             }
 
-            NotificationSubjectContent.Unsupported -> {
+            is NotificationSubjectContent.MessageContent -> {
+                subject.reservation.bookedCampsite.name
+            }
+
+            NotificationSubjectContent.Unsupported,
+            -> {
                 stringResource(
                     R.string.inbox_context_unsupported,
                 )
@@ -92,7 +90,11 @@ internal fun InboxEventRow(
         }
     Column {
         ListItem(
-            modifier = Modifier.fillMaxWidth().testTag("inbox-event-${event.id}").then(clickable),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag("inbox-event-${event.id}")
+                    .then(if (canOpen) Modifier.clickable { onOpen(event.id) } else Modifier),
             colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
             headlineContent = {
                 Text(
@@ -125,6 +127,9 @@ internal fun InboxEventRow(
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
+                    (item.subject as? NotificationSubjectContent.MessageContent)?.let {
+                        Text(it.message.body, style = MaterialTheme.typography.bodyMedium)
+                    }
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                         verticalArrangement = Arrangement.spacedBy(Spacing.small),
@@ -132,7 +137,6 @@ internal fun InboxEventRow(
                         Text(
                             formatDateTime(
                                 event.createdAt,
-                                ZoneId.systemDefault(),
                                 LocalConfiguration.current.locales[0],
                             ),
                             style = MaterialTheme.typography.bodySmall,

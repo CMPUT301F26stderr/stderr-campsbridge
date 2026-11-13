@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
 
@@ -13,7 +14,7 @@ internal fun TaskExampleSession.inbox(): InboxViewModel =
         InboxViewModel(
             TaskExampleData.ACCOUNT_ID,
             notifications,
-            NotificationContentLoader(notifications, lotteries, bookings),
+            NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository()),
             sorter =
                 if (example ==
                     TaskExample.INBOX_ORDER

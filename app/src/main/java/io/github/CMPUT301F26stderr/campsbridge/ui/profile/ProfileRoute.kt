@@ -49,7 +49,7 @@ fun ProfileRoute(
     onContactDetails: () -> Unit,
     modifier: Modifier = Modifier,
     onSettings: (() -> Unit)? = null,
-    workspaceContent: @Composable () -> Unit = {},
+    workspaceContent: (@Composable () -> Unit)? = null,
     onStartHosting: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()

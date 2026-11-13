@@ -11,6 +11,20 @@ import java.time.Instant
 
 /** Rating aggregation derives display facts without a stored summary. */
 class RatingSummaryTest {
+    /** Written-only and moderated feedback do not contribute stars or a zero-star mean. */
+    @Test fun onlyRemainingStarsContributeToTheSummary() {
+        val time = Instant.EPOCH
+        val records =
+            listOf(
+                Review("site", "one", 5, null, time, time),
+                Review("site", "two", null, "Lovely setting", time, time),
+                Review("site", "three", 1, "Busy road", time, time),
+                Review("site", "four", null, null, time, time),
+            )
+        assertEquals(RatingSummary(2, 3.0), summarizeRatings(records))
+        assertEquals(RatingSummary(0, null), summarizeRatings(records.filter { it.rating == null }))
+    }
+
     /** Confirmed absence has no fabricated zero-star mean. */
     @Test fun emptyReviewsHaveNoMean() {
         assertEquals(RatingSummary(0, null), summarizeRatings(emptyList()))

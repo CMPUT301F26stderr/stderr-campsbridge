@@ -5,6 +5,8 @@
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.Fields
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths
@@ -27,6 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_FOUND
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.WINDOW_CLOSED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
+import kotlinx.coroutines.tasks.await
 import java.time.Clock
 import kotlin.random.Random
 
@@ -50,11 +53,37 @@ internal class LotteryDraw(
     /**
      * Starts or resumes a deterministic seeded draw after registration closes. Outcomes and
      * receipt jobs commit per entry; draw completion gates booking and result delivery.
-     * Returns whether already complete.
+     * Retries a stale permission rejection only after confirming forward draw progress on the server.
+     * Returns whether already complete; unchanged authorization failures propagate.
      *
      * @param id Lottery document ID.
      */
     suspend fun draw(id: String): DrawResult {
+        val marker = db.collection("_draws").document(DocumentKeys.id(id))
+        var observed = ref(id).read(LotteryDocument) ?: throw PersistenceFailure(NOT_FOUND, "Lottery missing")
+        var markerExisted = marker.get(Source.SERVER).await().exists()
+        while (true) {
+            try {
+                return drawAttempt(id)
+            } catch (failure: FirebaseFirestoreException) {
+                if (failure.code != FirebaseFirestoreException.Code.PERMISSION_DENIED) throw failure
+                val current = ref(id).read(LotteryDocument) ?: throw failure
+                val markerExists = marker.get(Source.SERVER).await().exists()
+                // Rules may reject an optimistic stale write before its version conflict is reported.
+                val progressed =
+                    current.waitingCount < observed.waitingCount ||
+                        (observed.drawnAt == null && current.drawnAt != null) || (!markerExisted && markerExists)
+                if (!progressed) throw failure
+                observed = current
+                markerExisted = markerExists
+            }
+        }
+    }
+
+    /** Runs the existing freeze, entry and completion transactions against one saved seed.
+     * @param id Lottery whose confirmed state may have advanced since an earlier attempt.
+     */
+    private suspend fun drawAttempt(id: String): DrawResult {
         val drawRef = db.collection("_draws").document(DocumentKeys.id(id))
         val proposedSeed = random.nextLong().toString()
         val seed =
@@ -90,26 +119,12 @@ internal class LotteryDraw(
                 it.state != EntryState.WITHDRAWN
             }
 
-        /**
-         * Hashes the persisted draw seed and account ID to reproduce candidate order on
-         * retries.
-         *
-         * @param account Account document ID.
-         */
-        fun rank(account: String): String =
-            java.security.MessageDigest
-                .getInstance("SHA-256")
-                .digest("$seed:$account".toByteArray(Charsets.UTF_8))
-                .joinToString("") { "%02x".format(it.toInt() and 255) }
         val winners =
-            candidates
-                .sortedWith(compareBy<LotteryEntry> { rank(it.accountId) }.thenBy { it.accountId })
-                .take(
-                    lottery.configuration.winnerCount
-                        .coerceAtMost(candidates.size.toLong())
-                        .toInt(),
-                ).map { it.accountId }
-                .toSet()
+            selectDrawWinners(
+                seed,
+                candidates.map { it.accountId },
+                lottery.configuration.winnerCount,
+            ).toSet()
         for (candidate in candidates) {
             db.atomic { tx ->
                 val current = tx.require(ref(id), LotteryDocument)

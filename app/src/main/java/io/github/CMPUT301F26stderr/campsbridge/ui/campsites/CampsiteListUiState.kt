@@ -20,7 +20,7 @@ sealed interface CampsiteListUiState {
 
     /** Confirmed rows, with explicit pending ordering and independently resolved images.
      * @param campsites Rows for the selected tab.
-     * @param orderingPending Whether the reserved ordering helper is absent.
+     * @param orderingPending Whether this host omitted the ordering helper.
      * @param photos Transient image reads for currently visible records.
      */
     data class Content(

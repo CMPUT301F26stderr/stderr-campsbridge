@@ -21,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.AlertDeliver
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
@@ -538,7 +539,7 @@ private class AlertFixture {
         NotificationAlertCoordinator(
             notifications,
             accounts,
-            NotificationContentLoader(notifications, lotteries, bookings),
+            NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository()),
             permission,
             handled,
             publisher,

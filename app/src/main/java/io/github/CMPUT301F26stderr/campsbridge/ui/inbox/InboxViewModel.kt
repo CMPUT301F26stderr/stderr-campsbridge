@@ -195,7 +195,17 @@ class InboxViewModel(
         loading.add(id)
         val pending =
             viewModelScope.launch(start = CoroutineStart.LAZY) {
-                val result = content.load(id)
+                val result =
+                    content.load(id).let { loaded ->
+                        if (loaded is NotificationContent.Loaded &&
+                            loaded.subject is NotificationSubjectContent.MessageContent
+                        ) {
+                            // Keep message history read-only until conversation navigation is connected.
+                            loaded.copy(subject = NotificationSubjectContent.Unsupported)
+                        } else {
+                            loaded
+                        }
+                    }
                 currentCoroutineContext().ensureActive()
                 if (closed || contentVersions[id] != version) return@launch
                 results[id] = result

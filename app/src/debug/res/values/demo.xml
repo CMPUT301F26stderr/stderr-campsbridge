@@ -4,6 +4,8 @@
     <string name="demo_reset">Reset scenario</string>
     <string name="demo_entrant">Existing entrant</string>
     <string name="demo_owner">Existing owner</string>
+    <string name="demo_co_owner">Collaborating owner</string>
+    <string name="demo_sam">Sam · Co-owner</string>
     <string name="demo_new_account">New account</string>
     <string name="demo_previews">Onboarding previews</string>
     <string name="demo_preview_explanation">Inspect sample screen states. These previews do not save or advance.</string>

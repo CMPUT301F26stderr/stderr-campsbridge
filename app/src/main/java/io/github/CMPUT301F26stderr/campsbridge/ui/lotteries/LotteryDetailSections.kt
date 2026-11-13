@@ -32,18 +32,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
-import java.time.ZoneId
-
-/** Uses one known campsite zone, with an explicitly labelled UTC display otherwise.
- * @param offers Current allocations and their already-read campsite records.
- */
-internal fun lotteryDisplayZone(offers: LotteryOffersState): ZoneId =
-    (offers as? LotteryOffersState.Content)
-        ?.offers
-        ?.mapNotNull { it.campsite?.details?.timeZone }
-        ?.distinct()
-        ?.singleOrNull()
-        ?.let(ZoneId::of) ?: ZoneId.of("UTC")
 
 /** Frames saved detail children without acquiring another ViewModel or reader.
  * @param title Localized child title.
@@ -52,6 +40,7 @@ internal fun lotteryDisplayZone(offers: LotteryOffersState): ZoneId =
  * @param onRetry Retries only the parent source.
  * @param modifier Caller layout.
  * @param bottomContent Optional bounded caller-owned actions.
+ * @param backEnabled Whether the shared arrow/gesture may leave this command owner.
  * @param content Saved facts, only rendered for current confirmed parent content.
  */
 @Composable
@@ -62,9 +51,10 @@ internal fun LotteryDetailFrame(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     bottomContent: @Composable () -> Unit = {},
+    backEnabled: Boolean = true,
     content: @Composable ColumnScope.(LotteryDetailUiState.Content) -> Unit,
 ) {
-    AppScreen(title, modifier, onBack = onBack, bottomContent = bottomContent) {
+    AppScreen(title, modifier, onBack = onBack, backEnabled = backEnabled, bottomContent = bottomContent) {
         when (state) {
             LotteryDetailUiState.Loading -> {
                 LoadingContent()
@@ -93,17 +83,15 @@ internal fun LotteryDetailFrame(
 }
 
 /** Groups real registration/booking windows and allocation rules for the same saved parent.
- * @param state Shared parent and independent campsite read.
+ * @param state Saved lottery and its configured windows.
  * @param onBack Returns to its retained overview.
  * @param onRetry Retries only the parent source.
- * @param onRetryOffers Retries only allocations/campsite reads needed for the display zone.
  */
 @Composable
 fun LotteryScheduleScreen(
     state: LotteryDetailUiState,
     onBack: () -> Unit,
     onRetry: () -> Unit,
-    onRetryOffers: () -> Unit,
 ) {
     LotteryDetailFrame(
         stringResource(R.string.lottery_schedule_title),
@@ -113,28 +101,22 @@ fun LotteryScheduleScreen(
     ) { current ->
         val record = current.lottery
         val configuration = record.configuration
-        val zone = lotteryDisplayZone(current.offers)
         Text(record.title, style = MaterialTheme.typography.headlineSmall)
         if (record.description.isNotBlank()) Text(record.description)
         Text(
-            stringResource(R.string.lottery_schedule_zone, zone.id),
+            stringResource(R.string.lottery_schedule_zone),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        if (current.offers == LotteryOffersState.Failure) {
-            FailureContent(stringResource(R.string.lottery_offers_failed), onRetryOffers)
-        }
         LotteryWindowCard(
             stringResource(R.string.lottery_registration_step),
             configuration.registrationOpensAt,
             configuration.registrationClosesAt,
-            zone,
         )
         LotteryWindowCard(
             stringResource(R.string.lottery_booking_step),
             configuration.bookingOpensAt,
             configuration.bookingClosesAt,
-            zone,
         )
         SummarySection(stringResource(R.string.lottery_allocation_rules)) {
             DetailRow(
@@ -236,24 +218,22 @@ fun LotteryOffersScreen(
  * @param title Localized window heading.
  * @param opening Saved opening instant.
  * @param closing Saved closing instant.
- * @param zone Known campsite zone or explicitly labelled UTC.
  */
 @Composable
 private fun LotteryWindowCard(
     title: String,
     opening: Instant,
     closing: Instant,
-    zone: ZoneId,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     SummarySection(title) {
         DetailRow(
             stringResource(R.string.lottery_window_opens),
-            formatDateTime(opening, zone, locale),
+            formatDateTime(opening, locale),
         )
         DetailRow(
             stringResource(R.string.lottery_window_closes),
-            formatDateTime(closing, zone, locale),
+            formatDateTime(closing, locale),
         )
     }
 }

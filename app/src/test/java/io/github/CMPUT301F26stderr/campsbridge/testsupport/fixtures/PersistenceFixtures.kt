@@ -109,9 +109,10 @@ object PersistenceFixtures {
             "publishedAt" to stamp,
             "removal" to null,
         )
-    private val lotteryFields =
+    val lotteryFields: Map<String, Any?> =
         mapOf(
             "ownerId" to "owner",
+            "participantOwnerIds" to listOf("owner"),
             "title" to "May camping",
             "description" to "Two-night stays",
             "registrationOpensAt" to Timestamp(now.epochSecond + 60, 123456789),
@@ -235,6 +236,12 @@ object PersistenceFixtures {
                     ).copy(cancellation = Cancellation(now, "owner", "Unavailable")),
             ),
             DocumentFixture(
+                "lotteries/shared",
+                LotteryDocument,
+                lotteryFields + ("participantOwnerIds" to listOf("owner", "owner-b")),
+                CampingFixtures.lottery("shared").copy(participantOwnerIds = setOf("owner", "owner-b")),
+            ),
+            DocumentFixture(
                 "lotteries/draw/offers/site",
                 LotteryOfferDocument,
                 mapOf("campsiteId" to "site", "nights" to listOf("2027-05-15", "2027-05-17")),
@@ -287,6 +294,29 @@ object PersistenceFixtures {
                 ReviewDocument,
                 mapOf("rating" to 5L, "body" to null, "createdAt" to stamp, "updatedAt" to stamp),
                 Review("site", "entrant", 5, null, now, now),
+            ),
+            DocumentFixture(
+                "campsites/site/reviews/text-author",
+                ReviewDocument,
+                mapOf(
+                    "rating" to null,
+                    "body" to "Quiet nights by the river",
+                    "createdAt" to stamp,
+                    "updatedAt" to stamp,
+                ),
+                Review("site", "text-author", null, "Quiet nights by the river", now, now),
+            ),
+            DocumentFixture(
+                "campsites/site/reviews/both-author",
+                ReviewDocument,
+                mapOf("rating" to 1L, "body" to "The road was noisy", "createdAt" to stamp, "updatedAt" to stamp),
+                Review("site", "both-author", 1, "The road was noisy", now, now),
+            ),
+            DocumentFixture(
+                "campsites/site/reviews/moderated-author",
+                ReviewDocument,
+                mapOf("rating" to null, "body" to null, "createdAt" to stamp, "updatedAt" to stamp),
+                Review("site", "moderated-author", null, null, now, now),
             ),
             DocumentFixture(
                 "campsites/site/reviews/entrant/replies/reply",

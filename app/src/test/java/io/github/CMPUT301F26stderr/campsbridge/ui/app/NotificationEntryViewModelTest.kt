@@ -15,6 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.Notificati
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
@@ -108,7 +109,8 @@ class NotificationEntryViewModelTest {
             )) {
                 val f = EntryFixture()
                 try {
-                    f.lotteries.records.value = listOf(f.lottery.copy(ownerId = owner))
+                    f.lotteries.records.value =
+                        listOf(f.lottery.copy(ownerId = owner, participantOwnerIds = setOf(owner)))
                     f.ready(if (Role.ENTRANT in roles) Role.ENTRANT else Role.ADMIN, roles)
                     f.model.accept(f.entry)
                     runCurrent()
@@ -563,7 +565,7 @@ private class EntryFixture(
     /** Supplies real loader behavior and places the root model in its owned lifetime. */
     private fun createModel(): NotificationEntryViewModel =
         NotificationEntryViewModel(
-            NotificationContentLoader(notifications, lotteries, bookings),
+            NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository()),
             saved,
         ).also {
             store.put("entry", it)

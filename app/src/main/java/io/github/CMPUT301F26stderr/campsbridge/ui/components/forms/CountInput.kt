@@ -8,14 +8,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionTooltip
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppIconAction
 
 /** One editable count with integrated bounded controls; invalid raw input remains editable.
  * @param input Caller-owned text, including invalid intermediate input.
@@ -54,23 +53,21 @@ fun CountInput(
         enabled = enabled,
         supportingText = supportingText,
         prefix = {
-            ActionTooltip(decrease) {
-                IconButton(
-                    onClick = { bounded?.let { onInput((it - 1).toString()) } },
-                    enabled = enabled && bounded != null && bounded > minimum,
-                ) {
-                    Icon(painterResource(R.drawable.ic_remove), decrease)
-                }
+            AppIconAction(
+                decrease,
+                { bounded?.let { onInput((it - 1).toString()) } },
+                enabled = enabled && bounded != null && bounded > minimum,
+            ) {
+                Icon(painterResource(R.drawable.ic_remove), contentDescription = null)
             }
         },
         suffix = {
-            ActionTooltip(increase) {
-                IconButton(
-                    onClick = { bounded?.let { onInput((it + 1).toString()) } },
-                    enabled = enabled && bounded != null && bounded < maximum,
-                ) {
-                    Icon(Icons.Default.Add, increase)
-                }
+            AppIconAction(
+                increase,
+                { bounded?.let { onInput((it + 1).toString()) } },
+                enabled = enabled && bounded != null && bounded < maximum,
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
             }
         },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

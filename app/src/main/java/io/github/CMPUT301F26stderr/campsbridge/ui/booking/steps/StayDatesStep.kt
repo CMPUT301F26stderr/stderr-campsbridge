@@ -33,7 +33,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 
 /** Prototype 07.02 with shared calendar, actual deadline and explicit occupied-night feedback.
  * @param state Current draft and confirmed inventory; no writes occur in this content.
@@ -65,7 +64,6 @@ fun StayDatesStep(
                 R.string.booking_deadline,
                 formatDateTime(
                     state.lottery.configuration.bookingClosesAt,
-                    ZoneId.of(state.campsite.details.timeZone),
                     locale,
                 ),
             ),

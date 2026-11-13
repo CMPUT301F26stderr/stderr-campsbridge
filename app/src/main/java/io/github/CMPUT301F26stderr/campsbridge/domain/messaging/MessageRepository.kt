@@ -11,6 +11,11 @@ import kotlinx.coroutines.flow.Flow
  * acknowledgements.
  */
 interface MessageRepository {
+    /** Reads saved content without acknowledging it; confirmed absence returns null.
+     * @param id Retained message identity.
+     */
+    suspend fun get(id: String): Message?
+
     /**
      * Observes reservation messages in creation order.
      *
@@ -24,14 +29,16 @@ interface MessageRepository {
     fun observeAll(): Flow<List<Message>>
 
     /**
-     * Validates two distinct active reservation participants, then atomically stores the
-     * message and queues an alert to the other participant. Returns the message ID.
+     * Validates two distinct active participants and commits the message and alert together.
+     * Matching retained-ID retries preserve saved history; changed content conflicts.
      *
+     * @param messageId Caller-retained submission identity.
      * @param reservationId Reservation document ID.
      * @param senderId Account ID sending the message or announcement.
      * @param body Nonblank message or reply text.
      */
     suspend fun send(
+        messageId: String,
         reservationId: String,
         senderId: String,
         body: String,

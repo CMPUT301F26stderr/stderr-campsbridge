@@ -14,8 +14,8 @@ enum class InboxSourceState { LOADING, READY, FAILURE }
  * @param items Loaded real events; supplied ordering is applied only when its helper exists.
  * @param unavailable Receipts without known event time, ordered by exact ID after known events.
  * @param unreadCount Supplied count over every original receipt; null while its helper is pending.
- * @param orderingPending The reserved chronological ordering function is absent.
- * @param unreadCountPending The reserved unread-count function is absent.
+ * @param orderingPending This host omitted chronological ordering.
+ * @param unreadCountPending This host omitted unread counting.
  * @param readFailures Explicit acknowledgement failures, separate from context and navigation.
  */
 data class InboxUiState(

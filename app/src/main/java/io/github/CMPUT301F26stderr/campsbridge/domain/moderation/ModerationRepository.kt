@@ -9,6 +9,28 @@ package io.github.CMPUT301F26stderr.campsbridge.domain.moderation
  * state.
  */
 interface ModerationRepository {
+    /** Clears stars while preserving review text, children and original creation time.
+     * @param campsiteId Feedback campsite.
+     * @param authorId Feedback author.
+     * @param adminId Acting administrator.
+     */
+    suspend fun removeRating(
+        campsiteId: String,
+        authorId: String,
+        adminId: String,
+    )
+
+    /** Clears written feedback without changing its rating or deleting its thread.
+     * @param campsiteId Feedback campsite.
+     * @param authorId Feedback author.
+     * @param adminId Acting administrator.
+     */
+    suspend fun removeReviewText(
+        campsiteId: String,
+        authorId: String,
+        adminId: String,
+    )
+
     /**
      * Retains references, scrubs profile data, and resumes dependent cleanup on retries.
      *

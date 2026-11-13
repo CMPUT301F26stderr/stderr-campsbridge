@@ -43,7 +43,7 @@ fun InboxRoute(
         when (val subject = opening.subject) {
             is NotificationSubjectContent.LotteryContent -> {
                 val context =
-                    if (subject.lottery.ownerId == model.accountId) {
+                    if (model.accountId in subject.lottery.participantOwnerIds) {
                         LotteryContext.OWNER
                     } else {
                         LotteryContext.ENTRANT
@@ -61,6 +61,7 @@ fun InboxRoute(
                 onOpenReservation(subject.reservation.id, resContext)
             }
 
+            is NotificationSubjectContent.MessageContent,
             NotificationSubjectContent.Failure,
             NotificationSubjectContent.Unavailable,
             NotificationSubjectContent.Unsupported,

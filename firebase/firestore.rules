@@ -18,6 +18,15 @@ service cloud.firestore {
     function ownsSite(id) { return role('OWNER') && site(id).ownerId == request.auth.uid; }
     function ownsLotteryData(l) { return l.ownerId == request.auth.uid && role('OWNER'); }
     function ownsLottery(id) { return signed() && ownsLotteryData(lottery(id)); }
+    function lotteryMember(l) { return role('OWNER') && request.auth.uid in l.participantOwnerIds; }
+    function lotteryRemovalActor(l) {
+      return removalActor(l.ownerId)
+        || (signed() && request.auth.uid in l.participantOwnerIds && removalActor(request.auth.uid));
+    }
+    function lotteryReader(l) {
+      return signed() && (l.publishedAt != null || l.ownerId == request.auth.uid
+        || lotteryMember(l) || lotteryRemovalActor(l) || admin());
+    }
     function changes(fields) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields); }
     function pair(a, b) { return string(a.size()) + ':' + a + string(b.size()) + ':' + b; }
     function triple(a, b, c) { return pair(a, b) + string(c.size()) + ':' + c; }
@@ -84,7 +93,7 @@ service cloud.firestore {
       return l.publishedAt != null && l.cancellation == null && l.drawnAt != null
         && request.time >= l.bookingOpensAt && request.time < l.bookingClosesAt;
     }
-    function drawAuthority(l) { return signed() && (ownsLotteryData(l) || admin()); }
+    function drawAuthority(l) { return signed() && (lotteryMember(l) || admin()); }
     function drawOperator(id) { return drawAuthority(lottery(id)); }
     function drawEligible(l) {
       return l.publishedAt != null && l.cancellation == null && l.drawnAt == null
@@ -92,7 +101,7 @@ service cloud.firestore {
     }
     function canDrawData(id, l) {
       return drawEligible(l) && (drawAuthority(l)
-        || (removalActor(l.ownerId) && exists(/databases/$(database)/documents/_draws/$(id))));
+        || (lotteryRemovalActor(l) && exists(/databases/$(database)/documents/_draws/$(id))));
     }
     function canDraw(id) { return canDrawData(id, lottery(id)); }
 
@@ -128,7 +137,8 @@ service cloud.firestore {
     }
     function processEvent(e) {
       return admin() || (active() && e.senderId == request.auth.uid)
-        || (e.subject.type == 'LOTTERY' && ownsLottery(e.subject.id))
+        || (e.subject.type == 'LOTTERY'
+          && (drawAuthority(lottery(e.subject.id)) || lotteryRemovalActor(lottery(e.subject.id))))
         || (e.subject.type == 'RESERVATION'
           && canCoordinateReservation(get(/databases/$(database)/documents/reservations/$(e.subject.id)).data))
         || (e.subject.type == 'MESSAGE' && messageParticipant(e.subject.id));
@@ -222,18 +232,42 @@ service cloud.firestore {
           && request.resource.data.isOffered is bool && (request.resource.data.isOffered || resource.data.reservationId == null));
       }
       match /reviews/{author} {
+        function validFeedback(d) {
+          return d.keys().hasAll(['rating', 'body', 'createdAt', 'updatedAt'])
+            && d.keys().hasOnly(['rating', 'body', 'createdAt', 'updatedAt'])
+            && (d.rating == null || (d.rating is int && d.rating >= 1 && d.rating <= 5))
+            && (d.body == null || (d.body is string && d.body.trim().size() > 0))
+            && d.createdAt is timestamp && d.updatedAt is timestamp;
+        }
+        function authorWrite() {
+          return role('ENTRANT') && author == request.auth.uid
+            && site(id).publishedAt != null && site(id).removal == null;
+        }
+        function componentUpdate() {
+          return (changes(['rating', 'updatedAt']) && request.resource.data.rating != resource.data.rating
+              && request.resource.data.rating != null)
+            || (changes(['body', 'updatedAt']) && request.resource.data.body != resource.data.body);
+        }
+        function moderatedUpdate() {
+          return admin() && ((changes(['rating', 'updatedAt']) && resource.data.rating != null && request.resource.data.rating == null)
+            || (changes(['body', 'updatedAt']) && resource.data.body != null && request.resource.data.body == null));
+        }
+        function hasContent() {
+          let path = /databases/$(database)/documents/campsites/$(id)/reviews/$(author);
+          return exists(path) && (get(path).data.rating != null || get(path).data.body != null);
+        }
         allow read: if signed();
-        allow create, update: if role('ENTRANT') && author == request.auth.uid
-          && site(id).publishedAt != null && site(id).removal == null
-          && request.resource.data.keys().hasOnly(['rating', 'body', 'createdAt', 'updatedAt'])
-          && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
-          && (resource == null || request.resource.data.createdAt == resource.data.createdAt);
+        allow create: if authorWrite() && validFeedback(request.resource.data)
+          && (request.resource.data.rating != null || request.resource.data.body != null);
+        allow update: if validFeedback(request.resource.data)
+          && request.resource.data.createdAt == resource.data.createdAt
+          && ((authorWrite() && componentUpdate()) || moderatedUpdate());
         match /replies/{reply} {
           allow read: if signed();
           allow create: if active() && request.resource.data.authorId == request.auth.uid
             && request.resource.data.keys().hasOnly(['authorId', 'parentReplyId', 'body', 'createdAt'])
             && request.resource.data.body is string && request.resource.data.body.size() > 0
-            && exists(/databases/$(database)/documents/campsites/$(id)/reviews/$(author))
+            && hasContent()
             && (request.resource.data.parentReplyId == null || exists(
               /databases/$(database)/documents/campsites/$(id)/reviews/$(author)/replies/$(request.resource.data.parentReplyId)));
         }
@@ -241,7 +275,7 @@ service cloud.firestore {
           allow read: if signed();
           allow create, update: if active() && reactor == request.auth.uid
             && request.resource.data.keys().hasOnly(['type']) && request.resource.data.type in ['LIKE', 'HELPFUL']
-            && exists(/databases/$(database)/documents/campsites/$(id)/reviews/$(author));
+            && hasContent();
           allow delete: if active() && reactor == request.auth.uid;
         }
       }
@@ -250,6 +284,8 @@ service cloud.firestore {
     match /lotteries/{id} {
       function config(d) {
         return d.registrationOpensAt < d.registrationClosesAt && d.registrationClosesAt <= d.bookingOpensAt && d.bookingOpensAt < d.bookingClosesAt
+          && stringList(d.participantOwnerIds) && d.ownerId in d.participantOwnerIds
+          && d.participantOwnerIds.toSet().size() == d.participantOwnerIds.size()
           && d._revision is int && d._revision >= 0
           && d.winnerCount is int && d.winnerCount > 0 && d.waitingCount is int && d.waitingCount >= 0
           && (d.waitlistCapacity == null || (d.waitlistCapacity is int && d.waitlistCapacity > 0));
@@ -273,6 +309,11 @@ service cloud.firestore {
             || fields.hasOnly(['title', 'description', '_revision']))
           && (l.publishedAt == null || next.publishedAt == l.publishedAt);
       }
+      function allocationRevisionUpdate(l, next) {
+        return lotteryMember(l) && l.cancellation == null && l.drawnAt == null
+          && (l.publishedAt == null || request.time < l.registrationOpensAt)
+          && next._revision == l._revision + 1;
+      }
       function drawCountUpdate(l, next) {
         return next.waitingCount in [l.waitingCount, l.waitingCount - 1] && canDrawData(id, l);
       }
@@ -292,7 +333,7 @@ service cloud.firestore {
       function lotteryCancellation(l, next) {
         return l.cancellation == null && next.cancellation is map
           && (next.cancellation.actorId == request.auth.uid || admin())
-          && (drawAuthority(l) || removalActor(l.ownerId))
+          && (drawAuthority(l) || lotteryRemovalActor(l))
           && (!exists(/databases/$(database)/documents/_draws/$(id)) || l.drawnAt != null);
       }
       function countUpdate(l, next) {
@@ -312,20 +353,22 @@ service cloud.firestore {
           : fields.hasOnly(['waitingCount']) ? countUpdate(l, next)
           : fields.hasOnly(['drawnAt']) ? drawCompletion(l, next)
           : fields.hasOnly(['cancellation']) ? lotteryCancellation(l, next)
+          : fields.hasOnly(['_revision']) ? (allocationRevisionUpdate(l, next) || ownerConfigurationUpdate(l, next, fields))
           : fields.hasOnly(['title', 'description', 'registrationOpensAt', 'registrationClosesAt',
-            'bookingOpensAt', 'bookingClosesAt', 'winnerCount', 'waitlistCapacity', 'publishedAt', '_revision'])
+            'bookingOpensAt', 'bookingClosesAt', 'winnerCount', 'waitlistCapacity', 'publishedAt', 'participantOwnerIds', '_revision'])
             ? ownerConfigurationUpdate(l, next, fields) : false);
       }
-      allow get: if signed() && (resource == null || resource.data.publishedAt != null || resource.data.ownerId == request.auth.uid || admin());
-      allow list: if signed() && (resource.data.publishedAt != null || resource.data.ownerId == request.auth.uid || admin());
+      allow get: if signed() && (resource == null || lotteryReader(resource.data));
+      allow list: if lotteryReader(resource.data);
       allow create: if role('OWNER') && request.resource.data.ownerId == request.auth.uid && config(request.resource.data)
         && request.resource.data.waitingCount == 0 && request.resource.data.publishedAt == null
+        && request.resource.data.participantOwnerIds == [request.auth.uid]
         && request.resource.data.drawnAt == null && request.resource.data.cancellation == null;
       allow update: if validUpdate();
       match /offers/{campsite} {
         function editableOffer(l) {
           return l.cancellation == null && (l.publishedAt == null || request.time < l.registrationOpensAt)
-            && ownsLotteryData(l);
+            && lotteryMember(l);
         }
         function matchingRevision(l) {
           let next = getAfter(/databases/$(database)/documents/lotteries/$(id)).data;
@@ -338,19 +381,19 @@ service cloud.firestore {
           return offer.keys().hasOnly(['campsiteId', 'nights']) && offer.campsiteId == campsite
             && offer.nights is list && offer.nights.size() > 0
             && s.ownerId == request.auth.uid && s.removal == null
+            && (l.participantOwnerIds.size() == 1 || s.publishedAt != null)
             && editableOffer(l) && matchingRevision(l);
         }
         function deleteOffer() {
           let l = lottery(id);
-          return editableOffer(l) && matchingRevision(l);
+          return site(campsite).ownerId == request.auth.uid && editableOffer(l) && matchingRevision(l);
         }
-        allow read: if signed() && (lottery(id).publishedAt != null || ownsLottery(id)
-          || admin() || removalActor(lottery(id).ownerId));
+        allow read: if lotteryReader(lottery(id));
         allow create, update: if signed() && saveOffer();
         allow delete: if signed() && deleteOffer();
       }
       match /entries/{entrant} {
-        allow read: if signed() && (entrant == request.auth.uid || ownsLottery(id) || admin() || removalActor(lottery(id).ownerId));
+        allow read: if signed() && (entrant == request.auth.uid || drawAuthority(lottery(id)) || lotteryRemovalActor(lottery(id)));
         allow create: if role('ENTRANT') && entrant == request.auth.uid && registrationOpen(id)
           && request.resource.data.accountId == entrant && request.resource.data.state == 'WAITING'
           && getAfter(/databases/$(database)/documents/lotteries/$(id)).data.waitingCount == lottery(id).waitingCount + 1;
@@ -397,14 +440,15 @@ service cloud.firestore {
     }
 
     match /reservations/{id} {
-      allow get: if signed() && (resource == null || participant(resource.data) || admin());
-      allow list: if participant(resource.data) || admin();
+      allow get: if signed() && (resource == null || participant(resource.data) || admin() || reservationRemovalActor(resource.data));
+      allow list: if participant(resource.data) || admin() || reservationRemovalActor(resource.data);
       // Only authenticated callable functions may coordinate reservation/payment/inventory writes.
       allow create, update, delete: if false;
     }
     match /messages/{id} {
       function r() { return get(/databases/$(database)/documents/reservations/$(resource.data.reservationId)).data; }
-      allow read: if participant(r()) || admin();
+      allow get: if signed() && (resource == null || participant(r()) || admin());
+      allow list: if participant(r()) || admin();
       allow create: if active() && request.resource.data.senderId == request.auth.uid
         && participant(get(/databases/$(database)/documents/reservations/$(request.resource.data.reservationId)).data)
         && request.resource.data.keys().hasOnly(['reservationId', 'senderId', 'body', 'createdAt', 'readAt'])
@@ -414,7 +458,7 @@ service cloud.firestore {
     }
     match /notifications/{id} {
       function announcementEvent(e) {
-        return e.senderId == request.auth.uid && ownsLottery(e.subject.id) && e.announcement is map;
+        return e.senderId == request.auth.uid && lotteryMember(lottery(e.subject.id)) && e.announcement is map;
       }
       function drawEvent(e) {
         let job = getAfter(/databases/$(database)/documents/lotteries/$(e.subject.id)/_notificationDeliveries/$(id)).data;
@@ -433,13 +477,17 @@ service cloud.firestore {
           || (e.type in ['LOTTERY_WON', 'LOTTERY_LOST'] && e.subject.type == 'LOTTERY' && drawEvent(e))
           || (e.type == 'NEW_MESSAGE' && e.subject.type == 'MESSAGE' && messageEvent(e)));
       }
-      allow read: if signed() && (admin() || resource.data.senderId == request.auth.uid
-        || exists(/databases/$(database)/documents/accounts/$(request.auth.uid)/inbox/$(id)) || processEvent(resource.data));
+      function readable(e) {
+        return signed() && (admin() || e.senderId == request.auth.uid
+          || exists(/databases/$(database)/documents/accounts/$(request.auth.uid)/inbox/$(id)) || processEvent(e));
+      }
+      allow get: if signed() && (resource == null || readable(resource.data));
+      allow list: if readable(resource.data);
       allow create: if signed() && validEvent(request.resource.data);
       allow update: if request.resource.data == resource.data && processEvent(resource.data);
     }
     match /lotteries/{lotteryId}/_notificationDeliveries/{id} {
-      allow read, delete: if drawOperator(lotteryId) || removalActor(lottery(lotteryId).ownerId);
+      allow read, delete: if drawOperator(lotteryId) || lotteryRemovalActor(lottery(lotteryId));
       function createDelivery() {
         let event = deliveryEvent(id);
         return event.subject.type == 'LOTTERY' && event.subject.id == lotteryId && validDelivery(id, event);
@@ -462,7 +510,7 @@ service cloud.firestore {
     }
     match /{parent=**}/_notificationDeliveries/{id} { allow read: if admin(); }
     match /_draws/{id} {
-      allow read: if drawOperator(id) || removalActor(lottery(id).ownerId);
+      allow read: if drawOperator(id) || lotteryRemovalActor(lottery(id));
       allow create: if canDraw(id) && request.resource.data.keys().hasOnly(['seed']) && request.resource.data.seed is string;
     }
     match /images/{id} {

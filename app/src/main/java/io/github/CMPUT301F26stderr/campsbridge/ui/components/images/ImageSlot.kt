@@ -44,6 +44,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -123,6 +124,20 @@ fun ImageSlot(
             ) {
                 Text(stringResource(R.string.photo_empty))
             }
+        }
+        if (state.obsoleteBlobId != null) {
+            InlineNotice(
+                stringResource(
+                    if (state.attachment ==
+                        null
+                    ) {
+                        R.string.photo_removed_confirmed
+                    } else {
+                        R.string.photo_saved_confirmed
+                    },
+                ),
+                stringResource(R.string.photo_cleanup_pending),
+            )
         }
         when {
             state.unconfirmedBlobId != null -> {

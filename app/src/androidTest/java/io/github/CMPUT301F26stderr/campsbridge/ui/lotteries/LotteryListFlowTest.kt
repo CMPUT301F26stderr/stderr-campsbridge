@@ -44,7 +44,12 @@ class LotteryListFlowTest {
                     it.lottery.publishedAt !=
                         null
                 }
-        ).lottery.copy(id = "draw/A", ownerId = "account-1", title = "May riverside lottery")
+        ).lottery.copy(
+            id = "draw/A",
+            ownerId = "account-1",
+            participantOwnerIds = setOf("account-1"),
+            title = "May riverside lottery",
+        )
     private val draft = published.copy(id = "draft/A", publishedAt = null, title = "Summer draft")
 
     /** Releases navigation models and every scoped subscription. */
@@ -133,7 +138,7 @@ class LotteryListFlowTest {
         }
         compose.onNodeWithText("Retry").performClick()
         compose.onNodeWithText("No lotteries here yet.").assertIsDisplayed()
-        compose.runOnIdle { assertEquals(1, host.lotteries.activeOwnerObservers) }
+        compose.runOnIdle { assertEquals(1, host.lotteries.activeParticipantObservers) }
     }
 
     /** Primary create opens the real new wizard; untouched Back returns without writes. */

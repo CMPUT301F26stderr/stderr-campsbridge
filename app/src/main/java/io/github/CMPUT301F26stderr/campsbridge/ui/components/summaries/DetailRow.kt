@@ -21,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param value Formatted value, permitted to wrap.
  * @param modifier Caller layout.
  * @param onEdit Optional explicit editing callback.
+ * @param emphasized Gives an important value the shared emphasized title style.
  */
 @Composable
 fun DetailRow(
@@ -28,6 +29,7 @@ fun DetailRow(
     value: String,
     modifier: Modifier = Modifier,
     onEdit: (() -> Unit)? = null,
+    emphasized: Boolean = false,
 ) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
         Column(Modifier.weight(1f)) {
@@ -36,7 +38,15 @@ fun DetailRow(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(value, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                value,
+                style =
+                    if (emphasized) {
+                        MaterialTheme.typography.titleMediumEmphasized
+                    } else {
+                        MaterialTheme.typography.bodyMedium
+                    },
+            )
         }
         if (onEdit != null) TextButton(onEdit) { Text(stringResource(R.string.edit)) }
     }

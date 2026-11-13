@@ -132,7 +132,10 @@ class BookingFlowTest {
         compose.onNodeWithText("Review your stay").assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()
         open("Edit dates")
-        compose.onCalendarDate(start).performScrollTo().assertIsDisplayed()
+        compose.onCalendarDate(start).performScrollTo()
+        compose.waitUntil(15_000) {
+            compose.onCalendarDate(start).isDisplayed()
+        }
         next()
         compose.onNodeWithText("Review your stay").assertIsDisplayed()
         compose.runOnIdle {

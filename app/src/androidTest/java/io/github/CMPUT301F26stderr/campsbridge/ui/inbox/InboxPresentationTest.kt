@@ -27,7 +27,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import java.time.Instant
-import java.time.ZoneId
 
 /** History retains event facts and exposes recovery at the row that owns the failed work. */
 class InboxPresentationTest {
@@ -47,7 +46,7 @@ class InboxPresentationTest {
             InstrumentationRegistry
                 .getInstrumentation()
                 .targetContext.resources.configuration.locales[0]
-        compose.onNodeWithText(formatDateTime(createdAt, ZoneId.systemDefault(), locale)).assertIsDisplayed()
+        compose.onNodeWithText(formatDateTime(createdAt, locale)).assertIsDisplayed()
         compose.onNodeWithTag("inbox-event-notice").assertHasNoClickAction()
     }
 

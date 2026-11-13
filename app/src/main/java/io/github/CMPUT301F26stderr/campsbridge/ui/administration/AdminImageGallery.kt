@@ -30,7 +30,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneId
 
 /** Metadata membership belongs to the observed source, independently of thumbnail success.
  * @param rows Attachments to show.
@@ -80,7 +79,7 @@ fun AdminImageGallery(
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Text(
-                    formatDateTime(image.uploadedAt, ZoneId.systemDefault(), locale),
+                    formatDateTime(image.uploadedAt, locale),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

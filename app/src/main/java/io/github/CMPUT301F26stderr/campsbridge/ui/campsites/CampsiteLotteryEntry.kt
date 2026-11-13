@@ -38,11 +38,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 
 /** Entrant overview entry; current server facts choose direct actions or the real choices child.
  * @param state Scoped association, own-entry and shared command outcomes.
- * @param timeZone Saved campsite's IANA timezone.
  * @param onRetry Retries only the association source.
  * @param onRetryMembership Retries only failed own-entry observation.
  * @param onJoin Joins the displayed sole lottery.
@@ -55,7 +53,6 @@ import java.time.ZoneId
 @Composable
 internal fun CampsiteLotteryEntry(
     state: CampsiteLotteriesUiState,
-    timeZone: String,
     onRetry: () -> Unit,
     onRetryMembership: () -> Unit,
     onJoin: (String) -> Unit,
@@ -113,7 +110,7 @@ internal fun CampsiteLotteryEntry(
                             }
                         }
                         Text(
-                            campsiteLotteryDeadline(sole, timeZone),
+                            campsiteLotteryDeadline(sole),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -134,20 +131,15 @@ internal fun CampsiteLotteryEntry(
     }
 }
 
-/** Uses the known campsite zone without another row-level listing query.
+/** Formats the registration deadline in the shared display zone.
  * @param lottery Actual current choice.
- * @param timeZone Saved campsite's zone.
  */
 @Composable
-internal fun campsiteLotteryDeadline(
-    lottery: Lottery,
-    timeZone: String,
-): String =
+internal fun campsiteLotteryDeadline(lottery: Lottery): String =
     stringResource(
         R.string.lottery_registration_ends,
         formatDateTime(
             lottery.configuration.registrationClosesAt,
-            ZoneId.of(timeZone),
             LocalConfiguration.current.locales[0],
         ),
     )
@@ -251,7 +243,6 @@ private fun CampsiteLotteryEntryPreview(
             lotteryActions = {
                 CampsiteLotteryEntry(
                     state,
-                    previewCampsite().details.timeZone,
                     {},
                     {},
                     {},

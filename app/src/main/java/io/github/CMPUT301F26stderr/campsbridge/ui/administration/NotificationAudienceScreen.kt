@@ -39,7 +39,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneId
 
 /** Displays recorded Inbox facts without acknowledging receipts or inferring Android alerts.
  * @param state One selected event's audience outcome.
@@ -176,7 +175,6 @@ private fun NotificationLogRecipientRow(member: NotificationAudienceMember) {
                             R.string.log_read_at,
                             formatDateTime(
                                 readAt,
-                                ZoneId.systemDefault(),
                                 LocalConfiguration.current.locales[0],
                             ),
                         ),

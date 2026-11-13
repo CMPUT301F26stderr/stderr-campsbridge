@@ -23,8 +23,11 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
 import io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery.drawFixture
+import io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery.registrationFixture
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.FirebaseEmulatorRule
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.assertPersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.documentExists
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.registeredActor
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.seed
@@ -47,6 +50,52 @@ import org.robolectric.annotation.LooperMode
 @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
 class NotificationRepositoryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
+
+    /** A retry retains the first audience and acknowledgements even after another entrant joins. */
+    @Test(timeout = 60000)
+    fun retainedAnnouncementRetryDoesNotRecaptureAudience() =
+        runBlocking {
+            val f = firebase.registrationFixture()
+            val first = firebase.registeredActor(Role.ENTRANT)
+            val second = firebase.registeredActor(Role.ENTRANT)
+            first.container.lotteries.join("draw", first.id)
+            second.container.lotteries.join("draw", second.id)
+            val now = firebase.clock.instant()
+            val repository = f.owner.container.notifications
+            val announcement = Announcement("Directions", "Use the east gate")
+            val id = "retained-announcement"
+            assertEquals(id, repository.announce(id, "draw", f.owner.id, announcement))
+            val original = repository.get(id)
+            NotificationDeliveries(f.owner.clients.firestore).resume(DeliveryScope.Lottery("draw"))
+            firebase.clock.current = now.plusSeconds(30)
+            first.container.notifications.markRead(first.id, id)
+            val receipt =
+                first.container.notifications
+                    .getInbox(first.id)
+                    .single()
+            val late = firebase.registeredActor(Role.ENTRANT)
+            late.container.lotteries.join("draw", late.id)
+            firebase.clock.current = now.plusSeconds(60)
+            assertEquals(id, repository.announce(id, "draw", f.owner.id, announcement))
+            assertEquals(original, repository.get(id))
+            assertEquals(listOf(receipt), first.container.notifications.getInbox(first.id))
+            assertEquals(
+                listOf(id),
+                second.container.notifications
+                    .getInbox(second.id)
+                    .map { it.notificationId },
+            )
+            assertTrue(
+                late.container.notifications
+                    .getInbox(late.id)
+                    .isEmpty(),
+            )
+            assertFalse(firebase.documentExists("lotteries/draw/_notificationDeliveries/$id"))
+            assertEquals(listOf(id), repository.observeSent(f.owner.id).first().map { it.id })
+            assertPersistenceFailure(
+                CONFLICT,
+            ) { repository.announce(id, "draw", f.owner.id, announcement.copy(body = "Changed")) }
+        }
 
     /** Announcements include joined outcomes after a draw, exclude withdrawals and share one event. */
     @Test(timeout = 60000)
@@ -92,6 +141,7 @@ class NotificationRepositoryTest {
             )
             val id =
                 fixture.owner.container.notifications.announce(
+                    "announcement-1",
                     "draw",
                     fixture.owner.id,
                     Announcement("Reminder", "Bring water"),
@@ -217,6 +267,7 @@ class NotificationRepositoryTest {
             val fixture = firebase.drawFixture(entrants = 2, winners = 1)
             val id =
                 fixture.owner.container.notifications.announce(
+                    "announcement-2",
                     "draw",
                     fixture.owner.id,
                     Announcement("Reminder", "Bring water"),
@@ -288,17 +339,23 @@ class NotificationRepositoryTest {
             firebase.seed(
                 "lotteries/other",
                 LotteryDocument.encode(
-                    fixture.lottery.copy(id = "other", ownerId = otherOwner.id),
+                    fixture.lottery.copy(
+                        id = "other",
+                        ownerId = otherOwner.id,
+                        participantOwnerIds = setOf(otherOwner.id),
+                    ),
                 ),
             )
             val id =
                 fixture.owner.container.notifications.announce(
+                    "announcement-3",
                     "draw",
                     fixture.owner.id,
                     Announcement("Here", "This lottery"),
                 )
             val otherId =
                 otherOwner.container.notifications.announce(
+                    "announcement-4",
                     "other",
                     otherOwner.id,
                     Announcement("There", "Other lottery"),
@@ -317,6 +374,7 @@ class NotificationRepositoryTest {
             val fixture = firebase.drawFixture(entrants = 2, winners = 1)
             val id =
                 fixture.owner.container.notifications.announce(
+                    "announcement-5",
                     "draw",
                     fixture.owner.id,
                     Announcement("Reminder", "Bring water"),
@@ -378,6 +436,7 @@ class NotificationRepositoryTest {
             val fixture = firebase.drawFixture()
             val firstId =
                 fixture.owner.container.notifications.announce(
+                    "announcement-6",
                     "draw",
                     fixture.owner.id,
                     Announcement("First", "Earlier"),
@@ -385,6 +444,7 @@ class NotificationRepositoryTest {
             firebase.clock.current = firebase.clock.current.plusSeconds(60)
             val secondId =
                 fixture.owner.container.notifications.announce(
+                    "announcement-7",
                     "draw",
                     fixture.owner.id,
                     Announcement("Second", "Later"),

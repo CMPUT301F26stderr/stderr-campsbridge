@@ -99,7 +99,7 @@ fun BookingScreen(
         !submitting && submission != BookingSubmission.Recovering &&
             !discardPrompt && !exitPending
     if (state is BookingUiState.Content) {
-        StepTransition(state, { it.draft.step.ordinal }, modifier) { state ->
+        StepTransition(state, { it.draft.step.ordinal }, modifier, navigation = { it.stepNavigation }) { state ->
             val step = state.draft.step
             val review = step == BookingStep.REVIEW
             val conflict =

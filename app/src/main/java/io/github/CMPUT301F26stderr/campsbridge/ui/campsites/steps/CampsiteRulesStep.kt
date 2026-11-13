@@ -29,7 +29,9 @@ fun CampsiteRulesStep(
         singleLine = false,
         minLines = 4,
     )
-    NavigationGroup {
-        NavigationRow(stringResource(R.string.campsite_read_refund), onOpenPolicy)
-    }
+    NavigationGroup(
+        buildList<@Composable () -> Unit> {
+            add { NavigationRow(stringResource(R.string.campsite_read_refund), onOpenPolicy) }
+        },
+    )
 }

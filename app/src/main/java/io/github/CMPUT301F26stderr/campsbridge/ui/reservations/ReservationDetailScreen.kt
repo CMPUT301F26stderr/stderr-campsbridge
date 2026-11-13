@@ -44,6 +44,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param onConfirmCancel Confirms one guarded operation.
  * @param onDismissCancel Dismisses without writing.
  * @param onCheckCancellation Reads an uncertain result.
+ * @param onMessages Opens the saved participant conversation when registered.
  */
 @Composable
 fun ReservationDetailScreen(
@@ -60,6 +61,7 @@ fun ReservationDetailScreen(
     onConfirmCancel: () -> Unit = {},
     onDismissCancel: () -> Unit = {},
     onCheckCancellation: () -> Unit = {},
+    onMessages: (() -> Unit)? = null,
 ) {
     ReservationRecordScreen(
         R.string.reservation_title,
@@ -72,7 +74,7 @@ fun ReservationDetailScreen(
     ) { record ->
         Text(
             reservationStatusLabel(record),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
         )
         ReservationReference(record)
@@ -83,10 +85,13 @@ fun ReservationDetailScreen(
             record.guestCount,
             record.payment.amountCents,
         )
-        NavigationGroup {
-            NavigationRow(stringResource(R.string.reservation_payment), onPayment)
-            NavigationRow(stringResource(R.string.reservation_accepted_terms), onTerms)
-        }
+        NavigationGroup(
+            buildList<@Composable () -> Unit> {
+                if (onMessages != null) add { NavigationRow(stringResource(R.string.conversation_title), onMessages) }
+                add { NavigationRow(stringResource(R.string.reservation_payment), onPayment) }
+                add { NavigationRow(stringResource(R.string.reservation_accepted_terms), onTerms) }
+            },
+        )
         SummarySection(stringResource(R.string.reservation_stay_details)) {
             DetailRow(
                 stringResource(R.string.campsite_location),

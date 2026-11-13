@@ -8,8 +8,14 @@ import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentDecodingException
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.DeliveryScope
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDeliveries
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.CancellationRequest
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.FirebaseEmulatorRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.assertPersistenceFailure
@@ -42,7 +48,7 @@ import java.time.ZoneId
 class CancellationRepositoryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
 
-    /** Entrant cancellation refunds once, releases every night and permanently consumes the win. */
+    /** CT-01: cancellation refunds, releases nights and delivers its retained confirmation once. */
     @Test(timeout = 60000)
     fun cancellationIsCompleteAndRepeatable() =
         runBlocking {
@@ -61,6 +67,31 @@ class CancellationRepositoryTest {
             assertNotNull(refunded.refundedAt)
             assertEquals(originalPayment.amountCents, refunded.amountCents)
             assertEquals(originalPayment.paidAt, refunded.paidAt)
+            val eventId = DocumentKeys.compound("RESERVATION_CANCELLED", id)
+            val event =
+                fixture.entrant.container.notifications
+                    .get(eventId)
+            assertNotNull(event)
+            assertEquals(NotificationType.RESERVATION_CANCELLED, event!!.type)
+            assertEquals(NotificationSubject(SubjectType.RESERVATION, id), event.subject)
+            assertEquals(cancelled.cancellation.at, event.createdAt)
+            val jobPath = "reservations/$id/_notificationDeliveries/$eventId"
+            val job =
+                fixture.entrant.clients.firestore
+                    .document(jobPath)
+                    .get(Source.SERVER)
+                    .await()
+            assertEquals(listOf(fixture.entrant.id), job.get("recipientIds"))
+            val deliveries = NotificationDeliveries(fixture.entrant.clients.firestore)
+            deliveries.resume(DeliveryScope.Reservation(id))
+            val receipt = InboxReceipt(eventId, null)
+            assertEquals(
+                listOf(receipt),
+                fixture.entrant.container.notifications.getInbox(fixture.entrant.id).filter {
+                    it.notificationId == eventId
+                },
+            )
+            assertFalse(firebase.documentExists(jobPath))
             val nights =
                 fixture.owner.container.campsites
                     .observeCalendar(
@@ -76,6 +107,19 @@ class CancellationRepositoryTest {
             )
             assertEquals(cancelled, bookings.get(id))
             assertEquals(refunded, bookings.get(id)?.payment)
+            assertEquals(
+                event,
+                fixture.entrant.container.notifications
+                    .get(eventId),
+            )
+            assertFalse(firebase.documentExists(jobPath))
+            deliveries.resume(DeliveryScope.Reservation(id))
+            assertEquals(
+                listOf(receipt),
+                fixture.entrant.container.notifications.getInbox(fixture.entrant.id).filter {
+                    it.notificationId == eventId
+                },
+            )
             assertPersistenceFailure(Reason.ALREADY_USED) { bookings.reserve(fixture.request) }
             assertPersistenceFailure(Reason.ALREADY_USED) {
                 fixture.entrant.container.lotteries
@@ -323,7 +367,7 @@ class CancellationRepositoryTest {
             }
         }
 
-    /** Authorized repeats after checkout preserve the original actor/refund/event exactly. */
+    /** CT-01: authorized late retries preserve the original actor, refund and required saved event. */
     @Test(timeout = 60000)
     fun authorizedCancelledRetryAfterCheckoutRetainsEveryOriginalFact() =
         runBlocking {
@@ -338,6 +382,7 @@ class CancellationRepositoryTest {
             val event =
                 fixture.entrant.container.notifications
                     .get(eventId)
+            assertNotNull(event)
             firebase.clock.current =
                 before.checkOutDate
                     .plusDays(

@@ -1,0 +1,27 @@
+<resources>
+    <string name="announcement_entry">Notify entrants</string>
+    <string name="announcement_title">Announcement</string>
+    <string name="announcement_audience">This goes to entrants who haven’t withdrawn, including those with lottery results. The audience is captured when you send.</string>
+    <string name="announcement_title_label">Announcement title</string>
+    <string name="announcement_body_label">Message</string>
+    <string name="announcement_title_required">Enter a title.</string>
+    <string name="announcement_body_required">Enter a message.</string>
+    <string name="announcement_send">Send announcement</string>
+    <string name="announcement_sending">Sending announcement…</string>
+    <string name="announcement_checking">Checking whether your announcement was saved…</string>
+    <string name="announcement_check_failed">The result is not confirmed. Check again before editing.</string>
+    <string name="announcement_absent">Your announcement was not saved. Retry it or edit before sending again.</string>
+    <string name="announcement_conflict">The saved announcement differs from this draft. Edit it as a new announcement to continue.</string>
+    <string name="announcement_retry">Retry announcement</string>
+    <string name="announcement_edit">Edit announcement</string>
+    <string name="announcement_new">Edit as a new announcement</string>
+    <string name="announcement_load_failed">Could not load this lottery and your owner profile.</string>
+    <string name="announcement_unavailable">Sending is unavailable. An active participating owner can send announcements for a published lottery.</string>
+    <string name="announcement_discard_title">Discard announcement draft?</string>
+    <string name="announcement_discard_body">Your unsent title and message will be discarded.</string>
+    <string name="announcement_dismiss">Dismiss</string>
+    <string name="announcement_saved">Announcement saved for Inbox delivery.</string>
+    <string name="announcement_leave_unknown_title">Leave before the result is confirmed?</string>
+    <string name="announcement_leave_unknown_body">This announcement may already be saved. Leaving discards the details used to check or retry this attempt.</string>
+    <string name="announcement_leave_unknown_confirm">Leave anyway</string>
+</resources>

@@ -62,6 +62,21 @@ fun appTypography(scale: Float): Typography {
         labelLarge = scaledStyle(base.labelLarge, scale),
         labelMedium = scaledStyle(base.labelMedium, scale),
         labelSmall = scaledStyle(base.labelSmall, scale),
+        displayLargeEmphasized = scaledStyle(base.displayLarge.copy(fontWeight = FontWeight.Bold), scale),
+        displayMediumEmphasized = scaledStyle(base.displayMedium.copy(fontWeight = FontWeight.Bold), scale),
+        displaySmallEmphasized = scaledStyle(base.displaySmall.copy(fontWeight = FontWeight.Bold), scale),
+        headlineLargeEmphasized = scaledStyle(base.headlineLarge.copy(fontWeight = FontWeight.Bold), scale),
+        headlineMediumEmphasized = scaledStyle(base.headlineMedium.copy(fontWeight = FontWeight.Bold), scale),
+        headlineSmallEmphasized = scaledStyle(base.headlineSmall.copy(fontWeight = FontWeight.Bold), scale),
+        titleLargeEmphasized = scaledStyle(base.titleLarge.copy(fontWeight = FontWeight.Bold), scale),
+        titleMediumEmphasized = scaledStyle(base.titleMedium.copy(fontWeight = FontWeight.Bold), scale),
+        titleSmallEmphasized = scaledStyle(base.titleSmall.copy(fontWeight = FontWeight.Bold), scale),
+        bodyLargeEmphasized = scaledStyle(base.bodyLarge.copy(fontWeight = FontWeight.Medium), scale),
+        bodyMediumEmphasized = scaledStyle(base.bodyMedium.copy(fontWeight = FontWeight.Medium), scale),
+        bodySmallEmphasized = scaledStyle(base.bodySmall.copy(fontWeight = FontWeight.Medium), scale),
+        labelLargeEmphasized = scaledStyle(base.labelLarge.copy(fontWeight = FontWeight.Bold), scale),
+        labelMediumEmphasized = scaledStyle(base.labelMedium.copy(fontWeight = FontWeight.SemiBold), scale),
+        labelSmallEmphasized = scaledStyle(base.labelSmall.copy(fontWeight = FontWeight.SemiBold), scale),
     )
 }
 

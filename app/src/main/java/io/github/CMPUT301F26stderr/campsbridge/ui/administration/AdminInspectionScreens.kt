@@ -48,7 +48,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
-import java.time.ZoneId
 
 /** Read-only profile facts and three independently retryable source sections.
  * @param state Current selected profile, including retained removal facts.
@@ -417,7 +416,7 @@ fun AdminImageScreen(
                 state.photo.attachment?.let { attachment ->
                     InspectionField(
                         stringResource(R.string.admin_image_uploaded_at),
-                        formatDateTime(attachment.uploadedAt, ZoneId.systemDefault(), locale),
+                        formatDateTime(attachment.uploadedAt, locale),
                     )
                 }
             }

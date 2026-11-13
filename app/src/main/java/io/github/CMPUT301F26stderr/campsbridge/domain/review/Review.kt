@@ -7,11 +7,11 @@ package io.github.CMPUT301F26stderr.campsbridge.domain.review
 import java.time.Instant
 
 /**
- * One editable 1–5 rating per account/campsite, optionally accompanied by review text.
+ * Independently editable stars and written feedback retained under one author identity.
  *
  * @param campsiteId Campsite document ID.
  * @param authorId Account ID identifying the review author.
- * @param rating Integer star rating from 1 to 5.
+ * @param rating Integer stars from 1 to 5, or null when absent or moderated.
  * @param body Optional review text; null supports rating-only feedback.
  * @param createdAt Original record creation time.
  * @param updatedAt Time this record was most recently updated.
@@ -19,13 +19,14 @@ import java.time.Instant
 data class Review(
     val campsiteId: String,
     val authorId: String,
-    val rating: Long,
+    val rating: Long?,
     val body: String?,
     val createdAt: Instant,
     val updatedAt: Instant,
 ) {
     init {
-        require(rating in 1..5)
+        require(rating == null || rating in 1..5)
+        require(body == null || body.isNotBlank())
     }
 }
 
