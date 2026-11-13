@@ -41,6 +41,7 @@ jobs:
           test -f "$SITE_DIR/docs/index.html"
           mkdir -p "$SITE_DIR/storyboard"
           cp pages/index.html "$SITE_DIR/index.html"
+          cp -R pages/halfway-demo "$SITE_DIR/halfway-demo"
           cp prototype/index.html prototype/prototype.css prototype/prototype.js \
             prototype/hotspots.css prototype/wiring.json "$SITE_DIR/storyboard/"
           cp -R prototype/screens "$SITE_DIR/storyboard/screens"
