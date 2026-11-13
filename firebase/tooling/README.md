@@ -1,5 +1,7 @@
 # Persistence tooling
 
+For the published Halfway APK, use the separate [snapshot and reset guide](../../doc/halfway-firebase-reset.md). Its frozen fixture and commands do not deploy the Final schema.
+
 The Final development declarations are in `../fixtures/halfway.json`. The filename is historical: the fixture now includes shared lotteries and nullable ratings that the published Halfway Firebase APK doesn't fully support. Keep that demo on its existing Firebase project. Use a separate project for Final and build its Firebase APK with the matching `app/google-services.json`.
 
 The fixture retains the earlier journey and adds a lottery shared by two owners, a reservation at the second owner's campsite, messages in both directions, and rating-only/text-only/combined feedback. Lottery declarations name an organizer, participants and offers; reservations name their selected campsite. Dates use one supplied anchor and the declared campsite timezone. Photos reuse the credited files under `assets/photos/`.
