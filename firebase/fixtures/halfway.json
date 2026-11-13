@@ -1,14 +1,49 @@
 {
   "checkpoint": "halfway",
   "anonymousAuth": true,
-  "functionServiceRoles": ["roles/cloudbuild.builds.builder", "roles/datastore.user"],
-  "publicCallables": ["reserve", "cancelReservation"],
+  "functionServiceRoles": [
+    "roles/cloudbuild.builds.builder",
+    "roles/datastore.user"
+  ],
+  "publicCallables": [
+    "reserve",
+    "cancelReservation"
+  ],
   "timeZone": "America/Edmonton",
   "actors": {
-    "host": { "name": "Jordan Lee", "roles": ["ENTRANT", "OWNER"] },
-    "entrant": { "name": "Alex Chen", "roles": ["ENTRANT"] },
-    "other": { "name": "Morgan Park", "roles": ["ENTRANT"] },
-    "admin": { "name": "Taylor Brooks", "roles": ["ADMIN"] }
+    "host": {
+      "name": "Jordan Lee",
+      "roles": [
+        "ENTRANT",
+        "OWNER"
+      ]
+    },
+    "entrant": {
+      "name": "Alex Chen",
+      "roles": [
+        "ENTRANT"
+      ]
+    },
+    "other": {
+      "name": "Morgan Park",
+      "roles": [
+        "ENTRANT"
+      ]
+    },
+    "admin": {
+      "name": "Taylor Brooks",
+      "roles": [
+        "ENTRANT",
+        "OWNER",
+        "ADMIN"
+      ]
+    },
+    "cohost": {
+      "name": "Sam Rivera",
+      "roles": [
+        "OWNER"
+      ]
+    }
   },
   "campsites": [
     {
@@ -21,12 +56,33 @@
       "locationLabel": "Jasper, Alberta",
       "maxGuests": 6,
       "nightlyPriceCents": 6500,
-      "amenities": ["water", "flush-toilets", "picnic-table"],
-      "tags": ["lakeside"],
+      "amenities": [
+        "water",
+        "flush-toilets",
+        "picnic-table"
+      ],
+      "tags": [
+        "lakeside"
+      ],
       "rules": "Quiet hours begin at 10 pm. Keep food secured and leave the clearing clean.",
       "published": true,
       "photo": "photos/jasper.jpg",
-      "offeredDayOffsets": [-10, -9, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+      "offeredDayOffsets": [
+        -10,
+        -9,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25
+      ]
     },
     {
       "id": "halfway-draft",
@@ -38,65 +94,244 @@
       "locationLabel": "Banff, Alberta",
       "maxGuests": 4,
       "nightlyPriceCents": 8000,
-      "amenities": ["picnic-table"],
-      "tags": ["national-parks"],
+      "amenities": [
+        "picnic-table"
+      ],
+      "tags": [
+        "national-parks"
+      ],
       "rules": "Leave the clearing clean.",
       "published": false,
       "offeredDayOffsets": []
+    },
+    {
+      "id": "final-cedar",
+      "owner": "cohost",
+      "name": "Cedar Ridge",
+      "description": "A wooded campsite above the river.",
+      "latitude": 52.88,
+      "longitude": -118.09,
+      "locationLabel": "Jasper, Alberta",
+      "maxGuests": 4,
+      "nightlyPriceCents": 9000,
+      "amenities": [
+        "picnic-table"
+      ],
+      "tags": [
+        "quiet"
+      ],
+      "rules": "Keep the gate closed and pack out rubbish.",
+      "published": true,
+      "offeredDayOffsets": [
+        24,
+        25
+      ]
     }
   ],
   "lotteries": [
     {
       "id": "halfway-open",
       "title": "Riverside live draw",
-      "campsiteId": "halfway-river",
-      "nightOffsets": [14, 15, 16, 17],
       "registrationOpensSeconds": -600,
       "registrationClosesSeconds": 180,
       "bookingOpensSeconds": 180,
       "bookingClosesSeconds": 86400,
       "winnerCount": 1,
-      "outcomes": {}
+      "outcomes": {},
+      "organizer": "host",
+      "participants": [
+        "host"
+      ],
+      "offers": [
+        {
+          "campsiteId": "halfway-river",
+          "nightOffsets": [
+            14,
+            15,
+            16,
+            17
+          ]
+        }
+      ]
     },
     {
       "id": "halfway-won",
       "title": "Your spring escape",
-      "campsiteId": "halfway-river",
-      "nightOffsets": [18, 19, 20, 21],
       "registrationOpensSeconds": -172800,
       "registrationClosesSeconds": -3600,
       "bookingOpensSeconds": -3600,
       "bookingClosesSeconds": 86400,
       "winnerCount": 1,
-      "outcomes": { "entrant": "OFFERED", "other": "LOST" }
+      "outcomes": {
+        "entrant": "OFFERED",
+        "other": "LOST"
+      },
+      "organizer": "host",
+      "participants": [
+        "host"
+      ],
+      "offers": [
+        {
+          "campsiteId": "halfway-river",
+          "nightOffsets": [
+            18,
+            19,
+            20,
+            21
+          ]
+        }
+      ]
     },
     {
       "id": "halfway-booked",
       "title": "Riverside weekend",
-      "campsiteId": "halfway-river",
-      "nightOffsets": [22, 23],
       "registrationOpensSeconds": -259200,
       "registrationClosesSeconds": -172800,
       "bookingOpensSeconds": -172800,
       "bookingClosesSeconds": 86400,
       "winnerCount": 1,
-      "outcomes": { "entrant": "OFFERED" }
+      "outcomes": {
+        "entrant": "OFFERED"
+      },
+      "organizer": "host",
+      "participants": [
+        "host"
+      ],
+      "offers": [
+        {
+          "campsiteId": "halfway-river",
+          "nightOffsets": [
+            22,
+            23
+          ]
+        }
+      ]
     },
     {
       "id": "halfway-past",
       "title": "Early camping break",
-      "campsiteId": "halfway-river",
-      "nightOffsets": [-10, -9],
       "registrationOpensSeconds": -2592000,
       "registrationClosesSeconds": -2505600,
       "bookingOpensSeconds": -2505600,
       "bookingClosesSeconds": -2419200,
       "winnerCount": 1,
-      "outcomes": { "entrant": "OFFERED" }
+      "outcomes": {
+        "entrant": "OFFERED"
+      },
+      "organizer": "host",
+      "participants": [
+        "host"
+      ],
+      "offers": [
+        {
+          "campsiteId": "halfway-river",
+          "nightOffsets": [
+            -10,
+            -9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "final-shared",
+      "title": "River and ridge campsites",
+      "organizer": "host",
+      "participants": [
+        "host",
+        "cohost"
+      ],
+      "offers": [
+        {
+          "campsiteId": "halfway-river",
+          "nightOffsets": [
+            24,
+            25
+          ]
+        },
+        {
+          "campsiteId": "final-cedar",
+          "nightOffsets": [
+            24,
+            25
+          ]
+        }
+      ],
+      "registrationOpensSeconds": -172800,
+      "registrationClosesSeconds": -3600,
+      "bookingOpensSeconds": -3600,
+      "bookingClosesSeconds": 86400,
+      "winnerCount": 1,
+      "outcomes": {
+        "other": "OFFERED",
+        "entrant": "LOST"
+      }
     }
   ],
   "reservations": [
-    { "lotteryId": "halfway-booked", "entrant": "entrant", "checkInDayOffset": 22, "nightCount": 2, "guestCount": 2 },
-    { "lotteryId": "halfway-past", "entrant": "entrant", "checkInDayOffset": -10, "nightCount": 2, "guestCount": 2 }
+    {
+      "lotteryId": "halfway-booked",
+      "entrant": "entrant",
+      "checkInDayOffset": 22,
+      "nightCount": 2,
+      "guestCount": 2,
+      "campsiteId": "halfway-river"
+    },
+    {
+      "lotteryId": "halfway-past",
+      "entrant": "entrant",
+      "checkInDayOffset": -10,
+      "nightCount": 2,
+      "guestCount": 2,
+      "campsiteId": "halfway-river"
+    },
+    {
+      "lotteryId": "final-shared",
+      "campsiteId": "final-cedar",
+      "entrant": "other",
+      "checkInDayOffset": 24,
+      "nightCount": 2,
+      "guestCount": 2
+    }
+  ],
+  "reviews": [
+    {
+      "campsiteId": "halfway-river",
+      "author": "entrant",
+      "rating": 4,
+      "body": null,
+      "createdSeconds": -600
+    },
+    {
+      "campsiteId": "final-cedar",
+      "author": "other",
+      "rating": null,
+      "body": "A peaceful place to stay.",
+      "createdSeconds": -600
+    },
+    {
+      "campsiteId": "halfway-river",
+      "author": "other",
+      "rating": 5,
+      "body": "Good access to the walking trails.",
+      "createdSeconds": -600
+    }
+  ],
+  "messages": [
+    {
+      "id": "final-arrival",
+      "lotteryId": "final-shared",
+      "entrant": "other",
+      "sender": "other",
+      "body": "We will arrive around six.",
+      "createdSeconds": -120
+    },
+    {
+      "id": "final-owner-reply",
+      "lotteryId": "final-shared",
+      "entrant": "other",
+      "sender": "cohost",
+      "body": "The gate will be open for you.",
+      "createdSeconds": -60
+    }
   ]
 }

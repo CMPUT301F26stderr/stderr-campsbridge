@@ -31,7 +31,9 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INVALID_STATE
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.WINDOW_CLOSED
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
+import kotlinx.coroutines.flow.Flow
 import java.security.MessageDigest
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths as Paths
 
@@ -56,6 +58,70 @@ class DemoLotteryRepository(
             },
         ),
 ) : LotteryRepository {
+    /** Observes organized lotteries and collaborations through their saved membership.
+     * @param ownerId Participating owner identity.
+     */
+    override fun observeParticipating(ownerId: String): Flow<List<Lottery>> =
+        store.observe { list("lotteries", LotteryDocument).filter { ownerId in it.participantOwnerIds } }
+
+    /** Changes organizer-managed membership without discarding another owner's allocations.
+     * @param id Editable lottery.
+     * @param ownerId Organizer requesting the change.
+     * @param participantOwnerIds Complete desired membership.
+     */
+    override suspend fun updateParticipants(
+        id: String,
+        ownerId: String,
+        participantOwnerIds: Set<String>,
+    ) {
+        store.change {
+            val current = owned(id, ownerId)
+            requireOperation(editable(current), WINDOW_CLOSED, "Membership is frozen")
+            requireOperation(ownerId in participantOwnerIds, INVALID_STATE, "The organizer must remain a participant")
+            for (added in participantOwnerIds - current.participantOwnerIds) active(added, Role.OWNER)
+            val sites =
+                list("${Paths.lottery(id)}/offers", LotteryOfferDocument).map {
+                    require(Paths.campsite(it.campsiteId), CampsiteDocument)
+                }
+            requireOperation(
+                sites.all { it.ownerId in participantOwnerIds },
+                INVALID_STATE,
+                "Remove the owner's offers first",
+            )
+            if (participantOwnerIds.size > 1 && current.participantOwnerIds.size == 1) {
+                requireOperation(sites.all { it.isPublished }, INACTIVE, "Publish allocated campsites before sharing")
+            }
+            put(Paths.lottery(id), LotteryDocument, current.copy(participantOwnerIds = participantOwnerIds))
+        }
+    }
+
+    /** Commits a participant's whole offer set without changing other owners' work.
+     * @param id Editable lottery.
+     * @param ownerId Acting owner.
+     * @param offers Complete desired allocations.
+     */
+    override suspend fun replaceOwnerOffers(
+        id: String,
+        ownerId: String,
+        offers: List<LotteryOffer>,
+    ) {
+        require(offers.map { it.campsiteId }.distinct().size == offers.size)
+        store.change {
+            val current = participating(id, ownerId)
+            requireOperation(editable(current), WINDOW_CLOSED, "Offers are frozen")
+            offers.forEach { validateOffer(ownerId, it, current.participantOwnerIds.size > 1) }
+            val owned =
+                list("${Paths.lottery(id)}/offers", LotteryOfferDocument).filter {
+                    require(Paths.campsite(it.campsiteId), CampsiteDocument).ownerId == ownerId
+                }
+            if (owned.toSet() == offers.toSet()) return@change
+            val desired = offers.map { it.campsiteId }.toSet()
+            val removed = owned.filter { it.campsiteId !in desired }
+            removed.forEach { raw.remove(Paths.offer(id, it.campsiteId)) }
+            offers.forEach { put(Paths.offer(id, it.campsiteId), LotteryOfferDocument, it) }
+        }
+    }
+
     /** Reads one saved parent.
      * @param id Lottery identity.
      */
@@ -179,8 +245,9 @@ class DemoLotteryRepository(
         offer: LotteryOffer,
     ) {
         store.change {
-            requireOperation(editable(owned(id, ownerId)), WINDOW_CLOSED, "Offers are frozen")
-            validateOffer(ownerId, offer, false)
+            val parent = participating(id, ownerId)
+            requireOperation(editable(parent), WINDOW_CLOSED, "Offers are frozen")
+            validateOffer(ownerId, offer, parent.participantOwnerIds.size > 1)
             put(Paths.offer(id, offer.campsiteId), LotteryOfferDocument, offer)
         }
     }
@@ -196,7 +263,12 @@ class DemoLotteryRepository(
         campsiteId: String,
     ) {
         store.change {
-            requireOperation(editable(owned(id, ownerId)), WINDOW_CLOSED, "Offers are frozen")
+            requireOperation(editable(participating(id, ownerId)), WINDOW_CLOSED, "Offers are frozen")
+            requireOperation(
+                require(Paths.campsite(campsiteId), CampsiteDocument).ownerId == ownerId,
+                NOT_ALLOWED,
+                "Only the campsite owner can remove its allocation",
+            )
             raw.remove(Paths.offer(id, campsiteId))
         }
     }
@@ -218,7 +290,16 @@ class DemoLotteryRepository(
             )
             val allocations = list("${Paths.lottery(id)}/offers", LotteryOfferDocument)
             requireOperation(allocations.isNotEmpty(), INVALID_STATE, "Choose offered nights")
-            allocations.forEach { validateOffer(ownerId, it, true) }
+            allocations.forEach {
+                val site = require(Paths.campsite(it.campsiteId), CampsiteDocument)
+                requireOperation(
+                    site.ownerId in old.participantOwnerIds,
+                    INACTIVE,
+                    "Campsite owner does not participate",
+                )
+                active(site.ownerId, Role.OWNER)
+                validateOffer(site.ownerId, it, true)
+            }
             put(Paths.lottery(id), LotteryDocument, old.copy(publishedAt = old.publishedAt ?: store.clock.instant()))
         }
     }
@@ -345,7 +426,7 @@ class DemoLotteryRepository(
             val actor = active(actorId)
             val old = require(Paths.lottery(id), LotteryDocument)
             requireOperation(
-                old.ownerId == actorId || Role.ADMIN in actor.roles,
+                (actorId in old.participantOwnerIds && Role.OWNER in actor.roles) || Role.ADMIN in actor.roles,
                 NOT_ALLOWED,
                 "Different lottery owner",
             )
@@ -360,15 +441,38 @@ class DemoLotteryRepository(
         }
     }
 
+    /** Records cancellation for a removal job whose authority was already checked.
+     * @param id Affected active lottery.
+     * @param removal First removal attribution retained by local cleanup.
+     */
+    internal suspend fun cancelForRemoval(
+        id: String,
+        removal: Removal,
+    ) {
+        store.change {
+            val current = require(Paths.lottery(id), LotteryDocument)
+            if (current.cancellation == null) {
+                put(
+                    Paths.lottery(id),
+                    LotteryDocument,
+                    current.copy(cancellation = Cancellation(store.clock.instant(), removal.actorId, removal.reason)),
+                )
+            }
+        }
+    }
+
     /** Observes current published allocations for a public listing.
      * @param campsiteId Listing identity.
      */
     override fun observePublishedForCampsite(campsiteId: String) =
         store.observe {
-            list("lotteries", LotteryDocument).filter {
-                it.publishedAt != null && it.cancellation == null &&
-                    get(Paths.offer(it.id, campsiteId), LotteryOfferDocument) != null
-            }
+            val site = get(Paths.campsite(campsiteId), CampsiteDocument)
+            list("lotteries", LotteryDocument)
+                .filter {
+                    site?.isPublished == true && site.ownerId in it.participantOwnerIds &&
+                        it.publishedAt != null && it.cancellation == null &&
+                        get(Paths.offer(it.id, campsiteId), LotteryOfferDocument) != null
+                }.sortedWith(compareBy<Lottery> { it.configuration.registrationOpensAt }.thenBy { it.id })
         }
 
     /** Changes entry and waiting count together.
@@ -436,6 +540,24 @@ class DemoLotteryRepository(
         }
     }
 
+    /** Checks a collaborating owner's authority without granting organizer configuration rights.
+     * @param id Shared lottery identity.
+     * @param ownerId Active participating owner.
+     */
+    private fun DemoDocuments.participating(
+        id: String,
+        ownerId: String,
+    ): Lottery {
+        active(ownerId, Role.OWNER)
+        return require(Paths.lottery(id), LotteryDocument).also {
+            requireOperation(
+                ownerId in it.participantOwnerIds && it.cancellation == null,
+                NOT_ALLOWED,
+                "Not a participating owner",
+            )
+        }
+    }
+
     /** Checks the registration freeze boundary.
      * @param value Saved lottery.
      */
@@ -454,8 +576,9 @@ class DemoLotteryRepository(
         published: Boolean,
     ) {
         val site = require(Paths.campsite(offer.campsiteId), CampsiteDocument)
+        requireOperation(site.ownerId == ownerId, NOT_ALLOWED, "Not the campsite owner")
         requireOperation(
-            site.ownerId == ownerId && site.removal == null && (!published || site.isPublished),
+            site.removal == null && (!published || site.isPublished),
             INACTIVE,
             "Campsite unavailable",
         )

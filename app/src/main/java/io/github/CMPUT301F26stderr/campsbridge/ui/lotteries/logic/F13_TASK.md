@@ -42,7 +42,7 @@ bash ./gradlew :app:testDebugUnitTest :app:pureLogicCoverage
 
 ## App connection
 
-`lotterySetupViewModelFactory` supplies `::validateLotteryWindows` to `LotterySetupViewModel` as `validateWindows`. The ViewModel first requires explicit local date/time fields, converts through the existing site-zone/DST helper and confirms any changed-zone interpretation. Only then does it invoke this four-Instant contract. An explicitly null validator remains available for pending-dependency scenarios; production uses the completed function.
+`lotterySetupViewModelFactory` supplies `::validateLotteryWindows` to `LotterySetupViewModel` as `validateWindows`. The ViewModel requires explicit local date/time fields and converts them through the shared Edmonton display zone, rejecting ambiguous daylight-saving input before invoking this four-Instant contract. An explicitly null validator remains available for pending-dependency scenarios; production uses the completed function.
 
 The coverage gate requires 100% executable source-line/source-branch coverage for this helper. Lottery persistence, publication recovery and participant filtering remain separate responsibilities.
 

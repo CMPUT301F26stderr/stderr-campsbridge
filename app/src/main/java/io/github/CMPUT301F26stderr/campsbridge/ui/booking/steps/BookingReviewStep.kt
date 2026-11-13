@@ -92,7 +92,7 @@ fun BookingReviewStep(
                 },
             )
             if (quote != null) {
-                DetailRow(stringResource(R.string.total), formatCad(quote.totalCents, locale))
+                DetailRow(stringResource(R.string.total), formatCad(quote.totalCents, locale), emphasized = true)
             } else {
                 Text(
                     stringResource(

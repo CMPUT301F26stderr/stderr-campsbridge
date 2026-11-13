@@ -58,7 +58,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.LotteryCa
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationCard
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.YearMonth
-import java.time.ZoneId
 
 /** Realistic feature content without repository construction, derived business rules or writes.
  * @param scroll Caller-retained content scroll position.
@@ -118,7 +117,6 @@ internal fun ContentGallery(
                     stringResource(R.string.gallery_registration_open),
                     formatDateTime(
                         lottery.configuration.registrationClosesAt,
-                        ZoneId.of(site.details.timeZone),
                         locale,
                     ),
                     { onAction(lottery.title) },

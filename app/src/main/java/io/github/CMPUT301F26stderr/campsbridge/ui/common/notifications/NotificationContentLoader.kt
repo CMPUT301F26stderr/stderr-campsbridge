@@ -6,6 +6,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.MessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
@@ -17,11 +18,13 @@ import kotlinx.coroutines.ensureActive
  * @param notifications Immutable event source, never receipt writes.
  * @param lotteries Existing saved lottery reader.
  * @param bookings Existing complete saved reservation reader.
+ * @param messages Saved message reader resolving the actual reservation relationship.
  */
 class NotificationContentLoader(
     private val notifications: NotificationRepository,
     private val lotteries: LotteryRepository,
     private val bookings: BookingRepository,
+    private val messages: MessageRepository,
 ) {
     /** Loads the event first and preserves it through independent subject absence/failure.
      * @param notificationId Actual event identity from a receipt or log entry.
@@ -71,7 +74,19 @@ class NotificationContentLoader(
                 }
 
                 SubjectType.MESSAGE -> {
-                    NotificationSubjectContent.Unsupported
+                    val message = messages.get(subject.id)
+                    currentCoroutineContext().ensureActive()
+                    if (message?.id != subject.id) {
+                        NotificationSubjectContent.Unavailable
+                    } else {
+                        val reservation = bookings.get(message.reservationId)
+                        currentCoroutineContext().ensureActive()
+                        if (reservation?.id == message.reservationId) {
+                            NotificationSubjectContent.MessageContent(message, reservation)
+                        } else {
+                            NotificationSubjectContent.Unavailable
+                        }
+                    }
                 }
             }
         } catch (cancelled: CancellationException) {

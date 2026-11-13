@@ -85,13 +85,14 @@ internal class LotteryCancellation(
                 db.atomic { tx ->
                     val actor = if (authorize) tx.activeAccount(db, actorId) else null
                     val lottery = tx.require(ref(id), LotteryDocument)
-                    val drawStarted = tx.get(db.collection("_draws").document(id)).exists()
                     requireOperation(
-                        !authorize || actorId == lottery.ownerId || Role.ADMIN in actor!!.roles,
+                        !authorize || Role.ADMIN in actor!!.roles ||
+                            (Role.OWNER in actor.roles && actorId in lottery.participantOwnerIds),
                         NOT_ALLOWED,
-                        "Not owner or admin",
+                        "Not a participating owner or admin",
                     )
                     if (lottery.cancellation != null) return@atomic false
+                    val drawStarted = tx.get(db.collection("_draws").document(id)).exists()
                     // Read both the draw marker and lottery so a concurrent draw start conflicts.
                     if (drawStarted && lottery.drawnAt == null) return@atomic true
                     tx.update(

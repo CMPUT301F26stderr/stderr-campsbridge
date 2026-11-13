@@ -251,14 +251,14 @@ private fun IntentPreview() {
     OnboardingPreviewContent(OnboardingStep.INTENT)
 }
 
-/** Shows ordinary name-entry composition independently of the reserved validator. */
+/** Shows name-entry content independently of the injected validator. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 private fun NamePreview() {
     OnboardingPreviewContent(OnboardingStep.NAME)
 }
 
-/** Name input with the explicit reserved implementation boundary. */
+/** Shows name input when this host omits its validator. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 private fun PendingNamePreview() {

@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
+import kotlinx.coroutines.flow.Flow
 import java.time.Clock
 
 /**
@@ -61,6 +62,36 @@ class FirestoreLotteryRepository(
      */
     override fun observeForOwner(ownerId: String) =
         queries.observeForOwner(ownerId)
+
+    /** Observes both organized lotteries and collaborations owned by others.
+     * @param ownerId Participating owner identity.
+     */
+    override fun observeParticipating(ownerId: String): Flow<List<Lottery>> =
+        queries.observeParticipating(ownerId)
+
+    /** Changes organizer-managed membership using the allocation revision guard.
+     * @param id Editable lottery identity.
+     * @param ownerId Organizer requesting the change.
+     * @param participantOwnerIds Complete desired membership.
+     */
+    override suspend fun updateParticipants(
+        id: String,
+        ownerId: String,
+        participantOwnerIds: Set<String>,
+    ) =
+        writes.updateParticipants(id, ownerId, participantOwnerIds)
+
+    /** Replaces only the acting participant's offers in one coordinated transaction.
+     * @param id Editable lottery identity.
+     * @param ownerId Acting owner.
+     * @param offers Complete desired allocations.
+     */
+    override suspend fun replaceOwnerOffers(
+        id: String,
+        ownerId: String,
+        offers: List<LotteryOffer>,
+    ) =
+        writes.replaceOwnerOffers(id, ownerId, offers)
 
     /**
      * Observes the campsite/night allocations belonging to a lottery.

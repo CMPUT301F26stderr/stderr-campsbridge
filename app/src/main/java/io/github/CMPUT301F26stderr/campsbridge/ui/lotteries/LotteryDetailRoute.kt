@@ -63,7 +63,7 @@ fun LotteryDetailRoute(
         }
 
         LotteryDetailSection.SCHEDULE -> {
-            LotteryScheduleScreen(state, onBack, model::retry, model::retryOffers)
+            LotteryScheduleScreen(state, onBack, model::retry)
         }
 
         LotteryDetailSection.CAMPSITES -> {

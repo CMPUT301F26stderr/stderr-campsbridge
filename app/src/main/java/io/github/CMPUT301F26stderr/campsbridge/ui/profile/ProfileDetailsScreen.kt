@@ -23,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.LocalValidationAttempt
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.ImageSlot
@@ -53,6 +54,11 @@ fun ProfileDetailsScreen(
 ) {
     val focusManager = LocalFocusManager.current
     var validationAttempt by remember { mutableIntStateOf(0) }
+    val submit = {
+        validationAttempt++
+        focusManager.clearFocus()
+        onSave()
+    }
     val content = state as? ProfileUiState.Content
     val saving = content?.operation == ProfileOperation.SAVING_NAME
     val canExit =
@@ -71,11 +77,7 @@ fun ProfileDetailsScreen(
                 ActionFooter {
                     AppActionButton(
                         stringResource(R.string.save_name),
-                        {
-                            validationAttempt++
-                            focusManager.clearFocus()
-                            onSave()
-                        },
+                        submit,
                         Modifier.fillMaxWidth(),
                         enabled =
                             content.operation == ProfileOperation.IDLE &&
@@ -114,7 +116,14 @@ fun ProfileDetailsScreen(
                         stringResource(R.string.name_validation_pending),
                     )
                 }
-                if (current.saveFailed) Text(stringResource(R.string.onboarding_save_failure))
+                if (current.saveFailed) {
+                    FailureContent(
+                        stringResource(R.string.onboarding_save_failure),
+                        submit,
+                        retryEnabled =
+                            current.operation == ProfileOperation.IDLE && !current.nameValidationPending && !photoBusy,
+                    )
+                }
             }
         }
     }

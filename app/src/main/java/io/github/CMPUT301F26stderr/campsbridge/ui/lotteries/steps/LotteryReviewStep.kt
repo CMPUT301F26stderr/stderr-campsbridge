@@ -1,5 +1,5 @@
 /*
- * Reviews the single allocation, actual local windows and their explicitly chosen zone.
+ * Reviews the single allocation and its windows in Edmonton time.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
@@ -11,7 +11,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -30,17 +29,15 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowI
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** Reviews the single allocation, actual local windows and their explicitly chosen zone.
+/** Reviews the single allocation and its windows in Edmonton time.
  * @param state Current raw input, derived configuration and validation outcomes.
  * @param onEdit Returns to a named step within this parent.
  * @param enabled Whether input may change while a save owns the parent.
- * @param onConfirmZone Accepts all displayed local times in a changed campsite zone.
  */
 @Composable
 fun LotteryReviewStep(
     state: LotterySetupUiState,
     onEdit: (LotteryStep) -> Unit,
-    onConfirmZone: () -> Unit,
     enabled: Boolean = true,
 ) {
     val draft = state.draft
@@ -76,7 +73,7 @@ fun LotteryReviewStep(
     }
     if (site != null) {
         Text(
-            stringResource(R.string.lottery_schedule_zone, site.details.timeZone),
+            stringResource(R.string.lottery_schedule_zone),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -116,12 +113,6 @@ fun LotteryReviewStep(
             )
         }
         Text(stringResource(R.string.lottery_unlimited))
-    }
-    if (state.errors.zoneConfirmationRequired && site != null) {
-        Text(stringResource(R.string.lottery_zone_review, site.details.timeZone))
-        TextButton(onConfirmZone, enabled = enabled) {
-            Text(stringResource(R.string.lottery_confirm_zone, site.details.timeZone))
-        }
     }
     if (state.errors.windowsPending) Text(stringResource(R.string.lottery_window_pending))
     val windowError =

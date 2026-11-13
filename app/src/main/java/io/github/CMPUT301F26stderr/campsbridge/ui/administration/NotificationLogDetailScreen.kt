@@ -34,7 +34,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneId
 
 /** Displays original event facts independently of linked-record availability.
  * @param state Actual selected identity, immutable facts and common context outcome.
@@ -120,7 +119,6 @@ private fun NotificationEventFacts(event: Notification) {
         stringResource(R.string.log_created),
         formatDateTime(
             event.createdAt,
-            ZoneId.systemDefault(),
             LocalConfiguration.current.locales[0],
         ),
     )

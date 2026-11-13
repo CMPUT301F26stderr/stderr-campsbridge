@@ -100,7 +100,7 @@ fun StaySummary(
                 Text(stringResource(R.string.total), style = MaterialTheme.typography.titleMedium)
                 Text(
                     formatCad(totalCents, locale),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }

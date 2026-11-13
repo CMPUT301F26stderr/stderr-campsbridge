@@ -31,7 +31,7 @@ const campsite = (ownerId = 'owner', published = true) => ({ ownerId, name: 'Cam
   location: new GeoPoint(53, -118), locationLabel: 'Jasper', timeZone: 'America/Edmonton', maxGuests: 8,
   amenities: [], tags: [], nightlyPriceCents: 6500, rules: 'Be kind', createdAt: now(),
   publishedAt: published ? now() : null, removal: null });
-const lottery = state => ({ ownerId: 'owner', title: 'May', description: 'Weekend',
+const lottery = state => ({ ownerId: 'owner', participantOwnerIds: ['owner'], title: 'May', description: 'Weekend',
   registrationOpensAt: offset(-3600), registrationClosesAt: offset(state === 'open' ? 3600 : -60),
   bookingOpensAt: offset(state === 'open' ? 3600 : -60), bookingClosesAt: offset(7200),
   winnerCount: 1, waitlistCapacity: 1, waitingCount: 0, createdAt: offset(-7200),
@@ -219,6 +219,122 @@ test('reviews/replies/reactions are attributed to the authenticated actor', asyn
   await assertSucceeds(setDoc(doc(db('owner'), 'campsites/site/reviews/entrant/replies/reply'), reply));
   await assertFails(setDoc(doc(db('other'), 'campsites/site/reviews/entrant/replies/fake'), reply));
   await assertSucceeds(setDoc(doc(db('other'), 'campsites/site/reviews/entrant/reactions/other'), { type: 'LIKE' }));
+});
+
+test('shared draft reads and allocation writes keep organizer and campsite ownership separate', async () => {
+  await seed({
+    'accounts/owner3': account(['OWNER']), 'campsites/member-site': campsite('owner2'),
+    'lotteries/shared': { ...lottery('open'), publishedAt: null, participantOwnerIds: ['owner', 'owner2'] },
+    'lotteries/shared/offers/site': { campsiteId: 'site', nights: ['2027-05-15'] },
+    'lotteries/shared/offers/member-site': { campsiteId: 'member-site', nights: ['2027-05-16'] },
+    'lotteries/shared/entries/entrant': entry('entrant', 'WAITING'),
+  });
+  await assertSucceeds(getDoc(doc(db('owner2'), 'lotteries/shared')));
+  await assertSucceeds(getDocs(query(collection(db('owner2'), 'lotteries'), where('participantOwnerIds', 'array-contains', 'owner2'))));
+  await assertSucceeds(getDocs(collection(db('owner2'), 'lotteries/shared/entries')));
+  await assertFails(getDoc(doc(db('owner3'), 'lotteries/shared')));
+  const owned = writeBatch(db('owner2'));
+  owned.set(doc(db('owner2'), 'lotteries/shared/offers/member-site'), { campsiteId: 'member-site', nights: ['2027-05-15'] });
+  owned.update(doc(db('owner2'), 'lotteries/shared'), { _revision: 1 });
+  await assertSucceeds(owned.commit());
+  for (const [actor, target] of [['owner2', 'site'], ['owner', 'member-site']]) {
+    const foreign = writeBatch(db(actor));
+    foreign.delete(doc(db(actor), `lotteries/shared/offers/${target}`));
+    foreign.update(doc(db(actor), 'lotteries/shared'), { _revision: 2 });
+    await assertFails(foreign.commit());
+  }
+  await assertFails(updateDoc(doc(db('owner2'), 'lotteries/shared'), { title: 'Changed', _revision: 2 }));
+  await assertFails(updateDoc(doc(db('owner2'), 'lotteries/shared'), { participantOwnerIds: ['owner', 'owner2', 'owner3'], _revision: 2 }));
+  await assertFails(updateDoc(doc(db('owner2'), 'lotteries/shared'), { publishedAt: now(), _revision: 2 }));
+  await assertSucceeds(updateDoc(doc(db('owner'), 'lotteries/shared'), { participantOwnerIds: ['owner', 'owner2', 'owner3'], _revision: 2 }));
+  await seed({ 'lotteries/book': { ...lottery('book'), participantOwnerIds: ['owner', 'owner2'] },
+    'lotteries/book/offers/member-site': { campsiteId: 'member-site', nights: ['2027-05-15', '2027-05-16'] },
+    [`reservations/${reservationId}`]: { ...reservation(), campsiteId: 'member-site' },
+    'campsites/member-site/calendar/2027-05-15': { isOffered: true, reservationId },
+    'campsites/member-site/calendar/2027-05-16': { isOffered: true, reservationId } });
+  await assertSucceeds(getDoc(doc(db('owner2'), `reservations/${reservationId}`)));
+  await assertFails(getDoc(doc(db('owner'), `reservations/${reservationId}`)));
+});
+
+test('shared participants coordinate draw, announcement, receipt delivery and cancellation', async () => {
+  await seed({ 'accounts/owner3': account(['OWNER']),
+    'lotteries/shared': { ...lottery('draw'), participantOwnerIds: ['owner', 'owner2'], waitingCount: 1 },
+    'lotteries/shared/entries/entrant': entry('entrant', 'WAITING') });
+  await assertFails(setDoc(doc(db('owner3'), '_draws/shared'), { seed: '1' }));
+  const invalid = writeBatch(db('owner3'));
+  event(invalid, db('owner3'), 'OWNER_ANNOUNCEMENT', 'LOTTERY', 'shared', ['entrant'], 'owner3', { title: 'Invalid', body: 'No membership' });
+  await assertFails(invalid.commit());
+  const database = db('owner2');
+  await assertSucceeds(setDoc(doc(database, '_draws/shared'), { seed: '1' }));
+  const draw = writeBatch(database);
+  draw.update(doc(database, 'lotteries/shared/entries/entrant'), { state: 'OFFERED', stateChangedAt: now() });
+  draw.update(doc(database, 'lotteries/shared'), { waitingCount: 0 });
+  const result = event(draw, database, 'LOTTERY_WON', 'LOTTERY', 'shared', ['entrant']);
+  await assertSucceeds(draw.commit());
+  await assertSucceeds(updateDoc(doc(database, 'lotteries/shared'), { drawnAt: now() }));
+  await assertSucceeds(setDoc(doc(database, `accounts/entrant/inbox/${result}`), { readAt: null }));
+  await assertSucceeds(deleteDoc(doc(database, `lotteries/shared/_notificationDeliveries/${result}`)));
+  const notice = writeBatch(database);
+  event(notice, database, 'OWNER_ANNOUNCEMENT', 'LOTTERY', 'shared', ['entrant'], 'owner2', { title: 'Access', body: 'Use the east gate' });
+  await assertSucceeds(notice.commit());
+  await assertFails(updateDoc(doc(db('owner3'), 'lotteries/shared'), { cancellation: { at: now(), actorId: 'owner3', reason: null } }));
+  await assertSucceeds(updateDoc(doc(database, 'lotteries/shared'), { cancellation: { at: now(), actorId: 'owner2', reason: null } }));
+});
+
+test('removed participants can finish recorded draw cleanup but cannot start a new draw', async () => {
+  const removal = { at: now(), actorId: 'owner2', reason: 'Leaving' };
+  await seed({ 'accounts/owner2': { ...account([]), name: '', removal },
+    'lotteries/shared': { ...lottery('draw'), participantOwnerIds: ['owner', 'owner2'], waitingCount: 1 },
+    'lotteries/new-draw': { ...lottery('draw'), participantOwnerIds: ['owner', 'owner2'] },
+    'lotteries/shared/entries/entrant': entry('entrant', 'WAITING'), '_draws/shared': { seed: '1' } });
+  const database = db('owner2');
+  await assertSucceeds(getDoc(doc(database, '_draws/shared')));
+  await assertSucceeds(getDocs(collection(database, 'lotteries/shared/entries')));
+  await assertFails(setDoc(doc(database, '_draws/new-draw'), { seed: '2' }));
+  const finish = writeBatch(database);
+  finish.update(doc(database, 'lotteries/shared/entries/entrant'), { state: 'OFFERED', stateChangedAt: now() });
+  finish.update(doc(database, 'lotteries/shared'), { waitingCount: 0 });
+  const result = event(finish, database, 'LOTTERY_WON', 'LOTTERY', 'shared', ['entrant']);
+  await assertSucceeds(finish.commit());
+  await assertSucceeds(updateDoc(doc(database, 'lotteries/shared'), { drawnAt: now() }));
+  await assertSucceeds(setDoc(doc(database, `accounts/entrant/inbox/${result}`), { readAt: null }));
+  await assertSucceeds(deleteDoc(doc(database, `lotteries/shared/_notificationDeliveries/${result}`)));
+  await assertSucceeds(updateDoc(doc(database, 'lotteries/shared'), { cancellation: { at: now(), actorId: 'owner2', reason: 'Leaving' } }));
+});
+
+test('feedback field writes and moderation preserve the other component and retained thread', async () => {
+  const review = { rating: 5, body: 'Quiet setting', createdAt: now(), updatedAt: now() };
+  const path = 'campsites/site/reviews/entrant';
+  await seed({ [path]: review,
+    [`${path}/replies/kept`]: { authorId: 'owner', parentReplyId: null, body: 'Thanks', createdAt: now() },
+    [`${path}/reactions/owner`]: { type: 'LIKE' } });
+  await assertSucceeds(setDoc(doc(db('other'), 'campsites/site/reviews/other'), { ...review, rating: null }));
+  await assertSucceeds(updateDoc(doc(db('entrant'), path), { rating: 4, updatedAt: now() }));
+  await assertFails(updateDoc(doc(db('entrant'), path), { rating: 3, body: 'Both at once', updatedAt: now() }));
+  await assertFails(updateDoc(doc(db('owner'), path), { rating: null, updatedAt: now() }));
+  await assertSucceeds(updateDoc(doc(db('admin'), path), { rating: null, updatedAt: now() }));
+  await assertFails(updateDoc(doc(db('admin'), path), { body: 'Replacement text', updatedAt: now() }));
+  await assertFails(updateDoc(doc(db('admin'), path), { rating: 5, updatedAt: now() }));
+  await assertSucceeds(updateDoc(doc(db('entrant'), path), { body: 'Bring warm clothes', updatedAt: now() }));
+  assert.equal((await getDoc(doc(db('entrant'), path))).data().rating, null);
+  await assertSucceeds(updateDoc(doc(db('admin'), path), { body: null, updatedAt: now() }));
+  await assertSucceeds(getDoc(doc(db('entrant'), `${path}/replies/kept`)));
+  await assertFails(setDoc(doc(db('owner'), `${path}/replies/new`), { authorId: 'owner', parentReplyId: null, body: 'New', createdAt: now() }));
+  await assertFails(setDoc(doc(db('other'), `${path}/reactions/other`), { type: 'LIKE' }));
+  await assertSucceeds(deleteDoc(doc(db('owner'), `${path}/reactions/owner`)));
+  await assertFails(deleteDoc(doc(db('admin'), path)));
+});
+
+test('missing message and event lookups allow absence checks without opening existing records or scans', async () => {
+  assert.equal((await assertSucceeds(getDoc(doc(db('entrant'), 'messages/missing')))).exists(), false);
+  assert.equal((await assertSucceeds(getDoc(doc(db('owner'), 'notifications/missing')))).exists(), false);
+  await seed({ [`reservations/${reservationId}`]: reservation(),
+    'messages/private': { reservationId, senderId: 'owner', body: 'Welcome', createdAt: now(), readAt: null },
+    'notifications/private': { senderId: 'owner', type: 'OWNER_ANNOUNCEMENT', subject: { type: 'LOTTERY', id: 'book' }, announcement: { title: 'Hello', body: 'Welcome' }, createdAt: now() } });
+  await assertFails(getDoc(doc(db('other'), 'messages/private')));
+  await assertFails(getDoc(doc(db('other'), 'notifications/private')));
+  await assertFails(getDocs(collection(db('entrant'), 'messages')));
+  await assertFails(getDocs(collection(db('entrant'), 'notifications')));
 });
 test('removed account cannot write or recreate itself; admin removal scrubs profile', async () => {
   await assertSucceeds(updateDoc(doc(db('admin'), 'accounts/other'), {

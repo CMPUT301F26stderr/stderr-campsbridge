@@ -42,19 +42,19 @@ class LotteryListViewModelTest {
     private val bookings = FakeBookingRepository()
 
     /** Owner lists use only the scoped query and distinguish published records from drafts. */
-    @Test fun ownerCategoriesUseOwnerQueryWithoutEntrantOrGlobalReads() =
+    @Test fun ownerCategoriesUseParticipantQueryWithoutEntrantOrGlobalReads() =
         withModel {
             lotteries.records.value =
                 listOf(
                     base,
                     base.copy(id = "draft", publishedAt = null),
-                    base.copy(id = "other", ownerId = "other"),
+                    base.copy(id = "other", ownerId = "other", participantOwnerIds = setOf("other")),
                 )
             runCurrent()
             assertEquals(listOf("draw"), content(it).items.map { row -> row.lottery.id })
             it.selectCategory(LotteryListCategory.DRAFTS)
             assertEquals(listOf("draft"), content(it).items.map { row -> row.lottery.id })
-            assertEquals(listOf("account-1"), lotteries.ownerRequests)
+            assertEquals(listOf("account-1"), lotteries.participantRequests)
             assertTrue(lotteries.entrantRequests.isEmpty())
             assertTrue(bookings.entrantRequests.isEmpty())
             assertTrue(lotteries.observedRecordIds.isEmpty())
@@ -72,8 +72,8 @@ class LotteryListViewModelTest {
             it.retry()
             runCurrent()
             assertEquals(LotteryListUiState.Content(emptyList()), it.state.value)
-            assertEquals(2, lotteries.ownerRequests.size)
-            assertEquals(1, lotteries.activeOwnerObservers)
+            assertEquals(2, lotteries.participantRequests.size)
+            assertEquals(1, lotteries.activeParticipantObservers)
         }
 
     /** A management filter confirms allocations and retains unknown/failed linked sources. */
@@ -195,7 +195,7 @@ class LotteryListViewModelTest {
             )
             assertEquals(1, bookings.entrantRequests.size)
             assertEquals(listOf("account-1"), lotteries.entrantRequests)
-            assertTrue(lotteries.ownerRequests.isEmpty())
+            assertTrue(lotteries.participantRequests.isEmpty())
             assertTrue(lotteries.events.isEmpty())
         }
 

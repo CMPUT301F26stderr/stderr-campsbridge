@@ -9,15 +9,19 @@ import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CampsiteDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
 import io.github.CMPUT301F26stderr.campsbridge.data.messaging.MessageDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.DeliveryScope
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDeliveries
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INACTIVE
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.EmulatorActor
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.FirebaseEmulatorRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.assertPersistenceFailure
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.documentExists
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.registeredActor
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.seed
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
@@ -25,6 +29,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -41,6 +46,41 @@ import org.robolectric.annotation.LooperMode
 class MessageRepositoryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
 
+    /** Lost acknowledgements reuse the message/event and never recreate a consumed delivery job. */
+    @Test(timeout = 60000)
+    fun retainedMessageRetryPreservesDeliveryAndReadHistory() =
+        runBlocking {
+            val owner = firebase.registeredActor(Role.OWNER)
+            val entrant = firebase.registeredActor(Role.ENTRANT)
+            val reservationId = seedConversation(owner, entrant)
+            val repository = entrant.container.messages
+            assertNull(repository.get("missing-message"))
+            val now = firebase.clock.instant()
+            val id = "retained-message"
+            assertEquals(id, repository.send(id, reservationId, entrant.id, "Arrival at six"))
+            val eventId = DocumentKeys.compound("NEW_MESSAGE", id)
+            val original = checkNotNull(repository.get(id))
+            val event = checkNotNull(entrant.container.notifications.get(eventId))
+            NotificationDeliveries(owner.clients.firestore).resume(DeliveryScope.Reservation(reservationId))
+            firebase.clock.current = now.plusSeconds(30)
+            owner.container.messages.markRead(id, owner.id)
+            owner.container.notifications.markRead(owner.id, eventId)
+            val read = checkNotNull(repository.get(id))
+            val receipt =
+                owner.container.notifications
+                    .getInbox(owner.id)
+                    .single()
+            firebase.clock.current = now.plusSeconds(60)
+            assertEquals(id, repository.send(id, reservationId, entrant.id, original.body))
+            assertEquals(read, repository.get(id))
+            assertEquals(event, entrant.container.notifications.get(eventId))
+            assertEquals(listOf(receipt), owner.container.notifications.getInbox(owner.id))
+            assertFalse(firebase.documentExists("reservations/$reservationId/_notificationDeliveries/$eventId"))
+            assertEquals(listOf(id), repository.observeConversation(reservationId).first().map { it.id })
+            assertPersistenceFailure(CONFLICT) { repository.send(id, reservationId, entrant.id, "Different text") }
+            assertEquals(read, repository.get(id))
+        }
+
     /** Either participant can send; each message queues exactly one alert to the other participant. */
     @Test(timeout = 60000)
     fun sendsAreScopedOrderedAndQueueTheOtherParticipant() =
@@ -50,9 +90,9 @@ class MessageRepositoryTest {
             val admin = firebase.registeredActor(Role.ADMIN)
             val reservationId = seedConversation(owner, entrant)
             val now = firebase.clock.instant()
-            val first = entrant.container.messages.send(reservationId, entrant.id, "Arrival at six")
+            val first = entrant.container.messages.send("message-1", reservationId, entrant.id, "Arrival at six")
             firebase.clock.current = now.plusSeconds(60)
-            val second = owner.container.messages.send(reservationId, owner.id, "See you then")
+            val second = owner.container.messages.send("message-2", reservationId, owner.id, "See you then")
             firebase.seed(
                 "messages/elsewhere",
                 MessageDocument.encode(
@@ -102,7 +142,7 @@ class MessageRepositoryTest {
             val owner = firebase.registeredActor(Role.OWNER)
             val entrant = firebase.registeredActor(Role.ENTRANT)
             val reservationId = seedConversation(owner, entrant)
-            val id = entrant.container.messages.send(reservationId, entrant.id, "Hello")
+            val id = entrant.container.messages.send("message-3", reservationId, entrant.id, "Hello")
             assertPersistenceFailure(
                 NOT_ALLOWED,
             ) { entrant.container.messages.markRead(id, entrant.id) }
@@ -137,7 +177,7 @@ class MessageRepositoryTest {
             val admin = firebase.registeredActor(Role.ADMIN)
             val reservationId = seedConversation(owner, entrant)
             assertPersistenceFailure(NOT_ALLOWED) {
-                admin.container.messages.send(reservationId, admin.id, "Intruder")
+                admin.container.messages.send("message-4", reservationId, admin.id, "Intruder")
             }
             val profile = checkNotNull(admin.container.accounts.get(owner.id))
             firebase.seed(
@@ -147,7 +187,7 @@ class MessageRepositoryTest {
                 ),
             )
             assertPersistenceFailure(INACTIVE) {
-                entrant.container.messages.send(reservationId, entrant.id, "No recipient")
+                entrant.container.messages.send("message-5", reservationId, entrant.id, "No recipient")
             }
             for (collection in listOf(
                 "messages",

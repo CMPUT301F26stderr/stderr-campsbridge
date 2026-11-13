@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import kotlinx.coroutines.flow.map
@@ -40,6 +41,12 @@ class FirestoreMessageRepository(
     private val db: FirebaseFirestore,
     private val clock: Clock,
 ) : MessageRepository {
+    /** Reads saved content from the server without acknowledging it or guessing a conversation.
+     * @param id Retained message identity.
+     */
+    override suspend fun get(id: String): Message? =
+        db.document(FirestorePaths.message(id)).read(MessageDocument)
+
     /**
      * Observes reservation messages in creation order.
      *
@@ -61,22 +68,33 @@ class FirestoreMessageRepository(
         }
 
     /**
-     * Validates two distinct active reservation participants, then atomically stores the
-     * message and queues an alert to the other participant. Returns the message ID.
+     * Saves a retained message once with its alert to the other actual reservation participant.
+     * Matching retries keep the first timestamp and never recreate a consumed delivery job.
      *
+     * @param messageId Caller-retained submission identity.
      * @param reservationId Reservation document ID.
      * @param senderId Account ID sending the message or announcement.
      * @param body Nonblank message or reply text.
      */
     override suspend fun send(
+        messageId: String,
         reservationId: String,
         senderId: String,
         body: String,
     ): String {
         require(body.isNotBlank())
-        val reference = db.collection("messages").document()
+        val reference = db.document(FirestorePaths.message(messageId))
         db.atomic { tx ->
             tx.activeAccount(db, senderId)
+            val existing = tx.read(reference, MessageDocument)
+            if (existing != null) {
+                requireOperation(
+                    existing.reservationId == reservationId && existing.senderId == senderId && existing.body == body,
+                    CONFLICT,
+                    "Message identity already has different content",
+                )
+                return@atomic
+            }
             val reservation =
                 tx.require(
                     db.document(FirestorePaths.reservation(reservationId)),

@@ -68,7 +68,7 @@ class CampsiteDraftSaveFlowTest {
         pressBack()
         compose.onNodeWithText("Step 8 of 8").assertIsDisplayed()
         compose
-            .onNodeWithText(
+            .onNodeWithContentDescription(
                 "Edit Introduce your campsite",
             ).performScrollTo()
             .assertIsNotEnabled()
@@ -169,7 +169,7 @@ class CampsiteDraftSaveFlowTest {
         compose.onNodeWithText("Save draft").performClick()
         compose.onNodeWithText("Cancel").assertIsNotEnabled()
         compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
-        compose.onNodeWithText("Edit Add a photo").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Edit Add a photo").performScrollTo().assertIsNotEnabled()
         compose.onNodeWithText("Retry save").assertIsEnabled()
         compose.runOnIdle { host.images.deleteFailure = null }
         compose.onNodeWithText("Retry save").performClick()
@@ -281,7 +281,7 @@ class CampsiteDraftSaveFlowTest {
         compose.onNodeWithText("Cancel").assertIsNotEnabled()
         compose.onNodeWithContentDescription("Back").assertIsNotEnabled()
         compose
-            .onNodeWithText(
+            .onNodeWithContentDescription(
                 "Edit Introduce your campsite",
             ).performScrollTo()
             .assertIsNotEnabled()
@@ -302,7 +302,7 @@ class CampsiteDraftSaveFlowTest {
         review()
         compose.onNodeWithText("Publish").performClick()
         compose.onNodeWithText("Retry publish").assertIsEnabled()
-        compose.onNodeWithText("Edit Introduce your campsite").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Edit Introduce your campsite").performScrollTo().performClick()
         compose.onNodeWithText("Next").assertIsDisplayed()
         compose.onNodeWithText("Retry publish").assertDoesNotExist()
         compose.onNodeWithText("Campsite name").performTextReplacement("Reviewed River")

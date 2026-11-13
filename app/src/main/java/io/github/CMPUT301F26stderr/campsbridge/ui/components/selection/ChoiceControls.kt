@@ -6,8 +6,6 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -15,12 +13,16 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.LocalNavigationShapes
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** One visible option; stable identity is independent of its localized label.
@@ -49,17 +51,17 @@ fun ChoiceRow(
     supportingText: String? = null,
     enabled: Boolean = true,
 ) {
+    val groupShapes = LocalNavigationShapes.current
     ListItem(
-        headlineContent = { Text(title) },
+        shapes = groupShapes ?: ListItemDefaults.shapes(),
+        colors = if (groupShapes != null) ListItemDefaults.segmentedColors() else ListItemDefaults.colors(),
+        content = { Text(title) },
         supportingContent = supportingText?.let { { Text(it) } },
         trailingContent = { RadioButton(selected, onClick = null, enabled = enabled) },
-        modifier =
-            modifier.selectable(
-                selected = selected,
-                enabled = enabled,
-                role = Role.RadioButton,
-                onClick = onClick,
-            ),
+        selected = selected,
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
     )
 }
 
@@ -80,17 +82,17 @@ fun SwitchRow(
     supportingText: String? = null,
     enabled: Boolean = true,
 ) {
+    val groupShapes = LocalNavigationShapes.current
     ListItem(
-        headlineContent = { Text(title) },
+        shapes = groupShapes ?: ListItemDefaults.shapes(),
+        colors = if (groupShapes != null) ListItemDefaults.segmentedColors() else ListItemDefaults.colors(),
+        content = { Text(title) },
         supportingContent = supportingText?.let { { Text(it) } },
         trailingContent = { Switch(checked, onCheckedChange = null, enabled = enabled) },
-        modifier =
-            modifier.toggleable(
-                value = checked,
-                enabled = enabled,
-                role = Role.Switch,
-                onValueChange = onCheckedChange,
-            ),
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        enabled = enabled,
+        modifier = modifier.semantics { role = Role.Switch },
     )
 }
 
@@ -100,6 +102,7 @@ fun SwitchRow(
  * @param onCheckedChange Requested acceptance.
  * @param modifier Caller layout.
  * @param enabled Whether edits are permitted.
+ * @param supportingText Optional selection or lock explanation.
  */
 @Composable
 fun CheckboxRow(
@@ -108,17 +111,19 @@ fun CheckboxRow(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    supportingText: String? = null,
 ) {
+    val groupShapes = LocalNavigationShapes.current
     ListItem(
-        headlineContent = { Text(title) },
+        shapes = groupShapes ?: ListItemDefaults.shapes(),
+        colors = if (groupShapes != null) ListItemDefaults.segmentedColors() else ListItemDefaults.colors(),
+        content = { Text(title) },
+        supportingContent = supportingText?.let { { Text(it) } },
         leadingContent = { Checkbox(checked, onCheckedChange = null, enabled = enabled) },
-        modifier =
-            modifier.toggleable(
-                value = checked,
-                enabled = enabled,
-                role = Role.Checkbox,
-                onValueChange = onCheckedChange,
-            ),
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        enabled = enabled,
+        modifier = modifier,
     )
 }
 

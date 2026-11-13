@@ -39,7 +39,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppSearchFiel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.DropdownField
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
-import java.time.ZoneId
 
 /** Displays immutable event rows and parent-owned filters without acquiring repositories.
  * @param state Current filters and all-event source outcome.
@@ -138,7 +137,6 @@ private fun NotificationLogRow(
             Text(
                 formatDateTime(
                     event.createdAt,
-                    ZoneId.systemDefault(),
                     LocalConfiguration.current.locales[0],
                 ),
                 style = MaterialTheme.typography.bodySmall,

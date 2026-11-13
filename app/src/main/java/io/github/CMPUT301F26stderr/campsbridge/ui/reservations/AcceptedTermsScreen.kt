@@ -52,7 +52,7 @@ fun AcceptedTermsScreen(
         SummarySection(stringResource(R.string.reservation_acceptance_record)) {
             DetailRow(
                 stringResource(R.string.reservation_accepted_at),
-                reservationTime(record, terms.acceptedAt),
+                reservationTime(terms.acceptedAt),
             )
             DetailRow(
                 stringResource(R.string.reservation_policy_version),

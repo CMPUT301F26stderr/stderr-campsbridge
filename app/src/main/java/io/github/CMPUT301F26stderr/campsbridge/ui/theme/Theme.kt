@@ -5,7 +5,8 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -32,7 +33,7 @@ fun CampsbridgeTheme(
         LocalMinimumInteractiveComponentSize provides
             (48.dp * settings.controlScale.toFloat().coerceAtLeast(1f)),
     ) {
-        MaterialTheme(
+        MaterialExpressiveTheme(
             colorScheme =
                 if (settings.colorMode ==
                     ColorMode.COLOR_BLIND
@@ -43,6 +44,7 @@ fun CampsbridgeTheme(
                 },
             typography = typography,
             shapes = CampsbridgeShapes,
+            motionScheme = MotionScheme.expressive(),
             content = content,
         )
     }

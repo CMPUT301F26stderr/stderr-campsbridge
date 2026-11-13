@@ -19,7 +19,7 @@ internal fun TestAppHost.notificationLogFactory(): () -> ViewModelProvider.Facto
                 notificationLogCreations++
                 NotificationLogViewModel(
                     logNotifications,
-                    NotificationContentLoader(logNotifications, lotteries, bookings),
+                    NotificationContentLoader(logNotifications, lotteries, bookings, messages),
                     createSavedStateHandle(),
                 )
             }

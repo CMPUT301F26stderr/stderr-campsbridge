@@ -32,7 +32,12 @@ class FakeNotificationRepository(
     var getInboxHandler: (suspend (String) -> List<InboxReceipt>)? = null
     var activeInboxObservers = 0
         private set
+    val sentRequests = mutableListOf<String>()
+    var sentHandler: ((String) -> Flow<List<Notification>>)? = null
+    var activeSentObservers = 0
+        private set
     val readRequests = mutableListOf<Pair<String, String>>()
+    var announceHandler: (suspend (String, String, String, Announcement) -> String)? = null
     var markReadHandler: (suspend (String, String) -> Unit)? = null
 
     /** Captures the exact event identity and returns supplied facts, including confirmed absence.
@@ -77,27 +82,39 @@ class FakeNotificationRepository(
             }
         }
 
-    /** Rejects an unconfigured sender history source.
+    /** Observes deliberately supplied sender facts and exposes cancellation of that source.
      * @param senderId Requested sender.
      */
     override fun observeSent(senderId: String): Flow<List<Notification>> =
-        unsupported()
+        flow {
+            sentRequests += senderId
+            activeSentObservers++
+            try {
+                checkNotNull(sentHandler) { "Configure sender history" }(senderId).collect { emit(it) }
+            } finally {
+                activeSentObservers--
+            }
+        }
 
     /** Rejects an unconfigured admin log source. */
     override fun observeAll(): Flow<List<Notification>> =
         unsupported()
 
     /** Rejects an unconfigured announcement mutation.
+     * @param notificationId Caller-retained submission identity.
      * @param lotteryId Target lottery.
      * @param ownerId Requesting owner.
      * @param announcement Supplied content.
      */
     override suspend fun announce(
+        notificationId: String,
         lotteryId: String,
         ownerId: String,
         announcement: Announcement,
     ): String =
-        unsupported()
+        checkNotNull(
+            announceHandler,
+        ) { "Configure announcement submission" }(notificationId, lotteryId, ownerId, announcement)
 
     /** Captures exact acknowledgement arguments and requires an explicit outcome.
      * @param accountId Requesting account.

@@ -1,6 +1,8 @@
 <resources>
     <string name="credits_material_icons">Material icons</string>
-    <string name="credits_material_icons_body">Google. Apache License 2.0.</string>
+    <string name="credits_material_icons_body">Google. Remove and outlined star icons. Apache License 2.0.</string>
+    <string name="credits_qr_models">WeChat QR detector models</string>
+    <string name="credits_qr_models_body">Tencent. Apache License 2.0, with third-party notices.</string>
     <string name="credits_title">Credits and licenses</string>
     <string name="credits_libraries">Library licenses</string>
     <string name="credits_additional_libraries">Additional library notices</string>

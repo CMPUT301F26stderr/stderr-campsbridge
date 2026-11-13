@@ -21,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
@@ -247,6 +248,9 @@ class InboxNavigationTest {
      * acknowledgement.
      */
     @Test fun unsupportedMessageHistoryHasNoClickableTarget() {
+        val reservation = previewReservation().copy(id = "message-stay", entrantId = "account-1")
+        host.bookings.records.value = listOf(reservation)
+        host.messages.records.value = listOf(Message("thread", reservation.id, "owner", "Use the east gate", now))
         val event =
             winner.copy(
                 id = "message",

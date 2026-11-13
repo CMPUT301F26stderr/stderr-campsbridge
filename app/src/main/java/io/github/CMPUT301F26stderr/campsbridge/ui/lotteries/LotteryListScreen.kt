@@ -141,7 +141,7 @@ fun LotteryListScreen(
                         LotteryCard(
                             item.lottery,
                             lotteryLifecycleLabel(item.lifecycle),
-                            lotteryListDeadline(item, context),
+                            lotteryListDeadline(item),
                             { onOpen(item) },
                             supportingContent = {
                                 LotteryRowContext(context, onRetry)
@@ -285,15 +285,11 @@ private fun LotteryRowContext(
     }
 }
 
-/** Formats the task-relevant saved boundary in an explicit zone, without a per-row site query.
+/** Formats the relevant saved deadline in the shared display zone.
  * @param item Confirmed row and controller-derived phase.
- * @param context Actual visible-row campsite facts, or explicitly unresolved context.
  */
 @Composable
-private fun lotteryListDeadline(
-    item: LotteryListItem,
-    context: LotteryOffersState,
-): String {
+private fun lotteryListDeadline(item: LotteryListItem): String {
     val windows = item.lottery.configuration
     val (label, instant) =
         when (item.lifecycle) {
@@ -318,7 +314,7 @@ private fun lotteryListDeadline(
         }
     return stringResource(
         label,
-        formatDateTime(instant, lotteryDisplayZone(context), LocalConfiguration.current.locales[0]),
+        formatDateTime(instant, LocalConfiguration.current.locales[0]),
     )
 }
 

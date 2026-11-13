@@ -1,0 +1,58 @@
+[
+  {
+    "seed": "0",
+    "accountIds": [
+      "alex",
+      "雪",
+      "river:one",
+      "owner😀"
+    ],
+    "winnerCount": "2",
+    "winners": [
+      "river:one",
+      "雪"
+    ]
+  },
+  {
+    "seed": "-9223372036854775808",
+    "accountIds": [
+      "a",
+      "b",
+      "c"
+    ],
+    "winnerCount": "1",
+    "winners": [
+      "b"
+    ]
+  },
+  {
+    "seed": "9223372036854775807",
+    "accountIds": [
+      "one",
+      "two"
+    ],
+    "winnerCount": "9223372036854775807",
+    "winners": [
+      "two",
+      "one"
+    ]
+  },
+  {
+    "seed": "17",
+    "accountIds": [
+      "a",
+      "b",
+      "c"
+    ],
+    "winnerCount": "1",
+    "winners": [
+      "b"
+    ]
+  },
+  {
+    "seed": "17",
+    "accountIds": [],
+    "winnerCount": "1",
+    "winners": []
+  }
+]

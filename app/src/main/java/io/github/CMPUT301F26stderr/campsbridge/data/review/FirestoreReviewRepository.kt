@@ -18,6 +18,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReactionType
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Reply
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReviewRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.INACTIVE
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import kotlinx.coroutines.flow.map
@@ -71,22 +72,42 @@ class FirestoreReviewRepository(
             .collection("${FirestorePaths.review(campsiteId, authorId)}/reactions")
             .observe(ReactionDocument)
 
-    /**
-     * Creates or updates the entrant’s rating on a published campsite while retaining the
-     * first creation time.
-     *
-     * @param campsiteId Campsite document ID.
-     * @param authorId Account ID identifying the review author.
-     * @param rating Integer star rating from 1 to 5.
-     * @param body Optional review text; null supports rating-only feedback.
+    /** Updates only stars, preserving written feedback and the first creation time.
+     * @param campsiteId Feedback campsite.
+     * @param authorId Submitting entrant.
+     * @param rating Requested stars.
      */
-    override suspend fun rate(
+    override suspend fun setRating(
         campsiteId: String,
         authorId: String,
         rating: Long,
-        body: String?,
     ) {
         require(rating in 1..5)
+        edit(campsiteId, authorId) { current -> current.copy(rating = rating) }
+    }
+
+    /** Updates only written feedback; blank input clears it without restoring moderated stars.
+     * @param campsiteId Feedback campsite.
+     * @param authorId Submitting entrant.
+     * @param body Requested text, or null to clear it.
+     */
+    override suspend fun setReviewText(
+        campsiteId: String,
+        authorId: String,
+        body: String?,
+    ) =
+        edit(campsiteId, authorId) { current -> current.copy(body = body?.takeIf { it.isNotBlank() }) }
+
+    /** Applies an author's field change against current content in the owning transaction.
+     * @param campsiteId Published feedback campsite.
+     * @param authorId Active entrant whose slot is changed.
+     * @param change Pure component edit; the transaction retains creation time and assigns update time.
+     */
+    private suspend fun edit(
+        campsiteId: String,
+        authorId: String,
+        change: (Review) -> Review,
+    ) {
         db.atomic { tx ->
             tx.activeAccount(db, authorId, Role.ENTRANT)
             val campsite =
@@ -95,26 +116,18 @@ class FirestoreReviewRepository(
             val ref = db.document(FirestorePaths.review(campsiteId, authorId))
             val old = tx.read(ref, ReviewDocument)
             val now = clock.instant()
-            tx.set(
-                ref,
-                ReviewDocument.encode(
-                    Review(
-                        campsiteId,
-                        authorId,
-                        rating,
-                        body?.takeIf { it.isNotBlank() },
-                        old?.createdAt ?: now,
-                        now,
-                    ),
-                ),
-            )
+            val current = old ?: Review(campsiteId, authorId, null, null, now, now)
+            val changed = change(current)
+            if (changed.rating == current.rating && changed.body == current.body) return@atomic
+            tx.set(ref, ReviewDocument.encode(changed.copy(updatedAt = now)))
         }
     }
 
     /**
-     * Appends a nonblank reply, validating any parent belongs to the same review; returns
-     * its ID.
+     * Saves a nonblank reply once, validating that any parent belongs to the same review.
+     * Matching retries retain the first timestamp; a different retained-ID payload conflicts.
      *
+     * @param replyId Caller-retained submission identity.
      * @param campsiteId Campsite document ID.
      * @param authorId Account ID identifying the review author.
      * @param senderId Account ID sending the message or announcement.
@@ -123,6 +136,7 @@ class FirestoreReviewRepository(
      * @param body Nonblank message or reply text.
      */
     override suspend fun reply(
+        replyId: String,
         campsiteId: String,
         authorId: String,
         senderId: String,
@@ -130,10 +144,20 @@ class FirestoreReviewRepository(
         body: String,
     ): String {
         require(body.isNotBlank())
-        val ref = db.collection("${FirestorePaths.review(campsiteId, authorId)}/replies").document()
+        val ref = db.document(FirestorePaths.reply(campsiteId, authorId, replyId))
         db.atomic { tx ->
             tx.activeAccount(db, senderId)
-            tx.require(db.document(FirestorePaths.review(campsiteId, authorId)), ReviewDocument)
+            val existing = tx.read(ref, ReplyDocument)
+            if (existing != null) {
+                requireOperation(
+                    existing.authorId == senderId && existing.parentReplyId == parentReplyId && existing.body == body,
+                    CONFLICT,
+                    "Reply identity already has different content",
+                )
+                return@atomic
+            }
+            val review = tx.require(db.document(FirestorePaths.review(campsiteId, authorId)), ReviewDocument)
+            requireOperation(review.rating != null || review.body != null, INACTIVE, "Feedback is empty")
             if (parentReplyId != null) {
                 tx.require(
                     db.document(FirestorePaths.reply(campsiteId, authorId, parentReplyId)),
@@ -164,11 +188,12 @@ class FirestoreReviewRepository(
     ) {
         db.atomic { tx ->
             tx.activeAccount(db, reactorId)
-            tx.require(db.document(FirestorePaths.review(campsiteId, authorId)), ReviewDocument)
+            val review = tx.require(db.document(FirestorePaths.review(campsiteId, authorId)), ReviewDocument)
             val ref = db.document(FirestorePaths.reaction(campsiteId, authorId, reactorId))
             if (reaction == null) {
                 tx.delete(ref)
             } else {
+                requireOperation(review.rating != null || review.body != null, INACTIVE, "Feedback is empty")
                 tx.set(ref, ReactionDocument.encode(Reaction(reactorId, reaction)))
             }
         }

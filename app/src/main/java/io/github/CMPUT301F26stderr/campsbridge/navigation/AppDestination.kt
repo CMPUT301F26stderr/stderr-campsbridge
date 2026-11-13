@@ -17,9 +17,79 @@ import java.util.Locale
 
 /** Registered destinations only; add feature routes when their implementations exist. */
 object AppDestination {
+    const val ANNOUNCEMENT_COMPOSE = "owner/lotteries/{lotteryId}/announcement"
+
+    /** Opens one participant's announcement form for its saved audience source.
+     * @param lotteryId Original saved lottery identity.
+     */
+    fun announcement(lotteryId: String): String =
+        ANNOUNCEMENT_COMPOSE.replace("{lotteryId}", Uri.encode(lotteryId))
+
+    /** Keeps a participant child within its caller's workspace navigation.
+     * @param context Presentation derived from the saved relationship.
+     */
+    fun conversationPattern(context: ReservationContext): String =
+        "${context.name.lowercase(Locale.ROOT)}/conversations/{reservationId}"
+
+    /** Opens a saved participant conversation without copying message or stay facts.
+     * @param reservationId Original saved reservation identity.
+     * @param context Presentation derived from the saved relationship.
+     */
+    fun conversation(
+        reservationId: String,
+        context: ReservationContext,
+    ): String =
+        conversationPattern(context).replace("{reservationId}", Uri.encode(reservationId))
+
     const val AVAILABILITY_EDITOR = "owner/campsites/{campsiteId}/availability/edit"
+    const val CAMPSITE_EDIT = "owner/campsites/{campsiteId}/edit"
+
+    /** Opens the loaded owner's QR child using only its saved identity.
+     * @param campsiteId Actual published campsite identity.
+     */
+    fun campsiteQr(campsiteId: String): String =
+        campsiteGraph(Role.OWNER, campsiteId, CampsiteDetailContext.MANAGE) + "/qr"
+
+    const val LOTTERY_OWNERS = "owner/lotteries/{lotteryId}/owners"
+
+    /** Opens saved membership without copying profile or allocation records into navigation.
+     * @param lotteryId Existing saved lottery identity.
+     */
+    fun lotteryOwners(lotteryId: String): String =
+        "owner/lotteries/${Uri.encode(lotteryId)}/owners"
+
+    const val LOTTERY_ALLOCATIONS_EDIT = "owner/lotteries/{lotteryId}/allocations/edit"
+
+    /** Opens the acting owner's complete-set editor for an existing lottery.
+     * @param lotteryId Confirmed saved lottery identity.
+     */
+    fun lotteryAllocationsEdit(lotteryId: String): String =
+        "owner/lotteries/${Uri.encode(lotteryId)}/allocations/edit"
+
+    const val LOTTERY_DETAILS_EDIT = "owner/lotteries/{lotteryId}/details/edit"
+
+    /** Opens organizer details without copying configuration into navigation arguments.
+     * @param lotteryId Existing saved identity.
+     */
+    fun lotteryDetailsEdit(lotteryId: String): String =
+        "owner/lotteries/${Uri.encode(lotteryId)}/details/edit"
+
+    /** Opens a saved details parent using only its existing listing identity.
+     * @param campsiteId Existing published listing ID.
+     */
+    fun campsiteEditGraph(campsiteId: String): String =
+        "owner/campsites/${Uri.encode(campsiteId)}/edit"
+
     const val ADMIN_BROWSE = "admin/browse"
     const val ADMIN_LOGS = "admin/logs"
+    const val ADMIN_MESSAGE = "admin/logs/messages/{messageId}"
+
+    /** Addresses one saved message without using its notification event identity.
+     * @param id Original message ID, encoded as one route argument.
+     */
+    fun adminMessage(id: String): String =
+        "admin/logs/messages/${Uri.encode(id)}"
+
     const val ADMIN_NOTIFICATION = "admin/logs/events/{notificationId}"
     const val ADMIN_NOTIFICATION_AUDIENCE = "admin/logs/events/{notificationId}/audience"
 
@@ -157,6 +227,24 @@ object AppDestination {
         section: LotteryDetailSection,
     ): String =
         "${lotteryDetail(lotteryId, context)}/${section.routeKey}"
+
+    /** Opens feedback under the caller's actual saved campsite reader.
+     * @param workspace Owning workspace.
+     * @param campsiteId Saved campsite identity.
+     * @param context Actual saved-reader presentation.
+     */
+    fun campsiteReviews(
+        workspace: Role,
+        campsiteId: String,
+        context: CampsiteDetailContext,
+    ): String =
+        "${campsiteGraph(workspace, campsiteId, context)}/reviews"
+
+    /** Opens saved campsite choices for an entrant's existing win.
+     * @param lotteryId Saved lottery identity.
+     */
+    fun lotteryCampsiteChoice(lotteryId: String): String =
+        "${lotteryDetail(lotteryId, LotteryContext.ENTRANT)}/choose-campsite"
 
     /** Opens the owner participant child under its actual saved parent.
      * @param lotteryId Saved parent identity.

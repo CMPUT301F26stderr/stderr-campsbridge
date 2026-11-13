@@ -68,10 +68,9 @@ class LotterySetupViewModelTest {
     }
 
     /**
-     * Unselected native dates and allocation initialize from the site zone at a UTC month
-     * boundary.
+     * Unselected native dates and allocation use the shared Edmonton display zone.
      */
-    @Test fun initialCalendarMonthUsesTheCampsiteZone() =
+    @Test fun initialCalendarMonthUsesTheDisplayZone() =
         runTest {
             val boundary = Clock.fixed(Instant.parse("2027-05-01T00:30:00Z"), ZoneOffset.UTC)
             val model =
@@ -83,7 +82,7 @@ class LotterySetupViewModelTest {
                     SavedStateHandle(),
                 ).also { store.put("lottery", it) }
             runCurrent()
-            assertNull(model.currentScheduleMonth())
+            assertEquals(YearMonth.of(2027, 4), model.currentScheduleMonth())
             toSite(model)
             model.chooseCampsite(a.id)
             assertEquals(YearMonth.of(2027, 4), model.currentScheduleMonth())
@@ -435,10 +434,9 @@ class LotterySetupViewModelTest {
         }
 
     /**
-     * Changing sites clears old nights and requires accepting existing local times in a
-     * changed zone.
+     * Changing sites clears old nights without changing the shared display-zone interpretation.
      */
-    @Test fun changedSiteRequiresAnExplicitScheduleZoneReview() =
+    @Test fun changedSiteKeepsTheDisplayZoneInterpretation() =
         runTest {
             val model = model()
             toReview(model)
@@ -453,12 +451,8 @@ class LotterySetupViewModelTest {
             allocate(model)
             model.next()
             assertEquals(LotteryStep.REVIEW, model.state.value.draft.step)
-            assertTrue(model.state.value.errors.zoneConfirmationRequired)
-            assertNull(model.state.value.configuration)
-            model.confirmScheduleZone()
-            assertFalse(model.state.value.errors.zoneConfirmationRequired)
             assertEquals(
-                Instant.parse("2027-05-05T16:00:00Z"),
+                Instant.parse("2027-05-05T15:00:00Z"),
                 model.state.value.configuration!!
                     .registrationOpensAt,
             )

@@ -8,6 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.WorkSession
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationAlert
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPublisher
@@ -167,6 +168,7 @@ class NotificationAlertCoordinator(
                     val account = latestAccount.filterNotNull().first()
                     currentCoroutineContext().ensureActive()
                     if (loaded.subject != NotificationSubjectContent.Unsupported &&
+                        loaded.notification.subject.type != SubjectType.MESSAGE &&
                         account.settings.notificationsEnabled && permission.status().canPost
                     ) {
                         val text = textFor(loaded)

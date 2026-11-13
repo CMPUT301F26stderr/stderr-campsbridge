@@ -1,0 +1,18 @@
+<resources>
+    <string name="message_log_search">Search</string>
+    <string name="message_log_notifications_tab">Notifications</string>
+    <string name="message_log_messages_tab">Messages</string>
+    <string name="message_log_failed">Could not load message logs.</string>
+    <string name="message_log_empty">No matching messages.</string>
+    <string name="message_log_recipient_unavailable">Recipient unavailable</string>
+    <string name="message_log_owner_direction">Owner to camper</string>
+    <string name="message_log_entrant_direction">Camper to owner</string>
+    <string name="message_log_direction_unavailable">Participant context unavailable</string>
+    <string name="message_log_reservation">Reservation %1$s</string>
+    <string name="message_log_dates">%1$s to %2$s</string>
+    <string name="message_log_context_loading">Loading stay and participant details…</string>
+    <string name="message_log_context_failed">Some stay or participant details could not be loaded. The saved message is still available.</string>
+    <string name="message_log_details">Message details</string>
+    <string name="message_log_identity">Message %1$s</string>
+    <string name="message_log_unavailable">This saved message is unavailable.</string>
+</resources>

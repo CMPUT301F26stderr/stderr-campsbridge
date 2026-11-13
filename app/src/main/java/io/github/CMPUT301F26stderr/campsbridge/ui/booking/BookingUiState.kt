@@ -10,6 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.navigation.StepNavigation
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -44,7 +45,7 @@ sealed interface BookingStepError {
         val reason: PositiveCountInput.Error,
     ) : BookingStepError
 
-    /** The reserved eligibility function is unavailable. */
+    /** This host omitted the eligibility helper. */
     data object EligibilityPending : BookingStepError
 
     /** Required selected inventory is loading or failed, rather than known unavailable. */
@@ -101,6 +102,7 @@ sealed interface BookingUiState {
      * @param canConfirm Current validated review/terms/amount permits an explicit attempt.
      * @param isCheckingReservation A background consumption check is still pending.
      * @param reservationCheckFailed The last background check failed; retry before confirming.
+     * @param stepNavigation Action that entered the current form step.
      */
     data class Content(
         val lottery: Lottery,
@@ -120,5 +122,6 @@ sealed interface BookingUiState {
         val canConfirm: Boolean = false,
         val isCheckingReservation: Boolean = false,
         val reservationCheckFailed: Boolean = false,
+        val stepNavigation: StepNavigation = StepNavigation.FORWARD,
     ) : BookingUiState
 }

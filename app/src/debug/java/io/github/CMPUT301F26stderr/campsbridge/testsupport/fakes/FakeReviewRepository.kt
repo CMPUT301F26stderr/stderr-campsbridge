@@ -20,6 +20,8 @@ class FakeReviewRepository : ReviewRepository {
     val records = mutableMapOf<String, MutableStateFlow<List<Review>>>()
     val failures = mutableMapOf<String, MutableStateFlow<Exception?>>()
     val observedIds = mutableListOf<String>()
+    var setRatingHandler: (suspend (String, String, Long) -> Unit)? = null
+    var setReviewTextHandler: (suspend (String, String, String?) -> Unit)? = null
     var activeObservers = 0
 
     /** Returns the controlled per-listing review stream.
@@ -73,22 +75,34 @@ class FakeReviewRepository : ReviewRepository {
     ): Flow<List<Reaction>> =
         error("Reaction reads are not configured")
 
-    /** Rejects unconfigured review writes.
-     * @param campsiteId Listing identity.
-     * @param authorId Review author.
-     * @param rating Supplied stars.
-     * @param body Optional text.
+    /** Delegates a star edit to an explicitly configured test outcome.
+     * @param campsiteId Feedback campsite.
+     * @param authorId Submitting entrant.
+     * @param rating Requested stars.
      */
-    override suspend fun rate(
+    override suspend fun setRating(
         campsiteId: String,
         authorId: String,
         rating: Long,
+    ) {
+        checkNotNull(setRatingHandler) { "Rating writes are not configured" }(campsiteId, authorId, rating)
+    }
+
+    /** Delegates a written edit without inventing a successful save.
+     * @param campsiteId Feedback campsite.
+     * @param authorId Submitting entrant.
+     * @param body Requested text.
+     */
+    override suspend fun setReviewText(
+        campsiteId: String,
+        authorId: String,
         body: String?,
     ) {
-        error("Review writes are not configured")
+        checkNotNull(setReviewTextHandler) { "Text writes are not configured" }(campsiteId, authorId, body)
     }
 
     /** Rejects unconfigured replies.
+     * @param replyId Caller-retained submission identity.
      * @param campsiteId Listing identity.
      * @param authorId Review author.
      * @param senderId Reply author.
@@ -96,6 +110,7 @@ class FakeReviewRepository : ReviewRepository {
      * @param body Reply text.
      */
     override suspend fun reply(
+        replyId: String,
         campsiteId: String,
         authorId: String,
         senderId: String,

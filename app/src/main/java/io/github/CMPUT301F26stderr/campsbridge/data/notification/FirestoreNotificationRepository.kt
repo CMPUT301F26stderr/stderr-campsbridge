@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationR
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import kotlinx.coroutines.flow.map
@@ -88,35 +89,56 @@ class FirestoreNotificationRepository(
         }
 
     /**
-     * Captures joined, nonwithdrawn entrants, including draw outcomes, and queues an owner
-     * announcement. Returns the event ID; inbox fan-out resumes separately.
+     * Captures joined entrants once for a participating owner's retained event ID.
+     * Matching retries preserve audience, timestamps and completed delivery work.
      *
+     * @param notificationId Caller-retained submission identity.
      * @param lotteryId Lottery document ID.
      * @param ownerId Account ID of the campsite or lottery owner.
      * @param announcement Owner-supplied announcement content.
      */
     override suspend fun announce(
+        notificationId: String,
         lotteryId: String,
         ownerId: String,
         announcement: Announcement,
     ): String {
+        val reference = db.document(FirestorePaths.notification(notificationId))
+        val saved =
+            db.atomic { tx ->
+                tx.activeAccount(db, ownerId, Role.OWNER)
+                val existing = tx.read(reference, NotificationDocument)
+                if (existing != null) {
+                    requireSameAnnouncement(existing, lotteryId, ownerId, announcement)
+                    true
+                } else {
+                    val lottery = tx.require(db.document(FirestorePaths.lottery(lotteryId)), LotteryDocument)
+                    requireOperation(ownerId in lottery.participantOwnerIds, NOT_ALLOWED, "Not a participating owner")
+                    false
+                }
+            }
+        if (saved) return notificationId
         val recipients =
             db
                 .collection("${FirestorePaths.lottery(lotteryId)}/entries")
                 .read(LotteryEntryDocument)
                 .filter { it.state != EntryState.WITHDRAWN }
                 .map { it.accountId }
-        val id = db.collection("notifications").document().id
         db.atomic { tx ->
             tx.activeAccount(db, ownerId, Role.OWNER)
+            val existing = tx.read(reference, NotificationDocument)
+            if (existing != null) {
+                requireSameAnnouncement(existing, lotteryId, ownerId, announcement)
+                return@atomic
+            }
             val lottery =
                 tx.require(db.document(FirestorePaths.lottery(lotteryId)), LotteryDocument)
-            requireOperation(lottery.ownerId == ownerId, NOT_ALLOWED, "Different lottery owner")
+            requireOperation(ownerId in lottery.participantOwnerIds, NOT_ALLOWED, "Not a participating owner")
             NotificationWrites.enqueue(
                 db,
                 tx,
                 Notification(
-                    id,
+                    notificationId,
                     ownerId,
                     NotificationType.OWNER_ANNOUNCEMENT,
                     NotificationSubject(SubjectType.LOTTERY, lotteryId),
@@ -127,7 +149,28 @@ class FirestoreNotificationRepository(
                 scope = DeliveryScope.Lottery(lotteryId),
             )
         }
-        return id
+        return notificationId
+    }
+
+    /** Recognizes an immutable submission without comparing retry-time timestamps or audience.
+     * @param existing Previously committed event.
+     * @param lotteryId Requested audience's lottery.
+     * @param ownerId Original sender identity.
+     * @param announcement Retained title and body.
+     */
+    private fun requireSameAnnouncement(
+        existing: Notification,
+        lotteryId: String,
+        ownerId: String,
+        announcement: Announcement,
+    ) {
+        requireOperation(
+            existing.type == NotificationType.OWNER_ANNOUNCEMENT && existing.senderId == ownerId &&
+                existing.subject == NotificationSubject(SubjectType.LOTTERY, lotteryId) &&
+                existing.announcement == announcement,
+            CONFLICT,
+            "Announcement identity already has different content",
+        )
     }
 
     /**

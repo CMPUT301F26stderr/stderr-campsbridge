@@ -44,13 +44,18 @@ def main():
     report_dir.mkdir(parents=True, exist_ok=True)
     rules_log = report_dir / "rules.log"
     integration_log = report_dir / "integration.log"
+    worker_log = report_dir / "worker.log"
     # Remove only this runner's prior evidence so failed rules never expose an old integration log.
     integration_log.unlink(missing_ok=True)
+    worker_log.unlink(missing_ok=True)
     hub = os.environ["FIREBASE_EMULATOR_HUB"]
     with urlopen(f"http://{hub}/emulators", timeout=10) as response:
         functions = json.load(response)["functions"]
     os.environ["FUNCTIONS_EMULATOR_HOST"] = f"{functions['host']}:{functions['port']}"
     result = run_logged(["npm", "--prefix", "firebase/tooling", "test"], rules_log)
+    if result == 0:
+        os.environ["GCLOUD_PROJECT"] = "demo-stderr"
+        result = run_logged(["npm", "--prefix", "firebase/functions", "run", "test:worker"], worker_log)
     if result == 0:
         result = run_logged(
             ["bash", "./gradlew", "--no-daemon", ":app:firebaseIntegrationTest", "--console=plain"],
@@ -61,7 +66,7 @@ def main():
     server_log = Path("firestore-debug.log")
     if server_log.is_file():
         (report_dir / "firestore.log").write_bytes(server_log.read_bytes())
-    logs = [rules_log, integration_log, server_log]
+    logs = [rules_log, worker_log, integration_log, server_log]
     if any("maximum of 1000 expressions" in path.read_text(errors="replace")
            for path in logs if path.is_file()):
         print("Rules exhausted the expression budget; a denied request is not sufficient evidence.", file=sys.stderr)

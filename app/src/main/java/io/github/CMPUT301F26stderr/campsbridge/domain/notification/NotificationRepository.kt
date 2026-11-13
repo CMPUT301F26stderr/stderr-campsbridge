@@ -55,11 +55,13 @@ interface NotificationRepository {
     /**
      * Captures all entrants who joined and have not withdrawn, including after a draw.
      *
+     * @param notificationId Caller-retained submission identity.
      * @param lotteryId Lottery document ID.
      * @param ownerId Account ID of the campsite or lottery owner.
      * @param announcement Owner-supplied announcement content.
      */
     suspend fun announce(
+        notificationId: String,
         lotteryId: String,
         ownerId: String,
         announcement: Announcement,

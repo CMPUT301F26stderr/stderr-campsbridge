@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
  * @param campsites Listing read dependency.
  * @param images Attachment dependency.
  * @param savedState Small tab restoration state.
- * @param sortCampsites Reserved F11 helper; absent until reviewed.
+ * @param sortCampsites F11 ordering helper; production supplies the completed implementation.
  */
 class CampsiteListViewModel(
     private val ownerId: String,
@@ -100,7 +100,7 @@ class CampsiteListViewModel(
             }
     }
 
-    /** Assembles rows without replacing the reserved ordering implementation. */
+    /** Assembles rows using the injected ordering helper. */
     private fun publish() {
         val rows =
             records?.filter {

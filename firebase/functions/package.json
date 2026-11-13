@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "seed": "node seed-halfway.js",
-    "test:seed": "node --test seed-halfway.test.js"
+    "test:seed": "node --test seed-halfway.test.js",
+    "test:draw-order": "node --test draw-order.test.js",
+    "test:worker": "node --test pending-work.test.js"
   },
   "engines": {
     "node": ">=22"

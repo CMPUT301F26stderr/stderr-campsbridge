@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -40,9 +41,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.DropdownF
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 /** Connects the actual child to its saved parent's read lifetime and retained filter.
  * @param model Existing saved-detail graph owner.
@@ -235,11 +233,7 @@ fun ParticipantListScreen(
  */
 @Composable
 private fun ParticipantRowContent(row: ParticipantRow) {
-    val format =
-        DateTimeFormatter
-            .ofLocalizedDateTime(FormatStyle.SHORT)
-            .withLocale(LocalConfiguration.current.locales[0])
-            .withZone(ZoneId.systemDefault())
+    val locale = LocalConfiguration.current.locales[0]
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         Text(
             when (val name = row.name) {
@@ -273,7 +267,7 @@ private fun ParticipantRowContent(row: ParticipantRow) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                stringResource(R.string.lottery_participant_joined, format.format(row.joinedAt)),
+                stringResource(R.string.lottery_participant_joined, formatDateTime(row.joinedAt, locale)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

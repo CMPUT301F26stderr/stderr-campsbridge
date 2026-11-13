@@ -10,18 +10,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.CountStepper
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
@@ -41,6 +48,33 @@ import org.junit.Test
 /** Contracts for controlled shared components and their accessibility actions. */
 class SharedControlsTest {
     @get:Rule val compose = createComposeRule()
+
+    /** Pending feedback keeps an action's bounds stable and prevents duplicate submission. */
+    @Test fun submittingButtonKeepsItsSizeAndBlocksRepeatTaps() {
+        val pending = mutableStateOf(false)
+        var submissions = 0
+        compose.setContent {
+            CampsbridgeTheme {
+                AppActionButton(
+                    "Save",
+                    {
+                        submissions++
+                        pending.value = true
+                    },
+                    Modifier.testTag("stable-action"),
+                    isSubmitting = pending.value,
+                )
+            }
+        }
+        val action = compose.onNodeWithTag("stable-action")
+        val before = action.fetchSemanticsNode().boundsInRoot
+        action.performClick().assertIsNotEnabled().performClick()
+        val after = action.fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle {
+            assertEquals(before, after)
+            assertEquals(1, submissions)
+        }
+    }
 
     /** Temporarily disabling a form closes its dropdown without reopening it on completion. */
     @Test fun disablingDropdownClearsExpandedState() {
@@ -146,7 +180,7 @@ class SharedControlsTest {
         compose.onNodeWithText("Water").assertIsSelected()
     }
 
-    /** Each full-row control forwards one event rather than firing both row and child actions. */
+    /** SC-02: row/checkbox taps emit one action; disabled selection keeps its explanation. */
     @Test fun selectionRowsHaveSingleActions() {
         var choice = 0
         var toggle = 0
@@ -156,17 +190,37 @@ class SharedControlsTest {
                 Column {
                     ChoiceRow("Owner", false, { choice++ })
                     SwitchRow("Notifications", false, { toggle++ })
-                    CheckboxRow("Accept rules", false, { acknowledgement++ })
+                    CheckboxRow(
+                        "Accept rules",
+                        false,
+                        { acknowledgement++ },
+                        supportingText = "Read the campsite rules",
+                    )
+                    CheckboxRow(
+                        "Organizer",
+                        true,
+                        { acknowledgement++ },
+                        enabled = false,
+                        supportingText = "The organizer stays selected",
+                    )
                 }
             }
         }
         compose.onNodeWithText("Owner").performClick()
         compose.onNodeWithText("Notifications").performClick()
         compose.onNodeWithText("Accept rules").performClick()
+        compose.onNodeWithText("Read the campsite rules").assertIsDisplayed()
+        compose.onNodeWithText("Accept rules").performTouchInput { click() }
+        compose
+            .onNodeWithText("Organizer")
+            .assertIsNotEnabled()
+            .assertIsOn()
+            .performTouchInput { click() }
+        compose.onNodeWithText("The organizer stays selected").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, choice)
             assertEquals(1, toggle)
-            assertEquals(1, acknowledgement)
+            assertEquals(2, acknowledgement)
         }
     }
 

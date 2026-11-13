@@ -6,6 +6,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 
 /** Event loading is independent of its subject; no invented identity or timestamp fills absence. */
@@ -28,13 +29,22 @@ sealed interface NotificationContent {
 
 /** Context facts only; receipt acknowledgement and navigation remain in the actual caller. */
 sealed interface NotificationSubjectContent {
+    /** Saved message and its actual conversation context; route availability remains caller-owned.
+     * @param message Matching referenced message with its original sender and content.
+     * @param reservation Saved reservation identified by the message.
+     */
+    data class MessageContent(
+        val message: Message,
+        val reservation: Reservation,
+    ) : NotificationSubjectContent
+
     /** The event's referenced record is missing or inconsistent with its subject identity. */
     data object Unavailable : NotificationSubjectContent
 
     /** Required subject context could not be read; the original event remains readable. */
     data object Failure : NotificationSubjectContent
 
-    /** This Halfway build supplies no destination for this subject category. */
+    /** This subject category has no available reader. */
     data object Unsupported : NotificationSubjectContent
 
     /** Actual saved lottery; copy may use its title without another campsite query.

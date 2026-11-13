@@ -14,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfigurati
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.AppDisplayTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.resolveDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
@@ -41,7 +42,7 @@ private const val SETUP_KEY = "lotterySetup."
  * @param lotteries Server reads and explicit lottery mutations.
  * @param lotteryId Existing target, or null for a new local form.
  * @param newId Stable identity allocator used only by a valid explicit save.
- * @param clock Initial month in the selected site's zone.
+ * @param clock Time source for schedule display and campsite-local availability.
  * @param savedState Primitive input retained across graph recreation.
  * @param validateWindows Reserved F13 contract; null keeps configuration validation pending.
  */
@@ -60,9 +61,8 @@ class LotterySetupViewModel(
     },
 ) : ViewModel() {
     private val retainedInput = savedState.contains("${SETUP_KEY}title")
-    private val writer = LotteryDraftWriter(lotteries)
+    private val writer = LotteryDraftWriter(lotteries, clock)
     private var baseline = LotteryDraft()
-    private var pendingConfiguration: LotteryConfiguration? = null
     private var readJob: Job? = null
     private val mutableState = MutableStateFlow(restoredState())
     val state = mutableState.asStateFlow()
@@ -113,9 +113,9 @@ class LotterySetupViewModel(
         }
     }
 
-    /** Supplies the selected site's clock month for a native schedule picker with no prior date. */
-    fun currentScheduleMonth(): YearMonth? =
-        selectedSite()?.let { YearMonth.now(clock.withZone(ZoneId.of(it.details.timeZone))) }
+    /** Supplies the shared display-zone month for a schedule picker with no prior date. */
+    fun currentScheduleMonth(): YearMonth =
+        YearMonth.now(clock.withZone(AppDisplayTime.zone))
 
     private var choiceJob: Job? = null
     private var calendarJob: Job? = null
@@ -143,22 +143,19 @@ class LotterySetupViewModel(
     fun editDescription(value: String) =
         editDraft { it.copy(description = value) }
 
-    /** Chooses one eligible published campsite and retires any former allocation.
+    /** Replaces the selected allocation while retaining other restored owned offers.
      * @param id Current saved choice identity.
      */
     fun chooseCampsite(id: String) {
         if (!canEdit() || state.value.draft.step != LotteryStep.SITE) return
         if (choices().none { it.id == id } || state.value.draft.campsiteId == id) return
-        val pending = pendingConfiguration
         editDraft {
-            val changed = it.copy(campsiteId = id, nights = emptySet())
-            if (pending != null && it.schedule.isEmpty()) {
-                withSchedule(changed, pending, choices().first { site -> site.id == id })
-            } else {
-                changed
-            }
+            it.copy(
+                campsiteId = id,
+                nights = emptySet(),
+                allocations = it.allocations.filterNot { offer -> offer.campsiteId == it.campsiteId },
+            )
         }
-        pendingConfiguration = null
     }
 
     /** Updates one explicit local date.
@@ -181,12 +178,6 @@ class LotterySetupViewModel(
         value: LocalTime,
     ) {
         editSchedule(point) { it.copy(time = value) }
-    }
-
-    /** Accepts the displayed four local schedule values in the currently selected site's zone. */
-    fun confirmScheduleZone() {
-        val zone = selectedSite()?.details?.timeZone ?: return
-        editDraft { it.copy(scheduleZone = zone) }
     }
 
     /** Updates raw maximum-winner input without a registration-cap field.
@@ -220,7 +211,6 @@ class LotterySetupViewModel(
                         schedule =
                             scheduleErrors(
                                 draft,
-                                selectedSite(),
                                 listOf(
                                     LotterySchedulePoint.REGISTRATION_OPEN,
                                     LotterySchedulePoint.REGISTRATION_CLOSE,
@@ -235,7 +225,6 @@ class LotterySetupViewModel(
                         schedule =
                             scheduleErrors(
                                 draft,
-                                selectedSite(),
                                 listOf(
                                     LotterySchedulePoint.BOOKING_OPEN,
                                     LotterySchedulePoint.BOOKING_CLOSE,
@@ -509,7 +498,8 @@ class LotterySetupViewModel(
                 draft.title,
                 draft.description,
                 configuration,
-                LotteryOffer(checkNotNull(draft.campsiteId), draft.nights.sorted()),
+                draft.allocations.filterNot { it.campsiteId == draft.campsiteId } +
+                    LotteryOffer(checkNotNull(draft.campsiteId), draft.nights.sorted()),
                 allowCreate = savedState.get<Boolean>("${SETUP_KEY}allowCreate") == true,
                 action = action,
             )
@@ -661,7 +651,8 @@ class LotterySetupViewModel(
     private suspend fun restoreContent(content: LotteryDraftRead.Content) {
         try {
             val offer = content.offers.singleOrNull()
-            val site = offer?.let { campsites.get(it.campsiteId) }
+            val sites = content.offers.associate { it.campsiteId to campsites.get(it.campsiteId) }
+            val site = offer?.let { sites[it.campsiteId] }
             currentCoroutineContext().ensureActive()
             val record = content.lottery
             var fresh =
@@ -673,14 +664,15 @@ class LotterySetupViewModel(
                     campsiteId = offer?.campsiteId,
                     nights = offer?.nights?.toSet().orEmpty(),
                     maximumWinnersText = record.configuration.winnerCount.toString(),
+                    allocations = content.offers.filter { sites[it.campsiteId]?.ownerId == ownerId },
                 )
+            fresh = withSchedule(fresh, record.configuration)
             if (site != null && site.ownerId == ownerId) {
                 fresh =
-                    withSchedule(fresh, record.configuration, site).copy(step = LotteryStep.REVIEW)
+                    fresh.copy(step = LotteryStep.REVIEW)
             }
             baseline = fresh
             val draft = if (retainedInput) state.value.draft else fresh
-            if (draft.schedule.isEmpty()) pendingConfiguration = record.configuration
             savedState["${SETUP_KEY}allowCreate"] = false
             publish(state.value.copy(draft = draft, targetLoad = LotteryTargetLoad.READY))
             observeChoices()
@@ -692,15 +684,13 @@ class LotterySetupViewModel(
         }
     }
 
-    /** Converts stored windows only in a real site's zone; no device-zone default is used.
+    /** Converts stored windows into local input in the shared display zone.
      * @param draft Input whose schedule has not yet been populated.
      * @param configuration Confirmed stored windows and count.
-     * @param site Actual selected record providing the zone.
      */
     private fun withSchedule(
         draft: LotteryDraft,
         configuration: LotteryConfiguration,
-        site: Campsite,
     ): LotteryDraft {
         val instants =
             listOf(
@@ -709,12 +699,10 @@ class LotterySetupViewModel(
                 configuration.bookingOpensAt,
                 configuration.bookingClosesAt,
             )
-        val zone = ZoneId.of(site.details.timeZone)
         return draft.copy(
-            scheduleZone = site.details.timeZone,
             schedule =
                 LotterySchedulePoint.entries.zip(instants).associate { (point, instant) ->
-                    val local = instant.atZone(zone)
+                    val local = instant.atZone(AppDisplayTime.zone)
                     point to LotteryLocalDateTime(local.toLocalDate(), local.toLocalTime())
                 },
         )
@@ -745,7 +733,7 @@ class LotterySetupViewModel(
         )
     }
 
-    /** Retains the previously accepted interpretation until a changed zone is explicitly confirmed.
+    /** Changes one explicit local schedule input.
      * @param point Actual schedule input.
      * @param transform Specific date or time edit.
      */
@@ -753,13 +741,11 @@ class LotterySetupViewModel(
         point: LotterySchedulePoint,
         transform: (LotteryLocalDateTime) -> LotteryLocalDateTime,
     ) {
-        val zone = selectedSite()?.details?.timeZone ?: return
         editDraft { draft ->
             draft.copy(
                 schedule =
                     draft.schedule +
                         (point to transform(draft.schedule[point] ?: LotteryLocalDateTime())),
-                scheduleZone = draft.scheduleZone ?: zone,
             )
         }
     }
@@ -934,12 +920,10 @@ class LotterySetupViewModel(
 
     /** Returns direct missing/DST feedback for the requested fixed schedule fields.
      * @param draft Current raw input.
-     * @param site Current eligible site supplying the explicit zone.
      * @param points Fields relevant to the current step or full review.
      */
     private fun scheduleErrors(
         draft: LotteryDraft,
-        site: Campsite?,
         points: List<LotterySchedulePoint>,
     ): Map<LotterySchedulePoint, LotteryScheduleError> =
         buildMap {
@@ -955,7 +939,7 @@ class LotterySetupViewModel(
                             LotteryScheduleError.TIME_REQUIRED
                         }
 
-                        site != null && resolve(input, site.details.timeZone) == null -> {
+                        resolve(input) == null -> {
                             LotteryScheduleError.AMBIGUOUS_TIME
                         }
 
@@ -969,18 +953,14 @@ class LotterySetupViewModel(
 
     /** Converts one complete local value through the existing unambiguous-zone boundary.
      * @param input Explicit date/time input.
-     * @param zone Actual selected campsite's IANA identifier.
      */
-    private fun resolve(
-        input: LotteryLocalDateTime,
-        zone: String,
-    ): Instant? {
+    private fun resolve(input: LotteryLocalDateTime): Instant? {
         val date = input.date ?: return null
         val time = input.time ?: return null
-        return resolveDateTime(date, time.hour, time.minute, ZoneId.of(zone))
+        return resolveDateTime(date, time.hour, time.minute, AppDisplayTime.zone)
     }
 
-    /** Assembles review feedback and invokes F13 only after conversion and zone acknowledgement.
+    /** Assembles review feedback and invokes F13 after schedule conversion.
      * @param current Immutable snapshot to validate when review is visible.
      */
     private fun reviewed(current: LotterySetupUiState): LotterySetupUiState {
@@ -990,24 +970,18 @@ class LotterySetupViewModel(
             (current.choices as? LotteryCampsiteChoices.Content)
                 ?.campsites
                 ?.firstOrNull { it.id == draft.campsiteId }
-        val schedule = scheduleErrors(draft, site, LotterySchedulePoint.entries)
+        val schedule = scheduleErrors(draft, LotterySchedulePoint.entries)
         val count = parsePositiveCount(draft.maximumWinnersText, Long.MAX_VALUE)
-        val zoneChanged =
-            site != null && draft.schedule.isNotEmpty() &&
-                draft.scheduleZone != site.details.timeZone
         val instants =
             if (site != null && schedule.isEmpty()) {
                 LotterySchedulePoint.entries.map {
-                    resolve(
-                        draft.schedule.getValue(it),
-                        site.details.timeZone,
-                    )!!
+                    resolve(draft.schedule.getValue(it))!!
                 }
             } else {
                 emptyList()
             }
         val windows =
-            if (instants.size == 4 && !zoneChanged) {
+            if (instants.size == 4) {
                 validateWindows?.invoke(instants[0], instants[1], instants[2], instants[3])
             } else {
                 null
@@ -1021,12 +995,11 @@ class LotterySetupViewModel(
                 count as? PositiveCountInput.Error,
                 windows?.takeUnless { it == LotteryWindowInput.Valid },
                 windowsPending = instants.size == 4 && validateWindows == null,
-                zoneConfirmationRequired = zoneChanged,
             )
         val valid =
             !errors.titleRequired && !errors.campsiteRequired && !errors.allocationRequired &&
                 schedule.isEmpty() && count is PositiveCountInput.Value &&
-                !zoneChanged && windows == LotteryWindowInput.Valid
+                windows == LotteryWindowInput.Valid
         val configuration =
             if (valid) {
                 LotteryConfiguration(
@@ -1057,9 +1030,18 @@ class LotterySetupViewModel(
         savedState["${SETUP_KEY}description"] = draft.description
         savedState["${SETUP_KEY}campsite"] = draft.campsiteId
         savedState["${SETUP_KEY}nights"] = ArrayList(draft.nights.map(LocalDate::toString))
-        savedState["${SETUP_KEY}zone"] = draft.scheduleZone
         savedState["${SETUP_KEY}winners"] = draft.maximumWinnersText
         savedState["${SETUP_KEY}reviewReturn"] = draft.returnToReview
+        val previousSites = savedState.get<ArrayList<String>>("${SETUP_KEY}allocationSites").orEmpty()
+        for (index in previousSites.indices) {
+            savedState.remove<ArrayList<String>>(
+                "${SETUP_KEY}allocation.$index.nights",
+            )
+        }
+        savedState["${SETUP_KEY}allocationSites"] = ArrayList(draft.allocations.map { it.campsiteId })
+        for ((index, offer) in draft.allocations.withIndex()) {
+            savedState["${SETUP_KEY}allocation.$index.nights"] = ArrayList(offer.nights.map(LocalDate::toString))
+        }
         for (point in LotterySchedulePoint.entries) {
             savedState["$SETUP_KEY${point.name}.date"] = draft.schedule[point]?.date?.toString()
             savedState["$SETUP_KEY${point.name}.time"] = draft.schedule[point]?.time?.toString()
@@ -1104,9 +1086,12 @@ class LotterySetupViewModel(
                 campsiteId = savedState["${SETUP_KEY}campsite"],
                 nights = savedDates("nights"),
                 schedule = schedule,
-                scheduleZone = savedState["${SETUP_KEY}zone"],
                 maximumWinnersText = savedState["${SETUP_KEY}winners"] ?: "",
                 returnToReview = savedState["${SETUP_KEY}reviewReturn"] ?: false,
+                allocations =
+                    savedState.get<ArrayList<String>>("${SETUP_KEY}allocationSites").orEmpty().mapIndexed { index, id ->
+                        LotteryOffer(id, savedDates("allocation.$index.nights").sorted())
+                    },
             )
         val month = savedState.get<String>("${SETUP_KEY}month")?.let(YearMonth::parse)
         val allocation =

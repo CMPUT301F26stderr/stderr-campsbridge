@@ -426,6 +426,7 @@ private fun DemoScenario.label(): Int =
     when (this) {
         DemoScenario.ENTRANT -> R.string.demo_entrant
         DemoScenario.OWNER -> R.string.demo_owner
+        DemoScenario.CO_OWNER -> R.string.demo_co_owner
         DemoScenario.NEW_ACCOUNT -> R.string.demo_new_account
         DemoScenario.ADMIN -> R.string.demo_admin
     }
@@ -445,6 +446,7 @@ private fun DemoScenario.areaLabel(): Int =
     when (this) {
         DemoScenario.ENTRANT -> R.string.demo_camping
         DemoScenario.OWNER -> R.string.demo_hosting
+        DemoScenario.CO_OWNER -> R.string.demo_hosting
         DemoScenario.ADMIN -> R.string.demo_admin_area
         DemoScenario.NEW_ACCOUNT -> R.string.demo_new_account
     }
@@ -454,6 +456,7 @@ private fun DemoScenario.personLabel(): Int =
     when (this) {
         DemoScenario.ENTRANT -> R.string.demo_alex
         DemoScenario.OWNER -> R.string.demo_jordan
+        DemoScenario.CO_OWNER -> R.string.demo_sam
         DemoScenario.ADMIN -> R.string.demo_taylor
         DemoScenario.NEW_ACCOUNT -> R.string.demo_new_account
     }

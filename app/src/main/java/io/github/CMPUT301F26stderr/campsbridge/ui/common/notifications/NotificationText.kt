@@ -36,6 +36,10 @@ fun notificationText(
     event.announcement?.let { return NotificationText(it.title, it.body) }
     val body =
         when (val subject = content.subject) {
+            is NotificationSubjectContent.MessageContent -> {
+                subject.message.body
+            }
+
             is NotificationSubjectContent.LotteryContent -> {
                 subject.lottery.title
             }

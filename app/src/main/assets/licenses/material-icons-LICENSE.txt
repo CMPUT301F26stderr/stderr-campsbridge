@@ -1,5 +1,6 @@
 Material Design icons by Google
 Remove icon source: https://raw.githubusercontent.com/google/material-design-icons/master/src/content/remove/materialicons/24px.svg
+Outlined star source: https://raw.githubusercontent.com/google/material-design-icons/master/src/toggle/star_border/materialicons/24px.svg
 Converted from SVG to Android VectorDrawable.
 
 

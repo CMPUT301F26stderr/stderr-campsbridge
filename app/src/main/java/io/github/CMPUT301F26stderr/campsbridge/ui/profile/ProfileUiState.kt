@@ -21,8 +21,8 @@ sealed interface ProfileUiState {
      * @param emailError Whether submitted email was invalid.
      * @param phoneError Whether submitted phone was invalid.
      * @param saveFailed Whether an explicit field save failed without losing input.
-     * @param nameValidationPending Whether the reserved name parser is unavailable.
-     * @param contactValidationPending Whether either reserved contact parser is unavailable.
+     * @param nameValidationPending Whether this host omitted the display-name parser.
+     * @param contactValidationPending Whether this host omitted an optional-contact parser.
      * @param completedEditor Confirmed save awaiting acknowledgement by its active route.
      * @param ownerActivationFailed Whether hosting activation needs an explicit retry.
      */

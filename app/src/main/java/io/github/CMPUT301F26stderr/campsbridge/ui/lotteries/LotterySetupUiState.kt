@@ -39,7 +39,6 @@ enum class LotteryScheduleError { DATE_REQUIRED, TIME_REQUIRED, AMBIGUOUS_TIME }
  * @param winnerCount Existing positive-count parser feedback.
  * @param windows Actual F13 failure, absent before successful conversion or when pending.
  * @param windowsPending No F13 dependency was supplied after all four values converted.
- * @param zoneConfirmationRequired Existing local times have not been accepted in this site's zone.
  */
 data class LotterySetupErrors(
     val titleRequired: Boolean = false,
@@ -49,7 +48,6 @@ data class LotterySetupErrors(
     val winnerCount: PositiveCountInput.Error? = null,
     val windows: LotteryWindowInput? = null,
     val windowsPending: Boolean = false,
-    val zoneConfirmationRequired: Boolean = false,
 )
 
 /** Working allocation and one required range covering the month plus all selected nights.

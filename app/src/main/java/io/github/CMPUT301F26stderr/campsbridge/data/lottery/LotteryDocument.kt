@@ -24,6 +24,7 @@ object LotteryDocument : DocumentCodec<Lottery>() {
     override fun encode(value: Lottery): Map<String, Any?> =
         mapOf(
             "ownerId" to value.ownerId,
+            "participantOwnerIds" to value.participantOwnerIds.sorted(),
             "title" to value.title,
             "description" to value.description,
             "registrationOpensAt" to value.configuration.registrationOpensAt.stored(),
@@ -63,5 +64,6 @@ object LotteryDocument : DocumentCodec<Lottery>() {
             fields.optionalInstant("publishedAt"),
             fields.optionalInstant("drawnAt"),
             fields.optionalNested("cancellation")?.cancellation(),
+            fields.stringSet("participantOwnerIds"),
         )
 }

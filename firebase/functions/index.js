@@ -1,16 +1,24 @@
 /*
- * Implements authenticated booking and cancellation as Firestore transactions.
+ * Registers booking/cancellation callables and scheduled draw/Inbox execution.
  *
- * Halfway limitation: payments and refunds use simulated records.
+ * Payments and refunds use simulated records.
  */
 
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, Timestamp } = require('firebase-admin/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { randomBytes } = require('node:crypto');
+const { runPendingWork } = require('./pending-work');
 const { calendarDate } = require('./calendar-date');
 initializeApp();
 const db = getFirestore();
 db.settings({ useBigInt: true });
+
+// All deadlines remain timestamps; the display timezone does not participate in scheduling.
+exports.processPendingWork = onSchedule('* * * * *', async () => {
+  await runPendingWork({ db, now: Timestamp.now(), newSeed: () => randomBytes(8).readBigInt64BE().toString() });
+});
 const pair = (...ids) => ids.map(id => `${id.length}:${id}`).join('');
 const fail = (reason, message) => { throw new HttpsError('failed-precondition', message, { reason }); };
 const requireState = (condition, reason, message) => { if (!condition) fail(reason, message); };
@@ -93,7 +101,8 @@ exports.reserve = authenticated(async (request, uid) => {
     const nights = nightsBetween(value.checkInDate, value.checkOutDate);
     requireState(nights.every(day => offer.nights.includes(day)), 'NOT_ALLOWED', 'Dates are not offered');
     const site = await read(tx, `campsites/${campsiteId}`);
-    requireState(site.publishedAt != null && site.removal == null && site.ownerId === lottery.ownerId, 'INACTIVE', 'Campsite unavailable');
+    requireState(site.publishedAt != null && site.removal == null && lottery.participantOwnerIds.includes(site.ownerId), 'INACTIVE', 'Campsite unavailable');
+    const siteOwner = await read(tx, `accounts/${site.ownerId}`); active(siteOwner, 'OWNER');
     requireState(value.checkInDate >= today(now, site.timeZone), 'WINDOW_CLOSED', 'Stay has already begun');
     requireState(guests > 0n && guests <= BigInt(site.maxGuests), 'CAPACITY_REACHED', 'Group exceeds capacity');
     const total = BigInt(site.nightlyPriceCents) * BigInt(nights.length);

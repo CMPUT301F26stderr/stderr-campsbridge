@@ -56,7 +56,6 @@ fun LotterySetupRoute(
         model::editScheduleTime,
         model::editWinnerCount,
         model::editStep,
-        model::confirmScheduleZone,
         onSaveDraft = model::saveDraft,
         onPublish = model::publishLottery,
         onRetrySave = model::retrySave,

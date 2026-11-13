@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -26,6 +28,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetail
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.validateCampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.options.CampingOptions
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppIconAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -129,7 +132,7 @@ fun CampsiteReviewStep(
     }
 }
 
-/** Reuses a text action for direct review editing.
+/** Opens a reviewed section through the shared tonal edit action.
  * @param step Target section.
  * @param title Section label resource.
  * @param onEdit Parent-owned step change.
@@ -142,10 +145,10 @@ private fun ReviewEdit(
     onEdit: (CampsiteStep) -> Unit,
     enabled: Boolean,
 ) {
-    TextButton({
+    AppIconAction(stringResource(R.string.campsite_edit_section, stringResource(title)), {
         onEdit(step)
     }, enabled = enabled) {
-        Text(stringResource(R.string.campsite_edit_section, stringResource(title)))
+        Icon(Icons.Outlined.Edit, contentDescription = null)
     }
 }
 

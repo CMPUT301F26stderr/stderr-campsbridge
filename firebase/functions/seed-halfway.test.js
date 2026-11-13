@@ -10,7 +10,7 @@ const path = require('node:path');
 const { compileFixture, applyFixture } = require('./seed-halfway');
 const fixture = require('../fixtures/halfway.json');
 const anchor = new Date('2027-05-10T18:00:00Z');
-const actors = { host: 'host-uid', entrant: 'entrant-uid', other: 'other-uid', admin: 'admin-uid' };
+const actors = { host: 'host-uid', entrant: 'entrant-uid', other: 'other-uid', cohost: 'cohost-uid', admin: 'admin-uid' };
 const pair = (...ids) => ids.map(id => `${id.length}:${id}`).join('');
 
 test('fixture materialization connects real people, relative windows, inventory and saved history', () => {
@@ -23,6 +23,29 @@ test('fixture materialization connects real people, relative windows, inventory 
   assert.equal(live.waitingCount, 0);
   assert.equal(live._revision, 0);
   assert.equal(live.drawnAt, null);
+  assert.deepEqual(live.participantOwnerIds, [actors.host]);
+  const shared = plan.documents.get('lotteries/final-shared');
+  assert.equal(shared.ownerId, actors.host);
+  assert.deepEqual(new Set(shared.participantOwnerIds), new Set([actors.host, actors.cohost]));
+  const sharedId = pair('final-shared', actors.other);
+  const sharedStay = plan.documents.get(`reservations/${sharedId}`);
+  assert.equal(sharedStay.campsiteId, 'final-cedar');
+  assert.equal(sharedStay.bookedCampsite.name, 'Cedar Ridge');
+  assert.equal(sharedStay.payment.amountCents, 18000);
+  assert.equal(plan.documents.get(`campsites/final-cedar/calendar/${sharedStay.checkInDate}`).reservationId, sharedId);
+  const textOnly = plan.documents.get(`campsites/final-cedar/reviews/${actors.other}`);
+  assert.equal(textOnly.rating, null);
+  assert.ok(textOnly.body.trim());
+  assert.equal(plan.documents.get(`campsites/halfway-river/reviews/${actors.entrant}`).body, null);
+  assert.equal(plan.documents.get(`campsites/halfway-river/reviews/${actors.other}`).rating, 5);
+  for (const [id, sender, recipient] of [['final-arrival', actors.other, actors.cohost], ['final-owner-reply', actors.cohost, actors.other]]) {
+    const message = plan.documents.get(`messages/${id}`);
+    assert.equal(message.reservationId, sharedId);
+    assert.equal(message.senderId, sender);
+    const eventId = pair('NEW_MESSAGE', id);
+    assert.equal(plan.documents.get(`notifications/${eventId}`).subject.id, id);
+    assert.ok(plan.documents.has(`accounts/${recipient}/inbox/${eventId}`));
+  }
   assert.equal(plan.documents.get('lotteries/halfway-won/entries/entrant-uid').state, 'OFFERED');
   const id = pair('halfway-booked', actors.entrant);
   const reservation = plan.documents.get(`reservations/${id}`);
@@ -35,7 +58,7 @@ test('fixture materialization connects real people, relative windows, inventory 
   const events = [...plan.documents].filter(([key]) => key.startsWith('notifications/'));
   assert.ok(events.some(([, event]) => event.type === 'LOTTERY_LOST'));
   assert.ok(events.some(([, event]) => event.subject.id === id));
-  for (const [key] of events) assert.ok(plan.documents.has(`accounts/${actors.entrant}/inbox/${key.split('/')[1]}`) || plan.documents.has(`accounts/${actors.other}/inbox/${key.split('/')[1]}`));
+  for (const [key] of events) assert.ok(Object.values(actors).some(uid => plan.documents.has(`accounts/${uid}/inbox/${key.split('/')[1]}`)));
   for (const photo of plan.photos) assert.ok(fs.statSync(path.resolve(__dirname, '../../assets', photo.source)).size > 0);
 });
 
@@ -43,7 +66,7 @@ test('invalid bindings, references and windows fail before preparing any writes'
   assert.throws(() => compileFixture(fixture, { ...actors, admin: '' }, anchor), /admin/);
   assert.throws(() => compileFixture(fixture, { ...actors, other: actors.entrant }, anchor), /distinct/);
   assert.throws(() => compileFixture(fixture, actors, new Date('invalid')), /anchor/);
-  const missing = structuredClone(fixture); missing.lotteries[0].campsiteId = 'missing';
+  const missing = structuredClone(fixture); missing.lotteries[0].offers[0].campsiteId = 'missing';
   assert.throws(() => compileFixture(missing, actors, anchor), /campsite/);
   const timing = structuredClone(fixture); timing.lotteries[0].bookingOpensSeconds = -1;
   assert.throws(() => compileFixture(timing, actors, anchor), /window/);
@@ -74,7 +97,7 @@ test('seed preserves edits on rerun, grants declared roles and uploads before pu
   await applyFixture(plan, backend);
   assert.equal(backend.records.get('campsites/halfway-river').name, 'Edited listing');
   assert.equal(backend.records.get('accounts/admin-uid').name, 'Taylor edited');
-  assert.deepEqual(new Set(backend.records.get('accounts/admin-uid').roles), new Set(['ENTRANT', 'ADMIN']));
+  assert.deepEqual(new Set(backend.records.get('accounts/admin-uid').roles), new Set(['ENTRANT', ...fixture.actors.admin.roles]));
   const uploads = backend.uploads.length;
   await applyFixture(plan, backend);
   assert.equal(backend.uploads.length, uploads);
@@ -95,5 +118,6 @@ test('reset replaces the declared dataset, clears child history and retains othe
   assert.equal(backend.records.get('campsites/unrelated').name, 'Keep this');
   assert.equal(backend.records.get('accounts/entrant-uid/inbox/unrelated').readAt, anchor);
   assert.equal(backend.records.get('campsites/halfway-river').name, 'River Camp');
+  assert.equal(backend.records.get('messages/final-arrival').reservationId, pair('final-shared', actors.other));
   assert.ok(backend.uploads.length > 0);
 });

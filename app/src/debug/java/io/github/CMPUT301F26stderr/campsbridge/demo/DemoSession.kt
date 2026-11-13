@@ -18,6 +18,9 @@ import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoMaintenance
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoMessageRepository
+import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoStore
@@ -61,6 +64,7 @@ enum class DemoScenario(
 ) {
     ENTRANT("demo-account", Role.ENTRANT),
     OWNER("demo-host", Role.OWNER),
+    CO_OWNER("demo-cohost", Role.OWNER),
     NEW_ACCOUNT("demo-new", Role.ENTRANT),
     ADMIN("demo-admin", Role.ADMIN),
 }
@@ -97,6 +101,7 @@ class DemoSession(
                             services.repositories.notifications,
                             services.repositories.lotteries,
                             services.repositories.bookings,
+                            services.repositories.messages,
                         ),
                         SavedStateHandle(),
                     )
@@ -266,9 +271,12 @@ class DemoRepositories(
     override val lotteries = DemoLotteryRepository(store = store)
     override val bookings = DemoBookingRepository(store = store)
     override val notifications = DemoNotificationRepository(clock = store.clock, store = store)
-    override val reviews = DemoReviewRepository()
+    override val messages = DemoMessageRepository(store)
+    override val reviews = DemoReviewRepository(store)
+    override val moderation = DemoModerationRepository(store, images, bookings, lotteries)
     override val campsites = DemoCampsiteRepository(store = store)
     override val pendingWork: PendingWork = DemoPendingWork()
+    override val maintenance = DemoMaintenance(store, moderation, images)
 }
 
 /** The offline demo has no distributed lottery or notification work to process. */

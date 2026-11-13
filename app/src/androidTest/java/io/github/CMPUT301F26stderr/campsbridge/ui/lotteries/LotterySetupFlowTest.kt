@@ -251,7 +251,6 @@ class LotterySetupFlowTest {
                         { _, _ -> },
                         {},
                         {},
-                        {},
                     )
                 }
             }
@@ -419,9 +418,9 @@ class LotterySetupFlowTest {
                     listOf(it)
             }
         }
-        host.lotteries.setOfferHandler = { id, _, offer ->
-            host.lotteries.serverOffers[id] = listOf(offer)
-            host.lotteries.liveOffers.value = mapOf(id to listOf(offer))
+        host.lotteries.replaceOwnerOffersHandler = { id, _, offers ->
+            host.lotteries.serverOffers[id] = offers
+            host.lotteries.liveOffers.value = mapOf(id to offers)
         }
         host.lotteries.publishHandler = { id, _ ->
             host.lotteries.records.value =

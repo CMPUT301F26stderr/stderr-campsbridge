@@ -28,7 +28,7 @@ import java.time.Clock
  * @param clock Shared display-boundary clock.
  * @param scope Parent's serialized presentation coroutine scope.
  * @param initialFilter Restored small state selection.
- * @param filterParticipants Optional reserved exact-state selector; All needs no helper.
+ * @param filterParticipants Exact-state selector; production supplies it, while All needs no helper.
  */
 internal class LotteryParticipantsController(
     private val ownerId: String,
@@ -69,7 +69,7 @@ internal class LotteryParticipantsController(
         if (closed) return
         parent =
             lottery?.takeIf {
-                it.id == lotteryId && it.ownerId == ownerId && it.publishedAt != null
+                it.id == lotteryId && ownerId in it.participantOwnerIds && it.publishedAt != null
             }
         if (parent == null) {
             stopReads()

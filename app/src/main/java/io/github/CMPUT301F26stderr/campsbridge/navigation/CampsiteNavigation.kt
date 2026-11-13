@@ -120,6 +120,7 @@ internal fun NavGraphBuilder.campsiteGraph(
         }
     }
     campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.PREVIEW, detailFactory)
+    campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.VIEW, detailFactory)
     composable(
         AppDestination.AVAILABILITY_EDITOR,
         arguments =

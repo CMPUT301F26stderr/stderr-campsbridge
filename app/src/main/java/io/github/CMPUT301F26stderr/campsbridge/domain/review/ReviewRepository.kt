@@ -40,25 +40,34 @@ interface ReviewRepository {
     ): Flow<List<Reaction>>
 
     /**
-     * Creates or updates the entrant’s rating on a published campsite while retaining the
-     * first creation time.
+     * Changes stars on a published campsite while preserving text and the first creation time.
      *
      * @param campsiteId Campsite document ID.
      * @param authorId Account ID identifying the review author.
      * @param rating Integer star rating from 1 to 5.
-     * @param body Optional review text; null supports rating-only feedback.
      */
-    suspend fun rate(
+    suspend fun setRating(
         campsiteId: String,
         authorId: String,
         rating: Long,
+    )
+
+    /** Changes only written feedback, retaining any stars and the original creation time.
+     * @param campsiteId Published campsite.
+     * @param authorId Entrant submitting their feedback.
+     * @param body Written feedback; null or blank clears the author's text.
+     */
+    suspend fun setReviewText(
+        campsiteId: String,
+        authorId: String,
         body: String?,
     )
 
     /**
-     * Appends a nonblank reply, validating any parent belongs to the same review; returns
-     * its ID.
+     * Saves a nonblank reply under its retained ID, validating the parent belongs to this review.
+     * Matching retries return the saved ID; a different sender, parent or body conflicts.
      *
+     * @param replyId Caller-retained submission identity.
      * @param campsiteId Campsite document ID.
      * @param authorId Account ID identifying the review author.
      * @param senderId Account ID sending the message or announcement.
@@ -67,6 +76,7 @@ interface ReviewRepository {
      * @param body Nonblank message or reply text.
      */
     suspend fun reply(
+        replyId: String,
         campsiteId: String,
         authorId: String,
         senderId: String,

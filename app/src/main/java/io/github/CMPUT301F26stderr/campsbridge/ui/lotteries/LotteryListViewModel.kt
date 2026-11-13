@@ -175,7 +175,7 @@ class LotteryListViewModel(
     fun refreshTime() =
         publish()
 
-    /** Observes only this owner's inventory, without a global scan or entrant reads. */
+    /** Observes this owner's collaborations without a global scan or entrant reads. */
     private fun observeOwner() {
         ownerJob?.cancel()
         ownerFailed = false
@@ -185,9 +185,9 @@ class LotteryListViewModel(
         ownerJob =
             viewModelScope.launch {
                 try {
-                    lotteries.observeForOwner(accountId).collect { rows ->
+                    lotteries.observeParticipating(accountId).collect { rows ->
                         currentCoroutineContext().ensureActive()
-                        ownerRecords = rows.filter { it.ownerId == accountId }
+                        ownerRecords = rows.filter { accountId in it.participantOwnerIds }
                         reconcileOffers()
                         publish()
                     }
@@ -458,7 +458,14 @@ class LotteryListViewModel(
                 }
                 if (offers[record.id].orEmpty().none { it.campsiteId == campsiteId.value }) continue
             }
-            items.add(LotteryListItem(record, lotteryLifecycle(record, clock.instant())))
+            items.add(
+                LotteryListItem(
+                    record,
+                    lotteryLifecycle(record, clock.instant()),
+                    canContinueDraft =
+                        record.ownerId == accountId && record.publishedAt == null && record.cancellation == null,
+                ),
+            )
         }
         return LotteryListUiState.Content(items, unresolved)
     }

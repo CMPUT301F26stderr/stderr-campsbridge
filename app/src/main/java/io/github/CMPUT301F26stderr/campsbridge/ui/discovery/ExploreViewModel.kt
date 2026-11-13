@@ -258,7 +258,7 @@ class ExploreViewModel(
             }
     }
 
-    /** Composes reserved decisions with lead-owned location/stay rules and required read state. */
+    /** Combines injected matching rules with location, stay and required-read state. */
     private fun publish() {
         val current = state.value
         val text = matchesText

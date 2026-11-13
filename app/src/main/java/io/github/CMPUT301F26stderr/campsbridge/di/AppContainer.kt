@@ -55,8 +55,8 @@ class AppContainer(
     override val reviews: ReviewRepository = FirestoreReviewRepository(clients.firestore, clock)
     override val notifications: NotificationRepository =
         FirestoreNotificationRepository(clients.firestore, clock)
-    val messages: MessageRepository = FirestoreMessageRepository(clients.firestore, clock)
-    val moderation: ModerationRepository =
+    override val messages: MessageRepository = FirestoreMessageRepository(clients.firestore, clock)
+    override val moderation: ModerationRepository =
         FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock, clients.functions)
 
     override val pendingWork: PendingWork =
@@ -65,7 +65,7 @@ class AppContainer(
             clock,
         )
 
-    val maintenance =
+    override val maintenance =
         AdminMaintenance(
             clients.firestore,
             moderation,

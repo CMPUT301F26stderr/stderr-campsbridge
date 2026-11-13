@@ -28,7 +28,7 @@ data class InboxItem(
 enum class InboxEventStatus { LOADING, UNAVAILABLE, FAILURE }
 
 /** Receipt retained separately until its actual immutable event can be loaded.
- * @param receipt Actual account receipt, including read state for the reserved unread counter.
+ * @param receipt Actual account receipt, including read state for unread counting.
  * @param status Independent event-read outcome.
  */
 data class UnavailableInboxReceipt(

@@ -13,6 +13,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
+import java.util.TimeZone
 
 /** Deterministic formatting and timezone input contracts. */
 class DisplayFormatsTest {
@@ -25,19 +26,25 @@ class DisplayFormatsTest {
         assertThrows(IllegalArgumentException::class.java) { formatCad(-1, Locale.CANADA) }
     }
 
-    /** Local dates stay local while instants use the requested, rather than device, timezone. */
+    /** Local dates stay local while timestamp display stays in Edmonton after device-zone changes. */
     @Test fun datesAndInstantsUseExplicitContext() {
         val date = LocalDate.of(2027, 5, 14)
         assertEquals("May 14, 2027", formatDate(date, Locale.US))
         val instant = Instant.parse("2027-05-15T01:00:00Z")
-        val edmonton = formatDateTime(instant, ZoneId.of("America/Edmonton"), Locale.US)
+        val edmonton = formatDateTime(instant, Locale.US)
         assertTrue(edmonton.contains("May 14, 2027"))
         assertTrue(edmonton.contains("7:00"))
         assertTrue(edmonton.contains("MDT"))
-        val french = formatDateTime(instant, ZoneId.of("America/Edmonton"), Locale.FRANCE)
+        val french = formatDateTime(instant, Locale.FRANCE)
         assertTrue(french.contains("14 mai 2027"))
         assertTrue(french.contains("19:00"))
-        assertTrue(formatDateTime(instant, ZoneId.of("UTC"), Locale.US).contains("May 15, 2027"))
+        val deviceZone = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+            assertEquals(edmonton, formatDateTime(instant, Locale.US))
+        } finally {
+            TimeZone.setDefault(deviceZone)
+        }
     }
 
     /** Recorded 2025 gaps and overlaps never silently shift a lottery deadline. */

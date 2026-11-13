@@ -19,7 +19,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
-/** Debug-only onboarding fixtures; interactive mode stops at the reserved name integration. */
+/** Debug-only fixtures; interactive mode deliberately omits name parsing to show pending feedback. */
 class OnboardingPreviewActivity : ComponentActivity() {
     /** Shows a supplied step or a pending flow without Firebase dependencies or simulated saves.
      * @param savedInstanceState Previous Android activity state.

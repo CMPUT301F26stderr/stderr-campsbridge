@@ -98,6 +98,11 @@ fun CreditsScreen(
                 { onLicense(BundledLicense.MATERIAL_ICONS) },
                 supportingText = stringResource(R.string.credits_material_icons_body),
             )
+            NavigationRow(
+                stringResource(R.string.credits_qr_models),
+                { onLicense(BundledLicense.WECHAT_QR_MODELS) },
+                supportingText = stringResource(R.string.credits_qr_models_body),
+            )
             HorizontalDivider()
             Text(
                 stringResource(R.string.credits_photos),
@@ -169,6 +174,7 @@ enum class BundledLicense(
     INTER("inter", R.string.credits_font_license, "licenses/Inter-OFL.txt"),
     DESUGAR("desugar", R.string.credits_java_license, "licenses/desugar-jdk-libs-LICENSE.txt"),
     MATERIAL_ICONS("material-icons", R.string.credits_material_icons, "licenses/material-icons-LICENSE.txt"),
+    WECHAT_QR_MODELS("wechat-qr-models", R.string.credits_qr_models, "licenses/wechat-qrcode-models-LICENSE.txt"),
 }
 
 /** Displays complete bundled license text without a browser or network dependency.

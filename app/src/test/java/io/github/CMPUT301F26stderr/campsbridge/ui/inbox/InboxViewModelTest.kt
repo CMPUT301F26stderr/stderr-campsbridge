@@ -12,6 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
@@ -48,7 +49,7 @@ class InboxViewModelTest {
             notifications.receipts.value = mapOf("account-1" to listOf(InboxReceipt("n-1", null)))
             val lotteries = FakeLotteryRepository()
             val bookings = FakeBookingRepository()
-            val loader = NotificationContentLoader(notifications, lotteries, bookings)
+            val loader = NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository())
 
             val viewModel = InboxViewModel("account-1", notifications, loader)
             runCurrent()
@@ -69,7 +70,7 @@ class InboxViewModelTest {
             notifications.inboxFailure.value = RuntimeException("offline")
             val lotteries = FakeLotteryRepository()
             val bookings = FakeBookingRepository()
-            val loader = NotificationContentLoader(notifications, lotteries, bookings)
+            val loader = NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository())
 
             val viewModel = InboxViewModel("account-1", notifications, loader)
             runCurrent()
@@ -169,6 +170,7 @@ class InboxViewModelTest {
                 notifications,
                 FakeLotteryRepository(listOf(CampingFixtures.lottery().copy(id = "l-1"))),
                 FakeBookingRepository(),
+                FakeMessageRepository(),
             ),
         )
 }

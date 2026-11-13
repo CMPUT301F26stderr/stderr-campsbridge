@@ -83,7 +83,11 @@ class ImageSlotController(
                 val published =
                     checkNotNull(result.attachment) { "Replacement did not return an attachment" }
                 mutableState.value =
-                    state.value.copy(operation = ImageOperation.IDLE, candidate = null)
+                    state.value.copy(
+                        operation = ImageOperation.IDLE,
+                        candidate = null,
+                        obsoleteBlobId = result.obsoleteBlobId,
+                    )
                 acceptAttachment(published)
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -126,7 +130,8 @@ class ImageSlotController(
             try {
                 val result = images.delete(target)
                 currentCoroutineContext().ensureActive()
-                mutableState.value = state.value.copy(operation = ImageOperation.IDLE)
+                mutableState.value =
+                    state.value.copy(operation = ImageOperation.IDLE, obsoleteBlobId = result.obsoleteBlobId)
                 acceptAttachment(result.attachment)
             } catch (cancelled: CancellationException) {
                 throw cancelled

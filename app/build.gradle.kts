@@ -136,6 +136,11 @@ dokka {
 }
 
 dependencies {
+    implementation(libs.wechat.qr.opencv)
+    implementation(libs.wechat.qr.detector)
+    implementation(libs.wechat.qr.scanning)
+    runtimeOnly(libs.wechat.qr.arm64)
+    runtimeOnly(libs.wechat.qr.x64)
     implementation(libs.google.oss.licenses)
     implementation(libs.maps.compose)
     implementation(libs.maps.sdk)

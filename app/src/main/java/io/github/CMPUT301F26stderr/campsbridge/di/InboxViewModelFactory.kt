@@ -32,6 +32,7 @@ fun inboxViewModelFactory(
                         notifications = services.repositories.notifications,
                         lotteries = services.repositories.lotteries,
                         bookings = services.repositories.bookings,
+                        messages = services.repositories.messages,
                     ),
             )
         }

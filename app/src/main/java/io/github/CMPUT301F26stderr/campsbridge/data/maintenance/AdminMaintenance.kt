@@ -13,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.data.lottery.FirestoreLotteryRepo
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDeliveries
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.maintenance.Maintenance
 import io.github.CMPUT301F26stderr.campsbridge.domain.moderation.ModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import java.time.Clock
@@ -31,13 +32,13 @@ class AdminMaintenance(
     private val lotteries: FirestoreLotteryRepository,
     private val images: FirebaseImageRepository,
     private val clock: Clock,
-) {
+) : Maintenance {
     /**
      * Resumes global removal, draw, receipt and image work after checking the admin account.
      * Failure propagates and durable progress is safe to retry.
      * @param adminId Active administrator requesting this maintenance pass.
      */
-    suspend fun resume(adminId: String) {
+    override suspend fun resume(adminId: String) {
         db.atomic { tx -> tx.activeAccount(db, adminId, Role.ADMIN) }
         moderation.resumeRemovals()
         for (lottery in db.collection("lotteries").read(LotteryDocument)) {

@@ -26,6 +26,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageUpdateResult
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
+import io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery.SharedLotteryPhase
+import io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery.sharedLotteryFixture
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.EmulatorActor
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.FirebaseEmulatorRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.documentExists
@@ -58,6 +60,134 @@ import kotlin.random.Random
 @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
 class ModerationRepositoryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
+
+    /** Self-removal resumes shared-site cleanup after role loss and leaves the other owner's stay intact. */
+    @Test(timeout = 60000)
+    fun sharedOwnerRemovalRetriesRecordedWorkWithoutChangingOtherStays() =
+        runBlocking {
+            val f = firebase.sharedLotteryFixture(SharedLotteryPhase.DUE)
+            val now = firebase.clock.instant()
+            firebase.seed(
+                "lotteries/shared",
+                LotteryDocument.encode(
+                    f.lottery.copy(
+                        waitingCount = 0,
+                        drawnAt = now.minusSeconds(30),
+                        configuration = f.lottery.configuration.copy(winnerCount = 2),
+                    ),
+                ) + mapOf("participantOwnerIds" to listOf(f.organizer.id, f.member.id), "_revision" to 0L),
+            )
+            val stays =
+                listOf("b1" to f.entrants[0], "a1" to f.entrants[1]).map { (siteId, entrant) ->
+                    val id = DocumentKeys.reservation("shared", entrant.id)
+                    val stay =
+                        CampingFixtures.reservation().copy(
+                            id = id,
+                            lotteryId = "shared",
+                            campsiteId = siteId,
+                            entrantId = entrant.id,
+                            checkInDate = f.nights[0],
+                            checkOutDate = f.nights[0].plusDays(1),
+                            createdAt = now,
+                            acceptedTerms = CampingFixtures.reservation().acceptedTerms.copy(acceptedAt = now),
+                            payment = Payment(6500, now),
+                        )
+                    firebase.seed("reservations/$id", ReservationDocument.encode(stay))
+                    firebase.seed(
+                        "campsites/$siteId/calendar/${f.nights[0]}",
+                        CalendarNightDocument.encode(CalendarNight(f.nights[0], true, id)),
+                    )
+                    firebase.seed(
+                        "lotteries/shared/entries/${entrant.id}",
+                        LotteryEntryDocument.encode(
+                            LotteryEntry(
+                                "shared",
+                                entrant.id,
+                                EntryState.OFFERED,
+                                f.lottery.configuration.registrationOpensAt
+                                    .plusSeconds(30),
+                                now.minusSeconds(30),
+                            ),
+                        ),
+                    )
+                    stay
+                }
+            val failure = IOException("Interrupted image cleanup")
+            val interrupted =
+                FirestoreModerationRepository(
+                    f.member.clients.firestore,
+                    object : ImageRepository by f.member.container.images {
+                        /** Interrupts orchestration after removal facts have committed.
+                         * @param target Recorded cleanup target.
+                         */
+                        override suspend fun delete(target: ImageTarget): ImageUpdateResult =
+                            throw failure
+                    },
+                    FirestoreLotteryRepository(f.member.clients.firestore, firebase.clock, Random(17)),
+                    firebase.clock,
+                )
+            try {
+                interrupted.removeAccount(f.member.id, f.member.id, "Leaving")
+                error("Expected the injected cleanup failure")
+            } catch (actual: IOException) {
+                assertSame(failure, actual)
+            }
+            val removed =
+                checkNotNull(
+                    f.admin.container.accounts
+                        .get(f.member.id),
+                )
+            assertTrue(removed.roles.isEmpty())
+            assertTrue(firebase.documentExists("_removals/account_${f.member.id}"))
+            firebase.clock.current = now.plusSeconds(30)
+            f.member.container.moderation
+                .removeAccount(f.member.id, f.member.id, "Retry")
+            val cancelled =
+                checkNotNull(
+                    f.admin.container.bookings
+                        .get(stays[0].id),
+                )
+            assertEquals(
+                f.member.id,
+                f.admin.container.lotteries
+                    .get("shared")!!
+                    .cancellation!!
+                    .actorId,
+            )
+            assertEquals(f.member.id, cancelled.cancellation!!.actorId)
+            assertNotNull(cancelled.payment.refundedAt)
+            assertEquals(
+                stays[1],
+                f.admin.container.bookings
+                    .get(stays[1].id),
+            )
+            assertEquals(
+                removed.removal,
+                f.admin.container.accounts
+                    .get(f.member.id)!!
+                    .removal,
+            )
+            assertFalse(firebase.documentExists("_removals/account_${f.member.id}"))
+            assertFalse(firebase.documentExists("_removals/campsite_b1"))
+            assertFalse(firebase.documentExists("_removals/campsite_b2"))
+            val eventId = DocumentKeys.compound("RESERVATION_CANCELLED", stays[0].id)
+            val event =
+                f.admin.container.notifications
+                    .get(eventId)
+            firebase.clock.current = now.plusSeconds(60)
+            f.member.container.moderation
+                .removeAccount(f.member.id, f.member.id, "Another retry")
+            assertEquals(
+                cancelled,
+                f.admin.container.bookings
+                    .get(stays[0].id),
+            )
+            assertEquals(
+                event,
+                f.admin.container.notifications
+                    .get(eventId),
+            )
+        }
 
     /** Account removal scrubs editable data, clears devices, withdraws open entries and hides owned sites. */
     @Test(timeout = 60000)
@@ -203,7 +333,7 @@ class ModerationRepositoryTest {
                     active,
                     ended,
                     ended.copy(id = "draft", publishedAt = null, drawnAt = null),
-                    active.copy(id = "unrelated", ownerId = other.id),
+                    active.copy(id = "unrelated", ownerId = other.id, participantOwnerIds = setOf(other.id)),
                 )
             for (lottery in scenarios) {
                 firebase.seed(
@@ -292,7 +422,7 @@ class ModerationRepositoryTest {
             )
             val failure = IOException("Storage unavailable")
             val failingImages =
-                object : ImageRepository by admin.container.images {
+                object : ImageRepository by owner.container.images {
                     /**
                      * Injects one orchestration failure; actual Storage behavior belongs to image tests.
                      * @param target Attachment selected by the removal operation.
@@ -302,13 +432,13 @@ class ModerationRepositoryTest {
                 }
             val removals =
                 FirestoreModerationRepository(
-                    admin.clients.firestore,
+                    owner.clients.firestore,
                     failingImages,
-                    FirestoreLotteryRepository(admin.clients.firestore, firebase.clock, Random(17)),
+                    FirestoreLotteryRepository(owner.clients.firestore, firebase.clock, Random(17)),
                     firebase.clock,
                 )
             try {
-                removals.removeCampsite("site", admin.id, "First reason")
+                removals.removeCampsite("site", owner.id, "First reason")
                 error("Expected cleanup failure")
             } catch (actual: IOException) {
                 assertSame(failure, actual)
@@ -321,7 +451,6 @@ class ModerationRepositoryTest {
             assertTrue(firebase.documentExists("_removals/campsite_site"))
             firebase.clock.current = firebase.clock.current.plusSeconds(60)
             admin.container.moderation.removeCampsite("site", admin.id, "Retry reason")
-            admin.container.maintenance.resume(admin.id)
             assertEquals(
                 first,
                 admin.container.campsites

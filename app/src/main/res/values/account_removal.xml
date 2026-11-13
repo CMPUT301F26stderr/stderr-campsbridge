@@ -1,0 +1,20 @@
+<resources>
+    <string name="account_removal_entry">Delete profile</string>
+    <string name="account_removal_title">Delete profile?</string>
+    <string name="account_removal_body">Your personal details will be removed. Active reservations will be cancelled with simulated refunds, and active campsite and lottery activity will be cleaned up. History is retained. This cannot be undone.</string>
+    <string name="account_removal_confirm">Delete permanently</string>
+    <string name="account_removal_progress">Removing profile…</string>
+    <string name="account_removal_checking">Checking saved deletion…</string>
+    <string name="account_removal_wait">Please wait while this request finishes.</string>
+    <string name="account_removal_retry_title">Finish deleting your profile</string>
+    <string name="account_removal_incomplete">Cleanup did not finish. Retry to complete cancellations, refunds and the remaining removal work.</string>
+    <string name="account_removal_retry">Retry cleanup</string>
+    <string name="account_removal_not_started">Your profile is still active</string>
+    <string name="account_removal_active_body">The saved deletion has not removed this profile. Review the confirmation before starting again.</string>
+    <string name="account_removal_review">Review deletion</string>
+    <string name="account_removal_check_failed">Could not check the saved deletion</string>
+    <string name="account_removal_check_failed_body">Check the account again before retrying cleanup.</string>
+    <string name="account_removal_check">Check account</string>
+    <string name="account_removal_unavailable">Deletion cannot be retried</string>
+    <string name="account_removal_unavailable_body">The saved deletion could not be matched to the current profile.</string>
+</resources>

@@ -29,10 +29,12 @@ class AdminProfileNavigationTest {
     @get:Rule val compose = createComposeRule()
     private val host = TestAppHost()
 
+    /** Releases the shared graph and repository readers after each case. */
     @After fun close() {
         compose.runOnIdle { host.close() }
     }
 
+    /** Retains Browse input through saved-ID inspection and Back without writing records. */
     @Test fun relatedInspectionAndBackRetainOneBrowseParentAndItsInputs() {
         val profile =
             sampleAccount(

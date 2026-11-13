@@ -46,30 +46,40 @@ class SessionWorkIntegrationTest {
     fun ownerSessionDrawsAndDeliversResults() =
         runBlocking<Unit> {
             val fixture = firebase.drawFixture(entrants = 2, winners = 1)
+            val participant = firebase.registeredActor(Role.OWNER)
+            firebase.seed(
+                "lotteries/draw",
+                LotteryDocument.encode(fixture.lottery) +
+                    mapOf(
+                        "participantOwnerIds" to listOf(fixture.owner.id, participant.id),
+                        "_revision" to 0L,
+                    ),
+            )
             val announcement =
-                fixture.owner.container.notifications.announce(
+                participant.container.notifications.announce(
+                    "announcement-1",
                     "draw",
-                    fixture.owner.id,
+                    participant.id,
                     Announcement("Reminder", "Bring water"),
                 )
             val failures = mutableListOf<Exception>()
             val worker =
                 launch {
-                    fixture.owner.container.pendingWork.run(
-                        WorkSession(fixture.owner.id, setOf(Role.OWNER)),
+                    participant.container.pendingWork.run(
+                        WorkSession(participant.id, setOf(Role.OWNER)),
                         failures::add,
                     )
                 }
             try {
                 withTimeout(8000) {
-                    fixture.owner.container.lotteries
+                    participant.container.lotteries
                         .observe("draw")
                         .first { it?.drawnAt != null }
                 }
-                awaitEmptyQueue(fixture.owner, "lotteries/draw")
+                awaitEmptyQueue(participant, "lotteries/draw")
                 assertEquals(
                     0L,
-                    fixture.owner.container.lotteries
+                    participant.container.lotteries
                         .get("draw")!!
                         .waitingCount,
                 )
@@ -102,12 +112,14 @@ class SessionWorkIntegrationTest {
                     .reserve(fixture.request)
             val fromEntrant =
                 fixture.entrant.container.messages.send(
+                    "message-1",
                     reservationId,
                     fixture.entrant.id,
                     "Arrival at six",
                 )
             val fromOwner =
                 fixture.owner.container.messages.send(
+                    "message-2",
                     reservationId,
                     fixture.owner.id,
                     "See you then",
@@ -116,11 +128,16 @@ class SessionWorkIntegrationTest {
             firebase.seed(
                 "lotteries/other",
                 LotteryDocument.encode(
-                    fixture.lottery.copy(id = "other", ownerId = otherOwner.id),
+                    fixture.lottery.copy(
+                        id = "other",
+                        ownerId = otherOwner.id,
+                        participantOwnerIds = setOf(otherOwner.id),
+                    ),
                 ),
             )
             val unrelated =
                 otherOwner.container.notifications.announce(
+                    "announcement-2",
                     "other",
                     otherOwner.id,
                     Announcement("Other", "Other owner's work"),
@@ -177,6 +194,7 @@ class SessionWorkIntegrationTest {
             // A later owner session must discover the same stay through campsite ownership.
             val laterMessage =
                 fixture.entrant.container.messages.send(
+                    "message-3",
                     reservationId,
                     fixture.entrant.id,
                     "Updated arrival",

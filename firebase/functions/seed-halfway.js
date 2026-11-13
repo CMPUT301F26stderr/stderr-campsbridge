@@ -21,10 +21,10 @@ function compileFixture(fixture, actors, anchor) {
   const today = calendarDate(anchor, fixture.timeZone);
   const day = offset => new Date(Date.parse(today + 'T00:00:00Z') + offset * 86400000).toISOString().slice(0, 10);
   const put = (key, value) => { assert.ok(!documents.has(key), `Duplicate record ${key}`); documents.set(key, value); };
-  const notice = (type, subjectType, subjectId, recipients, createdAt) => {
-    const id = subjectType === 'RESERVATION' ? pair(type, subjectId) : pair(type, subjectId, ...recipients);
+  const notice = (type, subjectType, subjectId, recipients, createdAt, senderId = null) => {
+    const id = subjectType === 'LOTTERY' ? pair(type, subjectId, ...recipients) : pair(type, subjectId);
     const key = `notifications/${id}`;
-    put(key, { senderId: null, type, subject: { type: subjectType, id: subjectId }, announcement: null, createdAt });
+    put(key, { senderId, type, subject: { type: subjectType, id: subjectId }, announcement: null, createdAt });
     roots.add(key);
     for (const uid of recipients) put(`accounts/${uid}/inbox/${id}`, { readAt: null });
   };
@@ -47,21 +47,32 @@ function compileFixture(fixture, actors, anchor) {
     if (site.photo) photos.push({ attachmentId: `campsite_${site.id}`, blobId: `halfway_${site.id}`, source: site.photo, uploadedAt: anchor });
   }
   for (const lottery of fixture.lotteries) {
-    const site = documents.get(`campsites/${lottery.campsiteId}`);
-    assert.ok(site?.publishedAt, 'A lottery needs a published campsite');
+    assert.ok(fixture.actors[lottery.organizer]?.roles.includes('OWNER'), 'A lottery needs an owner organizer');
+    const participants = lottery.participants;
+    assert.ok(Array.isArray(participants) && participants.includes(lottery.organizer)
+      && new Set(participants).size === participants.length, 'Invalid lottery participants');
+    for (const owner of participants) assert.ok(fixture.actors[owner]?.roles.includes('OWNER'), 'A participant needs owner capability');
     const { registrationOpensSeconds: ro, registrationClosesSeconds: rc, bookingOpensSeconds: bo, bookingClosesSeconds: bc } = lottery;
     assert.ok([ro, rc, bo, bc].every(Number.isFinite) && ro < rc && rc <= bo && bo < bc, 'Invalid lottery window');
     const drawn = Object.keys(lottery.outcomes).length > 0;
     assert.ok(!drawn || rc <= 0, 'Draw outcomes require a closed registration window');
     const key = `lotteries/${lottery.id}`;
     roots.add(key);
-    put(key, { ownerId: site.ownerId, title: lottery.title, description: 'A whole campsite for a quiet break in the outdoors.',
+    put(key, { ownerId: actors[lottery.organizer], participantOwnerIds: participants.map(owner => actors[owner]).sort(),
+      title: lottery.title, description: 'A whole campsite for a quiet break in the outdoors.',
       registrationOpensAt: at(ro), registrationClosesAt: at(rc), bookingOpensAt: at(bo), bookingClosesAt: at(bc),
       winnerCount: lottery.winnerCount, waitlistCapacity: null, waitingCount: 0,
       createdAt: at(ro - 86400), publishedAt: at(ro - 3600), drawnAt: drawn ? at(rc) : null, cancellation: null, _revision: 0 });
-    const nights = lottery.nightOffsets.map(day);
-    for (const date of nights) assert.ok(documents.get(`campsites/${lottery.campsiteId}/calendar/${date}`)?.isOffered, 'Lottery nights must be offered');
-    put(`${key}/offers/${lottery.campsiteId}`, { campsiteId: lottery.campsiteId, nights });
+    assert.ok(Array.isArray(lottery.offers) && lottery.offers.length, 'A lottery needs campsite offers');
+    for (const offer of lottery.offers) {
+      const site = documents.get(`campsites/${offer.campsiteId}`);
+      assert.ok(site?.publishedAt, 'A lottery needs a published campsite');
+      assert.ok(participants.some(owner => actors[owner] === site.ownerId), 'Offered campsite owner must participate');
+      const nights = offer.nightOffsets.map(day);
+      assert.ok(nights.length && new Set(nights).size === nights.length, 'Offer nights must be unique');
+      for (const date of nights) assert.ok(documents.get(`campsites/${offer.campsiteId}/calendar/${date}`)?.isOffered, 'Lottery nights must be offered');
+      put(`${key}/offers/${offer.campsiteId}`, { campsiteId: offer.campsiteId, nights: nights.sort() });
+    }
     for (const [name, state] of Object.entries(lottery.outcomes)) {
       assert.ok(fixture.actors[name]?.roles.includes('ENTRANT') && ['OFFERED', 'LOST'].includes(state), 'Invalid entrant outcome');
       const uid = actors[name];
@@ -74,23 +85,50 @@ function compileFixture(fixture, actors, anchor) {
     assert.ok(lottery, 'Reservation lottery missing');
     const uid = actors[stay.entrant], id = pair(lottery.id, uid), key = `reservations/${id}`;
     assert.equal(documents.get(`lotteries/${lottery.id}/entries/${uid}`)?.state, 'OFFERED', 'Reservation needs a winning entrant');
-    const site = documents.get(`campsites/${lottery.campsiteId}`);
+    const site = documents.get(`campsites/${stay.campsiteId}`);
+    assert.ok(site, 'Reservation campsite missing');
     const nights = Array.from({ length: stay.nightCount }, (_, n) => day(stay.checkInDayOffset + n));
     assert.ok(stay.nightCount > 0 && stay.guestCount > 0 && stay.guestCount <= site.maxGuests, 'Invalid stay');
-    const offered = documents.get(`lotteries/${lottery.id}/offers/${lottery.campsiteId}`).nights;
+    const offer = documents.get(`lotteries/${lottery.id}/offers/${stay.campsiteId}`);
+    assert.ok(offer, 'Reservation campsite must be offered');
+    const offered = offer.nights;
     for (const date of nights) {
-      const night = documents.get(`campsites/${lottery.campsiteId}/calendar/${date}`);
+      const night = documents.get(`campsites/${stay.campsiteId}/calendar/${date}`);
       assert.ok(offered.includes(date) && night && night.reservationId === null, 'Reservation needs free offered nights');
       night.reservationId = id;
     }
     const bookedAt = at(lottery.bookingOpensSeconds + 60);
-    put(key, { lotteryId: lottery.id, entrantId: uid, campsiteId: lottery.campsiteId,
+    put(key, { lotteryId: lottery.id, entrantId: uid, campsiteId: stay.campsiteId,
       checkInDate: nights[0], checkOutDate: day(stay.checkInDayOffset + stay.nightCount), guestCount: stay.guestCount,
       bookedCampsite: { name: site.name, locationLabel: site.locationLabel, location: site.location, timeZone: site.timeZone },
       acceptedTerms: { rules: site.rules, cancellationPolicyVersion: 'full-refund-v1', acceptedAt: bookedAt },
       createdAt: bookedAt, cancellation: null, payment: { amountCents: site.nightlyPriceCents * stay.nightCount, paidAt: bookedAt, refundedAt: null } });
     roots.add(key);
     notice('RESERVATION_CONFIRMED', 'RESERVATION', id, [uid], bookedAt);
+  }
+  for (const review of fixture.reviews) {
+    assert.ok(documents.has(`campsites/${review.campsiteId}`), 'Review campsite missing');
+    assert.ok(fixture.actors[review.author]?.roles.includes('ENTRANT'), 'Review needs an entrant author');
+    assert.ok(review.rating === null || (Number.isInteger(review.rating) && review.rating >= 1 && review.rating <= 5), 'Invalid review rating');
+    assert.ok(review.body === null || (typeof review.body === 'string' && review.body.trim()), 'Invalid review text');
+    put(`campsites/${review.campsiteId}/reviews/${actors[review.author]}`, {
+      rating: review.rating, body: review.body, createdAt: at(review.createdSeconds), updatedAt: at(review.createdSeconds),
+    });
+  }
+  for (const message of fixture.messages) {
+    const reservationId = pair(message.lotteryId, actors[message.entrant]);
+    const reservation = documents.get(`reservations/${reservationId}`);
+    assert.ok(reservation, 'Message reservation missing');
+    const ownerId = documents.get(`campsites/${reservation.campsiteId}`).ownerId;
+    const senderId = actors[message.sender];
+    assert.ok(senderId === reservation.entrantId || senderId === ownerId, 'Message sender must be a reservation participant');
+    assert.notEqual(ownerId, reservation.entrantId, 'Conversation needs two distinct participants');
+    assert.ok(typeof message.body === 'string' && message.body.trim(), 'Message needs visible text');
+    const key = `messages/${message.id}`;
+    roots.add(key);
+    put(key, { reservationId, senderId, body: message.body, createdAt: at(message.createdSeconds), readAt: null });
+    const recipientId = senderId === ownerId ? reservation.entrantId : ownerId;
+    notice('NEW_MESSAGE', 'MESSAGE', message.id, [recipientId], at(message.createdSeconds), senderId);
   }
   // Live actions derive these same IDs. Reset also clears results created during rehearsal.
   for (const lottery of fixture.lotteries) {
@@ -191,7 +229,7 @@ async function main(argv) {
     console.log(`Halfway Auth and function service roles configured in ${args.project}.`);
     return;
   }
-  assert.ok(args.actors, 'Use --actors path/to/actors.json (host, entrant, other, admin Firebase UIDs)');
+  assert.ok(args.actors, 'Use --actors path/to/actors.json with a Firebase UID for each declared person');
   const actors = JSON.parse(fs.readFileSync(args.actors));
   const anchor = new Date(args.anchor || Date.now());
   const plan = compileFixture(fixture, actors, anchor);

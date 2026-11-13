@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking
 
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
 import io.github.CMPUT301F26stderr.campsbridge.data.booking.ReservationDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.campsite.CalendarNightDocument
@@ -61,6 +62,42 @@ import java.time.ZoneOffset
 @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
 class BookingRepositoryTest {
     @get:Rule val firebase = FirebaseEmulatorRule()
+
+    /** Booking, rejection and conversation authority follow the selected campsite's actual owner. */
+    @Test(timeout = 60000)
+    fun sharedLotteryBookingUsesTheSelectedCampsiteOwner() =
+        runBlocking {
+            val f = firebase.bookingFixture(shared = true)
+            val id =
+                f.entrant.container.bookings
+                    .reserve(f.request)
+            assertEquals(
+                f.campsite.id,
+                f.owner.container.bookings
+                    .get(id)!!
+                    .campsiteId,
+            )
+            f.owner.container.messages
+                .send("site-owner-message", id, f.owner.id, "The campsite is ready")
+            assertPersistenceFailure(Reason.NOT_ALLOWED) {
+                f.organizer.container.bookings
+                    .cancel(CancellationRequest(id, f.organizer.id, Role.OWNER))
+            }
+            val denied =
+                runCatching {
+                    f.organizer.container.messages
+                        .send("organizer-message", id, f.organizer.id, "Not this site's owner")
+                }.exceptionOrNull()
+            assertTrue(denied is FirebaseFirestoreException)
+            assertEquals(FirebaseFirestoreException.Code.PERMISSION_DENIED, (denied as FirebaseFirestoreException).code)
+            f.owner.container.bookings
+                .cancel(CancellationRequest(id, f.owner.id, Role.OWNER))
+            val cancelled =
+                f.entrant.container.bookings
+                    .get(id)!!
+            assertEquals(f.owner.id, cancelled.cancellation!!.actorId)
+            assertNotNull(cancelled.payment.refundedAt)
+        }
 
     /** Confirmation persists payment, all claimed nights, historical terms and delivery work. */
     @Test(timeout = 60000)
@@ -320,7 +357,7 @@ class BookingRepositoryTest {
     @Test(timeout = 60000)
     fun concurrentEntrantsCannotDoubleBookOverlappingNights() =
         runBlocking {
-            val fixture = firebase.bookingFixture()
+            val fixture = firebase.bookingFixture(shared = true)
             val second = firebase.registeredActor(Role.ENTRANT)
             firebase.seed(
                 "lotteries/draw/entries/${second.id}",

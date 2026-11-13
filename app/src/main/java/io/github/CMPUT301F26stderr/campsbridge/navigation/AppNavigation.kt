@@ -287,12 +287,10 @@ fun AppNavigation(
                     launchSingleTop =
                         true
                 }
-            }, onCampsite = { campsiteId, context ->
+            }, onCampsite = { campsiteId, context, ownerId ->
                 val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
                 val presentation =
-                    if (context ==
-                        LotteryContext.OWNER
-                    ) {
+                    if (context == LotteryContext.OWNER && ownerId == state.account.id) {
                         CampsiteDetailContext.PREVIEW
                     } else {
                         CampsiteDetailContext.VIEW

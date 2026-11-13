@@ -15,8 +15,10 @@ import io.github.CMPUT301F26stderr.campsbridge.data.image.ImageAttachmentDocumen
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryOfferDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.messaging.MessageDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.InboxReceiptDocument
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.review.ReviewDocument
 import io.github.CMPUT301F26stderr.campsbridge.demo.DemoPreviewData
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
@@ -248,6 +250,8 @@ fun DemoPreviewData.documents(): Map<String, Map<String, Any?>> =
         }
         this@documents.entries.forEach { docs.put(Paths.entry(it.lotteryId, it.accountId), LotteryEntryDocument, it) }
         reservations.forEach { docs.put(Paths.reservation(it.id), ReservationDocument, it) }
+        reviews.forEach { docs.put(Paths.review(it.campsiteId, it.authorId), ReviewDocument, it) }
+        messages.forEach { docs.put(Paths.message(it.id), MessageDocument, it) }
         events.forEach { docs.put(Paths.notification(it.id), NotificationDocument, it) }
         inboxes.forEach { (id, receipts) ->
             receipts.forEach { docs.put(Paths.receipt(id, it.notificationId), InboxReceiptDocument, it) }

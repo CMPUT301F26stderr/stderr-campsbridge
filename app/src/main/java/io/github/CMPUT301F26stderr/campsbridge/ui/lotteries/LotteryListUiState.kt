@@ -18,12 +18,14 @@ enum class LotteryListCategory { PUBLISHED, DRAFTS, ACTION_NEEDED, WAITING, HIST
  * @param lifecycle Current phase from the injected clock.
  * @param entryState Displayable own membership; unfinished winner/loser outcomes are absent.
  * @param reservationId Consumed opportunity's saved reservation, including cancelled stays.
+ * @param canContinueDraft This organizer can resume the existing draft-authoring flow.
  */
 data class LotteryListItem(
     val lottery: Lottery,
     val lifecycle: LotteryLifecycle,
     val entryState: EntryState? = null,
     val reservationId: String? = null,
+    val canContinueDraft: Boolean = false,
 )
 
 /** A linked source cannot be silently omitted or mistaken for a confirmed empty result. */

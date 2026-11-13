@@ -1,0 +1,16 @@
+<resources>
+    <string name="scan_qr">Scan QR</string>
+    <string name="scan_qr_retry">Try scanning again</string>
+    <string name="scan_qr_permission_title">Camera permission needed</string>
+    <string name="scan_qr_permission_body">Allow camera access to scan a campsite code.</string>
+    <string name="scan_qr_settings">Open app settings</string>
+    <string name="scan_qr_failed_title">Could not start scanner</string>
+    <string name="scan_qr_failed_body">Try opening the camera again.</string>
+    <string name="scan_qr_foreign_title">Unrecognized QR code</string>
+    <string name="scan_qr_foreign_body">Scan a Campsbridge campsite code.</string>
+    <string name="campsite_show_qr">Show QR</string>
+    <string name="campsite_qr_title">QR code</string>
+    <string name="campsite_qr_description">QR code for %1$s</string>
+    <string name="campsite_qr_hint">Scan to view this campsite and its lotteries.</string>
+    <string name="campsite_qr_failed">Could not create QR code.</string>
+</resources>

@@ -22,6 +22,54 @@ import kotlinx.coroutines.flow.map
 class FakeLotteryRepository(
     initial: List<Lottery> = emptyList(),
 ) : LotteryRepository {
+    /** Observes controlled collaborations without changing the organizer-only query.
+     * @param ownerId Participating owner identity.
+     */
+    override fun observeParticipating(ownerId: String): Flow<List<Lottery>> =
+        flow {
+            participantRequests.add(ownerId)
+            activeParticipantObservers++
+            try {
+                combine(records, ownerFailure) { rows, failure ->
+                    failure?.let { throw it }
+                    rows.filter { ownerId in it.participantOwnerIds }
+                }.collect { emit(it) }
+            } finally {
+                activeParticipantObservers--
+            }
+        }
+
+    /** Records the requested membership and delegates its outcome to the owning test.
+     * @param id Editable lottery.
+     * @param ownerId Organizer requesting the change.
+     * @param participantOwnerIds Complete desired membership.
+     */
+    override suspend fun updateParticipants(
+        id: String,
+        ownerId: String,
+        participantOwnerIds: Set<String>,
+    ) {
+        events += "participants:$id"
+        checkNotNull(
+            updateParticipantsHandler,
+        ) { "Membership writes are not configured" }(id, ownerId, participantOwnerIds)
+    }
+
+    /** Records one replacement action; its test controls saved outcomes independently.
+     * @param id Editable lottery.
+     * @param ownerId Acting owner.
+     * @param offers Complete desired allocations.
+     */
+    override suspend fun replaceOwnerOffers(
+        id: String,
+        ownerId: String,
+        offers: List<LotteryOffer>,
+    ) {
+        events += "replace:$id"
+        offerRequests.addAll(offers)
+        checkNotNull(replaceOwnerOffersHandler) { "Allocation replacement is not configured" }(id, ownerId, offers)
+    }
+
     val recordFailure = MutableStateFlow<Exception?>(null)
     val offerFailure = MutableStateFlow<Exception?>(null)
     val offerFailures = MutableStateFlow<Map<String, Exception>>(emptyMap())
@@ -39,9 +87,12 @@ class FakeLotteryRepository(
         private set
     val entries = MutableStateFlow<List<LotteryEntry>>(emptyList())
     val ownerRequests = mutableListOf<String>()
+    val participantRequests = mutableListOf<String>()
     val entrantRequests = mutableListOf<String>()
     val observedRecordIds = mutableListOf<String>()
     var activeOwnerObservers = 0
+        private set
+    var activeParticipantObservers = 0
         private set
     var activeEntrantObservers = 0
         private set
@@ -60,8 +111,11 @@ class FakeLotteryRepository(
     var setOfferHandler: (suspend (String, String, LotteryOffer) -> Unit)? = null
     var removeOfferHandler: (suspend (String, String, String) -> Unit)? = null
     var publishHandler: (suspend (String, String) -> Unit)? = null
+    var updateParticipantsHandler: (suspend (String, String, Set<String>) -> Unit)? = null
+    var replaceOwnerOffersHandler: (suspend (String, String, List<LotteryOffer>) -> Unit)? = null
     var joinHandler: (suspend (String, String) -> Unit)? = null
     var withdrawHandler: (suspend (String, String) -> Unit)? = null
+    var declineHandler: (suspend (String, String) -> Unit)? = null
     var drawHandler: (suspend (String) -> DrawResult)? = null
 
     /** Captures the exact arguments supplied to create/update without simulating a transaction.
@@ -69,7 +123,7 @@ class FakeLotteryRepository(
      * @param ownerId Requesting owner.
      * @param title Submitted title.
      * @param description Submitted optional text.
-     * @param configuration Submitted no-cap windows and winner count.
+     * @param configuration Submitted windows, winner count and optional waitlist capacity.
      */
     data class DetailsRequest(
         val id: String,
@@ -307,15 +361,17 @@ class FakeLotteryRepository(
         checkNotNull(withdrawHandler) { "Configure withdrawal" }(id, accountId)
     }
 
-    /** Rejects unconfigured decline.
+    /** Captures the actual target and requires a controlled decline outcome.
      * @param id Requested lottery.
      * @param accountId Requesting account.
      */
     override suspend fun decline(
         id: String,
         accountId: String,
-    ): Unit =
-        unsupported()
+    ) {
+        events.add("decline:$id:$accountId")
+        checkNotNull(declineHandler) { "Configure decline" }(id, accountId)
+    }
 
     /** Captures the saved identity and requires an explicit draw outcome.
      * @param id Requested lottery.

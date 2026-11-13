@@ -42,7 +42,7 @@ import java.time.format.FormatStyle
  * @param state Current form and per-input feedback.
  * @param opening Actual registration or booking opening point.
  * @param closing Corresponding closing point.
- * @param initialMonth Explicit site's clock month when no date is selected.
+ * @param initialMonth Shared display-zone month when no date is selected.
  * @param onDate Updates one local date after native confirmation.
  * @param onTime Updates one local time after native confirmation.
  */
@@ -74,7 +74,7 @@ fun LotteryWindowStep(
         Text(stringResource(R.string.lottery_selected_site_unavailable))
     } else {
         Text(
-            stringResource(R.string.lottery_schedule_zone, site.details.timeZone),
+            stringResource(R.string.lottery_schedule_zone),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -108,8 +108,8 @@ fun LotteryWindowStep(
  * @param point Fixed schedule identity for distinct saved dialog state.
  * @param value Current raw date/time pair.
  * @param error Explicit field feedback.
- * @param initialMonth Selected site's clock month.
- * @param enabled Whether the actual selected site/zone is known.
+ * @param initialMonth Shared display-zone month.
+ * @param enabled Whether the selected campsite is available.
  * @param onDate Confirms a local date.
  * @param onTime Confirms a local time.
  */

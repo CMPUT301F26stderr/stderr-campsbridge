@@ -15,6 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.AppDisplayTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import kotlinx.coroutines.CompletableDeferred
@@ -304,10 +305,10 @@ class LotterySetupPersistenceTest {
         }
 
     /**
-     * Fresh saved input uses the allocated site's actual zone and confirmed offers without
+     * Fresh saved input uses the shared display zone and confirmed offers without
      * writes.
      */
-    @Test fun reopeningHydratesSavedInputInTheCampsiteZone() =
+    @Test fun reopeningHydratesSavedInputInTheDisplayZone() =
         runTest {
             val saved = savedLottery()
             lotteries.records.value = listOf(saved)
@@ -320,34 +321,27 @@ class LotterySetupPersistenceTest {
             assertEquals(saved.title, draft.title)
             assertEquals(setOf(night), draft.nights)
             assertEquals(LotteryStep.REVIEW, draft.step)
-            val local =
-                saved.configuration.registrationOpensAt.atZone(
-                    ZoneId.of(site.details.timeZone),
-                )
+            val local = saved.configuration.registrationOpensAt.atZone(AppDisplayTime.zone)
             assertEquals(
                 LotteryLocalDateTime(local.toLocalDate(), local.toLocalTime()),
                 draft.schedule[LotterySchedulePoint.REGISTRATION_OPEN],
             )
-            assertEquals(site.details.timeZone, draft.scheduleZone)
             assertEquals(0, allocatedIds)
             assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
         }
 
-    /** No-offer drafts retain their stored configuration until a real site can supply its zone. */
-    @Test fun reopeningWithoutAnOfferConvertsTheScheduleAfterExplicitSiteChoice() =
+    /** Saved windows hydrate independently of allocation selection. */
+    @Test fun reopeningWithoutAnOfferRetainsTheDisplayedScheduleAcrossSiteChoice() =
         runTest {
             val saved = savedLottery()
             lotteries.records.value = listOf(saved)
             val model = model(id = saved.id)
             runCurrent()
             assertEquals(LotteryStep.SITE, model.state.value.draft.step)
-            assertTrue(
-                model.state.value.draft.schedule
-                    .isEmpty(),
-            )
+            val schedule = model.state.value.draft.schedule
             model.chooseCampsite(site.id)
-            assertEquals(site.details.timeZone, model.state.value.draft.scheduleZone)
-            val local = saved.configuration.bookingClosesAt.atZone(ZoneId.of(site.details.timeZone))
+            assertEquals(schedule, model.state.value.draft.schedule)
+            val local = saved.configuration.bookingClosesAt.atZone(AppDisplayTime.zone)
             assertEquals(
                 LotteryLocalDateTime(local.toLocalDate(), local.toLocalTime()),
                 model.state.value.draft.schedule[LotterySchedulePoint.BOOKING_CLOSE],
@@ -408,7 +402,8 @@ class LotterySetupPersistenceTest {
     /** A saved target from another owner is unavailable and cannot be edited or recreated. */
     @Test fun foreignSavedTargetIsUnavailable() =
         runTest {
-            lotteries.records.value = listOf(savedLottery().copy(ownerId = "another-owner"))
+            lotteries.records.value =
+                listOf(savedLottery().copy(ownerId = "another-owner", participantOwnerIds = setOf("another-owner")))
             val model = model(id = "saved")
             runCurrent()
             assertEquals(LotteryTargetLoad.UNAVAILABLE, model.state.value.targetLoad)
@@ -564,7 +559,7 @@ class LotterySetupPersistenceTest {
                     }
                 }
         }
-        lotteries.setOfferHandler = { id, _, offer -> lotteries.serverOffers[id] = listOf(offer) }
+        lotteries.replaceOwnerOffersHandler = { id, _, offers -> lotteries.serverOffers[id] = offers }
         lotteries.removeOfferHandler = { id, _, campsiteId ->
             lotteries.serverOffers[id] =
                 lotteries.serverOffers[id].orEmpty().filterNot { it.campsiteId == campsiteId }

@@ -14,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
@@ -62,8 +63,11 @@ internal class NotificationLogTestFixture {
         saved: SavedStateHandle = SavedStateHandle(),
         key: String = "log",
     ): NotificationLogViewModel =
-        NotificationLogViewModel(repository, NotificationContentLoader(repository, lotteries, bookings), saved)
-            .also { store.put(key, it) }
+        NotificationLogViewModel(
+            repository,
+            NotificationContentLoader(repository, lotteries, bookings, FakeMessageRepository()),
+            saved,
+        ).also { store.put(key, it) }
 }
 
 /** Creates a valid immutable event using the shared fixture time.

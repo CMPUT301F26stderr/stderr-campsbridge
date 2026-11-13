@@ -36,7 +36,7 @@ object ReviewDocument : DocumentCodec<Review>() {
         Review(
             fields.parentId,
             fields.id,
-            fields.long("rating"),
+            fields.optionalLong("rating"),
             fields.optionalString("body"),
             fields.instant("createdAt"),
             fields.instant("updatedAt"),
