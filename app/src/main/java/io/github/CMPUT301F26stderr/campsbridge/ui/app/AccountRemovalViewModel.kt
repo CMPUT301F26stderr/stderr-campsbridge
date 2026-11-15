@@ -145,7 +145,32 @@ class AccountRemovalViewModel(
      * @param request Retained original request; another account never substitutes for it.
      */
     private fun checkRecovery(request: AccountRemovalRequest) {
-        // Restored identity reconciliation follows in the next focused change.
+        mutableState.value = AccountRemovalUiState(AccountRemovalPhase.RESTORING, request)
+        viewModelScope.launch {
+            try {
+                val actual = identity.establishIdentity()
+                currentCoroutineContext().ensureActive()
+                if (actual != request.actorId || request.accountId != request.actorId) {
+                    mutableState.value = AccountRemovalUiState(AccountRemovalPhase.UNAVAILABLE, request)
+                    return@launch
+                }
+                val account = accounts.get(request.accountId)
+                currentCoroutineContext().ensureActive()
+                val phase =
+                    when {
+                        account?.id != request.accountId -> AccountRemovalPhase.UNAVAILABLE
+                        account.removal?.actorId == request.actorId -> AccountRemovalPhase.RETRY
+                        account.isActive -> AccountRemovalPhase.NOT_STARTED
+                        else -> AccountRemovalPhase.UNAVAILABLE
+                    }
+                mutableState.value = AccountRemovalUiState(phase, request)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                currentCoroutineContext().ensureActive()
+                mutableState.value = AccountRemovalUiState(AccountRemovalPhase.RECOVERY_FAILED, request)
+            }
+        }
     }
 
     /** Retires local recovery identity only after completion or an unsubmitted cancellation. */
