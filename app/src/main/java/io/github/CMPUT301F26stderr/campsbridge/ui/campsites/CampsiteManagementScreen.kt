@@ -65,6 +65,7 @@ fun CampsiteManagementScreen(
     onRetryPhoto: () -> Unit,
     modifier: Modifier = Modifier,
     onResume: (() -> Unit)? = null,
+    onEdit: (() -> Unit)? = null,
     onAvailability: (() -> Unit)? = null,
     onPreview: (() -> Unit)? = null,
     onCreateLottery: (() -> Unit)? = null,
@@ -173,6 +174,13 @@ fun CampsiteManagementScreen(
                         FailureContent(stringResource(R.string.photo_display_failure), onRetryPhoto)
                     }
                     Column {
+                        if (site.isPublished && onEdit != null) {
+                            NavigationRow(
+                                stringResource(R.string.campsite_edit_title),
+                                onEdit,
+                                icon = Icons.Default.Edit,
+                            )
+                        }
                         if (!site.isPublished && onResume != null) {
                             NavigationRow(
                                 stringResource(R.string.campsite_resume),
@@ -234,6 +242,7 @@ private fun CampsiteManagementPreview() {
             {},
             {},
             {},
+            onEdit = {},
             onAvailability = {},
             onPreview = {},
             onCreateLottery = {},

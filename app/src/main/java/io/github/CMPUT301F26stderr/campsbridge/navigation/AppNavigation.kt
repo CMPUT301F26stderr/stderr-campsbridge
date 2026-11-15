@@ -65,6 +65,7 @@ fun AppNavigation(
     campsiteListFactory: ViewModelProvider.Factory,
     campsiteDetailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     campsiteSetupFactory: (String?) -> ViewModelProvider.Factory,
+    campsiteEditFactory: (String) -> ViewModelProvider.Factory,
     availabilityFactory: (String) -> ViewModelProvider.Factory,
     exploreFactory: ViewModelProvider.Factory,
     lotterySetupFactory: (String?) -> ViewModelProvider.Factory,
@@ -313,6 +314,7 @@ fun AppNavigation(
             campsiteListFactory,
             campsiteDetailFactory,
             campsiteSetupFactory,
+            campsiteEditFactory,
             availabilityFactory,
         )
     }

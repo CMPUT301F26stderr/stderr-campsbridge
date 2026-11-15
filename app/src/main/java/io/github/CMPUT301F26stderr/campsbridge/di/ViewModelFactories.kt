@@ -10,6 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifferen
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
@@ -297,6 +298,24 @@ fun exploreViewModelFactory(services: AppServices): ViewModelProvider.Factory =
                 matchesCapacity = ::matchesGuestCapacity,
                 sortCampsites = ::sortCampsitesByName,
                 clock = services.clock,
+            )
+        }
+    }
+
+/** Constructs the published-listing editor independently of setup and availability. */
+fun campsiteEditViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    campsiteId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            CampsiteEditViewModel(
+                ownerId,
+                campsiteId,
+                services.repositories.campsites,
+                services.repositories.images,
+                createSavedStateHandle(),
             )
         }
     }

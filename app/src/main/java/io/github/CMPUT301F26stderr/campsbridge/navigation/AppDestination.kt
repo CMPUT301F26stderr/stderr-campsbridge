@@ -49,6 +49,7 @@ object AppDestination {
     const val EXPLORE = "entrant/explore"
     const val ONBOARDING = "onboarding"
     const val PROFILE = "profile"
+    const val CAMPSITE_EDIT = "owner/campsite-edit/{campsiteId}"
     const val CAMPSITE_SETUP_NEW = "owner/campsite-setup/new"
     const val CAMPSITE_SETUP_SAVED = "owner/campsite-setup/saved/{campsiteId}"
     const val LOTTERY_SETUP = "owner/lottery-setup/new"
@@ -169,6 +170,10 @@ object AppDestination {
         } else {
             "owner/campsite-setup/saved/${Uri.encode(campsiteId)}"
         }
+
+    /** Opens one published listing editor with an encoded saved identity. */
+    fun campsiteEdit(campsiteId: String): String =
+        "owner/campsite-edit/${Uri.encode(campsiteId)}"
 
     /** Addresses the registered owner inventory primary. */
     fun ownerCampsites(): String =

@@ -27,6 +27,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 fun CampsiteDetailRoute(
     model: CampsiteDetailViewModel,
     onResume: (() -> Unit)? = null,
+    onEdit: (() -> Unit)? = null,
     onAvailability: (() -> Unit)? = null,
     section: CampsiteDetailSection = CampsiteDetailSection.OVERVIEW,
     onOpenSection: (CampsiteDetailSection) -> Unit = {},
@@ -156,6 +157,7 @@ fun CampsiteDetailRoute(
         model::retry,
         model::retryPhoto,
         onResume = onResume,
+        onEdit = onEdit,
         onAvailability = onAvailability,
         onPreview = onPreview,
         onCreateLottery = onCreateLottery,

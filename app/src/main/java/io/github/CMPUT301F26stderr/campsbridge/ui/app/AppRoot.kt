@@ -51,6 +51,7 @@ fun AppRoot(
     campsiteListFactory: (String) -> ViewModelProvider.Factory,
     campsiteDetailFactory: (String, String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     campsiteSetupFactory: (String, String?) -> ViewModelProvider.Factory,
+    campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
     availabilityFactory: (String, String) -> ViewModelProvider.Factory,
     exploreFactory: () -> ViewModelProvider.Factory,
     lotterySetupFactory: (String, String?) -> ViewModelProvider.Factory,
@@ -127,6 +128,7 @@ fun AppRoot(
                                     campsiteDetailFactory(session.account.id, id, context)
                                 },
                                 { id -> campsiteSetupFactory(session.account.id, id) },
+                                { id -> campsiteEditFactory(session.account.id, id) },
                                 { id -> availabilityFactory(session.account.id, id) },
                                 exploreFactory(),
                                 { id -> lotterySetupFactory(session.account.id, id) },

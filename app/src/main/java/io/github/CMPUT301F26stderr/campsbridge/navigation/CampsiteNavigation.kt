@@ -50,6 +50,7 @@ internal fun NavGraphBuilder.campsiteGraph(
     listFactory: ViewModelProvider.Factory,
     detailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     setupFactory: (String?) -> ViewModelProvider.Factory,
+    editFactory: (String) -> ViewModelProvider.Factory,
     availabilityFactory: (String) -> ViewModelProvider.Factory,
 ) {
     composable(AppDestination.ownerCampsites()) {
@@ -111,6 +112,8 @@ internal fun NavGraphBuilder.campsiteGraph(
                 controller.navigate(
                     AppDestination.availabilityEditor(id),
                 ) { launchSingleTop = true }
+            }, onEdit = {
+                controller.navigate(AppDestination.campsiteEdit(id)) { launchSingleTop = true }
             }, onResume = {
                 controller.navigate(
                     AppDestination.campsiteSetupGraph(id),
@@ -118,6 +121,7 @@ internal fun NavGraphBuilder.campsiteGraph(
             }) { controller.popBackStack() }
         }
     }
+    campsiteEditGraph(controller, editFactory)
     campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.PREVIEW, detailFactory)
     composable(
         AppDestination.AVAILABILITY_EDITOR,

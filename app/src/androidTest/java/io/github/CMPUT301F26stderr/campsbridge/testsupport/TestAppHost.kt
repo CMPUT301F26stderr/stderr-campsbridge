@@ -43,6 +43,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifference
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
@@ -220,6 +221,13 @@ class TestAppHost : AutoCloseable {
                                 createSavedStateHandle(),
                                 remainingAvailabilityEdits = remainingAvailabilityEdits,
                             )
+                        }
+                    }
+                },
+                { accountId, id ->
+                    viewModelFactory {
+                        initializer {
+                            CampsiteEditViewModel(accountId, id, campsites, images, createSavedStateHandle())
                         }
                     }
                 },
