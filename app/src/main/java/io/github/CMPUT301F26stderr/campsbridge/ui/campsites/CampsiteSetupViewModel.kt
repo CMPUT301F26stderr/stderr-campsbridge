@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
 import java.time.YearMonth
@@ -718,7 +717,7 @@ class CampsiteSetupViewModel(
                         return@launch
                     }
                     confirmedSite = site
-                    baseline = site?.let(::draftFor) ?: CampsiteDraft(id = targetId)
+                    baseline = site?.toDraft() ?: CampsiteDraft(id = targetId)
                     val restoredDraft = restoreDraft(baseline)
                     val zone =
                         restoredDraft.timeZone
@@ -798,26 +797,6 @@ class CampsiteSetupViewModel(
                 }
             }
     }
-
-    /** Projects confirmed fields into initial editable spelling, retaining exact integer cents.
-     * @param site Confirmed unpublished target.
-     */
-    private fun draftFor(site: Campsite): CampsiteDraft =
-        with(site.details) {
-            CampsiteDraft(
-                id = site.id,
-                name = name,
-                description = description,
-                location = location,
-                locationLabel = locationLabel,
-                timeZone = timeZone,
-                maxGuestsText = maxGuests.toString(),
-                priceText = BigDecimal.valueOf(nightlyPriceCents, 2).toPlainString(),
-                amenities = amenities,
-                tags = tags,
-                rules = rules,
-            )
-        }
 
     /** Observes exactly one actual saved attachment without applying staged photo intent.
      * @param id Saved parent identity.

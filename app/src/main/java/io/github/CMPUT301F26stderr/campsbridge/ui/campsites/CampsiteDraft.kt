@@ -1,6 +1,8 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
+import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
+import java.math.BigDecimal
 import java.time.LocalDate
 
 /** Ordered setup content; allocation precedes review despite the prototype frame numbering. */
@@ -47,3 +49,21 @@ data class CampsiteDraft(
     val requestedAvailability: Map<LocalDate, Boolean> = emptyMap(),
     val returnToReview: Boolean = false,
 )
+
+/** Restores saved details with exact integer cents for both setup and the published editor. */
+internal fun Campsite.toDraft(): CampsiteDraft =
+    with(details) {
+        CampsiteDraft(
+            id = id,
+            name = name,
+            description = description,
+            location = location,
+            locationLabel = locationLabel,
+            timeZone = timeZone,
+            maxGuestsText = maxGuests.toString(),
+            priceText = BigDecimal.valueOf(nightlyPriceCents, 2).toPlainString(),
+            amenities = amenities,
+            tags = tags,
+            rules = rules,
+        )
+    }
