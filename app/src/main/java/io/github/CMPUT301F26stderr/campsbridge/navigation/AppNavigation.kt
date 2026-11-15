@@ -71,6 +71,7 @@ import java.util.Locale
  * @param modifier Host layout; child screens own their own insets.
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
+ * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  */
 @Composable
 fun AppNavigation(
@@ -99,6 +100,7 @@ fun AppNavigation(
     modifier: Modifier = Modifier,
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
+    campsiteEditFactory: (String) -> ViewModelProvider.Factory,
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -339,6 +341,7 @@ fun AppNavigation(
                 campsiteDetailFactory,
                 campsiteSetupFactory,
                 availabilityFactory,
+                campsiteEditFactory,
             )
         }
     }
