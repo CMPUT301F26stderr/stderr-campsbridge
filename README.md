@@ -41,6 +41,8 @@ The default `debug` build opens a populated offline scenario without Firebase se
 
 Owner campsite setup, saved listing details, availability and lottery flows use the existing application code. In Firebase-enabled builds, explicit actions save through the repositories. Accepted name/contact, campsite search/capacity/ordering and lottery-window helpers remain connected. Availability editing and participant filtering use their implemented helpers.
 
+Published listings open **Manage campsite → Edit campsite**. The section menu retains local edits and uses setup validation. **Save details** updates the existing listing; photos use their own Save/Remove controls and availability opens its separate editor. Back asks before discarding unsaved input. Failed saves retain edits for retry, and confirmed changes appear in management and on reopening.
+
 Shared repositories, notification/image readers, Android alert adapters and separate feature graph/factory contracts are available. Inbox, notification settings, the notification log and single-record admin pages show pending feedback until their feature implementations arrive. Offline bookings and cancellations are saved in memory so they show up in Reservations. The offline adapters do not simulate campsite or lottery transactions.
 
 Select `firebaseDebug` in Android Studio for real account identity, Firestore and Storage, or use `release` for the delivery build. See [Firebase setup](firebase/README.md) for cloud/emulator configuration and [demo boundaries](app/src/debug/java/io/github/CMPUT301F26stderr/campsbridge/demo/README.md) for supported local behavior. Firebase startup does not create sample accounts.

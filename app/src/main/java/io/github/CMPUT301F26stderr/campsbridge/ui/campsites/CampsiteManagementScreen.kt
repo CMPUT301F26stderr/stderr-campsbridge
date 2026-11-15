@@ -51,6 +51,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param modifier Caller layout.
  * @param onAvailability Opens the registered independent offer editor.
  * @param onResume Opens existing draft setup; never used for a published listing.
+ * @param onEdit Opens the registered published-listing editor.
  * @param onPreview Opens the separate read-only owner preview graph.
  * @param onCreateLottery Opens the registered local lottery setup from a published listing.
  * @param onViewLotteries Opens the registered allocation-filtered owner list.

@@ -40,6 +40,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
  * @param detailFactory Saved reader dependencies for an ID/context.
  * @param availabilityFactory Dependencies for the separate saved inventory editor.
  * @param setupFactory Local editor dependencies for a new or existing draft.
+ * @param editFactory Independent published-listing editor dependencies.
  */
 internal fun NavGraphBuilder.campsiteGraph(
     controller: NavHostController,

@@ -40,6 +40,7 @@ import java.util.Locale
  * @param campsiteDetailFactory Saved reader dependencies keyed by identity/context.
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Local editor dependencies for a new/saved draft.
+ * @param campsiteEditFactory Published-listing details and photo editor dependencies.
  * @param exploreFactory Discovery/filter dependencies for the current account.
  * @param lotterySetupFactory New/saved lottery-setup dependencies for the current owner.
  * @param lotteryDetailFactory Saved owner-reader dependencies.

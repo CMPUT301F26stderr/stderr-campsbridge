@@ -30,6 +30,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param campsiteDetailFactory Factory for a saved identity/context reader.
  * @param availabilityFactory Dependencies for an independent saved-campsite inventory editor.
  * @param campsiteSetupFactory Factory for a local setup parent.
+ * @param campsiteEditFactory Factory for an independent published-listing editor.
  * @param exploreFactory Factory for this account's discovery/filter graph.
  * @param lotterySetupFactory Factory for this owner's new/saved lottery setup graph.
  * @param lotteryDetailFactory Factory for this owner's saved lottery overview.

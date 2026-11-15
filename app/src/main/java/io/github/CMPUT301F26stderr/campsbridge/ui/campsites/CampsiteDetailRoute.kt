@@ -13,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
  * @param model Management graph owner, never borrowed from another context.
  * @param onAvailability Opens the independent saved inventory editor.
  * @param onResume Opens the registered setup parent for an unpublished draft.
+ * @param onEdit Opens the independent published-listing editor.
  * @param onBack Returns to the caller's retained primary destination.
  * @param section Actual registered read-only child.
  * @param onOpenSection Opens a child within this saved-reader graph.
