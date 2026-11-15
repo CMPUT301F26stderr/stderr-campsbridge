@@ -1,0 +1,54 @@
+{
+  "repository": "CMPUT301F26stderr/ref",
+  "revision": "44c4c47c224722a68677d6f5af9103d6fa14a761",
+  "files": [
+    {
+      "path": "app/src/androidTest/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditFlowTest.kt",
+      "sha": "98ed78a84709eaaa744314046c13a282c8ec6eff"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/navigation/CampsiteEditNavigation.kt",
+      "sha": "661ec5d63fa097ebb2b30abfdbd8d6d94f50e1f8"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteDraftState.kt",
+      "sha": "cfc1a3886a53d597c125275edcc5214743d38b4e"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditPreviewProvider.kt",
+      "sha": "e32d28bd448c9e2a1cf479cad67efbe2a986ee69"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditPreviews.kt",
+      "sha": "dfa221ccfdad9d74083e5b0ac01ab50ae3eb8ed4"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditRoute.kt",
+      "sha": "e8f00c292c52c005075b06c70cac604debcf795e"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditScreen.kt",
+      "sha": "a5110c0c5309b409fc94ee339d085748b8e7a06c"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditUiState.kt",
+      "sha": "9ec9b9a2a71b792323a16187784d591cdb96f50f"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditViewModel.kt",
+      "sha": "7e9dadcbf3d6a0b2564a80cfe723507836465234"
+    },
+    {
+      "path": "app/src/main/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsitePhotoRoute.kt",
+      "sha": "a79312ccc31667ec4246eb7739cb37a010cb3cb4"
+    },
+    {
+      "path": "app/src/main/res/values/campsite_edit.xml",
+      "sha": "f573acb421d83f1e3af852f880ccb35aa8ff93c3"
+    },
+    {
+      "path": "app/src/test/java/io/github/CMPUT301F26stderr/campsbridge/ui/campsites/CampsiteEditViewModelTest.kt",
+      "sha": "f263f08b48a29e6a35cc12ce12752e71097bbd18"
+    }
+  ]
+}
