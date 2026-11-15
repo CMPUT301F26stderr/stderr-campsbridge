@@ -19,6 +19,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageOperation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -51,6 +54,7 @@ fun CampsiteEditScreen(
     onAvailability: () -> Unit,
     snackbar: SnackbarHostState,
     backEnabled: Boolean = true,
+    photo: ImageSlotState = ImageSlotState(loadState = ImageLoadState.READY),
 ) {
     val content = state as? CampsiteEditUiState.Content
     AppScreen(
@@ -112,7 +116,20 @@ fun CampsiteEditScreen(
                     enabled = !current.isSaving,
                 )
             }
-            NavigationRow(stringResource(R.string.campsite_edit_photo), onPhoto, enabled = !current.isSaving)
+            NavigationRow(
+                stringResource(R.string.campsite_edit_photo),
+                onPhoto,
+                enabled = !current.isSaving,
+                supportingText =
+                    when {
+                        photo.unconfirmedBlobId != null -> stringResource(R.string.photo_unconfirmed)
+                        photo.operation != ImageOperation.IDLE -> stringResource(R.string.photo_checking)
+                        photo.failure != null -> stringResource(R.string.campsite_edit_photo_attention)
+                        photo.candidate != null -> stringResource(R.string.campsite_photo_selected)
+                        photo.loadState == ImageLoadState.FAILED -> stringResource(R.string.photo_load_failure)
+                        else -> null
+                    },
+            )
             NavigationRow(stringResource(R.string.availability_title), onAvailability, enabled = !current.isSaving)
         }
     }

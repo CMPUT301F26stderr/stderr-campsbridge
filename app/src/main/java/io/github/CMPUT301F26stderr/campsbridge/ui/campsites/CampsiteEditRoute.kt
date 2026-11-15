@@ -72,8 +72,8 @@ fun CampsiteEditRoute(
     }
     LaunchedEffect(saved, lifecycle) {
         if (saved && lifecycle == Lifecycle.State.RESUMED && isSummary) {
-            model.acknowledgeSave()
             snackbar.showSnackbar(savedText)
+            model.acknowledgeSave()
         }
     }
     val content = state as? CampsiteEditUiState.Content
@@ -161,6 +161,7 @@ fun CampsiteEditRoute(
                 onAvailability,
                 snackbar,
                 backEnabled = photo.canChoose,
+                photo = photo,
             )
         }
     }

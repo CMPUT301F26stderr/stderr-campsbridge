@@ -14,5 +14,6 @@
     <string name="campsite_edit_discard_title">Discard campsite edits?</string>
     <string name="campsite_edit_discard_body">Unsaved details and photo selections will be discarded. Photos already saved or removed stay changed.</string>
     <string name="campsite_edit_photo_hint">Save or remove this photo separately from campsite details.</string>
+    <string name="campsite_edit_photo_attention">Photo change needs attention. Open to retry.</string>
     <string name="campsite_edit_capacity_summary">%1$s guests · CAD %2$s / night</string>
 </resources>
