@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="campsite_edit_title">Edit campsite</string>
+    <string name="campsite_edit_details">Campsite details</string>
+    <string name="campsite_edit_basics">Name and description</string>
+    <string name="campsite_edit_capacity">Capacity and price</string>
+    <string name="campsite_edit_options">Amenities and tags</string>
+    <string name="campsite_edit_rules">Rules</string>
+    <string name="campsite_edit_photo">Campsite photo</string>
+    <string name="campsite_edit_save">Save details</string>
+    <string name="campsite_edit_saved">Campsite details saved.</string>
+    <string name="campsite_edit_failed">Could not save details. Your edits are kept for retry.</string>
+    <string name="campsite_edit_invalid">Check the highlighted fields before saving.</string>
+    <string name="campsite_edit_discard_title">Discard campsite edits?</string>
+    <string name="campsite_edit_discard_body">Unsaved details and photo selections will be discarded. Photos already saved or removed stay changed.</string>
+    <string name="campsite_edit_photo_hint">Save or remove this photo separately from campsite details.</string>
+    <string name="campsite_edit_capacity_summary">%1$s guests · CAD %2$s / night</string>
+</resources>
