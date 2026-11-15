@@ -41,6 +41,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param reservationDetailFactory Factory for a saved aggregate, keyed by account/ID/context.
  * @param reservationListFactory Active-list dependencies keyed by account/context/filter.
  * @param inboxFactory Factory for the ready account receipt owner, independent of workspace.
+ * @param accountRemoval Optional root removal owner awaiting its presentation connection.
  * @param bookingFactory Factory for a winner wizard keyed by account, lottery and campsite IDs.
  * @param adminBrowseFactory Factory for the account-hosted read-only admin Browse graph.
  * @param notificationLogFactory Factory for the independent read-only notification-log graph.
@@ -72,6 +73,7 @@ fun AppRoot(
     notificationEntries: NotificationEntryViewModel,
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
+    accountRemoval: AccountRemovalViewModel? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val entry by notificationEntries.state.collectAsStateWithLifecycle()
