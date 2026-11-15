@@ -1,3 +1,7 @@
+/*
+ * Stores only account-keyed local progress and workspace selection; failures propagate.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.preferences
 
 import androidx.datastore.core.DataStore

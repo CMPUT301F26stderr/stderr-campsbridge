@@ -1,3 +1,7 @@
+/*
+ * Tests display-name validation and normalization through observable parser results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic
 
 import org.junit.Assert.assertEquals

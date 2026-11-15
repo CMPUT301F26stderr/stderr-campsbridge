@@ -1,3 +1,7 @@
+/*
+ * Combines immutable events, receipt read state and independently loaded linked content for Inbox rows.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
@@ -24,7 +28,7 @@ data class InboxItem(
 enum class InboxEventStatus { LOADING, UNAVAILABLE, FAILURE }
 
 /** Receipt retained separately until its actual immutable event can be loaded.
- * @param receipt Actual account receipt, including read state for the reserved unread counter.
+ * @param receipt Actual account receipt, including read state for unread counting.
  * @param status Independent event-read outcome.
  */
 data class UnavailableInboxReceipt(

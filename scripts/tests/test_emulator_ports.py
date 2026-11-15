@@ -54,12 +54,12 @@ class EmulatorPortsTest(unittest.TestCase):
 
     def test_firebase_configuration_keeps_sources_and_assigns_all_service_ports(self):
         original = json.loads((ROOT / "firebase/firebase.json").read_text())
-        ports = dict(zip(EMULATORS.FIREBASE_SERVICES, range(31000, 31006)))
+        ports = dict(zip(EMULATORS.FIREBASE_SERVICES, range(31000, 31000 + len(EMULATORS.FIREBASE_SERVICES))))
         config = EMULATORS.firebase_config(original, ports)
         self.assertEqual(original["firestore"], config["firestore"])
         self.assertEqual(original["storage"], config["storage"])
         self.assertEqual(9099, original["emulators"]["auth"]["port"])
-        for service in ("auth", "firestore", "storage", "hub", "logging"):
+        for service in ("auth", "firestore", "storage", "functions", "eventarc", "tasks", "hub", "logging"):
             self.assertEqual("127.0.0.1", config["emulators"][service]["host"])
             self.assertEqual(ports[service], config["emulators"][service]["port"])
         self.assertEqual(ports["websocket"], config["emulators"]["firestore"]["websocketPort"])

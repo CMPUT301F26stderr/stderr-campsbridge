@@ -1,0 +1,18 @@
+<resources>
+    <string name="lottery_allocations_title">Manage my campsites</string>
+    <string name="lottery_allocations_editor_title">Your campsites</string>
+    <string name="lottery_allocations_hint">Choose your campsites and offered nights. Save applies your changes to this lottery.</string>
+    <string name="lottery_allocations_save">Save campsites</string>
+    <string name="lottery_allocations_saving">Saving campsites</string>
+    <string name="lottery_allocations_failed">Could not save your campsites.</string>
+    <string name="lottery_allocations_empty">No campsites added</string>
+    <string name="lottery_allocations_locked">Allocation editing locked</string>
+    <string name="lottery_allocations_locked_body">These campsite allocations can no longer be changed.</string>
+    <string name="lottery_allocations_changed">The lottery changed. Compare the saved campsites with your changes before saving again.</string>
+    <string name="lottery_allocations_saved">Currently saved</string>
+    <string name="lottery_allocations_local">Your changes</string>
+    <string name="lottery_allocations_unavailable">This campsite is unavailable. Remove it from your selection to save.</string>
+    <string name="lottery_allocations_discard_body">Your unsaved campsite allocations will be discarded.</string>
+    <string name="lottery_allocations_no_choices">No other published campsites</string>
+    <string name="lottery_allocations_no_choices_body">Publish one of your campsites before adding it here.</string>
+</resources>

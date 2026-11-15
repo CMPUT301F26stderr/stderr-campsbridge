@@ -1,3 +1,7 @@
+/*
+ * Real membership routes use observed facts and shared submission/confirmation controls.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import android.view.KeyEvent

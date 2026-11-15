@@ -1,3 +1,7 @@
+/*
+ * Builds one consistent environment before exposing any repositories to controllers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import android.content.Context
@@ -84,6 +88,7 @@ class AppContainerFactory(
                     repositories.notifications,
                     repositories.lotteries,
                     repositories.bookings,
+                    repositories.messages,
                 ),
                 AndroidNotificationPermission(context),
                 DataStoreAlertDeliveryStore(store),

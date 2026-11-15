@@ -1,3 +1,7 @@
+/*
+ * Passive states cover unavailable names, partial results and explicit pending filtering.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

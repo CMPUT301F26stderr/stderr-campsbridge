@@ -1,3 +1,7 @@
+/*
+ * Exercises real saved-reader children, caller contexts and scoped read failures.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.material3.Button
@@ -77,8 +81,8 @@ class CampsiteDetailFlowTest {
         compose.onNodeWithContentDescription("Back").performClick()
         open("Availability")
         compose.onNodeWithText("May 2027").assertIsDisplayed()
-        compose.onNodeWithTag("calendar-date-2027-05-14").assertIsNotEnabled()
-        compose.onNodeWithContentDescription("Next month").performClick()
+        compose.onNodeWithText("This month").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Change to next month").performClick()
         compose.onNodeWithText("June 2027").assertIsDisplayed()
         pressBack()
         compose.runOnIdle { assertEquals(0, host.campsites.activeCalendarObservers) }
@@ -163,7 +167,7 @@ class CampsiteDetailFlowTest {
         open("Availability")
         compose.onNodeWithText("Offer nights").assertDoesNotExist()
         compose.onNodeWithText("Withdraw nights").assertDoesNotExist()
-        compose.onNodeWithTag("calendar-date-2027-05-14").assertIsNotEnabled()
+        compose.onNodeWithText("This month").performScrollTo().assertIsDisplayed()
         pressBack()
         compose.onNodeWithText("Join lottery").assertDoesNotExist()
         compose.onNodeWithText("Continue setup").assertDoesNotExist()

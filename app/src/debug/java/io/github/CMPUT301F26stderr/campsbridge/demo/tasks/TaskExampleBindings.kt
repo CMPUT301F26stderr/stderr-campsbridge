@@ -1,3 +1,7 @@
+/*
+ * Connects task examples to their prepared helper functions and reports each example's readiness.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
@@ -82,8 +86,8 @@ data class TaskExampleBindings(
         }
 }
 
-/** Lead-owned handoff binding point; connect the same function used by production factories here.
- * Pending ports intentionally stay null until the isolated task handoff supplies its reference.
+/** Connects local examples to the same completed helpers used by production factories.
+ * Each example reports readiness from its own supplied dependencies.
  */
 fun taskExampleBindings(): TaskExampleBindings =
     TaskExampleBindings(

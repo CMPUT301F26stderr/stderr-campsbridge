@@ -1,3 +1,7 @@
+/*
+ * Tests location-picker state and Apply or Cancel actions with controlled map callbacks.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 
 import androidx.compose.material3.Text

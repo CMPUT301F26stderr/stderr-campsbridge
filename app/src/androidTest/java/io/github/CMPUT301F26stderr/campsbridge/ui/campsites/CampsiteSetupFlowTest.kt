@@ -1,3 +1,7 @@
+/*
+ * Tests production campsite setup routes, step content and reader return with controlled photo-picker results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner
@@ -91,7 +95,7 @@ class CampsiteSetupFlowTest {
         compose.onNodeWithText("Step 8 of 8").assertIsDisplayed()
         compose.onNodeWithText("Publish").assertIsEnabled()
         compose.onNodeWithText("Save draft").assertIsEnabled()
-        compose.onNodeWithText("Edit Introduce your campsite").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Edit Introduce your campsite").performScrollTo().performClick()
         compose.onNodeWithText("Campsite name").performTextReplacement("Edited River")
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Step 8 of 8").assertIsDisplayed()

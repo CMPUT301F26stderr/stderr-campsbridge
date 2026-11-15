@@ -1,0 +1,6 @@
+{
+  "host": "REPLACE_WITH_HOST_AUTH_UID",
+  "camper": "REPLACE_WITH_CAMPER_AUTH_UID",
+  "newcamper": "REPLACE_WITH_NEWCAMPER_AUTH_UID",
+  "admin": "REPLACE_WITH_ADMIN_AUTH_UID"
+}

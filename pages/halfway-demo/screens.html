@@ -1,0 +1,1533 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Halfway demo screenshot archive</title><link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --forest-950: #17352d;
+      --forest-800: #245246;
+      --forest-600: #397465;
+      --forest-100: #e5f0ec;
+      --forest-050: #f2f8f5;
+      --ink: #1c2925;
+      --muted: #687772;
+      --line: #dbe5e1;
+      --paper: #fff;
+      --shadow: 0 16px 38px rgba(28, 58, 48, .08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--forest-050); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color: var(--forest-800); }
+    .shell { width: min(1220px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 36px 0 26px; }
+    .eyebrow { color: var(--forest-600); font-size: 12px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 7px 0 10px; color: var(--forest-950); font-size: clamp(30px, 5vw, 48px); letter-spacing: -.04em; line-height: 1.04; }
+    .lede { max-width: 760px; margin: 0; color: var(--muted); font-size: 16px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 9px 20px; align-items: center; margin-top: 18px; color: var(--forest-800); font-size: 13px; font-weight: 650; }
+    .meta a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 12px 0 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: 0 4px 14px rgba(28, 58, 48, .04); }
+    .filters { display: flex; flex-wrap: wrap; gap: 7px; }
+    .filter { border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--forest-800); cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; padding: 7px 10px; transition: border-color .15s, background .15s, color .15s; }
+    .filter span { display: inline-block; min-width: 1.35em; margin-left: 4px; color: var(--muted); font-size: 12px; }
+    .filter:hover, .filter:focus-visible { border-color: var(--forest-600); outline: 3px solid var(--forest-100); outline-offset: 1px; }
+    .filter.is-active { border-color: var(--forest-800); background: var(--forest-800); color: #fff; }
+    .filter.is-active span { color: #d9ece5; }
+    .count { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; padding-bottom: 52px; }
+    .shot { min-width: 0; }
+    .shot[hidden] { display: none; }
+    .shot-open { display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 15px; background: var(--paper); box-shadow: var(--shadow); color: inherit; cursor: zoom-in; overflow: hidden; text-align: left; transition: transform .18s ease, box-shadow .18s ease; }
+    .shot-open:hover, .shot-open:focus-visible { transform: translateY(-3px); box-shadow: 0 20px 42px rgba(28, 58, 48, .14); outline: 3px solid var(--forest-100); outline-offset: 2px; }
+    .shot-image-wrap { display: block; aspect-ratio: 9 / 16; background: #edf4f1; overflow: hidden; }
+    .shot img { display: block; width: 100%; height: 100%; object-fit: contain; }
+    .shot-caption { display: grid; grid-template-columns: 30px 1fr; gap: 9px; min-height: 66px; padding: 11px 12px 12px; }
+    .shot-number { color: var(--forest-600); font-variant-numeric: tabular-nums; font-weight: 800; }
+    .shot-caption strong, .shot-caption small { display: block; }
+    .shot-caption strong { color: var(--forest-950); font-size: 14px; line-height: 1.25; }
+    .shot-caption small { margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.2; }
+    .empty { grid-column: 1 / -1; padding: 48px 20px; border: 1px dashed #b7cbc3; border-radius: 16px; color: var(--muted); text-align: center; }
+    dialog { width: min(94vw, 850px); max-height: 94vh; padding: 0; border: 0; border-radius: 18px; background: var(--forest-950); box-shadow: 0 28px 90px rgba(9, 29, 23, .42); color: #fff; }
+    dialog::backdrop { background: rgba(11, 35, 28, .75); backdrop-filter: blur(3px); }
+    .lightbox { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: 94vh; }
+    .lightbox-head, .lightbox-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 16px; }
+    .lightbox-head { border-bottom: 1px solid rgba(226, 243, 237, .18); }
+    .lightbox-title { margin: 0; font-size: 15px; }
+    .lightbox-meta { color: #b9d4cb; font-size: 12px; }
+    .lightbox-close, .lightbox-nav { border: 1px solid rgba(226, 243, 237, .28); border-radius: 9px; background: transparent; color: #fff; cursor: pointer; font: inherit; font-weight: 750; }
+    .lightbox-close { width: 34px; height: 34px; font-size: 20px; line-height: 1; }
+    .lightbox-nav { min-width: 82px; padding: 7px 10px; }
+    .lightbox-close:hover, .lightbox-close:focus-visible, .lightbox-nav:hover, .lightbox-nav:focus-visible { border-color: #b9d4cb; background: rgba(226, 243, 237, .12); outline: 2px solid #b9d4cb; outline-offset: 2px; }
+    .lightbox-image-wrap { display: grid; place-items: center; min-height: 0; padding: 18px; background: #102b24; }
+    .lightbox-image { display: block; max-width: 100%; max-height: min(74vh, 840px); object-fit: contain; }
+    @media (max-width: 600px) { .shell { width: min(100% - 24px, 1220px); } header { padding-top: 26px; } .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .shot-caption { grid-template-columns: 24px 1fr; padding: 9px; } .shot-caption strong { font-size: 12px; } .shot-caption small { font-size: 10px; } .shot-number { font-size: 12px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="eyebrow"><a href="index.html">← Demo timeline</a> · published release</div>
+      <h1>Screenshot archive</h1>
+      <p class="lede">The published <a href="https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/tag/halfway-demo">Halfway release APK</a> connected to live Firebase, captured on emulators with separate live sign-ins. These screens show the rehearsal. For the presentation, use Pixel9 for admin and three emulators for the other roles. The data is scheduled for November 17 at 6:00 PM Edmonton time.</p>
+      <div class="meta"><span id="capture-summary">152 screenshots</span><a href="workflow.md">Open workflow</a><a href="index.html">Back to demo timeline</a></div>
+    </header>
+    <section class="toolbar" aria-label="Screenshot filters">
+      <div class="filters"><button class="filter is-active" type="button" data-filter="all">All <span>152</span></button>
+<button class="filter" type="button" data-filter="host">Host <span>48</span></button>
+<button class="filter" type="button" data-filter="newcamper">New camper <span>32</span></button>
+<button class="filter" type="button" data-filter="camper">Returning camper <span>38</span></button>
+<button class="filter" type="button" data-filter="admin">Admin <span>34</span></button></div>
+      <div class="count" id="visible-count">Showing 163 of 163</div>
+    </section>
+    <section class="gallery" id="gallery" aria-label="Chronological screenshots">
+      <article class="shot" id="capture-1" data-actor="newcamper" data-index="0"
+  data-file="screenshots/001-newcamper-new-camper-welcome-in-published-release.png" data-label="New camper welcome in published release" data-at="2026-11-13 13:55 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 1: New camper welcome in published release">
+    <span class="shot-image-wrap"><img src="screenshots/001-newcamper-new-camper-welcome-in-published-release.png" alt="New camper welcome in published release" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">01</span><span>
+      <strong>New camper welcome in published release</strong><small>New camper · 2026-11-13 13:55 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-2" data-actor="newcamper" data-index="1"
+  data-file="screenshots/002-newcamper-starting-intent.png" data-label="Starting intent" data-at="2026-11-13 13:55 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 2: Starting intent">
+    <span class="shot-image-wrap"><img src="screenshots/002-newcamper-starting-intent.png" alt="Starting intent" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">02</span><span>
+      <strong>Starting intent</strong><small>New camper · 2026-11-13 13:55 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-3" data-actor="newcamper" data-index="2"
+  data-file="screenshots/003-newcamper-choose-camping.png" data-label="Choose camping" data-at="2026-11-13 13:56 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 3: Choose camping">
+    <span class="shot-image-wrap"><img src="screenshots/003-newcamper-choose-camping.png" alt="Choose camping" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">03</span><span>
+      <strong>Choose camping</strong><small>New camper · 2026-11-13 13:56 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-4" data-actor="newcamper" data-index="3"
+  data-file="screenshots/004-newcamper-camper-identification.png" data-label="Camper identification" data-at="2026-11-13 13:56 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 4: Camper identification">
+    <span class="shot-image-wrap"><img src="screenshots/004-newcamper-camper-identification.png" alt="Camper identification" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">04</span><span>
+      <strong>Camper identification</strong><small>New camper · 2026-11-13 13:56 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-5" data-actor="newcamper" data-index="4"
+  data-file="screenshots/005-newcamper-enter-camper-name.png" data-label="Enter camper name" data-at="2026-11-13 13:56 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 5: Enter camper name">
+    <span class="shot-image-wrap"><img src="screenshots/005-newcamper-enter-camper-name.png" alt="Enter camper name" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">05</span><span>
+      <strong>Enter camper name</strong><small>New camper · 2026-11-13 13:56 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-6" data-actor="newcamper" data-index="5"
+  data-file="screenshots/006-newcamper-submit-camper-name.png" data-label="Submit camper name" data-at="2026-11-13 13:56 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 6: Submit camper name">
+    <span class="shot-image-wrap"><img src="screenshots/006-newcamper-submit-camper-name.png" alt="Submit camper name" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">06</span><span>
+      <strong>Submit camper name</strong><small>New camper · 2026-11-13 13:56 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-7" data-actor="newcamper" data-index="6"
+  data-file="screenshots/007-newcamper-choose-lakeside-interest.png" data-label="Choose lakeside interest" data-at="2026-11-13 13:56 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 7: Choose lakeside interest">
+    <span class="shot-image-wrap"><img src="screenshots/007-newcamper-choose-lakeside-interest.png" alt="Choose lakeside interest" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">07</span><span>
+      <strong>Choose lakeside interest</strong><small>New camper · 2026-11-13 13:56 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-8" data-actor="newcamper" data-index="7"
+  data-file="screenshots/008-newcamper-finish-camper-setup.png" data-label="Finish camper setup" data-at="2026-11-13 13:56 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 8: Finish camper setup">
+    <span class="shot-image-wrap"><img src="screenshots/008-newcamper-finish-camper-setup.png" alt="Finish camper setup" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">08</span><span>
+      <strong>Finish camper setup</strong><small>New camper · 2026-11-13 13:56 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-9" data-actor="newcamper" data-index="8"
+  data-file="screenshots/009-newcamper-camper-profile-saved-to-live-firebase.png" data-label="Camper profile saved to live Firebase" data-at="2026-11-13 13:57 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 9: Camper profile saved to live Firebase">
+    <span class="shot-image-wrap"><img src="screenshots/009-newcamper-camper-profile-saved-to-live-firebase.png" alt="Camper profile saved to live Firebase" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">09</span><span>
+      <strong>Camper profile saved to live Firebase</strong><small>New camper · 2026-11-13 13:57 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-13" data-actor="host" data-index="9"
+  data-file="screenshots/013-host-choose-owner-workspace.png" data-label="Choose owner workspace" data-at="2026-11-13 14:04 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 13: Choose owner workspace">
+    <span class="shot-image-wrap"><img src="screenshots/013-host-choose-owner-workspace.png" alt="Choose owner workspace" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">13</span><span>
+      <strong>Choose owner workspace</strong><small>Host · 2026-11-13 14:04 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-14" data-actor="host" data-index="10"
+  data-file="screenshots/014-host-open-owner-workspace.png" data-label="Open owner workspace" data-at="2026-11-13 14:04 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 14: Open owner workspace">
+    <span class="shot-image-wrap"><img src="screenshots/014-host-open-owner-workspace.png" alt="Open owner workspace" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">14</span><span>
+      <strong>Open owner workspace</strong><small>Host · 2026-11-13 14:04 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-16" data-actor="host" data-index="11"
+  data-file="screenshots/016-host-campsite-drafts.png" data-label="Campsite drafts" data-at="2026-11-13 14:04 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 16: Campsite drafts">
+    <span class="shot-image-wrap"><img src="screenshots/016-host-campsite-drafts.png" alt="Campsite drafts" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">16</span><span>
+      <strong>Campsite drafts</strong><small>Host · 2026-11-13 14:04 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-17" data-actor="host" data-index="12"
+  data-file="screenshots/017-host-saved-forest-clearing-draft.png" data-label="Saved Forest clearing draft" data-at="2026-11-13 14:04 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 17: Saved Forest clearing draft">
+    <span class="shot-image-wrap"><img src="screenshots/017-host-saved-forest-clearing-draft.png" alt="Saved Forest clearing draft" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">17</span><span>
+      <strong>Saved Forest clearing draft</strong><small>Host · 2026-11-13 14:04 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-18" data-actor="host" data-index="13"
+  data-file="screenshots/018-host-continue-saved-campsite-setup.png" data-label="Continue saved campsite setup" data-at="2026-11-13 14:04 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 18: Continue saved campsite setup">
+    <span class="shot-image-wrap"><img src="screenshots/018-host-continue-saved-campsite-setup.png" alt="Continue saved campsite setup" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">18</span><span>
+      <strong>Continue saved campsite setup</strong><small>Host · 2026-11-13 14:04 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-19" data-actor="host" data-index="14"
+  data-file="screenshots/019-host-campsite-setup-step-1.png" data-label="Campsite setup step 1" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 19: Campsite setup step 1">
+    <span class="shot-image-wrap"><img src="screenshots/019-host-campsite-setup-step-1.png" alt="Campsite setup step 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">19</span><span>
+      <strong>Campsite setup step 1</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-20" data-actor="host" data-index="15"
+  data-file="screenshots/020-host-campsite-setup-step-2.png" data-label="Campsite setup step 2" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 20: Campsite setup step 2">
+    <span class="shot-image-wrap"><img src="screenshots/020-host-campsite-setup-step-2.png" alt="Campsite setup step 2" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">20</span><span>
+      <strong>Campsite setup step 2</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-21" data-actor="host" data-index="16"
+  data-file="screenshots/021-host-campsite-setup-step-3.png" data-label="Campsite setup step 3" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 21: Campsite setup step 3">
+    <span class="shot-image-wrap"><img src="screenshots/021-host-campsite-setup-step-3.png" alt="Campsite setup step 3" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">21</span><span>
+      <strong>Campsite setup step 3</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-22" data-actor="host" data-index="17"
+  data-file="screenshots/022-host-campsite-setup-step-4.png" data-label="Campsite setup step 4" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 22: Campsite setup step 4">
+    <span class="shot-image-wrap"><img src="screenshots/022-host-campsite-setup-step-4.png" alt="Campsite setup step 4" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">22</span><span>
+      <strong>Campsite setup step 4</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-23" data-actor="host" data-index="18"
+  data-file="screenshots/023-host-campsite-setup-step-5.png" data-label="Campsite setup step 5" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 23: Campsite setup step 5">
+    <span class="shot-image-wrap"><img src="screenshots/023-host-campsite-setup-step-5.png" alt="Campsite setup step 5" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">23</span><span>
+      <strong>Campsite setup step 5</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-24" data-actor="host" data-index="19"
+  data-file="screenshots/024-host-campsite-setup-step-6.png" data-label="Campsite setup step 6" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 24: Campsite setup step 6">
+    <span class="shot-image-wrap"><img src="screenshots/024-host-campsite-setup-step-6.png" alt="Campsite setup step 6" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">24</span><span>
+      <strong>Campsite setup step 6</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-25" data-actor="host" data-index="20"
+  data-file="screenshots/025-host-campsite-setup-step-7.png" data-label="Campsite setup step 7" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 25: Campsite setup step 7">
+    <span class="shot-image-wrap"><img src="screenshots/025-host-campsite-setup-step-7.png" alt="Campsite setup step 7" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">25</span><span>
+      <strong>Campsite setup step 7</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-27" data-actor="host" data-index="21"
+  data-file="screenshots/027-host-forest-clearing-published-on-live-firebase.png" data-label="Forest clearing published on live Firebase" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 27: Forest clearing published on live Firebase">
+    <span class="shot-image-wrap"><img src="screenshots/027-host-forest-clearing-published-on-live-firebase.png" alt="Forest clearing published on live Firebase" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">27</span><span>
+      <strong>Forest clearing published on live Firebase</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-28" data-actor="host" data-index="22"
+  data-file="screenshots/028-host-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 28: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/028-host-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">28</span><span>
+      <strong>Return to workspace 1</strong><small>Host · 2026-11-13 14:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-29" data-actor="host" data-index="23"
+  data-file="screenshots/029-host-open-lotteries.png" data-label="Open Lotteries" data-at="2026-11-13 14:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 29: Open Lotteries">
+    <span class="shot-image-wrap"><img src="screenshots/029-host-open-lotteries.png" alt="Open Lotteries" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">29</span><span>
+      <strong>Open Lotteries</strong><small>Host · 2026-11-13 14:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-30" data-actor="host" data-index="24"
+  data-file="screenshots/030-host-owner-lottery-drafts.png" data-label="Owner lottery drafts" data-at="2026-11-13 14:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 30: Owner lottery drafts">
+    <span class="shot-image-wrap"><img src="screenshots/030-host-owner-lottery-drafts.png" alt="Owner lottery drafts" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">30</span><span>
+      <strong>Owner lottery drafts</strong><small>Host · 2026-11-13 14:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-31" data-actor="host" data-index="25"
+  data-file="screenshots/031-host-review-tomorrow-lottery-draft.png" data-label="Review tomorrow lottery draft" data-at="2026-11-13 14:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 31: Review tomorrow lottery draft">
+    <span class="shot-image-wrap"><img src="screenshots/031-host-review-tomorrow-lottery-draft.png" alt="Review tomorrow lottery draft" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">31</span><span>
+      <strong>Review tomorrow lottery draft</strong><small>Host · 2026-11-13 14:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-33" data-actor="host" data-index="26"
+  data-file="screenshots/033-host-future-lottery-saved-on-live-firebase.png" data-label="Future lottery saved on live Firebase" data-at="2026-11-13 14:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 33: Future lottery saved on live Firebase">
+    <span class="shot-image-wrap"><img src="screenshots/033-host-future-lottery-saved-on-live-firebase.png" alt="Future lottery saved on live Firebase" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">33</span><span>
+      <strong>Future lottery saved on live Firebase</strong><small>Host · 2026-11-13 14:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-35" data-actor="newcamper" data-index="27"
+  data-file="screenshots/035-newcamper-open-explore.png" data-label="Open Explore" data-at="2026-11-13 14:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 35: Open Explore">
+    <span class="shot-image-wrap"><img src="screenshots/035-newcamper-open-explore.png" alt="Open Explore" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">35</span><span>
+      <strong>Open Explore</strong><small>New camper · 2026-11-13 14:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-36" data-actor="newcamper" data-index="28"
+  data-file="screenshots/036-newcamper-explore-filter-sheet.png" data-label="Explore filter sheet" data-at="2026-11-13 14:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 36: Explore filter sheet">
+    <span class="shot-image-wrap"><img src="screenshots/036-newcamper-explore-filter-sheet.png" alt="Explore filter sheet" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">36</span><span>
+      <strong>Explore filter sheet</strong><small>New camper · 2026-11-13 14:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-37" data-actor="newcamper" data-index="29"
+  data-file="screenshots/037-newcamper-filter-for-two-guests.png" data-label="Filter for two guests" data-at="2026-11-13 14:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 37: Filter for two guests">
+    <span class="shot-image-wrap"><img src="screenshots/037-newcamper-filter-for-two-guests.png" alt="Filter for two guests" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">37</span><span>
+      <strong>Filter for two guests</strong><small>New camper · 2026-11-13 14:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-38" data-actor="newcamper" data-index="30"
+  data-file="screenshots/038-newcamper-apply-capacity-filter.png" data-label="Apply capacity filter" data-at="2026-11-13 14:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 38: Apply capacity filter">
+    <span class="shot-image-wrap"><img src="screenshots/038-newcamper-apply-capacity-filter.png" alt="Apply capacity filter" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">38</span><span>
+      <strong>Apply capacity filter</strong><small>New camper · 2026-11-13 14:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-39" data-actor="newcamper" data-index="31"
+  data-file="screenshots/039-newcamper-search-river-camp.png" data-label="Search River Camp" data-at="2026-11-13 14:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 39: Search River Camp">
+    <span class="shot-image-wrap"><img src="screenshots/039-newcamper-search-river-camp.png" alt="Search River Camp" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">39</span><span>
+      <strong>Search River Camp</strong><small>New camper · 2026-11-13 14:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-40" data-actor="newcamper" data-index="32"
+  data-file="screenshots/040-newcamper-search-live-campsite-catalog.png" data-label="Search live campsite catalog" data-at="2026-11-13 14:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 40: Search live campsite catalog">
+    <span class="shot-image-wrap"><img src="screenshots/040-newcamper-search-live-campsite-catalog.png" alt="Search live campsite catalog" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">40</span><span>
+      <strong>Search live campsite catalog</strong><small>New camper · 2026-11-13 14:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-45" data-actor="newcamper" data-index="33"
+  data-file="screenshots/045-newcamper-open-live-river-camp-listing.png" data-label="Open live River Camp listing" data-at="2026-11-13 14:09 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 45: Open live River Camp listing">
+    <span class="shot-image-wrap"><img src="screenshots/045-newcamper-open-live-river-camp-listing.png" alt="Open live River Camp listing" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">45</span><span>
+      <strong>Open live River Camp listing</strong><small>New camper · 2026-11-13 14:09 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-46" data-actor="newcamper" data-index="34"
+  data-file="screenshots/046-newcamper-new-camper-joins-live-lottery.png" data-label="New camper joins live lottery" data-at="2026-11-13 14:09 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 46: New camper joins live lottery">
+    <span class="shot-image-wrap"><img src="screenshots/046-newcamper-new-camper-joins-live-lottery.png" alt="New camper joins live lottery" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">46</span><span>
+      <strong>New camper joins live lottery</strong><small>New camper · 2026-11-13 14:09 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-47" data-actor="newcamper" data-index="35"
+  data-file="screenshots/047-newcamper-new-camper-entry-saved.png" data-label="New camper entry saved" data-at="2026-11-13 14:09 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 47: New camper entry saved">
+    <span class="shot-image-wrap"><img src="screenshots/047-newcamper-new-camper-entry-saved.png" alt="New camper entry saved" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">47</span><span>
+      <strong>New camper entry saved</strong><small>New camper · 2026-11-13 14:09 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-48" data-actor="camper" data-index="36"
+  data-file="screenshots/048-camper-open-camper-release-session.png" data-label="Open camper release session" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 48: Open camper release session">
+    <span class="shot-image-wrap"><img src="screenshots/048-camper-open-camper-release-session.png" alt="Open camper release session" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">48</span><span>
+      <strong>Open camper release session</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-49" data-actor="camper" data-index="37"
+  data-file="screenshots/049-camper-open-explore.png" data-label="Open Explore" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 49: Open Explore">
+    <span class="shot-image-wrap"><img src="screenshots/049-camper-open-explore.png" alt="Open Explore" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">49</span><span>
+      <strong>Open Explore</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-50" data-actor="camper" data-index="38"
+  data-file="screenshots/050-camper-search-river-camp.png" data-label="Search River Camp" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 50: Search River Camp">
+    <span class="shot-image-wrap"><img src="screenshots/050-camper-search-river-camp.png" alt="Search River Camp" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">50</span><span>
+      <strong>Search River Camp</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-51" data-actor="camper" data-index="39"
+  data-file="screenshots/051-camper-search-live-campsite-catalog.png" data-label="Search live campsite catalog" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 51: Search live campsite catalog">
+    <span class="shot-image-wrap"><img src="screenshots/051-camper-search-live-campsite-catalog.png" alt="Search live campsite catalog" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">51</span><span>
+      <strong>Search live campsite catalog</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-52" data-actor="camper" data-index="40"
+  data-file="screenshots/052-camper-open-shared-river-camp.png" data-label="Open shared River Camp" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 52: Open shared River Camp">
+    <span class="shot-image-wrap"><img src="screenshots/052-camper-open-shared-river-camp.png" alt="Open shared River Camp" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">52</span><span>
+      <strong>Open shared River Camp</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-53" data-actor="camper" data-index="41"
+  data-file="screenshots/053-camper-camper-joins-live-lottery.png" data-label="Returning camper joins live lottery" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 53: Returning camper joins live lottery">
+    <span class="shot-image-wrap"><img src="screenshots/053-camper-camper-joins-live-lottery.png" alt="Returning camper joins live lottery" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">53</span><span>
+      <strong>Returning camper joins live lottery</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-54" data-actor="camper" data-index="42"
+  data-file="screenshots/054-camper-camper-entry-saved.png" data-label="Returning camper entry saved" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 54: Returning camper entry saved">
+    <span class="shot-image-wrap"><img src="screenshots/054-camper-camper-entry-saved.png" alt="Returning camper entry saved" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">54</span><span>
+      <strong>Returning camper entry saved</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-55" data-actor="camper" data-index="43"
+  data-file="screenshots/055-camper-review-withdrawal.png" data-label="Review withdrawal" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 55: Review withdrawal">
+    <span class="shot-image-wrap"><img src="screenshots/055-camper-review-withdrawal.png" alt="Review withdrawal" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">55</span><span>
+      <strong>Review withdrawal</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-56" data-actor="camper" data-index="44"
+  data-file="screenshots/056-camper-confirm-withdrawal.png" data-label="Confirm withdrawal" data-at="2026-11-13 14:10 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 56: Confirm withdrawal">
+    <span class="shot-image-wrap"><img src="screenshots/056-camper-confirm-withdrawal.png" alt="Confirm withdrawal" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">56</span><span>
+      <strong>Confirm withdrawal</strong><small>Returning camper · 2026-11-13 14:10 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-57" data-actor="camper" data-index="45"
+  data-file="screenshots/057-camper-withdrawal-saved.png" data-label="Withdrawal saved" data-at="2026-11-13 14:11 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 57: Withdrawal saved">
+    <span class="shot-image-wrap"><img src="screenshots/057-camper-withdrawal-saved.png" alt="Withdrawal saved" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">57</span><span>
+      <strong>Withdrawal saved</strong><small>Returning camper · 2026-11-13 14:11 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-58" data-actor="camper" data-index="46"
+  data-file="screenshots/058-camper-rejoin-live-lottery.png" data-label="Rejoin live lottery" data-at="2026-11-13 14:11 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 58: Rejoin live lottery">
+    <span class="shot-image-wrap"><img src="screenshots/058-camper-rejoin-live-lottery.png" alt="Rejoin live lottery" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">58</span><span>
+      <strong>Rejoin live lottery</strong><small>Returning camper · 2026-11-13 14:11 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-59" data-actor="camper" data-index="47"
+  data-file="screenshots/059-camper-returning-camper-rejoined.png" data-label="Returning camper rejoined" data-at="2026-11-13 14:11 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 59: Returning camper rejoined">
+    <span class="shot-image-wrap"><img src="screenshots/059-camper-returning-camper-rejoined.png" alt="Returning camper rejoined" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">59</span><span>
+      <strong>Returning camper rejoined</strong><small>Returning camper · 2026-11-13 14:11 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-63" data-actor="host" data-index="48"
+  data-file="screenshots/063-host-published-lottery-list.png" data-label="Published lottery list" data-at="2026-11-13 14:11 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 63: Published lottery list">
+    <span class="shot-image-wrap"><img src="screenshots/063-host-published-lottery-list.png" alt="Published lottery list" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">63</span><span>
+      <strong>Published lottery list</strong><small>Host · 2026-11-13 14:11 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-64" data-actor="host" data-index="49"
+  data-file="screenshots/064-host-live-lottery-owner-view.png" data-label="Live lottery owner view" data-at="2026-11-13 14:11 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 64: Live lottery owner view">
+    <span class="shot-image-wrap"><img src="screenshots/064-host-live-lottery-owner-view.png" alt="Live lottery owner view" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">64</span><span>
+      <strong>Live lottery owner view</strong><small>Host · 2026-11-13 14:11 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-65" data-actor="host" data-index="50"
+  data-file="screenshots/065-host-owner-participant-list.png" data-label="Owner participant list" data-at="2026-11-13 14:11 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 65: Owner participant list">
+    <span class="shot-image-wrap"><img src="screenshots/065-host-owner-participant-list.png" alt="Owner participant list" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">65</span><span>
+      <strong>Owner participant list</strong><small>Host · 2026-11-13 14:11 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-66" data-actor="host" data-index="51"
+  data-file="screenshots/066-host-choose-participant-filter.png" data-label="Choose participant filter" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 66: Choose participant filter">
+    <span class="shot-image-wrap"><img src="screenshots/066-host-choose-participant-filter.png" alt="Choose participant filter" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">66</span><span>
+      <strong>Choose participant filter</strong><small>Host · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-67" data-actor="host" data-index="52"
+  data-file="screenshots/067-host-show-waiting-entrants.png" data-label="Show waiting entrants" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 67: Show waiting entrants">
+    <span class="shot-image-wrap"><img src="screenshots/067-host-show-waiting-entrants.png" alt="Show waiting entrants" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">67</span><span>
+      <strong>Show waiting entrants</strong><small>Host · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-68" data-actor="newcamper" data-index="53"
+  data-file="screenshots/068-newcamper-camper-profile-session.png" data-label="Camper returns to joined lottery" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 68: Camper returns to joined lottery">
+    <span class="shot-image-wrap"><img src="screenshots/068-newcamper-camper-profile-session.png" alt="Camper returns to joined lottery" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">68</span><span>
+      <strong>Camper returns to joined lottery</strong><small>New camper · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-69" data-actor="newcamper" data-index="54"
+  data-file="screenshots/069-newcamper-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 69: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/069-newcamper-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">69</span><span>
+      <strong>Return to workspace 1</strong><small>New camper · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-70" data-actor="newcamper" data-index="55"
+  data-file="screenshots/070-newcamper-open-profile.png" data-label="Open Profile" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 70: Open Profile">
+    <span class="shot-image-wrap"><img src="screenshots/070-newcamper-open-profile.png" alt="Open Profile" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">70</span><span>
+      <strong>Open Profile</strong><small>New camper · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-71" data-actor="newcamper" data-index="56"
+  data-file="screenshots/071-newcamper-contact-details.png" data-label="Contact details" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 71: Contact details">
+    <span class="shot-image-wrap"><img src="screenshots/071-newcamper-contact-details.png" alt="Contact details" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">71</span><span>
+      <strong>Contact details</strong><small>New camper · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-72" data-actor="newcamper" data-index="57"
+  data-file="screenshots/072-newcamper-enter-camper-email.png" data-label="Enter camper email" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 72: Enter camper email">
+    <span class="shot-image-wrap"><img src="screenshots/072-newcamper-enter-camper-email.png" alt="Enter camper email" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">72</span><span>
+      <strong>Enter camper email</strong><small>New camper · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-73" data-actor="newcamper" data-index="58"
+  data-file="screenshots/073-newcamper-enter-camper-phone.png" data-label="Enter camper phone" data-at="2026-11-13 14:12 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 73: Enter camper phone">
+    <span class="shot-image-wrap"><img src="screenshots/073-newcamper-enter-camper-phone.png" alt="Enter camper phone" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">73</span><span>
+      <strong>Enter camper phone</strong><small>New camper · 2026-11-13 14:12 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-74" data-actor="newcamper" data-index="59"
+  data-file="screenshots/074-newcamper-save-contacts-to-live-firebase.png" data-label="Save contacts to live Firebase" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 74: Save contacts to live Firebase">
+    <span class="shot-image-wrap"><img src="screenshots/074-newcamper-save-contacts-to-live-firebase.png" alt="Save contacts to live Firebase" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">74</span><span>
+      <strong>Save contacts to live Firebase</strong><small>New camper · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-75" data-actor="newcamper" data-index="60"
+  data-file="screenshots/075-newcamper-camper-settings.png" data-label="Camper settings" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 75: Camper settings">
+    <span class="shot-image-wrap"><img src="screenshots/075-newcamper-camper-settings.png" alt="Camper settings" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">75</span><span>
+      <strong>Camper settings</strong><small>New camper · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-76" data-actor="newcamper" data-index="61"
+  data-file="screenshots/076-newcamper-notification-preferences.png" data-label="Notification preferences" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 76: Notification preferences">
+    <span class="shot-image-wrap"><img src="screenshots/076-newcamper-notification-preferences.png" alt="Notification preferences" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">76</span><span>
+      <strong>Notification preferences</strong><small>New camper · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-77" data-actor="newcamper" data-index="62"
+  data-file="screenshots/077-newcamper-back-to-settings.png" data-label="Back to settings" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 77: Back to settings">
+    <span class="shot-image-wrap"><img src="screenshots/077-newcamper-back-to-settings.png" alt="Back to settings" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">77</span><span>
+      <strong>Back to settings</strong><small>New camper · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-78" data-actor="newcamper" data-index="63"
+  data-file="screenshots/078-newcamper-back-to-profile.png" data-label="Back to profile" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 78: Back to profile">
+    <span class="shot-image-wrap"><img src="screenshots/078-newcamper-back-to-profile.png" alt="Back to profile" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">78</span><span>
+      <strong>Back to profile</strong><small>New camper · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-79" data-actor="host" data-index="64"
+  data-file="screenshots/079-host-owner-resumes-participant-list.png" data-label="Owner returns to participant list" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 79: Owner returns to participant list">
+    <span class="shot-image-wrap"><img src="screenshots/079-host-owner-resumes-participant-list.png" alt="Owner returns to participant list" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">79</span><span>
+      <strong>Owner returns to participant list</strong><small>Host · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-80" data-actor="host" data-index="65"
+  data-file="screenshots/080-host-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 80: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/080-host-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">80</span><span>
+      <strong>Return to workspace 1</strong><small>Host · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-81" data-actor="host" data-index="66"
+  data-file="screenshots/081-host-return-to-workspace-2.png" data-label="Return to workspace 2" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 81: Return to workspace 2">
+    <span class="shot-image-wrap"><img src="screenshots/081-host-return-to-workspace-2.png" alt="Return to workspace 2" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">81</span><span>
+      <strong>Return to workspace 2</strong><small>Host · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-82" data-actor="host" data-index="67"
+  data-file="screenshots/082-host-open-campsites.png" data-label="Open Campsites" data-at="2026-11-13 14:13 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 82: Open Campsites">
+    <span class="shot-image-wrap"><img src="screenshots/082-host-open-campsites.png" alt="Open Campsites" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">82</span><span>
+      <strong>Open Campsites</strong><small>Host · 2026-11-13 14:13 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-83" data-actor="host" data-index="68"
+  data-file="screenshots/083-host-published-campsites.png" data-label="Published campsites" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 83: Published campsites">
+    <span class="shot-image-wrap"><img src="screenshots/083-host-published-campsites.png" alt="Published campsites" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">83</span><span>
+      <strong>Published campsites</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-84" data-actor="host" data-index="69"
+  data-file="screenshots/084-host-published-forest-clearing.png" data-label="Published Forest clearing" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 84: Published Forest clearing">
+    <span class="shot-image-wrap"><img src="screenshots/084-host-published-forest-clearing.png" alt="Published Forest clearing" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">84</span><span>
+      <strong>Published Forest clearing</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-85" data-actor="host" data-index="70"
+  data-file="screenshots/085-host-edit-offered-nights.png" data-label="Edit offered nights" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 85: Edit offered nights">
+    <span class="shot-image-wrap"><img src="screenshots/085-host-edit-offered-nights.png" alt="Edit offered nights" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">85</span><span>
+      <strong>Edit offered nights</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-86" data-actor="host" data-index="71"
+  data-file="screenshots/086-host-choose-another-available-night.png" data-label="Choose another available night" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 86: Choose another available night">
+    <span class="shot-image-wrap"><img src="screenshots/086-host-choose-another-available-night.png" alt="Choose another available night" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">86</span><span>
+      <strong>Choose another available night</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-87" data-actor="host" data-index="72"
+  data-file="screenshots/087-host-offer-selected-night.png" data-label="Offer selected night" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 87: Offer selected night">
+    <span class="shot-image-wrap"><img src="screenshots/087-host-offer-selected-night.png" alt="Offer selected night" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">87</span><span>
+      <strong>Offer selected night</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-88" data-actor="host" data-index="73"
+  data-file="screenshots/088-host-save-availability-to-live-firebase.png" data-label="Save availability to live Firebase" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 88: Save availability to live Firebase">
+    <span class="shot-image-wrap"><img src="screenshots/088-host-save-availability-to-live-firebase.png" alt="Save availability to live Firebase" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">88</span><span>
+      <strong>Save availability to live Firebase</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-89" data-actor="host" data-index="74"
+  data-file="screenshots/089-host-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 89: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/089-host-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">89</span><span>
+      <strong>Return to workspace 1</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-90" data-actor="host" data-index="75"
+  data-file="screenshots/090-host-return-to-workspace-2.png" data-label="Return to workspace 2" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 90: Return to workspace 2">
+    <span class="shot-image-wrap"><img src="screenshots/090-host-return-to-workspace-2.png" alt="Return to workspace 2" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">90</span><span>
+      <strong>Return to workspace 2</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-91" data-actor="host" data-index="76"
+  data-file="screenshots/091-host-open-lotteries.png" data-label="Open Lotteries" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 91: Open Lotteries">
+    <span class="shot-image-wrap"><img src="screenshots/091-host-open-lotteries.png" alt="Open Lotteries" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">91</span><span>
+      <strong>Open Lotteries</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-92" data-actor="host" data-index="77"
+  data-file="screenshots/092-host-owner-published-lotteries.png" data-label="Owner published lotteries" data-at="2026-11-13 14:14 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 92: Owner published lotteries">
+    <span class="shot-image-wrap"><img src="screenshots/092-host-owner-published-lotteries.png" alt="Owner published lotteries" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">92</span><span>
+      <strong>Owner published lotteries</strong><small>Host · 2026-11-13 14:14 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-93" data-actor="host" data-index="78"
+  data-file="screenshots/093-host-owner-holds-live-draw-in-foreground.png" data-label="Owner holds live draw in foreground" data-at="2026-11-13 14:15 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 93: Owner holds live draw in foreground">
+    <span class="shot-image-wrap"><img src="screenshots/093-host-owner-holds-live-draw-in-foreground.png" alt="Owner holds live draw in foreground" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">93</span><span>
+      <strong>Owner holds live draw in foreground</strong><small>Host · 2026-11-13 14:15 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-94" data-actor="host" data-index="79"
+  data-file="screenshots/094-host-owner-sees-completed-live-draw.png" data-label="Owner sees completed live draw" data-at="2026-11-13 14:20 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 94: Owner sees completed live draw">
+    <span class="shot-image-wrap"><img src="screenshots/094-host-owner-sees-completed-live-draw.png" alt="Owner sees completed live draw" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">94</span><span>
+      <strong>Owner sees completed live draw</strong><small>Host · 2026-11-13 14:20 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-95" data-actor="newcamper" data-index="80"
+  data-file="screenshots/095-newcamper-open-losing-release-session.png" data-label="Open losing release session" data-at="2026-11-13 14:20 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 95: Open losing release session">
+    <span class="shot-image-wrap"><img src="screenshots/095-newcamper-open-losing-release-session.png" alt="Open losing release session" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">95</span><span>
+      <strong>Open losing release session</strong><small>New camper · 2026-11-13 14:20 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-97" data-actor="newcamper" data-index="81"
+  data-file="screenshots/097-newcamper-live-loss-receipt-in-inbox.png" data-label="Live loss receipt in Inbox" data-at="2026-11-13 14:20 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 97: Live loss receipt in Inbox">
+    <span class="shot-image-wrap"><img src="screenshots/097-newcamper-live-loss-receipt-in-inbox.png" alt="Live loss receipt in Inbox" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">97</span><span>
+      <strong>Live loss receipt in Inbox</strong><small>New camper · 2026-11-13 14:20 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-99" data-actor="newcamper" data-index="82"
+  data-file="screenshots/099-newcamper-live-lottery-loss-details.png" data-label="Live lottery loss details" data-at="2026-11-13 14:20 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 99: Live lottery loss details">
+    <span class="shot-image-wrap"><img src="screenshots/099-newcamper-live-lottery-loss-details.png" alt="Live lottery loss details" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">99</span><span>
+      <strong>Live lottery loss details</strong><small>New camper · 2026-11-13 14:20 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-100" data-actor="camper" data-index="83"
+  data-file="screenshots/100-camper-open-winning-release-session.png" data-label="Open winning release session" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 100: Open winning release session">
+    <span class="shot-image-wrap"><img src="screenshots/100-camper-open-winning-release-session.png" alt="Open winning release session" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">100</span><span>
+      <strong>Open winning release session</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-101" data-actor="camper" data-index="84"
+  data-file="screenshots/101-camper-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 101: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/101-camper-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">101</span><span>
+      <strong>Return to workspace 1</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-103" data-actor="camper" data-index="85"
+  data-file="screenshots/103-camper-live-win-receipt-in-inbox.png" data-label="Live win receipt in Inbox" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 103: Live win receipt in Inbox">
+    <span class="shot-image-wrap"><img src="screenshots/103-camper-live-win-receipt-in-inbox.png" alt="Live win receipt in Inbox" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">103</span><span>
+      <strong>Live win receipt in Inbox</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-104" data-actor="camper" data-index="86"
+  data-file="screenshots/104-camper-read-live-lottery-win.png" data-label="Read live lottery win" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 104: Read live lottery win">
+    <span class="shot-image-wrap"><img src="screenshots/104-camper-read-live-lottery-win.png" alt="Read live lottery win" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">104</span><span>
+      <strong>Read live lottery win</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-106" data-actor="camper" data-index="87"
+  data-file="screenshots/106-camper-begin-winner-booking.png" data-label="Begin winner booking" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 106: Begin winner booking">
+    <span class="shot-image-wrap"><img src="screenshots/106-camper-begin-winner-booking.png" alt="Begin winner booking" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">106</span><span>
+      <strong>Begin winner booking</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-107" data-actor="camper" data-index="88"
+  data-file="screenshots/107-camper-choose-arrival-date.png" data-label="Choose arrival date" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 107: Choose arrival date">
+    <span class="shot-image-wrap"><img src="screenshots/107-camper-choose-arrival-date.png" alt="Choose arrival date" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">107</span><span>
+      <strong>Choose arrival date</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-108" data-actor="camper" data-index="89"
+  data-file="screenshots/108-camper-choose-checkout-date.png" data-label="Choose checkout date" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 108: Choose checkout date">
+    <span class="shot-image-wrap"><img src="screenshots/108-camper-choose-checkout-date.png" alt="Choose checkout date" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">108</span><span>
+      <strong>Choose checkout date</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-109" data-actor="camper" data-index="90"
+  data-file="screenshots/109-camper-choose-booking-guests.png" data-label="Choose booking guests" data-at="2026-11-13 14:21 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 109: Choose booking guests">
+    <span class="shot-image-wrap"><img src="screenshots/109-camper-choose-booking-guests.png" alt="Choose booking guests" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">109</span><span>
+      <strong>Choose booking guests</strong><small>Returning camper · 2026-11-13 14:21 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-110" data-actor="camper" data-index="91"
+  data-file="screenshots/110-camper-book-for-two-guests.png" data-label="Book for two guests" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 110: Book for two guests">
+    <span class="shot-image-wrap"><img src="screenshots/110-camper-book-for-two-guests.png" alt="Book for two guests" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">110</span><span>
+      <strong>Book for two guests</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-111" data-actor="camper" data-index="92"
+  data-file="screenshots/111-camper-read-campsite-rules-and-refund-policy.png" data-label="Read campsite rules and refund policy" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 111: Read campsite rules and refund policy">
+    <span class="shot-image-wrap"><img src="screenshots/111-camper-read-campsite-rules-and-refund-policy.png" alt="Read campsite rules and refund policy" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">111</span><span>
+      <strong>Read campsite rules and refund policy</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-112" data-actor="camper" data-index="93"
+  data-file="screenshots/112-camper-accept-booking-terms.png" data-label="Accept booking terms" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 112: Accept booking terms">
+    <span class="shot-image-wrap"><img src="screenshots/112-camper-accept-booking-terms.png" alt="Accept booking terms" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">112</span><span>
+      <strong>Accept booking terms</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-113" data-actor="camper" data-index="94"
+  data-file="screenshots/113-camper-review-two-night-booking.png" data-label="Review two-night booking" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 113: Review two-night booking">
+    <span class="shot-image-wrap"><img src="screenshots/113-camper-review-two-night-booking.png" alt="Review two-night booking" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">113</span><span>
+      <strong>Review two-night booking</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-115" data-actor="camper" data-index="95"
+  data-file="screenshots/115-camper-confirmed-reservation-saved-in-live-firebase.png" data-label="Confirmed reservation saved in live Firebase" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 115: Confirmed reservation saved in live Firebase">
+    <span class="shot-image-wrap"><img src="screenshots/115-camper-confirmed-reservation-saved-in-live-firebase.png" alt="Confirmed reservation saved in live Firebase" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">115</span><span>
+      <strong>Confirmed reservation saved in live Firebase</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-116" data-actor="camper" data-index="96"
+  data-file="screenshots/116-camper-saved-simulated-payment-record.png" data-label="Saved simulated payment record" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 116: Saved simulated payment record">
+    <span class="shot-image-wrap"><img src="screenshots/116-camper-saved-simulated-payment-record.png" alt="Saved simulated payment record" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">116</span><span>
+      <strong>Saved simulated payment record</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-117" data-actor="camper" data-index="97"
+  data-file="screenshots/117-camper-back-to-confirmed-reservation.png" data-label="Back to confirmed reservation" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 117: Back to confirmed reservation">
+    <span class="shot-image-wrap"><img src="screenshots/117-camper-back-to-confirmed-reservation.png" alt="Back to confirmed reservation" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">117</span><span>
+      <strong>Back to confirmed reservation</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-118" data-actor="camper" data-index="98"
+  data-file="screenshots/118-camper-saved-rules-and-policy-agreement.png" data-label="Saved rules and policy agreement" data-at="2026-11-13 14:22 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 118: Saved rules and policy agreement">
+    <span class="shot-image-wrap"><img src="screenshots/118-camper-saved-rules-and-policy-agreement.png" alt="Saved rules and policy agreement" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">118</span><span>
+      <strong>Saved rules and policy agreement</strong><small>Returning camper · 2026-11-13 14:22 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-119" data-actor="camper" data-index="99"
+  data-file="screenshots/119-camper-back-to-reservation.png" data-label="Back to reservation" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 119: Back to reservation">
+    <span class="shot-image-wrap"><img src="screenshots/119-camper-back-to-reservation.png" alt="Back to reservation" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">119</span><span>
+      <strong>Back to reservation</strong><small>Returning camper · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-120" data-actor="camper" data-index="100"
+  data-file="screenshots/120-camper-scroll-to-cancel-reservation.png" data-label="Scroll to Cancel reservation" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 120: Scroll to Cancel reservation">
+    <span class="shot-image-wrap"><img src="screenshots/120-camper-scroll-to-cancel-reservation.png" alt="Scroll to Cancel reservation" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">120</span><span>
+      <strong>Scroll to Cancel reservation</strong><small>Returning camper · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-121" data-actor="camper" data-index="101"
+  data-file="screenshots/121-camper-review-camper-cancellation.png" data-label="Review camper cancellation" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 121: Review camper cancellation">
+    <span class="shot-image-wrap"><img src="screenshots/121-camper-review-camper-cancellation.png" alt="Review camper cancellation" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">121</span><span>
+      <strong>Review camper cancellation</strong><small>Returning camper · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-122" data-actor="camper" data-index="102"
+  data-file="screenshots/122-camper-confirm-camper-cancellation.png" data-label="Confirm camper cancellation" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 122: Confirm camper cancellation">
+    <span class="shot-image-wrap"><img src="screenshots/122-camper-confirm-camper-cancellation.png" alt="Confirm camper cancellation" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">122</span><span>
+      <strong>Confirm camper cancellation</strong><small>Returning camper · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-123" data-actor="camper" data-index="103"
+  data-file="screenshots/123-camper-live-camper-cancellation-saved.png" data-label="Live camper cancellation saved" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 123: Live camper cancellation saved">
+    <span class="shot-image-wrap"><img src="screenshots/123-camper-live-camper-cancellation-saved.png" alt="Live camper cancellation saved" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">123</span><span>
+      <strong>Live camper cancellation saved</strong><small>Returning camper · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-124" data-actor="camper" data-index="104"
+  data-file="screenshots/124-camper-full-simulated-refund.png" data-label="Full simulated refund" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 124: Full simulated refund">
+    <span class="shot-image-wrap"><img src="screenshots/124-camper-full-simulated-refund.png" alt="Full simulated refund" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">124</span><span>
+      <strong>Full simulated refund</strong><small>Returning camper · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-125" data-actor="camper" data-index="105"
+  data-file="screenshots/125-camper-back-to-cancelled-stay.png" data-label="Back to cancelled stay" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 125: Back to cancelled stay">
+    <span class="shot-image-wrap"><img src="screenshots/125-camper-back-to-cancelled-stay.png" alt="Back to cancelled stay" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">125</span><span>
+      <strong>Back to cancelled stay</strong><small>Returning camper · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-126" data-actor="host" data-index="106"
+  data-file="screenshots/126-host-owner-release-session.png" data-label="Owner release session" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 126: Owner release session">
+    <span class="shot-image-wrap"><img src="screenshots/126-host-owner-release-session.png" alt="Owner release session" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">126</span><span>
+      <strong>Owner release session</strong><small>Host · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-127" data-actor="host" data-index="107"
+  data-file="screenshots/127-host-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:23 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 127: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/127-host-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">127</span><span>
+      <strong>Return to workspace 1</strong><small>Host · 2026-11-13 14:23 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-128" data-actor="host" data-index="108"
+  data-file="screenshots/128-host-open-reservations.png" data-label="Open Reservations" data-at="2026-11-13 14:24 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 128: Open Reservations">
+    <span class="shot-image-wrap"><img src="screenshots/128-host-open-reservations.png" alt="Open Reservations" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">128</span><span>
+      <strong>Open Reservations</strong><small>Host · 2026-11-13 14:24 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-129" data-actor="host" data-index="109"
+  data-file="screenshots/129-host-prepared-future-reservation.png" data-label="Prepared future reservation" data-at="2026-11-13 14:24 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 129: Prepared future reservation">
+    <span class="shot-image-wrap"><img src="screenshots/129-host-prepared-future-reservation.png" alt="Prepared future reservation" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">129</span><span>
+      <strong>Prepared future reservation</strong><small>Host · 2026-11-13 14:24 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-130" data-actor="host" data-index="110"
+  data-file="screenshots/130-host-scroll-to-reject-reservation.png" data-label="Scroll to Reject reservation" data-at="2026-11-13 14:24 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 130: Scroll to Reject reservation">
+    <span class="shot-image-wrap"><img src="screenshots/130-host-scroll-to-reject-reservation.png" alt="Scroll to Reject reservation" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">130</span><span>
+      <strong>Scroll to Reject reservation</strong><small>Host · 2026-11-13 14:24 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-131" data-actor="host" data-index="111"
+  data-file="screenshots/131-host-review-owner-rejection.png" data-label="Review owner rejection" data-at="2026-11-13 14:24 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 131: Review owner rejection">
+    <span class="shot-image-wrap"><img src="screenshots/131-host-review-owner-rejection.png" alt="Review owner rejection" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">131</span><span>
+      <strong>Review owner rejection</strong><small>Host · 2026-11-13 14:24 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-132" data-actor="host" data-index="112"
+  data-file="screenshots/132-host-enter-rejection-reason.png" data-label="Enter rejection reason" data-at="2026-11-13 14:24 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 132: Enter rejection reason">
+    <span class="shot-image-wrap"><img src="screenshots/132-host-enter-rejection-reason.png" alt="Enter rejection reason" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">132</span><span>
+      <strong>Enter rejection reason</strong><small>Host · 2026-11-13 14:24 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-133" data-actor="host" data-index="113"
+  data-file="screenshots/133-host-confirm-owner-rejection.png" data-label="Confirm owner rejection" data-at="2026-11-13 14:24 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 133: Confirm owner rejection">
+    <span class="shot-image-wrap"><img src="screenshots/133-host-confirm-owner-rejection.png" alt="Confirm owner rejection" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">133</span><span>
+      <strong>Confirm owner rejection</strong><small>Host · 2026-11-13 14:24 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-134" data-actor="host" data-index="114"
+  data-file="screenshots/134-host-live-owner-rejection-saved.png" data-label="Live owner rejection saved" data-at="2026-11-13 14:24 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 134: Live owner rejection saved">
+    <span class="shot-image-wrap"><img src="screenshots/134-host-live-owner-rejection-saved.png" alt="Live owner rejection saved" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">134</span><span>
+      <strong>Live owner rejection saved</strong><small>Host · 2026-11-13 14:24 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-136" data-actor="camper" data-index="115"
+  data-file="screenshots/136-camper-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:25 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 136: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/136-camper-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">136</span><span>
+      <strong>Return to workspace 1</strong><small>Returning camper · 2026-11-13 14:25 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-138" data-actor="camper" data-index="116"
+  data-file="screenshots/138-camper-open-inbox.png" data-label="Open Inbox" data-at="2026-11-13 14:25 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 138: Open Inbox">
+    <span class="shot-image-wrap"><img src="screenshots/138-camper-open-inbox.png" alt="Open Inbox" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">138</span><span>
+      <strong>Open Inbox</strong><small>Returning camper · 2026-11-13 14:25 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-140" data-actor="camper" data-index="117"
+  data-file="screenshots/140-camper-rejected-reservation-opens-from-inbox.png" data-label="Rejected reservation opens from Inbox" data-at="2026-11-13 14:25 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 140: Rejected reservation opens from Inbox">
+    <span class="shot-image-wrap"><img src="screenshots/140-camper-rejected-reservation-opens-from-inbox.png" alt="Rejected reservation opens from Inbox" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">140</span><span>
+      <strong>Rejected reservation opens from Inbox</strong><small>Returning camper · 2026-11-13 14:25 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-141" data-actor="admin" data-index="118"
+  data-file="screenshots/141-admin-administrator-release-session.png" data-label="Administrator release session" data-at="2026-11-13 14:25 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 141: Administrator release session">
+    <span class="shot-image-wrap"><img src="screenshots/141-admin-administrator-release-session.png" alt="Administrator release session" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">141</span><span>
+      <strong>Administrator release session</strong><small>Admin · 2026-11-13 14:25 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-142" data-actor="admin" data-index="119"
+  data-file="screenshots/142-admin-open-browse.png" data-label="Open Browse" data-at="2026-11-13 14:25 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 142: Open Browse">
+    <span class="shot-image-wrap"><img src="screenshots/142-admin-open-browse.png" alt="Open Browse" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">142</span><span>
+      <strong>Open Browse</strong><small>Admin · 2026-11-13 14:25 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-143" data-actor="admin" data-index="120"
+  data-file="screenshots/143-admin-admin-profile-browser.png" data-label="Admin profile browser" data-at="2026-11-13 14:25 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 143: Admin profile browser">
+    <span class="shot-image-wrap"><img src="screenshots/143-admin-admin-profile-browser.png" alt="Admin profile browser" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">143</span><span>
+      <strong>Admin profile browser</strong><small>Admin · 2026-11-13 14:25 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-144" data-actor="admin" data-index="121"
+  data-file="screenshots/144-admin-find-the-current-campsite-owner.png" data-label="Find the current campsite owner" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 144: Find the current campsite owner">
+    <span class="shot-image-wrap"><img src="screenshots/144-admin-find-the-current-campsite-owner.png" alt="Find the current campsite owner" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">144</span><span>
+      <strong>Find the current campsite owner</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-145" data-actor="admin" data-index="122"
+  data-file="screenshots/145-admin-inspect-current-campsite-owner.png" data-label="Inspect current campsite owner" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 145: Inspect current campsite owner">
+    <span class="shot-image-wrap"><img src="screenshots/145-admin-inspect-current-campsite-owner.png" alt="Inspect current campsite owner" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">145</span><span>
+      <strong>Inspect current campsite owner</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-146" data-actor="admin" data-index="123"
+  data-file="screenshots/146-admin-scroll-to-river-camp.png" data-label="Scroll to River Camp" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 146: Scroll to River Camp">
+    <span class="shot-image-wrap"><img src="screenshots/146-admin-scroll-to-river-camp.png" alt="Scroll to River Camp" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">146</span><span>
+      <strong>Scroll to River Camp</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-147" data-actor="admin" data-index="124"
+  data-file="screenshots/147-admin-owner-profile-and-owned-campsites.png" data-label="Owner profile and owned campsites" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 147: Owner profile and owned campsites">
+    <span class="shot-image-wrap"><img src="screenshots/147-admin-owner-profile-and-owned-campsites.png" alt="Owner profile and owned campsites" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">147</span><span>
+      <strong>Owner profile and owned campsites</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-148" data-actor="admin" data-index="125"
+  data-file="screenshots/148-admin-admin-inspects-shared-river-camp.png" data-label="Admin inspects shared River Camp" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 148: Admin inspects shared River Camp">
+    <span class="shot-image-wrap"><img src="screenshots/148-admin-admin-inspects-shared-river-camp.png" alt="Admin inspects shared River Camp" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">148</span><span>
+      <strong>Admin inspects shared River Camp</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-149" data-actor="admin" data-index="126"
+  data-file="screenshots/149-admin-campsite-description-and-rules.png" data-label="Campsite description and rules" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 149: Campsite description and rules">
+    <span class="shot-image-wrap"><img src="screenshots/149-admin-campsite-description-and-rules.png" alt="Campsite description and rules" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">149</span><span>
+      <strong>Campsite description and rules</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-150" data-actor="admin" data-index="127"
+  data-file="screenshots/150-admin-back-to-shared-campsite.png" data-label="Back to shared campsite" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 150: Back to shared campsite">
+    <span class="shot-image-wrap"><img src="screenshots/150-admin-back-to-shared-campsite.png" alt="Back to shared campsite" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">150</span><span>
+      <strong>Back to shared campsite</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-151" data-actor="admin" data-index="128"
+  data-file="screenshots/151-admin-back-to-owner-profile.png" data-label="Back to owner profile" data-at="2026-11-13 14:26 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 151: Back to owner profile">
+    <span class="shot-image-wrap"><img src="screenshots/151-admin-back-to-owner-profile.png" alt="Back to owner profile" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">151</span><span>
+      <strong>Back to owner profile</strong><small>Admin · 2026-11-13 14:26 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-152" data-actor="admin" data-index="129"
+  data-file="screenshots/152-admin-return-to-workspace-1.png" data-label="Return to workspace 1" data-at="2026-11-13 14:27 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 152: Return to workspace 1">
+    <span class="shot-image-wrap"><img src="screenshots/152-admin-return-to-workspace-1.png" alt="Return to workspace 1" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">152</span><span>
+      <strong>Return to workspace 1</strong><small>Admin · 2026-11-13 14:27 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-154" data-actor="admin" data-index="130"
+  data-file="screenshots/154-admin-admin-image-browser.png" data-label="Admin image browser" data-at="2026-11-13 14:27 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 154: Admin image browser">
+    <span class="shot-image-wrap"><img src="screenshots/154-admin-admin-image-browser.png" alt="Admin image browser" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">154</span><span>
+      <strong>Admin image browser</strong><small>Admin · 2026-11-13 14:27 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-155" data-actor="admin" data-index="131"
+  data-file="screenshots/155-admin-find-river-camp-image.png" data-label="Find River Camp image" data-at="2026-11-13 15:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 155: Find River Camp image">
+    <span class="shot-image-wrap"><img src="screenshots/155-admin-find-river-camp-image.png" alt="Find River Camp image" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">155</span><span>
+      <strong>Find River Camp image</strong><small>Admin · 2026-11-13 15:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-157" data-actor="admin" data-index="132"
+  data-file="screenshots/157-admin-inspect-shared-campsite-photo.png" data-label="Inspect shared campsite photo" data-at="2026-11-13 15:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 157: Inspect shared campsite photo">
+    <span class="shot-image-wrap"><img src="screenshots/157-admin-inspect-shared-campsite-photo.png" alt="Inspect shared campsite photo" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">157</span><span>
+      <strong>Inspect shared campsite photo</strong><small>Admin · 2026-11-13 15:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-158" data-actor="admin" data-index="133"
+  data-file="screenshots/158-admin-back-to-admin-images.png" data-label="Back to admin images" data-at="2026-11-13 15:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 158: Back to admin images">
+    <span class="shot-image-wrap"><img src="screenshots/158-admin-back-to-admin-images.png" alt="Back to admin images" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">158</span><span>
+      <strong>Back to admin images</strong><small>Admin · 2026-11-13 15:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-159" data-actor="admin" data-index="134"
+  data-file="screenshots/159-admin-open-logs.png" data-label="Open Logs" data-at="2026-11-13 15:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 159: Open Logs">
+    <span class="shot-image-wrap"><img src="screenshots/159-admin-open-logs.png" alt="Open Logs" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">159</span><span>
+      <strong>Open Logs</strong><small>Admin · 2026-11-13 15:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-160" data-actor="admin" data-index="135"
+  data-file="screenshots/160-admin-inspect-owner-rejection-event.png" data-label="Inspect owner rejection event" data-at="2026-11-13 15:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 160: Inspect owner rejection event">
+    <span class="shot-image-wrap"><img src="screenshots/160-admin-inspect-owner-rejection-event.png" alt="Inspect owner rejection event" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">160</span><span>
+      <strong>Inspect owner rejection event</strong><small>Admin · 2026-11-13 15:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-161" data-actor="admin" data-index="136"
+  data-file="screenshots/161-admin-inspect-rejection-recipients.png" data-label="Inspect rejection recipients" data-at="2026-11-13 15:05 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 161: Inspect rejection recipients">
+    <span class="shot-image-wrap"><img src="screenshots/161-admin-inspect-rejection-recipients.png" alt="Inspect rejection recipients" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">161</span><span>
+      <strong>Inspect rejection recipients</strong><small>Admin · 2026-11-13 15:05 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-162" data-actor="admin" data-index="137"
+  data-file="screenshots/162-admin-rejection-receipt-read-state.png" data-label="Rejection receipt read state" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 162: Rejection receipt read state">
+    <span class="shot-image-wrap"><img src="screenshots/162-admin-rejection-receipt-read-state.png" alt="Rejection receipt read state" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">162</span><span>
+      <strong>Rejection receipt read state</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-163" data-actor="admin" data-index="138"
+  data-file="screenshots/163-admin-back-to-rejection-event.png" data-label="Back to rejection event" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 163: Back to rejection event">
+    <span class="shot-image-wrap"><img src="screenshots/163-admin-back-to-rejection-event.png" alt="Back to rejection event" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">163</span><span>
+      <strong>Back to rejection event</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-164" data-actor="admin" data-index="139"
+  data-file="screenshots/164-admin-back-to-event-log.png" data-label="Back to event log" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 164: Back to event log">
+    <span class="shot-image-wrap"><img src="screenshots/164-admin-back-to-event-log.png" alt="Back to event log" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">164</span><span>
+      <strong>Back to event log</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-165" data-actor="admin" data-index="140"
+  data-file="screenshots/165-admin-filter-notification-events.png" data-label="Filter notification events" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 165: Filter notification events">
+    <span class="shot-image-wrap"><img src="screenshots/165-admin-filter-notification-events.png" alt="Filter notification events" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">165</span><span>
+      <strong>Filter notification events</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-166" data-actor="admin" data-index="141"
+  data-file="screenshots/166-admin-filter-lottery-wins.png" data-label="Filter lottery wins" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 166: Filter lottery wins">
+    <span class="shot-image-wrap"><img src="screenshots/166-admin-filter-lottery-wins.png" alt="Filter lottery wins" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">166</span><span>
+      <strong>Filter lottery wins</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-167" data-actor="admin" data-index="142"
+  data-file="screenshots/167-admin-inspect-live-win-event.png" data-label="Inspect live win event" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 167: Inspect live win event">
+    <span class="shot-image-wrap"><img src="screenshots/167-admin-inspect-live-win-event.png" alt="Inspect live win event" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">167</span><span>
+      <strong>Inspect live win event</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-168" data-actor="admin" data-index="143"
+  data-file="screenshots/168-admin-inspect-live-win-recipient.png" data-label="Inspect live win recipient" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 168: Inspect live win recipient">
+    <span class="shot-image-wrap"><img src="screenshots/168-admin-inspect-live-win-recipient.png" alt="Inspect live win recipient" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">168</span><span>
+      <strong>Inspect live win recipient</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-169" data-actor="admin" data-index="144"
+  data-file="screenshots/169-admin-winning-entrant-delivery-and-read-state.png" data-label="Winning entrant delivery and read state" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 169: Winning entrant delivery and read state">
+    <span class="shot-image-wrap"><img src="screenshots/169-admin-winning-entrant-delivery-and-read-state.png" alt="Winning entrant delivery and read state" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">169</span><span>
+      <strong>Winning entrant delivery and read state</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-170" data-actor="admin" data-index="145"
+  data-file="screenshots/170-admin-back-to-win-event.png" data-label="Back to win event" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 170: Back to win event">
+    <span class="shot-image-wrap"><img src="screenshots/170-admin-back-to-win-event.png" alt="Back to win event" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">170</span><span>
+      <strong>Back to win event</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-171" data-actor="admin" data-index="146"
+  data-file="screenshots/171-admin-back-to-win-log.png" data-label="Back to win log" data-at="2026-11-13 15:06 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 171: Back to win log">
+    <span class="shot-image-wrap"><img src="screenshots/171-admin-back-to-win-log.png" alt="Back to win log" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">171</span><span>
+      <strong>Back to win log</strong><small>Admin · 2026-11-13 15:06 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-172" data-actor="admin" data-index="147"
+  data-file="screenshots/172-admin-choose-another-event-type.png" data-label="Choose another event type" data-at="2026-11-13 15:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 172: Choose another event type">
+    <span class="shot-image-wrap"><img src="screenshots/172-admin-choose-another-event-type.png" alt="Choose another event type" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">172</span><span>
+      <strong>Choose another event type</strong><small>Admin · 2026-11-13 15:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-173" data-actor="admin" data-index="148"
+  data-file="screenshots/173-admin-filter-booking-confirmations.png" data-label="Filter booking confirmations" data-at="2026-11-13 15:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 173: Filter booking confirmations">
+    <span class="shot-image-wrap"><img src="screenshots/173-admin-filter-booking-confirmations.png" alt="Filter booking confirmations" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">173</span><span>
+      <strong>Filter booking confirmations</strong><small>Admin · 2026-11-13 15:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-174" data-actor="admin" data-index="149"
+  data-file="screenshots/174-admin-inspect-live-booking-event.png" data-label="Inspect live booking event" data-at="2026-11-13 15:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 174: Inspect live booking event">
+    <span class="shot-image-wrap"><img src="screenshots/174-admin-inspect-live-booking-event.png" alt="Inspect live booking event" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">174</span><span>
+      <strong>Inspect live booking event</strong><small>Admin · 2026-11-13 15:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-175" data-actor="admin" data-index="150"
+  data-file="screenshots/175-admin-inspect-booking-delivery.png" data-label="Inspect booking delivery" data-at="2026-11-13 15:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 175: Inspect booking delivery">
+    <span class="shot-image-wrap"><img src="screenshots/175-admin-inspect-booking-delivery.png" alt="Inspect booking delivery" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">175</span><span>
+      <strong>Inspect booking delivery</strong><small>Admin · 2026-11-13 15:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+<article class="shot" id="capture-176" data-actor="admin" data-index="151"
+  data-file="screenshots/176-admin-booking-receipt-delivered-to-inbox.png" data-label="Booking receipt delivered to Inbox" data-at="2026-11-13 15:07 UTC">
+  <button class="shot-open" type="button" aria-label="Open screenshot 176: Booking receipt delivered to Inbox">
+    <span class="shot-image-wrap"><img src="screenshots/176-admin-booking-receipt-delivered-to-inbox.png" alt="Booking receipt delivered to Inbox" loading="lazy"></span>
+    <span class="shot-caption"><span class="shot-number">176</span><span>
+      <strong>Booking receipt delivered to Inbox</strong><small>Admin · 2026-11-13 15:07 UTC</small>
+    </span></span>
+  </button>
+</article>
+      <article class="shot" id="capture-177" data-actor="camper" data-index="152" data-file="screenshots/177-camper-app-guidelines.png" data-label="Read the app guidelines" data-at="2026-11-13 21:16 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 177: Read the app guidelines"><span class="shot-image-wrap"><img src="screenshots/177-camper-app-guidelines.png" alt="Read the app guidelines" loading="lazy"></span><span class="shot-caption"><span class="shot-number">177</span><span><strong>Read the app guidelines</strong><small>Camper · 2026-11-13 21:16 UTC</small></span></span></button></article>
+<article class="shot" id="capture-178" data-actor="camper" data-index="153" data-file="screenshots/178-camper-app-refund-policy.png" data-label="Read the reservation and refund policy" data-at="2026-11-13 21:16 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 178: Read the reservation and refund policy"><span class="shot-image-wrap"><img src="screenshots/178-camper-app-refund-policy.png" alt="Read the reservation and refund policy" loading="lazy"></span><span class="shot-caption"><span class="shot-number">178</span><span><strong>Read the reservation and refund policy</strong><small>Camper · 2026-11-13 21:16 UTC</small></span></span></button></article>
+<article class="shot" id="capture-179" data-actor="host" data-index="154" data-file="screenshots/179-host-booked-dates-in-owner-calendar.png" data-label="View occupied December nights in the owner calendar" data-at="2026-11-13 21:16 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 179: View occupied December nights in the owner calendar"><span class="shot-image-wrap"><img src="screenshots/179-host-booked-dates-in-owner-calendar.png" alt="View occupied December nights in the owner calendar" loading="lazy"></span><span class="shot-caption"><span class="shot-number">179</span><span><strong>View occupied December nights in the owner calendar</strong><small>Host · 2026-11-13 21:16 UTC</small></span></span></button></article>
+<article class="shot" id="capture-180" data-actor="camper" data-index="155" data-file="screenshots/180-camper-app-alerts-saved-off.png" data-label="Save the app alert opt-out" data-at="2026-11-13 21:17 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 180: Save the app alert opt-out"><span class="shot-image-wrap"><img src="screenshots/180-camper-app-alerts-saved-off.png" alt="Save the app alert opt-out" loading="lazy"></span><span class="shot-caption"><span class="shot-number">180</span><span><strong>Save the app alert opt-out</strong><small>Camper · 2026-11-13 21:17 UTC</small></span></span></button></article>
+<article class="shot" id="capture-181" data-actor="camper" data-index="156" data-file="screenshots/181-camper-app-alerts-restored-on.png" data-label="Restore app alerts before the draw" data-at="2026-11-13 21:17 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 181: Restore app alerts before the draw"><span class="shot-image-wrap"><img src="screenshots/181-camper-app-alerts-restored-on.png" alt="Restore app alerts before the draw" loading="lazy"></span><span class="shot-caption"><span class="shot-number">181</span><span><strong>Restore app alerts before the draw</strong><small>Camper · 2026-11-13 21:17 UTC</small></span></span></button></article>
+<article class="shot" id="capture-182" data-actor="camper" data-index="157" data-file="screenshots/182-camper-selected-profile-photo.png" data-label="Select a profile photo" data-at="2026-11-13 21:18 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 182: Select a profile photo"><span class="shot-image-wrap"><img src="screenshots/182-camper-selected-profile-photo.png" alt="Select a profile photo" loading="lazy"></span><span class="shot-caption"><span class="shot-number">182</span><span><strong>Select a profile photo</strong><small>Camper · 2026-11-13 21:18 UTC</small></span></span></button></article>
+<article class="shot" id="capture-183" data-actor="camper" data-index="158" data-file="screenshots/183-camper-profile-photo-saved.png" data-label="Save the profile photo" data-at="2026-11-13 21:18 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 183: Save the profile photo"><span class="shot-image-wrap"><img src="screenshots/183-camper-profile-photo-saved.png" alt="Save the profile photo" loading="lazy"></span><span class="shot-caption"><span class="shot-number">183</span><span><strong>Save the profile photo</strong><small>Camper · 2026-11-13 21:18 UTC</small></span></span></button></article>
+<article class="shot" id="capture-184" data-actor="camper" data-index="159" data-file="screenshots/184-camper-active-reservations-list.png" data-label="View the camper’s Active reservations" data-at="2026-11-13 21:19 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 184: View the camper’s Active reservations"><span class="shot-image-wrap"><img src="screenshots/184-camper-active-reservations-list.png" alt="View the camper’s Active reservations" loading="lazy"></span><span class="shot-caption"><span class="shot-number">184</span><span><strong>View the camper’s Active reservations</strong><small>Camper · 2026-11-13 21:19 UTC</small></span></span></button></article>
+<article class="shot" id="capture-185" data-actor="camper" data-index="160" data-file="screenshots/185-camper-saved-campsite-location-map.png" data-label="View River Camp’s saved map location" data-at="2026-11-13 21:24 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 185: View River Camp’s saved map location"><span class="shot-image-wrap"><img src="screenshots/185-camper-saved-campsite-location-map.png" alt="View River Camp’s saved map location" loading="lazy"></span><span class="shot-caption"><span class="shot-number">185</span><span><strong>View River Camp’s saved map location</strong><small>Camper · 2026-11-13 21:24 UTC</small></span></span></button></article>
+<article class="shot" id="capture-186" data-actor="host" data-index="161" data-file="screenshots/186-host-selected-campsite-photo.png" data-label="Select a campsite promotional photo" data-at="2026-11-13 21:21 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 186: Select a campsite promotional photo"><span class="shot-image-wrap"><img src="screenshots/186-host-selected-campsite-photo.png" alt="Select a campsite promotional photo" loading="lazy"></span><span class="shot-caption"><span class="shot-number">186</span><span><strong>Select a campsite promotional photo</strong><small>Host · 2026-11-13 21:21 UTC</small></span></span></button></article>
+<article class="shot" id="capture-187" data-actor="camper" data-index="162" data-file="screenshots/187-camper-location-date-and-guest-filters.png" data-label="Apply location, dates and guest filters" data-at="2026-11-13 21:22 UTC"><button class="shot-open" type="button" aria-label="Open screenshot 187: Apply location, dates and guest filters"><span class="shot-image-wrap"><img src="screenshots/187-camper-location-date-and-guest-filters.png" alt="Apply location, dates and guest filters" loading="lazy"></span><span class="shot-caption"><span class="shot-number">187</span><span><strong>Apply location, dates and guest filters</strong><small>Camper · 2026-11-13 21:22 UTC</small></span></span></button></article>
+    <div class="empty" id="empty-state" hidden>No screenshots for this actor yet.</div>
+    </section>
+  </main>
+
+  <dialog id="lightbox" aria-labelledby="lightbox-title">
+    <div class="lightbox">
+      <div class="lightbox-head"><div><h2 class="lightbox-title" id="lightbox-title"></h2><div class="lightbox-meta" id="lightbox-meta"></div></div><button class="lightbox-close" id="close" type="button" aria-label="Close screenshot">×</button></div>
+      <div class="lightbox-image-wrap"><img class="lightbox-image" id="lightbox-image" alt=""></div>
+      <div class="lightbox-foot"><button class="lightbox-nav" id="previous" type="button">← Previous</button><span class="lightbox-meta" id="lightbox-position"></span><button class="lightbox-nav" id="next" type="button">Next →</button></div>
+    </div>
+  </dialog>
+  <script>
+    (() => {
+      const cards = [...document.querySelectorAll('.shot')];
+      const filters = [...document.querySelectorAll('.filter')];
+      const dialog = document.getElementById('lightbox');
+      const image = document.getElementById('lightbox-image');
+      const title = document.getElementById('lightbox-title');
+      const meta = document.getElementById('lightbox-meta');
+      const position = document.getElementById('lightbox-position');
+      const visibleCount = document.getElementById('visible-count');
+      const empty = document.getElementById('empty-state');
+      let currentActor = 'all';
+      let current = 0;
+
+      const visibleCards = () => cards.filter((card) => !card.hidden);
+      const renderCount = () => {
+        const visible = visibleCards();
+        visibleCount.textContent = `Showing ${visible.length} of ${cards.length}`;
+        empty.hidden = visible.length !== 0;
+      };
+      const showCard = (card) => {
+        const visible = visibleCards();
+        current = Math.max(0, visible.indexOf(card));
+        const selected = visible[current];
+        if (!selected) return;
+        image.src = selected.dataset.file;
+        image.alt = selected.dataset.label;
+        title.textContent = selected.dataset.label;
+        meta.textContent = `${selected.dataset.actor} · ${selected.dataset.at}`;
+        position.textContent = `${current + 1} / ${visible.length}`;
+        if (!dialog.open) dialog.showModal();
+      };
+      const showOffset = (offset) => {
+        const visible = visibleCards();
+        if (!visible.length) return;
+        current = (current + offset + visible.length) % visible.length;
+        showCard(visible[current]);
+      };
+      cards.forEach((card) => card.querySelector('.shot-open').addEventListener('click', () => showCard(card)));
+      filters.forEach((button) => button.addEventListener('click', () => {
+        currentActor = button.dataset.filter;
+        filters.forEach((item) => item.classList.toggle('is-active', item === button));
+        cards.forEach((card) => { card.hidden = currentActor !== 'all' && card.dataset.actor !== currentActor; });
+        renderCount();
+      }));
+      document.getElementById('close').addEventListener('click', () => dialog.close());
+      document.getElementById('previous').addEventListener('click', () => showOffset(-1));
+      document.getElementById('next').addEventListener('click', () => showOffset(1));
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+      document.addEventListener('keydown', (event) => {
+        if (!dialog.open) return;
+        if (event.key === 'ArrowLeft') { event.preventDefault(); showOffset(-1); }
+        if (event.key === 'ArrowRight') { event.preventDefault(); showOffset(1); }
+      });
+      renderCount();
+    })();
+  </script>
+</body>
+</html>

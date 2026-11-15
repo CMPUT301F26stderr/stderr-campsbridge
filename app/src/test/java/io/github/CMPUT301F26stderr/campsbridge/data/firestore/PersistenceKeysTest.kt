@@ -1,3 +1,7 @@
+/*
+ * Tests key safety and deterministic identities; forwarding path methods need no mirrored tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget

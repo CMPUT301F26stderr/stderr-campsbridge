@@ -1,3 +1,7 @@
+/*
+ * Tests shared missing-data, observed-decoding and transaction-failure behavior.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.firestore
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument

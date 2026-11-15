@@ -1,3 +1,7 @@
+/*
+ * Shared Material dialog application/cancellation contracts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import androidx.compose.material3.Text

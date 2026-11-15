@@ -1,3 +1,7 @@
+/*
+ * Tests actor-scoped reservation lists with injected category and ordering outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.lifecycle.SavedStateHandle

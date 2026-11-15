@@ -1,3 +1,7 @@
+/*
+ * Inbox controller state and actions with controlled repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
@@ -8,7 +12,9 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,14 +49,14 @@ class InboxViewModelTest {
             notifications.receipts.value = mapOf("account-1" to listOf(InboxReceipt("n-1", null)))
             val lotteries = FakeLotteryRepository()
             val bookings = FakeBookingRepository()
-            val loader = NotificationContentLoader(notifications, lotteries, bookings)
+            val loader = NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository())
 
             val viewModel = InboxViewModel("account-1", notifications, loader)
             runCurrent()
 
             val state = viewModel.state.value
-            assertTrue(state is InboxUiState.Content)
-            val content = state as InboxUiState.Content
+            assertEquals(InboxSourceState.READY, state.source)
+            val content = state
             assertEquals(1, content.items.size)
             assertEquals("n-1", content.items[0].notification.id)
             assertEquals(1, content.unreadCount)
@@ -64,12 +70,12 @@ class InboxViewModelTest {
             notifications.inboxFailure.value = RuntimeException("offline")
             val lotteries = FakeLotteryRepository()
             val bookings = FakeBookingRepository()
-            val loader = NotificationContentLoader(notifications, lotteries, bookings)
+            val loader = NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository())
 
             val viewModel = InboxViewModel("account-1", notifications, loader)
             runCurrent()
 
-            assertEquals(InboxUiState.Failure, viewModel.state.value)
+            assertEquals(InboxSourceState.FAILURE, viewModel.state.value.source)
         }
 
     /** A new receipt arriving before the route navigates keeps the open request. */
@@ -80,17 +86,17 @@ class InboxViewModelTest {
             notifications.receipts.value = mapOf("account-1" to listOf(InboxReceipt("n-1", null)))
             val viewModel = viewModel(notifications)
             runCurrent()
-            val item = (viewModel.state.value as InboxUiState.Content).items.single()
+            val item = (viewModel.state.value).items.single()
 
-            viewModel.open(item)
+            viewModel.openItem(item.notification.id)
             runCurrent()
             notifications.receipts.value =
                 mapOf("account-1" to listOf(InboxReceipt("n-1", null), InboxReceipt("n-2", null)))
             runCurrent()
 
-            val content = viewModel.state.value as InboxUiState.Content
+            val content = viewModel.state.value
             assertEquals(2, content.items.size)
-            assertEquals(item, content.openingItem)
+            assertEquals(InboxOpenRequest(item.notification.id, item.notification.subject), viewModel.pendingOpen.value)
         }
 
     /** Retrying and a failed live source both keep rows that already loaded. */
@@ -104,15 +110,15 @@ class InboxViewModelTest {
 
             notifications.inboxFailure.value = RuntimeException("offline")
             runCurrent()
-            val failed = viewModel.state.value as InboxUiState.Content
+            val failed = viewModel.state.value
             assertEquals(1, failed.items.size)
-            assertTrue(failed.sourceFailed)
+            assertEquals(InboxSourceState.FAILURE, failed.source)
 
             notifications.inboxFailure.value = null
             viewModel.retry()
-            assertEquals(1, (viewModel.state.value as InboxUiState.Content).items.size)
+            assertEquals(1, (viewModel.state.value).items.size)
             runCurrent()
-            assertFalse((viewModel.state.value as InboxUiState.Content).sourceFailed)
+            assertEquals(InboxSourceState.READY, viewModel.state.value.source)
         }
 
     /** A second tap while the first is pending doesn't write again. */
@@ -125,10 +131,10 @@ class InboxViewModelTest {
             notifications.markReadHandler = { _, _ -> write.await() }
             val viewModel = viewModel(notifications)
             runCurrent()
-            val item = (viewModel.state.value as InboxUiState.Content).items.single()
+            val item = (viewModel.state.value).items.single()
 
-            viewModel.open(item)
-            viewModel.open(item)
+            viewModel.openItem(item.notification.id)
+            viewModel.openItem(item.notification.id)
             runCurrent()
 
             assertEquals(1, notifications.readRequests.size)
@@ -162,8 +168,9 @@ class InboxViewModelTest {
             notifications,
             NotificationContentLoader(
                 notifications,
-                FakeLotteryRepository(),
+                FakeLotteryRepository(listOf(CampingFixtures.lottery().copy(id = "l-1"))),
                 FakeBookingRepository(),
+                FakeMessageRepository(),
             ),
         )
 }

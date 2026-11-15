@@ -1,3 +1,7 @@
+/*
+ * Tests profile editor orchestration with injected name and contact parser outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * Defines campsite setup steps and retained listing, photo and availability input.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates

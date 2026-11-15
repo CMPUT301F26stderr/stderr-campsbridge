@@ -6,13 +6,13 @@ Welcome leads to starting intent, then name, then optional camper interests or t
 
 Saved state retains the step, intent and unsubmitted field values across supported Android state restoration. A cold launch with an unfinished existing profile resumes the final branch using its confirmed name/preferences and local workspace choice. Dismissing the task before submitting a name does not promise durable draft recovery. Shared profile facts remain in Firestore; the local store contains only setup progress and workspace choice.
 
-## Pending integrations
+**Display-name validation**
 
-Display-name parsing is a reserved teammate function. Its result contract is `ui/profile/logic/DisplayNameInput.kt`. `OnboardingViewModel` accepts a nullable parser; the production factory currently passes null. Name input remains editable, but Continue is disabled and the missing validation support is explained. Do not add a temporary production validator. After the function is reviewed, connect `::parseDisplayName` in `onboardingViewModelFactory` and run the complete onboarding checks.
+`onboardingViewModelFactory` supplies the completed `parseDisplayName` helper from `ui/profile/logic/DisplayNameInput.kt`. The ViewModel owns field feedback and explicit profile writes. Isolated tests and previews can omit the parser to show missing-dependency feedback; production does not use that path.
 
-Tests supply a fixed lookup for known fixture names. That lookup exercises the controller contract; it does not implement or test the reserved parser. The separate parser task supplies its own initially failing input/output tests.
+Controller tests inject controlled rules, while `DisplayNameInputTest` checks the parser's input/output contract.
 
-The owner introduction shares informational content with the existing-account Profile > Start hosting route. Finish setup performs required onboarding writes, then the owner workspace opens Campsites with its real Create action. Existing accounts enable hosting through their profile without repeating name/identity setup. Entrants currently open Profile; Explore becomes their default when its feature is registered.
+The owner introduction shares informational content with the existing-account Profile > Start hosting route. Finish setup performs required onboarding writes, then the owner workspace opens Campsites with its real Create action. Existing accounts enable hosting through their profile without repeating name/identity setup. Entrants open Explore after setup.
 
 ## Verification
 

@@ -1,3 +1,7 @@
+/*
+ * Represents entrant participation and command progress while hiding outcomes from unfinished draws.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 /** Own participation labels; an unfinished draw never exposes provisional winners or losers. */

@@ -1,3 +1,7 @@
+/*
+ * Controlled image boundary for presentation tests; never uploads or deletes Storage bytes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
@@ -26,6 +30,7 @@ class FakeImageRepository : ImageRepository {
     var readFailure: Exception? = null
     var replaceFailure: Exception? = null
     var deleteFailure: Exception? = null
+    var deleteResult: ImageUpdateResult? = null
     var uploadGate: CompletableDeferred<Unit>? = null
     var deleteGate: CompletableDeferred<Unit>? = null
     var readGate: CompletableDeferred<Unit>? = null
@@ -104,8 +109,9 @@ class FakeImageRepository : ImageRepository {
         deleteCalls++
         deleteGate?.await()
         deleteFailure?.let { throw it }
-        attachment.value = null
-        return ImageUpdateResult(null, null)
+        val result = deleteResult ?: ImageUpdateResult(null, null)
+        attachment.value = result.attachment
+        return result
     }
 
     /** Resolves a controlled display reference without network access.

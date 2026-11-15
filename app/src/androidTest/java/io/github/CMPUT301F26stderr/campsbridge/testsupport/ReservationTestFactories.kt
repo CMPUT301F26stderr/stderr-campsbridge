@@ -1,3 +1,7 @@
+/*
+ * Supplies the real saved reader and records its target and lifetime for route tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.lifecycle.ViewModelProvider

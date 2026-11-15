@@ -1,3 +1,7 @@
+/*
+ * Owns a native single-image launch and reports cancellation without modifying a previous choice.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.images
 
 import androidx.activity.compose.rememberLauncherForActivityResult

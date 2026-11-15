@@ -1,0 +1,19 @@
+<resources>
+    <string name="lottery_edit_entry">Edit details</string>
+    <string name="lottery_edit_title">Edit lottery</string>
+    <string name="lottery_edit_basics">Title &amp; description</string>
+    <string name="lottery_edit_limits">Winners &amp; waitlist capacity</string>
+    <string name="lottery_edit_limits_summary">%1$d winners · %2$s</string>
+    <string name="lottery_edit_raw_limits_summary">%1$s winners · %2$s</string>
+    <string name="lottery_edit_not_set">Not set</string>
+    <string name="lottery_edit_save">Save details</string>
+    <string name="lottery_edit_save_failed">Could not save lottery details.</string>
+    <string name="lottery_edit_configuration">Lottery configuration</string>
+    <string name="lottery_edit_configuration_hint">Schedule and capacity lock when registration starts.</string>
+    <string name="lottery_edit_locked">Configuration locked</string>
+    <string name="lottery_edit_locked_hint">Registration has started. You can still edit the title and description.</string>
+    <string name="lottery_edit_review_title">Review changes</string>
+    <string name="lottery_edit_review_body">Lottery details changed. Review the saved configuration, then save again.</string>
+    <string name="lottery_edit_discard_title">Discard lottery changes?</string>
+    <string name="lottery_edit_discard_body">Your unsaved lottery details will be discarded.</string>
+</resources>

@@ -1,3 +1,7 @@
+/*
+ * Tests Android alert construction and publication through real SDK objects with controlled platform behavior.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.Manifest
@@ -191,6 +195,7 @@ class AndroidNotificationPublisherTest {
     /** Android 7 receives high-priority standard content without accessing channel-only APIs. */
     @Test
     @Config(sdk = [24])
+    @Suppress("DEPRECATION")
     fun android24UsesPriorityWithoutChannelApis() {
         AndroidNotificationPublisher(context).post(alert)
         assertEquals(1, manager.activeNotifications.size)

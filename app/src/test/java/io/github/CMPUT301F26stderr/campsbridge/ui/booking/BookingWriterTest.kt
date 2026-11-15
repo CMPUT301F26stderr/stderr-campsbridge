@@ -1,3 +1,7 @@
+/*
+ * One frozen attempt has explicit acknowledgement, rejection and read-only recovery outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

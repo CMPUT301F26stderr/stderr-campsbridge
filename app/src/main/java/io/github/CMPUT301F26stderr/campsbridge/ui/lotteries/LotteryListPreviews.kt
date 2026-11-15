@@ -1,3 +1,7 @@
+/*
+ * Passive category and independently supplied context, without repositories or commands.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable
@@ -7,6 +11,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 
@@ -169,8 +174,7 @@ class LotteryListDisplayPreviewProvider : PreviewParameterProvider<LotteryListDi
 @Preview(name = "Large text", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable
 private fun LotteryListDisplayPreview(
-    @PreviewParameter(LotteryListDisplayPreviewProvider::class) state:
-        LotteryListDisplayPreviewState,
+    @PreviewParameter(LotteryListDisplayPreviewProvider::class) state: LotteryListDisplayPreviewState,
 ) {
     val owner = state.category in listOf(LotteryListCategory.PUBLISHED, LotteryListCategory.DRAFTS)
     val categories =
@@ -184,7 +188,10 @@ private fun LotteryListDisplayPreview(
             )
         }
     CampsbridgeTheme {
-        AppScreen(stringResource(R.string.my_lotteries)) {
+        AppScreen(
+            stringResource(R.string.my_lotteries),
+            floatingActionButton = { if (owner) CreateAction(stringResource(R.string.lottery_create), {}) },
+        ) {
             LotteryListScreen(
                 state.state,
                 state.category,
@@ -193,7 +200,6 @@ private fun LotteryListDisplayPreview(
                 {},
                 {},
                 contexts = state.contexts,
-                onCreate = if (owner) ({}) else null,
             )
         }
     }

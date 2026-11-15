@@ -1,3 +1,7 @@
+/*
+ * Tests message-body validity before a conversation write.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.messaging
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures

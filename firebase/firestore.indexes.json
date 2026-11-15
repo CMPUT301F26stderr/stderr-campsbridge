@@ -4,9 +4,31 @@
       "collectionGroup": "lotteries",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "drawnAt", "order": "ASCENDING" },
+        { "fieldPath": "registrationClosesAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "lotteries",
+      "queryScope": "COLLECTION",
+      "fields": [
         {
           "fieldPath": "ownerId",
           "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "publishedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "lotteries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "participantOwnerIds",
+          "arrayConfig": "CONTAINS"
         },
         {
           "fieldPath": "publishedAt",

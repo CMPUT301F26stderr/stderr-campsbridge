@@ -1,3 +1,7 @@
+/*
+ * Represents submitted results and retained filter input with independent optional row reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
@@ -29,12 +33,12 @@ sealed interface ExploreResult {
     /** A required read failed; this is not a confirmed empty search. */
     data object Failure : ExploreResult
 
-    /** Reserved matching dependencies have not been integrated. */
+    /** This host omitted a required matching dependency. */
     data object HelperPending : ExploreResult
 
     /** Confirmed result identities with independent optional display reads.
      * @param campsites Matched actual records.
-     * @param orderingPending Whether reserved F11 ordering is absent.
+     * @param orderingPending Whether this host omitted the F11 ordering helper.
      * @param photos Visible-row attachment states.
      * @param ratings Visible-row rating states.
      */

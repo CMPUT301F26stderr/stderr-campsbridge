@@ -1,3 +1,7 @@
+/*
+ * Renders campsite filters and independent participant labels without dropping saved reservation identities.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.material3.MaterialTheme

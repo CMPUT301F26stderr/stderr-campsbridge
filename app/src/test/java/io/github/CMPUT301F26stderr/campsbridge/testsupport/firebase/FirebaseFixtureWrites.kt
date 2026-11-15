@@ -1,3 +1,7 @@
+/*
+ * Writes starting data through the emulator owner endpoint without invoking business operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase
 
 import com.google.firebase.Timestamp

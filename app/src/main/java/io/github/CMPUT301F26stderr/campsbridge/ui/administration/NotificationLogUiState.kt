@@ -1,3 +1,7 @@
+/*
+ * Represents notification log filters and independent list, event and recipient read outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification

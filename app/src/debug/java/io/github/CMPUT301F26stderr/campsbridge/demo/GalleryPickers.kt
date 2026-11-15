@@ -1,3 +1,7 @@
+/*
+ * Real Material picker dialogs; applied values change only on explicit confirmation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.compose.runtime.Composable

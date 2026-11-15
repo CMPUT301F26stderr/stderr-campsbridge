@@ -1,3 +1,7 @@
+/*
+ * Configures plugin and dependency repositories and includes the Android application module.
+ */
+
 pluginManagement {
     resolutionStrategy {
         eachPlugin {
@@ -25,6 +29,16 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
+        // Resolve Robolectric artifacts through the same mirror as its runtime SDK downloads.
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "RobolectricMavenCentralMirror"
+                    url = uri("https://maven-central.storage-download.googleapis.com/maven2")
+                }
+            }
+            filter { includeGroup("org.robolectric") }
+        }
         mavenCentral()
     }
 }

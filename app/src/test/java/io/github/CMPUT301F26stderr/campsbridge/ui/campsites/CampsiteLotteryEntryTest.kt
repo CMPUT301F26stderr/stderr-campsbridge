@@ -1,3 +1,7 @@
+/*
+ * The saved campsite retains one parent while its lottery child owns independent work.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle
@@ -218,9 +222,7 @@ class CampsiteLotteryEntryTest {
     /** Constructs a tracked production owner with independently controlled sources.
      * @param context Actual saved graph presentation.
      */
-    private fun model(
-        context: CampsiteDetailContext = CampsiteDetailContext.VIEW,
-    ): CampsiteDetailViewModel =
+    private fun model(context: CampsiteDetailContext = CampsiteDetailContext.VIEW): CampsiteDetailViewModel =
         CampsiteDetailViewModel(
             "entrant",
             site.id,

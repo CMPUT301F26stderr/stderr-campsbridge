@@ -1,3 +1,7 @@
+/*
+ * Supplies a realistic saved listing without network data or generated identifiers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

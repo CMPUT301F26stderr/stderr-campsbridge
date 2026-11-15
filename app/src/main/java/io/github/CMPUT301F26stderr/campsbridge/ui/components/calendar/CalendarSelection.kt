@@ -1,3 +1,7 @@
+/*
+ * Defines caller-owned date selection and exclusive-checkout stay ranges for shared calendars.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import java.time.LocalDate

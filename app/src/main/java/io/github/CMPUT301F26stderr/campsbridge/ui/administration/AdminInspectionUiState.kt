@@ -1,3 +1,7 @@
+/*
+ * Represents selected profile and image reads, including independent section failures and retry targets.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

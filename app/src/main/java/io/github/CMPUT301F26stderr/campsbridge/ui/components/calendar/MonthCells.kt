@@ -1,3 +1,7 @@
+/*
+ * Builds consecutive month dates with null padding to complete whole weeks.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import java.time.DayOfWeek

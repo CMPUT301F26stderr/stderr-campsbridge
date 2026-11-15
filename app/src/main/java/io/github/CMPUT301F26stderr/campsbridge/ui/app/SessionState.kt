@@ -1,3 +1,7 @@
+/*
+ * Represents startup, onboarding, ready-account and unavailable-account outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

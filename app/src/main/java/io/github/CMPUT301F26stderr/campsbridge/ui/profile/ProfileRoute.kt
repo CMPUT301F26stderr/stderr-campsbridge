@@ -1,3 +1,8 @@
+/*
+ * Connects the shared profile ViewModel to menu and editor screens, native photo selection and explicit
+ * navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.foundation.shape.CircleShape
@@ -44,7 +49,7 @@ fun ProfileRoute(
     onContactDetails: () -> Unit,
     modifier: Modifier = Modifier,
     onSettings: (() -> Unit)? = null,
-    workspaceContent: @Composable () -> Unit = {},
+    workspaceContent: (@Composable () -> Unit)? = null,
     onStartHosting: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()

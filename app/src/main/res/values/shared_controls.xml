@@ -1,4 +1,6 @@
 <resources>
+    <string name="clear_search">Clear search</string>
+    <string name="working">Working</string>
     <string name="decrease_count">Decrease %1$s</string>
     <string name="increase_count">Increase %1$s</string>
     <string name="skip_for_now">Skip for now</string>
@@ -19,7 +21,10 @@
     <string name="use_keyboard">Use keyboard</string>
     <string name="use_clock">Use clock</string>
     <string name="per_night">%1$s / night</string>
-    <string name="up_to_guests">Up to %1$d guests</string>
+    <plurals name="up_to_guests">
+        <item quantity="one">Up to %1$d guest</item>
+        <item quantity="other">Up to %1$d guests</item>
+    </plurals>
     <string name="search_campsites">Search campsites</string>
     <string name="filters">Filters</string>
     <string name="list_view">List</string>

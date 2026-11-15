@@ -1,3 +1,7 @@
+/*
+ * Loads the bundled scenery catalog and its photographer, source and license credits.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.assets
 
 import android.content.res.AssetManager

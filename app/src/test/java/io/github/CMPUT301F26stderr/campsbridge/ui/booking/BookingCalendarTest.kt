@@ -1,3 +1,7 @@
+/*
+ * Selection permissions never confuse excluded checkout with physical inventory status.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

@@ -1,3 +1,7 @@
+/*
+ * Parses whole-count input into a valid value or field feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.input
 
 /** Parsed whole-count value or field feedback. */

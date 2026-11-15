@@ -1,4 +1,8 @@
 <resources>
+    <string name="credits_material_icons">Material icons</string>
+    <string name="credits_material_icons_body">Google. Remove and outlined star icons. Apache License 2.0.</string>
+    <string name="credits_qr_models">WeChat QR detector models</string>
+    <string name="credits_qr_models_body">Tencent. Apache License 2.0, with third-party notices.</string>
     <string name="credits_title">Credits and licenses</string>
     <string name="credits_libraries">Library licenses</string>
     <string name="credits_additional_libraries">Additional library notices</string>
@@ -16,7 +20,7 @@
     <string name="credits_java_license">Java API support license</string>
     <string name="credits_java_source">desugar_jdk_libs project</string>
     <string name="credits_services">Google services</string>
-    <string name="credits_services_body">Google Maps SDK and Firebase Authentication use Google SDK terms. Their services also have service-specific terms. Open-source dependency notices are listed under Library licenses.</string>
+    <string name="credits_services_body">Google Maps SDK and Firebase SDKs use Google SDK terms. Their services also have service-specific terms. Open-source dependency notices are listed under Library licenses.</string>
     <string name="credits_sdk_terms">Android SDK terms</string>
     <string name="credits_maps_terms">Google Maps Platform terms</string>
     <string name="credits_firebase_terms">Firebase terms</string>

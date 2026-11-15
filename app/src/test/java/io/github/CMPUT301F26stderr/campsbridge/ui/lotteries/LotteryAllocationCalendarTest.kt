@@ -1,3 +1,7 @@
+/*
+ * Allocation cells expose only valid addition or removal of already-selected invalidated dates.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

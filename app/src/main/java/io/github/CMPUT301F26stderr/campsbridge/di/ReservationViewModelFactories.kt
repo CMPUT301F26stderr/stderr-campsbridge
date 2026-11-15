@@ -1,3 +1,7 @@
+/*
+ * Binds saved-reservation and active-list ViewModels to the current actor and shared repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

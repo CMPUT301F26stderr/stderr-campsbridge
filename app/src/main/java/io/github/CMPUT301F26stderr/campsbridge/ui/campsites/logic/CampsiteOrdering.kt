@@ -1,3 +1,7 @@
+/*
+ * Orders listings by locale-independent name, then by their exact stable ID.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

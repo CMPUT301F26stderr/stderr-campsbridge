@@ -1,3 +1,7 @@
+/*
+ * Real entrant list/detail graphs retain their caller and independently recover read failures.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.ui.test.assertIsDisplayed

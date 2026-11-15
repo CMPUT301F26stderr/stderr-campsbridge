@@ -1,3 +1,7 @@
+/*
+ * Shared rounded geometry for Material fields, cards, sheets and supporting surfaces.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,4 +16,7 @@ val CampsbridgeShapes =
         medium = RoundedCornerShape(16.dp),
         large = RoundedCornerShape(20.dp),
         extraLarge = RoundedCornerShape(28.dp),
+        largeIncreased = RoundedCornerShape(28.dp),
+        extraLargeIncreased = RoundedCornerShape(32.dp),
+        extraExtraLarge = RoundedCornerShape(48.dp),
     )

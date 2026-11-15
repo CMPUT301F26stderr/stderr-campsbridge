@@ -1,3 +1,7 @@
+/*
+ * Tests route disposal during a controlled photo-content read without relying on provider timing.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner

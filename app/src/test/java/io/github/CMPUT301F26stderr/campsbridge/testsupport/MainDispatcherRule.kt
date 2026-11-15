@@ -1,3 +1,7 @@
+/*
+ * Gives ViewModel tests a controlled Main dispatcher and restores it afterward.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import kotlinx.coroutines.Dispatchers

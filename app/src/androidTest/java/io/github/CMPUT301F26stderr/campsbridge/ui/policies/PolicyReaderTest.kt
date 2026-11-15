@@ -1,3 +1,7 @@
+/*
+ * Production settings/readers work offline with real Back and no account writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.policies
 
 import androidx.compose.ui.test.assertIsDisplayed

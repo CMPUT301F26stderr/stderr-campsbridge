@@ -1,3 +1,8 @@
+/*
+ * Resolves device identity, profile and saved setup progress into startup UI state. Persists workspace choices and
+ * observes account changes for the active session.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.lifecycle.ViewModel

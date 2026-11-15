@@ -1,3 +1,7 @@
+/*
+ * Verifies production root branches and navigation lifetime through controlled dependencies.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.ui.test.assertCountEquals

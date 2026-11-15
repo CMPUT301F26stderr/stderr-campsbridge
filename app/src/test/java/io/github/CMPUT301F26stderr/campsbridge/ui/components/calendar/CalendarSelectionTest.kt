@@ -1,3 +1,7 @@
+/*
+ * Selection is local presentation state; stays always exclude checkout.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import org.junit.Assert.assertFalse

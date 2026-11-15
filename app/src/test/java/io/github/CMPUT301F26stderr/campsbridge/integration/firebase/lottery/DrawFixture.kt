@@ -1,3 +1,7 @@
+/*
+ * Frozen membership after registration closes, before any outcome is applied.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument

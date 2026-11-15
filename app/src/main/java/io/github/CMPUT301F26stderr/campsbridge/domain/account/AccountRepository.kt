@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for account persistence, preferences, roles, and installation token registration.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.account
 
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +51,15 @@ interface AccountRepository {
     suspend fun updateProfile(
         id: String,
         profile: ProfileUpdate,
+    )
+
+    /** Changes the name without replacing concurrently edited contact details.
+     * @param id Account identity whose name is changing.
+     * @param name Nonblank display name.
+     */
+    suspend fun updateName(
+        id: String,
+        name: String,
     )
 
     /**

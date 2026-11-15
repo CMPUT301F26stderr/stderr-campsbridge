@@ -1,11 +1,20 @@
+/*
+ * Hosts implemented destinations. The root keys this graph by account identity.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,8 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.compose.NavHost
+import androidx.navigation.NavGraph
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
@@ -25,6 +37,7 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.Notificati
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
@@ -56,6 +69,8 @@ import java.util.Locale
  * @param onDismissNotificationEntry Retires the pending root tap.
  * @param onConsumeNotificationEntry Acknowledges an actually opened saved target.
  * @param modifier Host layout; child screens own their own insets.
+ * @param requestedDestination Optional host-owned saved-record handoff.
+ * @param onDestinationOpened Acknowledges the opened handoff.
  */
 @Composable
 fun AppNavigation(
@@ -82,6 +97,8 @@ fun AppNavigation(
     onDismissNotificationEntry: () -> Unit,
     onConsumeNotificationEntry: (NotificationEntry) -> Unit,
     modifier: Modifier = Modifier,
+    requestedDestination: String? = null,
+    onDestinationOpened: () -> Unit = {},
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -166,17 +183,40 @@ fun AppNavigation(
             Role.ENTRANT -> entrantItems
             Role.ADMIN -> adminItems
         }
+    val immediateTransition = remember { mutableStateOf<Pair<String, String>?>(null) }
+    val entry by controller.currentBackStackEntryAsState()
+    val currentPrimary =
+        (ownerItems + entrantItems + adminItems).firstOrNull {
+            isPrimaryDestination(it, entry?.destination)
+        }
+    val visibleItems =
+        listOf(ownerItems, entrantItems, adminItems)
+            .firstOrNull {
+                currentPrimary in it
+            }.orEmpty()
+
+    /** Switches tabs without treating them as a deeper page.
+     * @param destination Primary route to open or restore.
+     */
+    fun openPrimary(destination: String) {
+        val source = controller.currentBackStackEntry?.id
+        controller.navigate(destination) {
+            popUpTo(controller.graph.id) { saveState = true }
+            restoreState = true
+            launchSingleTop = true
+        }
+        immediateTransition.value =
+            source?.let { from ->
+                controller.currentBackStackEntry?.id?.let { to -> from to to }
+            }
+    }
     val selectPrimary: (String) -> Unit = { destination ->
         if (selectedItems.any { it.id == destination }) {
             selectedPrimaries = selectedPrimaries + (state.workspace.name to destination)
             if (controller.currentDestination?.hierarchy?.none { it.route == destination } ==
                 true
             ) {
-                controller.navigate(destination) {
-                    popUpTo(controller.graph.id) { saveState = true }
-                    restoreState = true
-                    launchSingleTop = true
-                }
+                openPrimary(destination)
             }
         }
     }
@@ -192,129 +232,121 @@ fun AppNavigation(
             } ==
             true
         ) {
-            controller.navigate(selectedPrimaries[workspace.name] ?: defaultPrimary(workspace)) {
-                popUpTo(controller.graph.id) { saveState = true }
-                restoreState = true
-                launchSingleTop = true
-            }
+            openPrimary(selectedPrimaries[workspace.name] ?: defaultPrimary(workspace))
         }
     }
-    NavHost(controller, defaultPrimary(initialWorkspace), modifier) {
-        administrationGraph(
-            controller,
-            state,
-            onSelectWorkspace,
-            adminItems,
-            selectPrimary,
-            adminBrowseFactory,
-        )
-        notificationLogGraph(
-            controller,
-            state,
-            onSelectWorkspace,
-            adminItems,
-            selectPrimary,
-            notificationLogFactory,
-        )
-        lotterySetupGraph(controller, lotterySetupFactory)
-        inboxGraph(
-            controller,
-            state,
-            onSelectWorkspace,
-            ownerItems,
-            entrantItems,
-            selectPrimary,
-            inboxFactory,
-        )
-        reservationGraph(controller, reservationDetailFactory)
-        reservationListGraph(
-            controller,
-            state,
-            onSelectWorkspace,
-            ownerItems,
-            entrantItems,
-            selectPrimary,
-            reservationListFactory,
-        )
-        bookingGraph(controller, bookingFactory)
-        lotteryDetailGraph(controller, lotteryDetailFactory, onReservation = { id ->
-            controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
-                launchSingleTop =
-                    true
+    Scaffold(
+        modifier = modifier,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            currentPrimary?.let { selected ->
+                WorkspaceNavigation(visibleItems, selected.id, selectPrimary, Modifier.imePadding())
             }
-        }, onBooking = { lotteryId, campsiteId ->
-            controller.navigate(AppDestination.booking(lotteryId, campsiteId)) {
-                launchSingleTop =
-                    true
-            }
-        }, onCampsite = { campsiteId, context ->
-            val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
-            val presentation =
-                if (context ==
-                    LotteryContext.OWNER
-                ) {
-                    CampsiteDetailContext.PREVIEW
-                } else {
-                    CampsiteDetailContext.VIEW
-                }
-            controller.navigate(
-                "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
-            ) {
-                launchSingleTop = true
-            }
-        })
-        lotteryListGraph(
+        },
+    ) { padding ->
+        AppNavHost(
             controller,
-            state,
-            onSelectWorkspace,
-            ownerItems,
-            entrantItems,
-            selectPrimary,
-            lotteryListFactory,
-        )
-        for (workspace in Role.entries) {
-            profileGraph(
+            defaultPrimary(initialWorkspace),
+            Modifier.padding(padding).consumeWindowInsets(padding),
+            immediateTransition,
+        ) {
+            administrationGraph(
                 controller,
-                workspace,
                 state,
                 onSelectWorkspace,
-                profileFactory,
-                when (workspace) {
-                    Role.OWNER -> ownerItems
-                    Role.ENTRANT -> entrantItems
-                    Role.ADMIN -> adminItems
-                },
-                selectPrimary,
-                { openWorkspace(Role.OWNER) },
-                notificationPermission,
+                adminBrowseFactory,
+            )
+            notificationLogGraph(
+                controller,
+                state,
+                onSelectWorkspace,
+                notificationLogFactory,
+            )
+            lotterySetupGraph(controller, lotterySetupFactory)
+            inboxGraph(
+                controller,
+                state,
+                onSelectWorkspace,
+                inboxFactory,
+            )
+            reservationGraph(controller, reservationDetailFactory)
+            reservationListGraph(
+                controller,
+                state,
+                onSelectWorkspace,
+                reservationListFactory,
+            )
+            bookingGraph(controller, bookingFactory)
+            lotteryDetailGraph(controller, lotteryDetailFactory, onReservation = { id ->
+                controller.navigate(AppDestination.reservationDetail(id, ReservationContext.ENTRANT)) {
+                    launchSingleTop =
+                        true
+                }
+            }, onBooking = { lotteryId, campsiteId ->
+                controller.navigate(AppDestination.booking(lotteryId, campsiteId)) {
+                    launchSingleTop =
+                        true
+                }
+            }, onCampsite = { campsiteId, context, ownerId ->
+                val workspace = if (context == LotteryContext.OWNER) Role.OWNER else Role.ENTRANT
+                val presentation =
+                    if (context == LotteryContext.OWNER && ownerId == state.account.id) {
+                        CampsiteDetailContext.PREVIEW
+                    } else {
+                        CampsiteDetailContext.VIEW
+                    }
+                controller.navigate(
+                    "${AppDestination.campsiteGraph(workspace, campsiteId, presentation)}/availability",
+                ) {
+                    launchSingleTop = true
+                }
+            })
+            lotteryListGraph(
+                controller,
+                state,
+                onSelectWorkspace,
+                lotteryListFactory,
+            )
+            for (workspace in Role.entries) {
+                profileGraph(
+                    controller,
+                    workspace,
+                    state,
+                    onSelectWorkspace,
+                    profileFactory,
+                    { openWorkspace(Role.OWNER) },
+                    notificationPermission,
+                )
+            }
+            campsiteReadGraph(
+                controller,
+                Role.ADMIN,
+                CampsiteDetailContext.INSPECT,
+                campsiteDetailFactory,
+            )
+            discoveryGraph(
+                controller,
+                state,
+                onSelectWorkspace,
+                exploreFactory,
+                campsiteDetailFactory,
+            )
+            campsiteGraph(
+                controller,
+                state,
+                onSelectWorkspace,
+                campsiteListFactory,
+                campsiteDetailFactory,
+                campsiteSetupFactory,
+                availabilityFactory,
             )
         }
-        campsiteReadGraph(
-            controller,
-            Role.ADMIN,
-            CampsiteDetailContext.INSPECT,
-            campsiteDetailFactory,
-        )
-        discoveryGraph(
-            controller,
-            state,
-            onSelectWorkspace,
-            entrantItems,
-            selectPrimary,
-            exploreFactory,
-            campsiteDetailFactory,
-        )
-        campsiteGraph(
-            controller,
-            state,
-            onSelectWorkspace,
-            ownerItems,
-            selectPrimary,
-            campsiteListFactory,
-            campsiteDetailFactory,
-            campsiteSetupFactory,
-            availabilityFactory,
-        )
+    }
+    LaunchedEffect(requestedDestination) {
+        requestedDestination?.let { destination ->
+            controller.navigate(destination) { launchSingleTop = true }
+            onDestinationOpened()
+        }
     }
     NotificationLogSelectionBinding(controller, notificationLogFactory)
     NotificationEntryNavigation(
@@ -357,3 +389,15 @@ private fun defaultPrimary(workspace: Role): String =
         Role.ENTRANT -> AppDestination.EXPLORE
         Role.ADMIN -> AppDestination.ADMIN_BROWSE
     }
+
+/** Shows navigation on primary content, including the start page of a primary graph.
+ * @param item Registered top-level destination.
+ * @param destination Currently displayed page.
+ */
+private fun isPrimaryDestination(
+    item: WorkspaceNavigationItem,
+    destination: NavDestination?,
+): Boolean {
+    val root = destination?.hierarchy?.firstOrNull { it.route == item.id } ?: return false
+    return root == destination || (root is NavGraph && root.findStartDestination().id == destination.id)
+}

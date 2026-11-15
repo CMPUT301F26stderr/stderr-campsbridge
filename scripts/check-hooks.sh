@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Runs read-only file checks for syntax, merge conflicts, file sizes and secrets using pinned hook dependencies.
+
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

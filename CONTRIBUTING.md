@@ -4,7 +4,7 @@ Follow these contribution rules and the workflow and responsibilities recorded i
 
 ## Install local hooks
 
-Install the pinned runner with `uv tool install pre-commit==4.6.2` (or `pipx install pre-commit==4.6.2`). Make Java available on `PATH` for Kotlin checks; the project's JDK 25 works. For the format command, install [ktlint 1.8.0](https://github.com/ktlint/ktlint/releases/tag/1.8.0) on `PATH`; hooks download and verify the same release automatically.
+Install the pinned runner with `uv tool install pre-commit==4.7.0` (or `pipx install pre-commit==4.7.0`). Make Java available on `PATH` for Kotlin checks; the project's JDK 25 works. For the format command, install [ktlint 1.8.0](https://github.com/ktlint/ktlint/releases/tag/1.8.0) on `PATH`; hooks download and verify the same release automatically.
 
 After cloning, run:
 

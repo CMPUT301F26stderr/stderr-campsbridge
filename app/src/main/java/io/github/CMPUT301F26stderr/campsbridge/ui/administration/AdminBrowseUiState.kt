@@ -1,3 +1,7 @@
+/*
+ * Represents independent admin tabs, queries and source outcomes without treating failed reads as empty lists.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

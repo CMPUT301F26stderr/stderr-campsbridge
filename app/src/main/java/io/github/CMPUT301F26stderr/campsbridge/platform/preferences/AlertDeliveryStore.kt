@@ -1,3 +1,7 @@
+/*
+ * Installation-local post/suppression bookkeeping, independent of shared Inbox/profile facts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.preferences
 
 import androidx.datastore.core.DataStore

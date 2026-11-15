@@ -1,3 +1,7 @@
+/*
+ * Foreground/account ownership, without depending on a real Android lifecycle clock.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

@@ -1,13 +1,17 @@
+/*
+ * Defines the shared Material color palettes for standard and color-blind presentation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.expressiveLightColorScheme
 import androidx.compose.ui.graphics.Color
 
 val ForestGreen = Color(0xFF00874A)
 val Ink = Color(0xFF18231D)
 
 val StandardColors =
-    lightColorScheme(
+    expressiveLightColorScheme().copy(
         primary = ForestGreen,
         onPrimary = Color.White,
         primaryContainer = Color(0xFFD8F2DF),
@@ -31,7 +35,7 @@ val StandardColors =
         surfaceContainerHigh = Color(0xFFE9EFEA),
         surfaceContainerHighest = Color(0xFFE1E8E2),
         outline = Color(0xFF727D75),
-        outlineVariant = Color(0xFFC3CDC5),
+        outlineVariant = Color(0xFFDCE3DE),
         error = Color(0xFFA83836),
         onError = Color.White,
     )

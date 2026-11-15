@@ -1,3 +1,7 @@
+/*
+ * Owns one winner's draft, current approvals and guarded reservation/recovery commands.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle
@@ -23,6 +27,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotControl
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.navigation.StepNavigation
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,6 +63,7 @@ class BookingViewModel(
         ::availableBookingNights,
 ) : ViewModel() {
     private val draftState = BookingDraftState(savedState)
+    private var stepNavigation = StepNavigation.FORWARD
     private var datesVisible = false
     private var closed = false
     private val commands =
@@ -153,6 +159,7 @@ class BookingViewModel(
         reconcile()
         var current = state.value as? BookingUiState.Content ?: return
         draftState.error = null
+        stepNavigation = StepNavigation.FORWARD
         draftState.enterReview(current)
         reconcile()
         current = state.value as? BookingUiState.Content ?: return
@@ -203,6 +210,7 @@ class BookingViewModel(
             }
 
             is BookingWriteResult.Rejected -> {
+                stepNavigation = StepNavigation.FORWARD
                 draftState.error = null
                 draftState.value =
                     when (result.reason) {
@@ -266,6 +274,7 @@ class BookingViewModel(
             return
         }
         draftState.error = null
+        stepNavigation = StepNavigation.FORWARD
         if (draftState.value.returnToReview || draftState.value.step == BookingStep.TERMS) {
             draftState.enterReview(current)
             reconcile()
@@ -285,11 +294,13 @@ class BookingViewModel(
             return
         }
         if (commands.state.value == BookingSubmission.Unknown ||
-            state.value !is BookingUiState.Content || draftState.value.step == BookingStep.DATES
+            state.value !is BookingUiState.Content ||
+            (draftState.value.step == BookingStep.DATES && !draftState.value.returnToReview)
         ) {
             requestExit()
             return
         }
+        stepNavigation = StepNavigation.BACK
         draftState.value =
             draftState.value.copy(
                 step =
@@ -314,6 +325,7 @@ class BookingViewModel(
         ) {
             return
         }
+        stepNavigation = StepNavigation.FORWARD
         draftState.value = draftState.value.copy(step = step, returnToReview = true)
         draftState.error = null
         draftState.save()
@@ -439,6 +451,18 @@ class BookingViewModel(
     fun selectCheckOut(date: LocalDate?) {
         if (!canEdit(BookingStep.DATES)) return
         updateDraft(draftState.value.copy(checkOut = date, reviewedTotalCents = null))
+    }
+
+    /** Updates both Material picker endpoints together; existing eligibility checks still gate Next.
+     * @param start Inclusive arrival, or null to clear the selection.
+     * @param end Exclusive checkout, or null while choosing it.
+     */
+    fun selectStayDates(
+        start: LocalDate?,
+        end: LocalDate?,
+    ) {
+        if (!canEdit(BookingStep.DATES)) return
+        updateDraft(draftState.value.copy(checkIn = start, checkOut = end, reviewedTotalCents = null))
     }
 
     /** Applies only a currently selectable displayed cell as arrival or excluded checkout.
@@ -594,6 +618,7 @@ class BookingViewModel(
                         stayValidation = validation,
                         quote = quote,
                         error = draftState.error,
+                        stepNavigation = stepNavigation,
                         guestCount =
                             (
                                 parsePositiveCount(draftState.value.guestInput, Long.MAX_VALUE)

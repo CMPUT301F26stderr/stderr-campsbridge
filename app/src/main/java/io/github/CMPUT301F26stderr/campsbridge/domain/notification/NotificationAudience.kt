@@ -1,3 +1,7 @@
+/*
+ * Assembled intended and Inbox-delivered recipient facts; these never describe OS delivery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.notification
 
 import java.time.Instant

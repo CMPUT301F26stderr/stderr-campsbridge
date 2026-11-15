@@ -1,3 +1,7 @@
+/*
+ * Confirmed calendar query outcome shared by setup, allocation, saved readers and booking.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

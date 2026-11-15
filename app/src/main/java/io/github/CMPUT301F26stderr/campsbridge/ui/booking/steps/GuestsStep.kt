@@ -1,14 +1,16 @@
+/*
+ * Edits the booking's guest count with raw input and bounded increment or decrement actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.CountInput
 
 /** Prototype 07.03 with one raw count and integrated bounded increment/decrement actions.
@@ -22,14 +24,6 @@ fun GuestsStep(
     onGuests: (String) -> Unit,
     enabled: Boolean,
 ) {
-    val locale = LocalConfiguration.current.locales[0]
-    val start = state.draft.checkIn
-    val end = state.draft.checkOut
-    if (start != null && end != null) {
-        Text(
-            stringResource(R.string.stay_dates, formatDate(start, locale), formatDate(end, locale)),
-        )
-    }
     CountInput(
         state.draft.guestInput,
         state.guestCount,
@@ -40,6 +34,13 @@ fun GuestsStep(
         state.campsite.details.maxGuests,
         Modifier.testTag("booking-guests"),
         enabled = enabled,
-        supportingText = stringResource(R.string.up_to_guests, state.campsite.details.maxGuests),
+        supportingText =
+            pluralStringResource(
+                R.plurals.up_to_guests,
+                state.campsite.details.maxGuests
+                    .coerceAtMost(Int.MAX_VALUE.toLong())
+                    .toInt(),
+                state.campsite.details.maxGuests,
+            ),
     )
 }

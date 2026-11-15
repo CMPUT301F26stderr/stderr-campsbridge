@@ -1,3 +1,7 @@
+/*
+ * Presents controlled name input and the device-identity explanation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps
 
 import androidx.compose.foundation.text.KeyboardActions
@@ -32,6 +36,8 @@ fun NameStep(
         stringResource(R.string.onboarding_name),
         enabled = enabled,
         errorMessage = if (required) stringResource(R.string.onboarding_name_required) else null,
+        reserveSupportingSpace = true,
+        revealError = required,
         keyboardOptions =
             KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,

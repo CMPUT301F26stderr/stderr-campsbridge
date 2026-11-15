@@ -1,0 +1,25 @@
+<resources>
+    <string name="lottery_owners_entry">Collaborating owners</string>
+    <string name="lottery_owners_title">Lottery owners</string>
+    <string name="lottery_owners_hint">Choose owners who can add their campsites to this lottery.</string>
+    <string name="lottery_owners_search">Search owners</string>
+    <string name="lottery_owners_save">Save owners</string>
+    <string name="lottery_owners_saving">Saving owners</string>
+    <string name="lottery_owners_load_failed">Could not load collaborating owners.</string>
+    <string name="lottery_owners_save_failed">Could not save collaborating owners.</string>
+    <string name="lottery_owners_organizer">Organizer</string>
+    <string name="lottery_owners_allocated">Ask this owner to clear their campsites first.</string>
+    <string name="lottery_owners_unavailable">Unavailable owner</string>
+    <string name="lottery_owners_identity">%1$s (%2$s)</string>
+    <string name="lottery_owners_locked">Owners locked</string>
+    <string name="lottery_owners_locked_body">Only the organizer can change owners before registration starts.</string>
+    <string name="lottery_owners_publish">Publish campsites first</string>
+    <string name="lottery_owners_publish_body">Publish the campsites already in this lottery before adding other owners.</string>
+    <string name="lottery_owners_refresh">Refresh owners</string>
+    <string name="lottery_owners_changed">Compare the saved owners with your selection before saving again. Owners with campsites must remain selected.</string>
+    <string name="lottery_owners_saved">Currently saved</string>
+    <string name="lottery_owners_local">Your selection</string>
+    <string name="lottery_owners_no_matches">No matching new owners</string>
+    <string name="lottery_owners_discard">Discard owner changes?</string>
+    <string name="lottery_owners_discard_body">Your unsaved owner selection will be discarded.</string>
+</resources>

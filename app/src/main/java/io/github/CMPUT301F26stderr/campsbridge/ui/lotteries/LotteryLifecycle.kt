@@ -1,3 +1,7 @@
+/*
+ * Derived display phases; publication, draw completion and windows remain authoritative.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery

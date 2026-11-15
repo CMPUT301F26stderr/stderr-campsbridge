@@ -1,3 +1,7 @@
+/*
+ * Exercises task navigation, reset, recreation, and pending states without Firebase.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import android.content.Context
@@ -30,6 +34,7 @@ class TaskExamplesFlowTest {
         val intent =
             checkNotNull(context.packageManager.getLaunchIntentForPackage(context.packageName))
         ActivityScenario.launch<OfflineDemoActivity>(intent).use {
+            awaitText("Demo tools")
             compose.onNodeWithText("Demo tools").performClick()
             compose.onNodeWithText("Task examples").performClick()
             awaitText("Task examples")

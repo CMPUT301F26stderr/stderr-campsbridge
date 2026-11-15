@@ -1,3 +1,7 @@
+/*
+ * Formats prices, civil dates and timestamps using the shared display timezone.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.format
 
 import java.math.BigDecimal
@@ -8,6 +12,12 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
+
+/** Shared display-time convention for lottery windows and application event timestamps. */
+object AppDisplayTime {
+    /** IANA zone used when users enter or read lottery window times. */
+    val zone: ZoneId = ZoneId.of("America/Edmonton")
+}
 
 /** Formats exact integer cents with an explicit CAD currency code.
  * @param cents Nonnegative amount in cents.
@@ -36,16 +46,15 @@ fun formatDate(
 ): String =
     date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
 
-/** Formats an instant with the explicitly selected timezone.
+/** Formats an instant in Edmonton time, including its seasonal timezone abbreviation.
  * @param instant Recorded instant.
- * @param zone Timezone used for display.
  * @param locale Date/time-format locale.
  */
 fun formatDateTime(
     instant: Instant,
-    zone: ZoneId,
     locale: Locale,
 ): String {
+    val zone = AppDisplayTime.zone
     val dateTime =
         DateTimeFormatter
             .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)

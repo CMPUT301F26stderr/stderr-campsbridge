@@ -1,3 +1,7 @@
+/*
+ * Exercises observable local-demo behavior without Firebase or Android services.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository

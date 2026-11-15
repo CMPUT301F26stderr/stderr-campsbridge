@@ -1,3 +1,8 @@
+/*
+ * Matches a trimmed query as a substring of the name, location label or description. Blank input matches every
+ * campsite; case folding uses Locale.ROOT. Inputs remain unchanged.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

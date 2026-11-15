@@ -1,3 +1,7 @@
+/*
+ * Editable listing facts with positive capacity, nonnegative pricing, and a valid timezone.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.campsite
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates

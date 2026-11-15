@@ -1,3 +1,7 @@
+/*
+ * Binds one actual graph owner; only a live resumed route delivers its current handoff.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.compose.runtime.Composable
@@ -56,7 +60,7 @@ fun BookingRoute(
         onNext = model::next,
         onCancel = model::requestExit,
         onMonth = model::changeMonth,
-        onDate = model::selectDate,
+        onDatesChange = model::selectStayDates,
         onClearDates = model::clearDates,
         onGuests = model::editGuests,
         onAccept = model::acceptTerms,

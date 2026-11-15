@@ -1,9 +1,13 @@
+/*
+ * Four stateless wizard steps under the shared frame; the caller owns every effect.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -23,6 +27,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepTransition
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -32,7 +37,7 @@ import java.time.YearMonth
  * @param onNext Reports the displayed step.
  * @param onCancel Requests draft abandonment.
  * @param onMonth Requests a displayed calendar month.
- * @param onDate Reports a selectable date.
+ * @param onDatesChange Updates arrival and exclusive checkout together.
  * @param onClearDates Requests clearing endpoints.
  * @param onGuests Reports raw guest input.
  * @param onAccept Reports acceptance and the exact displayed rules/policy.
@@ -62,7 +67,7 @@ fun BookingScreen(
     onNext: (BookingStep) -> Unit,
     onCancel: () -> Unit,
     onMonth: (YearMonth) -> Unit,
-    onDate: (LocalDate) -> Unit,
+    onDatesChange: (LocalDate?, LocalDate?) -> Unit,
     onClearDates: () -> Unit,
     onGuests: (String) -> Unit,
     onAccept: (Boolean, String, String) -> Unit,
@@ -93,97 +98,101 @@ fun BookingScreen(
     val exitsEnabled =
         !submitting && submission != BookingSubmission.Recovering &&
             !discardPrompt && !exitPending
-    BackHandler { if (exitsEnabled) onBack() }
     if (state is BookingUiState.Content) {
-        val step = state.draft.step
-        val review = step == BookingStep.REVIEW
-        val conflict =
-            review && state.error ==
-                BookingStepError.Dates(StaySelectionInput.UNAVAILABLE_NIGHTS)
-        StepScaffold(
-            title = bookingStepTitle(step),
-            progress =
-                stringResource(
-                    R.string.onboarding_step,
-                    step.ordinal + 1,
-                    BookingStep.entries.size,
-                ),
-            onBack = onBack,
-            onNext = {
-                when {
-                    conflict -> onEdit(BookingStep.DATES)
-                    review -> onConfirm()
-                    else -> onNext(step)
-                }
-            },
-            modifier = modifier,
-            nextEnabled = enabled && (!review || conflict || state.canConfirm),
-            isSubmitting = submitting,
-            nextLabel =
-                stringResource(
-                    when {
-                        submitting -> R.string.booking_submitting
-                        conflict -> R.string.booking_choose_dates
-                        review -> R.string.booking_confirm
-                        else -> R.string.next
+        StepTransition(state, { it.draft.step.ordinal }, modifier, navigation = { it.stepNavigation }) { state ->
+            val step = state.draft.step
+            val review = step == BookingStep.REVIEW
+            val conflict =
+                review && state.error ==
+                    BookingStepError.Dates(StaySelectionInput.UNAVAILABLE_NIGHTS)
+            // Keep scroll and focus requests scoped to their step.
+            key(step) {
+                StepScaffold(
+                    title = bookingStepTitle(step),
+                    progress =
+                        stringResource(
+                            R.string.onboarding_step,
+                            step.ordinal + 1,
+                            BookingStep.entries.size,
+                        ),
+                    onBack = onBack,
+                    onNext = {
+                        when {
+                            conflict -> onEdit(BookingStep.DATES)
+                            review -> onConfirm()
+                            else -> onNext(step)
+                        }
                     },
-                ),
-            steps = StepProgress(step.ordinal + 1, BookingStep.entries.size),
-            onCancel = onCancel,
-            exitEnabled = exitsEnabled,
-        ) {
-            BookingSubmissionFeedback(submission, onRecover)
-            if (state.isCheckingReservation) {
-                LoadingContent(stringResource(R.string.booking_recovering))
-            } else if (state.reservationCheckFailed) {
-                FailureContent(
-                    stringResource(R.string.booking_recheck_failed),
-                    { onRetry(BookingReadSource.OPPORTUNITY) },
-                    enabled,
-                )
-            }
-            if (!review) {
-                Text(
-                    state.campsite.details.name,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-            if (!conflict) {
-                state.error?.let {
-                    Text(bookingErrorText(it), color = MaterialTheme.colorScheme.error)
-                }
-            }
-            when (step) {
-                BookingStep.DATES -> {
-                    StayDatesStep(
-                        state,
-                        onMonth,
-                        onDate,
-                        onClearDates,
-                        onRetryVisible,
-                        onRetrySelected,
-                        enabled,
-                    )
-                }
+                    modifier = Modifier,
+                    nextEnabled = enabled && (!review || conflict || state.canConfirm),
+                    isSubmitting = submitting,
+                    nextLabel =
+                        stringResource(
+                            when {
+                                submitting -> R.string.booking_submitting
+                                conflict -> R.string.booking_choose_dates
+                                review -> R.string.booking_confirm
+                                else -> R.string.next
+                            },
+                        ),
+                    steps = StepProgress(step.ordinal + 1, BookingStep.entries.size),
+                    onCancel = onCancel,
+                    exitEnabled = exitsEnabled,
+                ) {
+                    BookingSubmissionFeedback(submission, onRecover)
+                    if (state.isCheckingReservation) {
+                        LoadingContent(stringResource(R.string.booking_recovering))
+                    } else if (state.reservationCheckFailed) {
+                        FailureContent(
+                            stringResource(R.string.booking_recheck_failed),
+                            { onRetry(BookingReadSource.OPPORTUNITY) },
+                            enabled,
+                        )
+                    }
+                    if (!review) {
+                        Text(
+                            state.campsite.details.name,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                    if (!conflict) {
+                        state.error?.let {
+                            Text(bookingErrorText(it), color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                    when (step) {
+                        BookingStep.DATES -> {
+                            StayDatesStep(
+                                state,
+                                onMonth,
+                                onDatesChange,
+                                onClearDates,
+                                onRetryVisible,
+                                onRetrySelected,
+                                enabled,
+                            )
+                        }
 
-                BookingStep.GUESTS -> {
-                    GuestsStep(state, onGuests, enabled)
-                }
+                        BookingStep.GUESTS -> {
+                            GuestsStep(state, onGuests, enabled)
+                        }
 
-                BookingStep.TERMS -> {
-                    TermsStep(state, onAccept, onPolicy, enabled)
-                }
+                        BookingStep.TERMS -> {
+                            TermsStep(state, onAccept, onPolicy, enabled)
+                        }
 
-                BookingStep.REVIEW -> {
-                    BookingReviewStep(
-                        state,
-                        onEdit,
-                        onQuote,
-                        onPolicy,
-                        enabled,
-                        photo,
-                        onRetryPhoto,
-                    )
+                        BookingStep.REVIEW -> {
+                            BookingReviewStep(
+                                state,
+                                onEdit,
+                                onQuote,
+                                onPolicy,
+                                enabled,
+                                photo,
+                                onRetryPhoto,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -240,6 +249,15 @@ fun BookingScreen(
             isSubmitting = submitting || submission == BookingSubmission.Recovering,
             confirmLabel = stringResource(R.string.booking_discard),
             cancelLabel = stringResource(R.string.booking_keep_draft),
+            destructive = true,
+            progressDescription =
+                stringResource(
+                    if (submission == BookingSubmission.Recovering) {
+                        R.string.booking_recovering
+                    } else {
+                        R.string.booking_submitting
+                    },
+                ),
         )
     }
 }

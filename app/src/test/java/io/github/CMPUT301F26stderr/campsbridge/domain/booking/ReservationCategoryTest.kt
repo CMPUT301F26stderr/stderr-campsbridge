@@ -1,3 +1,7 @@
+/*
+ * Tests date-only reservation categories independently of caller timezone and UI behavior.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

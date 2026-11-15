@@ -1,3 +1,7 @@
+/*
+ * Owns setup input, saved-parent readers and explicit details/photo/inventory draft saves.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle
@@ -550,6 +554,21 @@ class CampsiteSetupViewModel(
         if (editable() == null) return
         availability?.let {
             it.changeMonth(month)
+            reflectAvailability(it.state.value)
+        }
+    }
+
+    /** Stages an explicit range action through the shared availability owner.
+     * @param dates Known unoccupied nights chosen in the calendar.
+     * @param offered Whether to offer or withdraw these nights.
+     */
+    fun setRequestedOffered(
+        dates: Set<LocalDate>,
+        offered: Boolean,
+    ) {
+        if (editable() == null) return
+        availability?.let {
+            it.setRequestedOffered(dates, offered)
             reflectAvailability(it.state.value)
         }
     }

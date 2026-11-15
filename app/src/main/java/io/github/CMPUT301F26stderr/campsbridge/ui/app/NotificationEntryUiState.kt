@@ -1,3 +1,7 @@
+/*
+ * Represents notification-tap resolution and recovery separately from startup and screen reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

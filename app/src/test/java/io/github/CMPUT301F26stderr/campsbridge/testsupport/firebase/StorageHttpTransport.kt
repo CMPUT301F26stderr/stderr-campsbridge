@@ -1,3 +1,9 @@
+/*
+ * Gives the Storage SDK Android's case-insensitive response headers on the JVM host. All requests still use real
+ * HTTP, SDK authentication and emulator rules. The JDK's case-sensitive header map otherwise hides the emulator's
+ * resumable-upload URL.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase
 
 import com.google.firebase.storage.network.NetworkRequest

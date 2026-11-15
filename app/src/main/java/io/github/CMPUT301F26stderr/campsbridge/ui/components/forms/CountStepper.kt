@@ -1,19 +1,29 @@
+/*
+ * Displays a caller-owned bounded count; disabled bounds avoid arithmetic overflow.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.forms
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppIconAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**
@@ -41,33 +51,39 @@ fun CountStepper(
     require(minimum <= maximum && value in minimum..maximum)
     val decrease = stringResource(R.string.decrease_count, label)
     val increase = stringResource(R.string.increase_count, label)
-    Row(
-        modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+    Surface(
+        modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.titleSmall)
-            supportingText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        }
-        IconButton(
-            onClick = { onValueChange(value - 1) },
-            enabled = enabled && value > minimum,
-            modifier = Modifier.semantics { contentDescription = decrease },
+        Row(
+            Modifier.padding(horizontal = Spacing.medium, vertical = Spacing.small),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
-            Text("−", style = MaterialTheme.typography.titleLarge)
-        }
-        Text(
-            value.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.semantics { stateDescription = "$label: $value" },
-        )
-        IconButton(
-            onClick = { onValueChange(value + 1) },
-            enabled = enabled && value < maximum,
-            modifier = Modifier.semantics { contentDescription = increase },
-        ) {
-            Text("+", style = MaterialTheme.typography.titleLarge)
+            Column(Modifier.weight(1f)) {
+                Text(label, style = MaterialTheme.typography.titleSmall)
+                supportingText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            }
+            AppIconAction(
+                decrease,
+                { onValueChange(value - 1) },
+                enabled = enabled && value > minimum,
+            ) {
+                Icon(painterResource(R.drawable.ic_remove), contentDescription = null)
+            }
+            Text(
+                value.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { stateDescription = "$label: $value" },
+            )
+            AppIconAction(
+                increase,
+                { onValueChange(value + 1) },
+                enabled = enabled && value < maximum,
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
         }
     }
 }

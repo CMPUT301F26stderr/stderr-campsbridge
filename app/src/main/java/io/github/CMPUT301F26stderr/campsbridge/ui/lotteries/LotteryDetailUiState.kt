@@ -1,3 +1,7 @@
+/*
+ * Represents saved lottery facts, participation and independent child reads for owner or entrant detail.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
@@ -92,6 +96,7 @@ sealed interface LotteryDetailUiState {
      * @param canDraw Current owner/lifecycle facts permit the manual fallback.
      * @param isDrawing An actual manual repository call is pending acknowledgement.
      * @param drawFailed The last manual call failed while the parent remains incomplete.
+     * @param canEditDetails Whether this viewer is the uncancelled lottery's organizer.
      */
     data class Content(
         val lottery: Lottery,
@@ -104,5 +109,6 @@ sealed interface LotteryDetailUiState {
         val canDraw: Boolean = false,
         val isDrawing: Boolean = false,
         val drawFailed: Boolean = false,
+        val canEditDetails: Boolean = false,
     ) : LotteryDetailUiState
 }

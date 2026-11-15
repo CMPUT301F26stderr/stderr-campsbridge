@@ -1,3 +1,7 @@
+/*
+ * Firebase-backed implementation for account persistence, preferences, roles, and installation token registration.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.account
 
 import com.google.firebase.firestore.FirebaseFirestore
@@ -119,6 +123,18 @@ class FirestoreAccountRepository(
     ) {
         require(profile.name.isNotBlank())
         change(id) { it.copy(name = profile.name, email = profile.email, phone = profile.phone) }
+    }
+
+    /** Changes only the name inside the latest account transaction.
+     * @param id Account identity whose name is changing.
+     * @param name Nonblank display name.
+     */
+    override suspend fun updateName(
+        id: String,
+        name: String,
+    ) {
+        require(name.isNotBlank())
+        change(id) { it.copy(name = name) }
     }
 
     /**

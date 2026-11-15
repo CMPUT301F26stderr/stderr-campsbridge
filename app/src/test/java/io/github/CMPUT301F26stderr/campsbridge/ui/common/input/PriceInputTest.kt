@@ -1,3 +1,7 @@
+/*
+ * Exact CAD parsing contracts without floating-point conversions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.input
 
 import org.junit.Assert.assertEquals

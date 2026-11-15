@@ -3,7 +3,7 @@
     <string name="lottery_title">Lottery title</string>
     <string name="lottery_description">Description (optional)</string>
     <string name="lottery_basics">Lottery basics</string>
-    <string name="lottery_site_step">Campsite &amp; nights</string>
+    <string name="lottery_site_step">Campsites &amp; nights</string>
     <string name="lottery_registration_step">Registration window</string>
     <string name="lottery_booking_step">Booking window</string>
     <string name="lottery_registration_hint">Entrants can join during this registration window.</string>
@@ -15,7 +15,15 @@
     <string name="lottery_site_required">Choose a current published campsite.</string>
     <string name="lottery_no_sites">Publish a campsite before creating a lottery.</string>
     <string name="lottery_site_failure">Could not load your published campsites.</string>
-    <string name="lottery_selected_site_unavailable">The selected campsite is unavailable. Return to Campsite &amp; nights to choose a published campsite.</string>
+    <string name="lottery_selected_site_unavailable">A campsite is unavailable. Return to Campsites &amp; nights to review your list.</string>
+    <string name="lottery_add_campsite">Add campsite</string>
+    <string name="lottery_edit_nights">Edit nights</string>
+    <string name="lottery_edit_nights_for">Edit nights for %1$s</string>
+    <string name="lottery_remove_offer">Remove</string>
+    <string name="lottery_remove_campsite_label">Remove campsite %1$s</string>
+    <string name="lottery_capacity_optional">Registration limit (optional)</string>
+    <string name="lottery_capacity_invalid">Enter a positive whole number, or leave blank for unlimited registrations.</string>
+    <string name="lottery_capacity_hint">Leave blank for unlimited registrations.</string>
     <string name="lottery_allocate">Allocate nights</string>
     <string name="lottery_apply_nights">Apply nights</string>
     <string name="lottery_selected_nights">Selected nights</string>
@@ -37,8 +45,6 @@
     <string name="lottery_date_required">Choose a date.</string>
     <string name="lottery_time_required">Choose a time.</string>
     <string name="lottery_time_ambiguous">This local time is skipped or repeated by daylight saving. Choose an unambiguous time.</string>
-    <string name="lottery_zone_review">The campsite timezone changed. Review all four local dates and times in %1$s before accepting their new interpretation.</string>
-    <string name="lottery_confirm_zone">Use these times in %1$s</string>
     <string name="lottery_registration_invalid">Registration opening must precede registration closing.</string>
     <string name="lottery_booking_before_registration">Booking cannot open before registration closes.</string>
     <string name="lottery_booking_invalid">Booking opening must precede booking closing.</string>

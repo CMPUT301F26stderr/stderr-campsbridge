@@ -1,6 +1,11 @@
+/*
+ * Emits shared action/notice controls into the overview and owns no persistence or local success.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -72,6 +77,7 @@ internal fun LotteryMembershipActions(
             isSubmitting = state.action == LotteryMembershipAction.LEAVE,
             confirmLabel = stringResource(R.string.lottery_leave_confirm),
             destructive = true,
+            progressDescription = stringResource(R.string.lottery_leaving_waitlist),
         )
     }
 }
@@ -102,7 +108,19 @@ internal fun LotteryMembershipReadContent(
         }
 
         is LotteryMembershipRead.Content -> {
-            Text(lotteryMembershipLabel(membership.status))
+            Text(
+                lotteryMembershipLabel(membership.status),
+                style =
+                    when (membership.status) {
+                        LotteryMembershipStatus.WON, LotteryMembershipStatus.LOST, LotteryMembershipStatus.DECLINED -> {
+                            MaterialTheme.typography.titleMediumEmphasized
+                        }
+
+                        else -> {
+                            MaterialTheme.typography.bodyLarge
+                        }
+                    },
+            )
         }
     }
 }

@@ -1,3 +1,7 @@
+/*
+ * SDK-boundary identity contracts, without connecting to Firebase.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.identity
 
 import com.google.android.gms.tasks.TaskCompletionSource

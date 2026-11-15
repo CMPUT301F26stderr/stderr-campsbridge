@@ -1,3 +1,7 @@
+/*
+ * Shared draft/confirmed stay facts without implying booking or payment success.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries
 
 import androidx.compose.foundation.layout.Arrangement
@@ -96,7 +100,7 @@ fun StaySummary(
                 Text(stringResource(R.string.total), style = MaterialTheme.typography.titleMedium)
                 Text(
                     formatCad(totalCents, locale),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }

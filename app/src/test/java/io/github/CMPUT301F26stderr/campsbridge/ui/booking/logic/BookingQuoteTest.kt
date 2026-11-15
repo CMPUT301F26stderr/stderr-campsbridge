@@ -1,3 +1,7 @@
+/*
+ * Checked quote arithmetic preserves exact cents and counts campsite-local nights.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic
 
 import org.junit.Assert.assertEquals

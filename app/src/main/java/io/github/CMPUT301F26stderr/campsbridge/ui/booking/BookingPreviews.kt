@@ -1,3 +1,7 @@
+/*
+ * Supplies passive booking previews for wizard steps, read failures, changed quotes and submission progress.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.compose.runtime.Composable
@@ -171,7 +175,7 @@ internal fun BookingPreviewContent(
             onNext = {},
             onCancel = {},
             onMonth = {},
-            onDate = {},
+            onDatesChange = { _, _ -> },
             onClearDates = {},
             onGuests = {},
             onAccept = { _, _, _ -> },

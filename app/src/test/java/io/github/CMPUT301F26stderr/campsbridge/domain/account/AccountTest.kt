@@ -1,3 +1,7 @@
+/*
+ * Tests profile validity and accessibility-setting boundaries, independent of storage.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.account
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
@@ -33,7 +37,7 @@ class AccountTest {
         assertEquals(original.id, removed.id)
     }
 
-    /** Accessibility scales accept finite positive values without an invented maximum. */
+    /** Accessibility scales accept reduced, standard and enlarged presentation. */
     @Test fun accessibilityScalesAcceptPositiveValuesOnly() {
         for (scale in listOf(0.25, 1.0, 4.0)) {
             assertEquals(

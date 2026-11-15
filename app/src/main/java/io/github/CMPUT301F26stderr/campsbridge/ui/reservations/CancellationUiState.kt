@@ -1,3 +1,7 @@
+/*
+ * Tracks a command separately from the saved record; uncertainty blocks another write.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure

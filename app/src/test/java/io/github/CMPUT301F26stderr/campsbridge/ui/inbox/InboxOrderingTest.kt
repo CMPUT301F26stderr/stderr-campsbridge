@@ -1,3 +1,7 @@
+/*
+ * Tests newest-first Inbox event ordering and stable identity tie-breaking.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification

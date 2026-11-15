@@ -1,3 +1,7 @@
+/*
+ * Supplies the real graph owner using only this host's controlled log and context sources.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.lifecycle.ViewModelProvider
@@ -15,7 +19,7 @@ internal fun TestAppHost.notificationLogFactory(): () -> ViewModelProvider.Facto
                 notificationLogCreations++
                 NotificationLogViewModel(
                     logNotifications,
-                    NotificationContentLoader(logNotifications, lotteries, bookings),
+                    NotificationContentLoader(logNotifications, lotteries, bookings, messages),
                     createSavedStateHandle(),
                 )
             }

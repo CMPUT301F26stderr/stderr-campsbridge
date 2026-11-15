@@ -1,3 +1,7 @@
+/*
+ * Owner fallback uses the existing draw operation; observed parent completion owns results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.ViewModelStore

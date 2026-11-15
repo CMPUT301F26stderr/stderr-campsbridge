@@ -1,3 +1,7 @@
+/*
+ * Verifies hosting activation through the actual authenticated account repository and listener.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.account
 
 import androidx.lifecycle.ViewModelStore

@@ -1,3 +1,7 @@
+/*
+ * Creates the real booking controller for the account-root navigation tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.lifecycle.ViewModelProvider

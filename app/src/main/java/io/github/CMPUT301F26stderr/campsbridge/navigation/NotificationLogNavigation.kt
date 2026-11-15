@@ -1,3 +1,7 @@
+/*
+ * Registers the read-only event list and ID-only children beneath one independent log parent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable
@@ -22,7 +26,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLog
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 
@@ -30,16 +33,12 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
  * @param controller Current account navigation host.
  * @param state Confirmed session used by the shared workspace frame.
  * @param onSelectWorkspace Root-owned capability selection.
- * @param items Real admin primary peers.
- * @param onSelectDestination Retained primary selection.
  * @param factory Explicit log/content repository dependencies.
  */
 internal fun NavGraphBuilder.notificationLogGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
-    items: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     factory: ViewModelProvider.Factory,
 ) {
     navigation(
@@ -53,9 +52,6 @@ internal fun NavGraphBuilder.notificationLogGraph(
                 state,
                 onSelectWorkspace,
                 stringResource(R.string.admin_logs),
-                items,
-                AppDestination.ADMIN_LOGS,
-                onSelectDestination,
             ) {
                 NotificationLogRoute(model) { id ->
                     controller.navigate(AppDestination.adminNotification(id)) { launchSingleTop = true }
@@ -94,7 +90,7 @@ internal fun NavGraphBuilder.notificationLogGraph(
             val parent = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_LOGS) }
             val model: NotificationLogViewModel = viewModel(parent, factory = factory)
             val id = requireNotNull(entry.arguments?.getString("notificationId"))
-            AppScreen(stringResource(R.string.log_recipients), onBack = { controller.popBackStack() }) {
+            AppScreen(stringResource(R.string.log_recipients_title), onBack = { controller.popBackStack() }) {
                 NotificationLogAudienceRoute(model, id)
             }
         }

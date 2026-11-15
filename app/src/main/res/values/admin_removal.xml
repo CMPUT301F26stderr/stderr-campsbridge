@@ -1,0 +1,22 @@
+<resources>
+    <string name="admin_remove_profile">Remove profile</string>
+    <string name="admin_remove_site">Remove campsite</string>
+    <string name="admin_remove_image">Remove image</string>
+    <string name="admin_remove_profile_question">Remove profile?</string>
+    <string name="admin_remove_site_question">Remove campsite?</string>
+    <string name="admin_remove_image_question">Remove image?</string>
+    <string name="admin_remove_profile_body">Remove profile %1$s and its personal details. Affected active participation and listings will be removed, with cancellations and simulated refunds. History is retained.</string>
+    <string name="admin_remove_site_body">Remove campsite %1$s and cancel affected active lottery participation and reservations with simulated refunds. History is retained.</string>
+    <string name="admin_remove_image_body">Remove the image attached to %1$s. The profile or campsite will remain.</string>
+    <string name="admin_remove_site_progress">Removing campsite…</string>
+    <string name="admin_remove_image_progress">Removing image…</string>
+    <string name="admin_remove_profile_done">Profile removed</string>
+    <string name="admin_remove_site_done">Campsite removed</string>
+    <string name="admin_remove_image_done">Image removed</string>
+    <string name="admin_remove_retry_title">Removal did not finish</string>
+    <string name="admin_remove_wait">Finishing removal for %1$s.</string>
+    <string name="admin_remove_failed">Removal for %1$s did not finish. Retry the original request to complete it.</string>
+    <string name="admin_remove_confirmed">Removal for %1$s is complete.</string>
+    <string name="admin_remove_image_cleanup">The image is detached. Cleanup of the old file is still pending.</string>
+    <string name="admin_remove_retry">Retry removal</string>
+</resources>

@@ -1,3 +1,7 @@
+/*
+ * Presents explicit tap recovery without acquiring models or changing ordinary screen state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.material3.AlertDialog

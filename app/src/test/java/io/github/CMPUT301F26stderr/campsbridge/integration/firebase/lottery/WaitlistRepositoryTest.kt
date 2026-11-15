@@ -1,3 +1,7 @@
+/*
+ * Tests membership transitions and the waitlist count/capacity transaction.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import com.google.firebase.firestore.Source

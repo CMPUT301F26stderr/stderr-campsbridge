@@ -1,3 +1,7 @@
+/*
+ * Submits one booking attempt and resolves acknowledged, rejected or uncertain outcomes by saved identity.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository

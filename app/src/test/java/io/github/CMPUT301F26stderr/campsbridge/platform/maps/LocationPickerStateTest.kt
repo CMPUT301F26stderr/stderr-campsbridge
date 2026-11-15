@@ -1,3 +1,7 @@
+/*
+ * Working-pin and primitive restoration contracts, without Maps SDK or persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 
 import androidx.compose.runtime.saveable.SaverScope

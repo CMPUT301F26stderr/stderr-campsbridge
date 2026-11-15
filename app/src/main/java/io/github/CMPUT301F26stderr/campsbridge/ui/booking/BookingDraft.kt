@@ -1,3 +1,7 @@
+/*
+ * Defines wizard steps, retained stay input and the exact terms and quote awaiting confirmation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import java.time.LocalDate

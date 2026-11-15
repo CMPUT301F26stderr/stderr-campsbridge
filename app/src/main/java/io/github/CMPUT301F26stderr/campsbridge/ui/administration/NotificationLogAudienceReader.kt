@@ -1,3 +1,7 @@
+/*
+ * Reads captured recipients only for the currently displayed audience page.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
@@ -39,11 +43,11 @@ internal class NotificationLogAudienceReader(
         if (notificationId != null) load(notificationId)
     }
 
-    /** Retries only an unsuccessful or interrupted current audience read. */
+    /** Reloads the current audience after completion or interruption, coalescing active requests. */
     fun retry() {
         val selected = id ?: return
         if (!closed && job?.isActive != true &&
-            (state.value is NotificationLogAudienceState.Failure || state.value is NotificationLogAudienceState.Loading)
+            state.value !is NotificationLogAudienceState.Idle
         ) {
             load(selected)
         }

@@ -1,3 +1,7 @@
+/*
+ * Connects isolated task examples to implemented feature screens and local controllers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.foundation.layout.Column

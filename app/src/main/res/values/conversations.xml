@@ -1,0 +1,29 @@
+<resources>
+    <string name="conversation_profiles_loading">Checking participant profiles…</string>
+    <string name="conversation_profiles_failed">Could not confirm the participant profiles.</string>
+    <string name="conversation_title">Messages</string>
+    <string name="conversation_input">Message</string>
+    <string name="conversation_send">Send message</string>
+    <string name="conversation_sending">Sending message…</string>
+    <string name="conversation_checking">Checking whether your message was saved…</string>
+    <string name="conversation_retry">Retry message</string>
+    <string name="conversation_edit">Edit message</string>
+    <string name="conversation_new_attempt">Edit as a new message</string>
+    <string name="conversation_refresh">Refresh conversation</string>
+    <string name="conversation_send_unavailable">Sending is unavailable for this conversation.</string>
+    <string name="conversation_context_failed">Could not load this conversation’s participants.</string>
+    <string name="conversation_unavailable">Conversation unavailable</string>
+    <string name="conversation_messages_failed">Could not load messages.</string>
+    <string name="conversation_empty">No messages yet.</string>
+    <string name="conversation_new_messages">New messages</string>
+    <string name="conversation_reads_failed">Some messages could not be marked as read.</string>
+    <string name="conversation_check_failed">Your message’s result is not confirmed. Check again before editing.</string>
+    <string name="conversation_absent">Your message was not saved. Retry it or edit before sending again.</string>
+    <string name="conversation_conflict">The saved message differs from this attempt. Edit as a new message to keep editing.</string>
+    <string name="conversation_discard_title">Discard message draft?</string>
+    <string name="conversation_discard_body">Your unsent text will be discarded. Saved messages will stay.</string>
+    <string name="conversation_stay">%1$s to %2$s</string>
+    <string name="conversation_leave_unknown_title">Leave before the result is confirmed?</string>
+    <string name="conversation_leave_unknown_body">This message may already be saved. Leaving discards the details used to check or retry this attempt.</string>
+    <string name="conversation_leave_unknown_confirm">Leave anyway</string>
+</resources>

@@ -1,3 +1,7 @@
+/*
+ * Observes booking records, consumed wins and booking-window deadlines for one selected offer.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository

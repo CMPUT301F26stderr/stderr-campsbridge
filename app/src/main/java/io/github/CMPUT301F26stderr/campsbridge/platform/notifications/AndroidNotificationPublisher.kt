@@ -1,3 +1,7 @@
+/*
+ * Submits resolved standard notifications; it never queries events or changes app preferences.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.annotation.SuppressLint

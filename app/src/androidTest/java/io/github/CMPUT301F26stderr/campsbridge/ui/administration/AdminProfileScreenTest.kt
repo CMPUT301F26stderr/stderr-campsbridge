@@ -1,3 +1,7 @@
+/*
+ * Presentation contracts supplement the existing controller lifetime/retry tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -22,6 +26,7 @@ import org.junit.Test
 class AdminProfileScreenTest {
     @get:Rule val compose = createComposeRule()
 
+    /** Keeps account facts visible while photo and campsite sections retry independently. */
     @Test fun failedSectionsRetryIndependentlyAndKeepAccountVisible() {
         var accountRetries = 0
         var siteRetries = 0
@@ -40,6 +45,7 @@ class AdminProfileScreenTest {
                     { siteRetries++ },
                     { photoRetries++ },
                     {},
+                    onImage = {},
                 )
             }
         }
@@ -59,6 +65,7 @@ class AdminProfileScreenTest {
         }
     }
 
+    /** Distinguishes missing optional values from confirmed empty related sections. */
     @Test fun optionalFieldsAndConfirmedEmptySectionsAreExplicit() {
         compose.setContent {
             CampsbridgeTheme {
@@ -74,6 +81,7 @@ class AdminProfileScreenTest {
                     {},
                     {},
                     {},
+                    onImage = {},
                 )
             }
         }
@@ -82,6 +90,7 @@ class AdminProfileScreenTest {
         compose.onNodeWithText("No owned campsites").performScrollTo().assertIsDisplayed()
     }
 
+    /** Shows unavailable identity without inventing an empty profile or waiting on dependents. */
     @Test fun unavailableAccountIsNotAnEmptyProfileOrIndefiniteDependentLoad() {
         compose.setContent {
             CampsbridgeTheme {
@@ -92,6 +101,7 @@ class AdminProfileScreenTest {
                     {},
                     {},
                     {},
+                    onImage = {},
                 )
             }
         }
@@ -101,6 +111,7 @@ class AdminProfileScreenTest {
         compose.onNodeWithText("Loading owned campsites").assertDoesNotExist()
     }
 
+    /** Opens the selected saved campsite without exposing owner editing actions. */
     @Test fun relatedCampsiteOpensByActualIdentityWithoutOwnerActions() {
         val site = sampleCampsite("site/one", "account-1")
         var selected: String? = null
@@ -118,6 +129,7 @@ class AdminProfileScreenTest {
                     {},
                     {},
                     { selected = it },
+                    onImage = {},
                 )
             }
         }

@@ -1,3 +1,7 @@
+/*
+ * Tests raw campsite form validation independently of profile, count and availability helpers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails

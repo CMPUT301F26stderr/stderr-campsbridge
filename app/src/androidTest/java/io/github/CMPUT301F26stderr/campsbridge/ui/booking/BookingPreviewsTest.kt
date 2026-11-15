@@ -1,3 +1,7 @@
+/*
+ * Verifies the same themed preview content on a device, without production navigation/writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import android.graphics.Bitmap
@@ -88,7 +92,7 @@ class BookingPreviewsTest {
                 if (state is BookingUiState.Content && state.draft.step == BookingStep.REVIEW) {
                     compose
                         .onNodeWithText(
-                            context.getString(R.string.reservation_simulated_payment),
+                            context.getString(R.string.booking_payment_notice),
                         ).performScrollTo()
                         .assertIsDisplayed()
                     capture(File(directory, "state-$index-bottom-font-${scale.toInt()}.png"))

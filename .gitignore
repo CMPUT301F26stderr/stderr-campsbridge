@@ -326,6 +326,7 @@ result-*
 # Firebase CLI local state and local environment secrets.
 .firebase/
 firebase/tooling/node_modules/
+firebase/functions/node_modules/
 /firebase/.emulators-*.json
 firebase-debug.log*
 firestore-debug.log*
@@ -347,3 +348,4 @@ __pycache__/
 # Personal reference documents; keep the team roster tracked.
 /doc/*
 !/doc/team.txt
+!/doc/halfway-firebase-reset.md

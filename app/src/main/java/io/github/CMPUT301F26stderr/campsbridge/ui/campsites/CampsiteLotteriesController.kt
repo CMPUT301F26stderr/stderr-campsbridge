@@ -1,3 +1,7 @@
+/*
+ * Scoped associated-lottery reader owned by the existing saved campsite model.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

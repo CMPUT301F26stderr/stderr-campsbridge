@@ -1,3 +1,7 @@
+/*
+ * Tests selected inspection reads, independent section recovery and reader cleanup.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

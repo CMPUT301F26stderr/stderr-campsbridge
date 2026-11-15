@@ -1,3 +1,7 @@
+/*
+ * Parent graph owns browse inputs, the selected reader and visible thumbnails independently.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

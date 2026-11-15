@@ -1,3 +1,7 @@
+/*
+ * Derives labels shared by entrant detail and owner rows without exposing partial outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

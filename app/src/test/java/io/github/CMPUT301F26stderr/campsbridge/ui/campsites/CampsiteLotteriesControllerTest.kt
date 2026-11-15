@@ -1,3 +1,7 @@
+/*
+ * Actual campsite associations scope shared participation and visible allocation readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
@@ -476,9 +480,7 @@ class CampsiteLotteriesControllerTest {
                     /** Holds only the first incarnation outside cancellation.
                      * @param campsiteId Fixed saved identity.
                      */
-                    override fun observePublishedForCampsite(
-                        campsiteId: String,
-                    ): Flow<List<Lottery>> =
+                    override fun observePublishedForCampsite(campsiteId: String): Flow<List<Lottery>> =
                         flow {
                             calls++
                             if (calls == 1) {

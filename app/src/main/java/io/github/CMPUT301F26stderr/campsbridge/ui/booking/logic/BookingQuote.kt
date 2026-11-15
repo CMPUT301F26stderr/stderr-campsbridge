@@ -1,3 +1,7 @@
+/*
+ * Calculates exact CAD-cent totals and reports arithmetic overflow before a reservation is submitted.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic
 
 import java.time.LocalDate

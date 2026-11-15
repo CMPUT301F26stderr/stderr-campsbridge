@@ -1,3 +1,7 @@
+/*
+ * Picker values encode local dates using UTC irrespective of device timezone.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common
 
 import org.junit.Assert.assertEquals

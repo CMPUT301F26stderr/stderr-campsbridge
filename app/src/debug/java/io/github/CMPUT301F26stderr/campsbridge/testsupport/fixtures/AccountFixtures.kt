@@ -1,3 +1,7 @@
+/*
+ * Realistic existing account fixture shared by debug hosts and tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account

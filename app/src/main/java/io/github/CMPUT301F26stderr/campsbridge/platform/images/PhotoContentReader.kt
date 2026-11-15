@@ -1,3 +1,7 @@
+/*
+ * Resolves selected local content without uploading or eagerly buffering its bytes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.images
 
 import android.content.ContentResolver

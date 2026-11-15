@@ -1,3 +1,7 @@
+/*
+ * Reads original payment and confirmed refund facts from the same saved aggregate.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.material3.Text
@@ -51,7 +55,7 @@ fun PaymentDetailsScreen(
             )
             DetailRow(
                 stringResource(R.string.reservation_paid_at),
-                reservationTime(record, record.payment.paidAt),
+                reservationTime(record.payment.paidAt),
             )
             Text(stringResource(R.string.reservation_simulated_payment))
         }
@@ -63,7 +67,7 @@ fun PaymentDetailsScreen(
                 )
                 DetailRow(
                     stringResource(R.string.reservation_refunded_at),
-                    reservationTime(record, refundedAt),
+                    reservationTime(refundedAt),
                 )
             }
         }

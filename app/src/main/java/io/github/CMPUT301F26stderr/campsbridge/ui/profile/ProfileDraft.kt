@@ -1,3 +1,7 @@
+/*
+ * Defines unsaved personal and contact input separately from the confirmed account.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 /** Unsaved personal input, separate from the last confirmed account.

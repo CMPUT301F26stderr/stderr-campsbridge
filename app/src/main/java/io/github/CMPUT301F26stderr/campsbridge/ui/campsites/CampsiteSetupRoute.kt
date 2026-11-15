@@ -1,6 +1,9 @@
+/*
+ * Binds one graph-owned local draft to native selection and explicit navigation results.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -135,7 +138,7 @@ fun CampsiteSetupRoute(
         },
         model::retryPhoto,
         model::changeMonth,
-        model::toggleDate,
+        model::setRequestedOffered,
         model::retryCalendar,
         onOpenPolicy,
         onChooseLocation = onChooseLocation,
@@ -166,7 +169,6 @@ fun CampsiteLocationRoute(
             onCancel = onBack,
         )
     } else {
-        BackHandler(onBack = onBack)
         AppScreen(stringResource(R.string.location_picker_title), onBack = onBack) {
             when (input) {
                 CampsiteSetupUiState.Loading -> {

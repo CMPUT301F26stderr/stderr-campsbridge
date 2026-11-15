@@ -1,3 +1,7 @@
+/*
+ * Optional compact interests using stable tag IDs; existing unlisted interests are retained.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps
 
 import androidx.compose.material3.MaterialTheme

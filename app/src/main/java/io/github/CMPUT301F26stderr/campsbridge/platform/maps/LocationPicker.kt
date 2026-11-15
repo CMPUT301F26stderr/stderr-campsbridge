@@ -1,6 +1,9 @@
+/*
+ * Owns only a saveable working pin; the calling setup graph owns Apply/Cancel effects.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.maps
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,7 +45,6 @@ fun LocationPicker(
         rememberSaveable(saver = LocationPickerState.Saver) {
             LocationPickerState(initialLocation)
         }
-    BackHandler(onBack = onCancel)
     LocationPickerScreen(state.selected, state::select, onApply, onCancel, mapContent)
 }
 

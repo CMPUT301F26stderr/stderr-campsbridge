@@ -1,3 +1,7 @@
+/*
+ * Tests due-work boundaries, serial processing, retry isolation and cancellation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.maintenance
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

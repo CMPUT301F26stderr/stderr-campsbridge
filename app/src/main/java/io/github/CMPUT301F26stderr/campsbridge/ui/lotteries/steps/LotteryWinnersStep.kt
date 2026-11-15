@@ -1,3 +1,7 @@
+/*
+ * Positive maximum winners with fixed unlimited registration, without a cap switch.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,6 +33,8 @@ fun LotteryWinnersStep(
                 null
             },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        reserveSupportingSpace = true,
+        revealError = state.errors.winnerCount != null,
     )
     Text(stringResource(R.string.lottery_winners_hint))
     Text(stringResource(R.string.lottery_unlimited))

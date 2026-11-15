@@ -1,3 +1,7 @@
+/*
+ * Persistence contract for listing publication and owner-managed per-night inventory.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.campsite
 
 import kotlinx.coroutines.flow.Flow

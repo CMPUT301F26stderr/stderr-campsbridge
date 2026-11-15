@@ -1,3 +1,7 @@
+/*
+ * Binds tests to isolated Firebase emulator clients, controlled time and disposable fixture state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase
 
 import android.content.ComponentName
@@ -141,6 +145,7 @@ class FirebaseEmulatorRule : ExternalResource() {
                 firestoreEndpoint.host,
                 firestorePort = firestoreEndpoint.port,
                 storagePort = storageEndpoint.port,
+                functionsPort = localEmulatorEndpoint("FUNCTIONS_EMULATOR_HOST").port,
             )
         clients.firestore.firestoreSettings =
             FirebaseFirestoreSettings

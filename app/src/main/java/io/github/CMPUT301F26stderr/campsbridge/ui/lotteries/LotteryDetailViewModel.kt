@@ -1,3 +1,7 @@
+/*
+ * Owns one saved target and its independent owner/entrant read sections.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle
@@ -26,7 +30,7 @@ import java.time.Clock
  * @param lotteryId Actual saved identity carried by navigation.
  * @param lotteries Saved parent and live allocation source.
  * @param clock Deterministic current time for derived display boundaries.
- * @param campsites Names and zones for referenced allocations.
+ * @param campsites Saved campsite facts for referenced allocations.
  * @param bookings Authoritative opportunity and saved reservation source.
  * @param context Explicit owner management or entrant presentation.
  * @param accounts Referenced participant profile labels.
@@ -243,7 +247,7 @@ class LotteryDetailViewModel(
                         val unavailable =
                             record == null || record.id != lotteryId ||
                                 when (context) {
-                                    LotteryContext.OWNER -> record.ownerId != accountId
+                                    LotteryContext.OWNER -> accountId !in record.participantOwnerIds
                                     LotteryContext.ENTRANT -> record.publishedAt == null
                                 }
                         if (unavailable) {
@@ -264,6 +268,7 @@ class LotteryDetailViewModel(
                                     prior?.offers ?: LotteryOffersState.Loading,
                                     canContinue =
                                         context == LotteryContext.OWNER &&
+                                            record.ownerId == accountId &&
                                             record.publishedAt == null &&
                                             record.cancellation == null,
                                     lifecycle = lotteryLifecycle(record, clock.instant()),

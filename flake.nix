@@ -16,12 +16,12 @@
 
     # Keep the shared hook runner version when using stable nixpkgs.
     preCommit = pkgs.pre-commit.overridePythonAttrs (_: {
-      version = "4.6.2";
+      version = "4.7.0";
       src = pkgs.fetchFromGitHub {
         owner = "pre-commit";
         repo = "pre-commit";
-        tag = "v4.6.2";
-        hash = "sha256-aCEN9dVz/3lB2gy7U+6dVj3jSM7cmVsstOp+LHvYRsU=";
+        tag = "v4.7.0";
+        hash = "sha256-iCs3ja53pC0iFmBYIvs2nH6IDgplXd1S5+gXg+Kcbrg=";
       };
       # The upstream suite provisions unrelated language toolchains.
       # Validate the configured hooks with the project checks instead.

@@ -1,6 +1,9 @@
+/*
+ * Connects local parent input to ordinary content and one explicit allocation child.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,7 +56,6 @@ fun LotterySetupRoute(
         model::editScheduleTime,
         model::editWinnerCount,
         model::editStep,
-        model::confirmScheduleZone,
         onSaveDraft = model::saveDraft,
         onPublish = model::publishLottery,
         onRetrySave = model::retrySave,
@@ -76,13 +78,12 @@ fun LotteryAllocationRoute(
     LaunchedEffect(state.allocation == null, lifecycle) {
         if (state.allocation == null && lifecycle == Lifecycle.State.RESUMED) onBack()
     }
-    BackHandler { model.cancelAllocation() }
     LotteryAllocationScreen(
         state,
         model::cancelAllocation,
         { model.applyAllocation() },
         model::changeAllocationMonth,
-        model::toggleAllocationDate,
+        model::selectAllocationDates,
         model::retryAllocation,
         model::retryChoices,
     )

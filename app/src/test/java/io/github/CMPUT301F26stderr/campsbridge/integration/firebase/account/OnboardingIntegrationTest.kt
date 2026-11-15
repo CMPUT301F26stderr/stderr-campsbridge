@@ -1,3 +1,7 @@
+/*
+ * Verifies new onboarding orchestration against actual account transactions and listeners.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.account
 
 import androidx.lifecycle.SavedStateHandle

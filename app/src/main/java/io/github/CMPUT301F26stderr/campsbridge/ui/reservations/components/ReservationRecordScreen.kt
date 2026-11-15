@@ -1,6 +1,9 @@
+/*
+ * Shares saved-page feedback and scrolling without acquiring a reader or owning navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
-import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -54,7 +57,6 @@ internal fun ReservationRecordScreen(
         if (cancellation != null && !hadCancellation) scrollState.scrollTo(0)
         hadCancellation = cancellation != null
     }
-    BackHandler { if (backEnabled) onBack() }
     AppScreen(stringResource(title), modifier, onBack, backEnabled = backEnabled) {
         Column(
             Modifier

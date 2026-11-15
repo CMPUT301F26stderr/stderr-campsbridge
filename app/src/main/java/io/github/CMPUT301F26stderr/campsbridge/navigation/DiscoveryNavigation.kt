@@ -1,3 +1,7 @@
+/*
+ * Registers discovery/filter lifetime and a separate saved public listing reader.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember
@@ -11,7 +15,6 @@ import androidx.navigation.compose.navigation
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreRoute
@@ -22,8 +25,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.SearchFiltersRoute
  * @param controller Account-scoped navigation host.
  * @param state Confirmed root session.
  * @param onSelectWorkspace Root-owned permitted workspace selection.
- * @param items Registered entrant primary destinations.
- * @param onSelectDestination Primary selection callback.
  * @param exploreFactory Dependencies for one parent discovery model.
  * @param detailFactory Dependencies for an ID/context-qualified saved reader.
  */
@@ -31,8 +32,6 @@ internal fun NavGraphBuilder.discoveryGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
-    items: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     exploreFactory: ViewModelProvider.Factory,
     detailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
 ) {
@@ -48,9 +47,6 @@ internal fun NavGraphBuilder.discoveryGraph(
                 state,
                 onSelectWorkspace,
                 title = stringResource(R.string.discovery_title),
-                navigationItems = items,
-                selectedDestination = AppDestination.EXPLORE,
-                onSelectDestination = onSelectDestination,
             ) {
                 ExploreRoute(model, {
                     controller.navigate(AppDestination.EXPLORE + "/filters") {

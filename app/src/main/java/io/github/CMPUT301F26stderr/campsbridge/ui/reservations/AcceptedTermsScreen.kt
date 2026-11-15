@@ -1,3 +1,7 @@
+/*
+ * Shows the exact saved rules and policy version without substituting current listing terms.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.material3.Text
@@ -48,7 +52,7 @@ fun AcceptedTermsScreen(
         SummarySection(stringResource(R.string.reservation_acceptance_record)) {
             DetailRow(
                 stringResource(R.string.reservation_accepted_at),
-                reservationTime(record, terms.acceptedAt),
+                reservationTime(terms.acceptedAt),
             )
             DetailRow(
                 stringResource(R.string.reservation_policy_version),

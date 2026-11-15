@@ -1,3 +1,7 @@
+/*
+ * Controlled identity dependency for isolated debug hosts and tests.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.platform.identity.IdentityProvider

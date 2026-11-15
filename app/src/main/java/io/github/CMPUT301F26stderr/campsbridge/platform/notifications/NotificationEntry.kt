@@ -1,3 +1,7 @@
+/*
+ * Encodes and validates notification-tap identities passed to the app's root navigation owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.notifications
 
 import android.content.Context

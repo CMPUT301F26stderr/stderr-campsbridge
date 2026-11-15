@@ -1,3 +1,7 @@
+/*
+ * Applies application scaling to Material typography; Android still applies system scaling.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
 
 import androidx.compose.material3.Typography
@@ -26,11 +30,16 @@ fun appTypography(scale: Float): Typography {
         defaults.copy(
             headlineLarge = defaults.headlineLarge.copy(fontWeight = FontWeight.SemiBold),
             headlineMedium = defaults.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
-            headlineSmall = defaults.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+            headlineSmall =
+                defaults.headlineSmall.copy(
+                    fontSize = 22.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight.SemiBold,
+                ),
             titleLarge =
                 defaults.titleLarge.copy(
-                    fontSize = 20.sp,
-                    lineHeight = 28.sp,
+                    fontSize = 18.sp,
+                    lineHeight = 26.sp,
                     fontWeight = FontWeight.SemiBold,
                 ),
             titleMedium = defaults.titleMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -53,6 +62,21 @@ fun appTypography(scale: Float): Typography {
         labelLarge = scaledStyle(base.labelLarge, scale),
         labelMedium = scaledStyle(base.labelMedium, scale),
         labelSmall = scaledStyle(base.labelSmall, scale),
+        displayLargeEmphasized = scaledStyle(base.displayLarge.copy(fontWeight = FontWeight.Bold), scale),
+        displayMediumEmphasized = scaledStyle(base.displayMedium.copy(fontWeight = FontWeight.Bold), scale),
+        displaySmallEmphasized = scaledStyle(base.displaySmall.copy(fontWeight = FontWeight.Bold), scale),
+        headlineLargeEmphasized = scaledStyle(base.headlineLarge.copy(fontWeight = FontWeight.Bold), scale),
+        headlineMediumEmphasized = scaledStyle(base.headlineMedium.copy(fontWeight = FontWeight.Bold), scale),
+        headlineSmallEmphasized = scaledStyle(base.headlineSmall.copy(fontWeight = FontWeight.Bold), scale),
+        titleLargeEmphasized = scaledStyle(base.titleLarge.copy(fontWeight = FontWeight.Bold), scale),
+        titleMediumEmphasized = scaledStyle(base.titleMedium.copy(fontWeight = FontWeight.Bold), scale),
+        titleSmallEmphasized = scaledStyle(base.titleSmall.copy(fontWeight = FontWeight.Bold), scale),
+        bodyLargeEmphasized = scaledStyle(base.bodyLarge.copy(fontWeight = FontWeight.Medium), scale),
+        bodyMediumEmphasized = scaledStyle(base.bodyMedium.copy(fontWeight = FontWeight.Medium), scale),
+        bodySmallEmphasized = scaledStyle(base.bodySmall.copy(fontWeight = FontWeight.Medium), scale),
+        labelLargeEmphasized = scaledStyle(base.labelLarge.copy(fontWeight = FontWeight.Bold), scale),
+        labelMediumEmphasized = scaledStyle(base.labelMedium.copy(fontWeight = FontWeight.SemiBold), scale),
+        labelSmallEmphasized = scaledStyle(base.labelSmall.copy(fontWeight = FontWeight.SemiBold), scale),
     )
 }
 
@@ -66,6 +90,7 @@ private fun scaledStyle(
 ): TextStyle =
     style.copy(
         fontFamily = Inter,
+        letterSpacing = 0.sp,
         fontSize = style.fontSize * scale,
         lineHeight = style.lineHeight * scale,
     )

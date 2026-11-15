@@ -1,3 +1,7 @@
+/*
+ * Shared commands consume supplied scoped facts and leave source/lifecycle ownership to callers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

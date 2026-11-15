@@ -1,3 +1,7 @@
+/*
+ * Exact-state selection preserves supplied values and order without owning result derivation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

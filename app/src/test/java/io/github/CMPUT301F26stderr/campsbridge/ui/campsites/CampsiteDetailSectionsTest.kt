@@ -1,3 +1,7 @@
+/*
+ * Read-only child contracts extend the saved listing reader without duplicating persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle
@@ -326,9 +330,7 @@ class CampsiteDetailSectionsTest {
                              * assertion.
                              * @param collector Detail's active range collector.
                              */
-                            override suspend fun collect(
-                                collector: FlowCollector<List<CalendarNight>>,
-                            ) {
+                            override suspend fun collect(collector: FlowCollector<List<CalendarNight>>) {
                                 if (start == april.atDay(1)) {
                                     retired = collector
                                     collector.emit(listOf(CalendarNight(start, true)))

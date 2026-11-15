@@ -1,3 +1,7 @@
+/*
+ * F18 orders supplied complete records only; category/filter membership belongs to its caller.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

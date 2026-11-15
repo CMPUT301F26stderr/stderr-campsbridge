@@ -1,3 +1,7 @@
+/*
+ * Checks B2 example wiring using literal supplied outcomes, never helper algorithms.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule

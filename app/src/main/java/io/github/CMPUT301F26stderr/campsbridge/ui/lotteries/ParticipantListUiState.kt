@@ -1,3 +1,7 @@
+/*
+ * Represents participant records, independently loaded profile labels and result-filter outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
@@ -49,7 +53,7 @@ sealed interface ParticipantListUiState {
     /** Confirmed rows and currently permitted filtering.
      * @param rows Display-safe visible rows in source order.
      * @param allowedStates Stored states currently safe to select; null/All is always available.
-     * @param filterPending A nonnull filter awaits the reserved teammate function.
+     * @param filterPending This host omitted the helper needed for an exact-state filter.
      */
     data class Content(
         val rows: List<ParticipantRow>,

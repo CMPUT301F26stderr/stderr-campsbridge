@@ -1,3 +1,7 @@
+/*
+ * Public date eligibility; authorization and atomic side effects remain repository-owned.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

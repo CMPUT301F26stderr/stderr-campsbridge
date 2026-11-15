@@ -1,3 +1,7 @@
+/*
+ * Retains one root tap and resolves its saved target only for a matching ready session.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.lifecycle.SavedStateHandle
@@ -163,7 +167,7 @@ class NotificationEntryViewModel(
 
                 is NotificationSubjectContent.LotteryContent -> {
                     when {
-                        subject.lottery.ownerId == account.id && Role.OWNER in account.roles -> {
+                        account.id in subject.lottery.participantOwnerIds && Role.OWNER in account.roles -> {
                             Role.OWNER
                         }
 
@@ -195,7 +199,9 @@ class NotificationEntryViewModel(
                     }
                 }
 
-                NotificationSubjectContent.Unavailable, NotificationSubjectContent.Unsupported -> {
+                is NotificationSubjectContent.MessageContent,
+                NotificationSubjectContent.Unavailable, NotificationSubjectContent.Unsupported,
+                -> {
                     null
                 }
             }

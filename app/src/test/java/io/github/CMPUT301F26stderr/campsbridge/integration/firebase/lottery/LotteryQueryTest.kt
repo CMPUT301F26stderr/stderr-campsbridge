@@ -1,3 +1,7 @@
+/*
+ * Entrant queries resolve canonical offers and react to publication/membership changes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import com.google.firebase.firestore.FirebaseFirestoreException

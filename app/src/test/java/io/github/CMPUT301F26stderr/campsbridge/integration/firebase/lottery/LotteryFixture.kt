@@ -1,3 +1,7 @@
+/*
+ * Published registration state without membership; draws/booking are arranged separately.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument

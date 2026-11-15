@@ -1,5 +1,15 @@
+/*
+ * Local event history, captured announcement audiences and first-read acknowledgements.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
+import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.lottery.LotteryEntryDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.InboxReceiptDocument
+import io.github.CMPUT301F26stderr.campsbridge.data.notification.NotificationDocument
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
@@ -8,54 +18,68 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationA
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceMember
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceUnavailable
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
+import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import java.time.Clock
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.FirestorePaths as Paths
 
-/** Local event history and read acknowledgements; no delivery or announcement simulation.
+/** Local event history and announcements shared across demo people.
  * @param records Supplied immutable events.
  * @param inboxes Initial fixture receipts by recipient identity.
- * @param clock Fixed fixture time for local first-read acknowledgement.
+ * @param clock Shared timestamp source for first-read acknowledgement.
+ * @param store Shared event and receipt state.
  */
 class DemoNotificationRepository(
-    private val records: List<Notification> = emptyList(),
+    records: List<Notification> = emptyList(),
     inboxes: Map<String, List<InboxReceipt>> = emptyMap(),
     private val clock: Clock = Clock.systemUTC(),
+    private val store: DemoStore =
+        DemoStore(
+            buildMap {
+                records.forEach { put(Paths.notification(it.id), NotificationDocument.encode(it)) }
+                inboxes.forEach { (id, values) ->
+                    values.forEach { put(Paths.receipt(id, it.notificationId), InboxReceiptDocument.encode(it)) }
+                }
+            },
+        ),
 ) : NotificationRepository {
-    private val receipts = MutableStateFlow(inboxes)
-
     /** Returns the supplied event, or null when absent.
      * @param id Requested actual event identity.
      */
     override suspend fun get(id: String): Notification? =
-        records.firstOrNull { it.id == id }
+        store.read { get(Paths.notification(id), NotificationDocument) }
 
     /** Returns current local receipts without claiming a Firebase server read.
      * @param accountId Current demo account.
      */
     override suspend fun getInbox(accountId: String): List<InboxReceipt> =
-        receipts.value[accountId].orEmpty()
+        store.read { list("${Paths.account(accountId)}/inbox", InboxReceiptDocument) }
 
     /** Assembles audience facts from actual local receipts without modifying them.
      * @param notificationId Requested original event identity.
      */
     override suspend fun getAudience(notificationId: String): NotificationAudience {
-        if (records.none { it.id == notificationId }) {
+        if (get(notificationId) == null) {
             return NotificationAudience.Unavailable(NotificationAudienceUnavailable.EVENT_MISSING)
         }
         val members =
-            receipts.value
-                .mapNotNull { (accountId, inbox) ->
-                    inbox.firstOrNull { it.notificationId == notificationId }?.let {
+            store.read {
+                raw.keys
+                    .filter { path ->
+                        path.startsWith("accounts/") && path.endsWith("/inbox/$notificationId")
+                    }.map { path ->
                         NotificationAudienceMember(
-                            accountId,
+                            path.split('/')[1],
                             NotificationAudienceDelivery.DELIVERED,
-                            it.readAt,
+                            require(path, InboxReceiptDocument).readAt,
                         )
-                    }
-                }.sortedBy { it.accountId }
+                    }.sortedBy { it.accountId }
+            }
         return if (members.isEmpty()) {
             NotificationAudience.NoRecordedInformation
         } else {
@@ -70,29 +94,67 @@ class DemoNotificationRepository(
      * @param accountId Current demo account.
      */
     override fun observeInbox(accountId: String): Flow<List<InboxReceipt>> =
-        receipts.map { it[accountId].orEmpty() }
+        store.observe { list("${Paths.account(accountId)}/inbox", InboxReceiptDocument) }
 
-    /** Supplies fixture sender history without simulating announcements.
+    /** Observes the actual sender's local events, newest first.
      * @param senderId Requested demo sender.
      */
     override fun observeSent(senderId: String): Flow<List<Notification>> =
-        flowOf(records.filter { it.senderId == senderId })
+        store.observe {
+            list(
+                "notifications",
+                NotificationDocument,
+            ).filter { it.senderId == senderId }.sortedByDescending { it.createdAt }
+        }
 
     /** Supplies the populated fixture event log. */
     override fun observeAll(): Flow<List<Notification>> =
-        flowOf(records)
+        store.observe { list("notifications", NotificationDocument).sortedByDescending { it.createdAt } }
 
-    /** Rejects distributed announcement operations rather than fabricating recipients.
+    /** Commits one announcement and its captured receipts; retries do not recapture its audience.
+     * @param notificationId Caller-retained submission identity.
      * @param lotteryId Requested saved lottery.
      * @param ownerId Requested sender.
      * @param announcement User-supplied content.
      */
     override suspend fun announce(
+        notificationId: String,
         lotteryId: String,
         ownerId: String,
         announcement: Announcement,
     ): String =
-        throw UnsupportedOperationException("Announcements require the Firebase host")
+        store.change {
+            active(ownerId, Role.OWNER)
+            val existing = get(Paths.notification(notificationId), NotificationDocument)
+            val subject = NotificationSubject(SubjectType.LOTTERY, lotteryId)
+            if (existing != null) {
+                requireOperation(
+                    existing.type == NotificationType.OWNER_ANNOUNCEMENT && existing.senderId == ownerId &&
+                        existing.subject == subject && existing.announcement == announcement,
+                    CONFLICT,
+                    "Announcement identity has different content",
+                )
+            } else {
+                val lottery = require(Paths.lottery(lotteryId), LotteryDocument)
+                requireOperation(ownerId in lottery.participantOwnerIds, NOT_ALLOWED, "Not a participating owner")
+                val recipients =
+                    list("${Paths.lottery(lotteryId)}/entries", LotteryEntryDocument)
+                        .filter { it.state != EntryState.WITHDRAWN }
+                        .map { it.accountId }
+                notify(
+                    Notification(
+                        notificationId,
+                        ownerId,
+                        NotificationType.OWNER_ANNOUNCEMENT,
+                        subject,
+                        announcement,
+                        clock.instant(),
+                    ),
+                    recipients,
+                )
+            }
+            notificationId
+        }
 
     /** Records the first local read once; reset reinstalls the fixture receipts.
      * @param accountId Requested recipient.
@@ -102,18 +164,10 @@ class DemoNotificationRepository(
         accountId: String,
         notificationId: String,
     ) {
-        require(receipts.value[accountId].orEmpty().any { it.notificationId == notificationId })
-        receipts.value = receipts.value + (
-            accountId to
-                receipts.value.getValue(accountId).map {
-                    if (it.notificationId == notificationId &&
-                        it.readAt == null
-                    ) {
-                        it.copy(readAt = clock.instant())
-                    } else {
-                        it
-                    }
-                }
-        )
+        store.change {
+            val path = Paths.receipt(accountId, notificationId)
+            val receipt = require(path, InboxReceiptDocument)
+            put(path, InboxReceiptDocument, receipt.copy(readAt = receipt.readAt ?: clock.instant()))
+        }
     }
 }

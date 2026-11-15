@@ -1,3 +1,8 @@
+/*
+ * Allows a new cancellation only for an uncancelled stay before its excluded checkout day. Actor authorization and
+ * booked-zone conversion belong to the caller, not this date predicate.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import java.time.LocalDate

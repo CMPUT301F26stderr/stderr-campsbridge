@@ -1,3 +1,7 @@
+/*
+ * Owns reservation read queries and the join through immutable campsite ownership.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.booking
 
 import com.google.firebase.firestore.FirebaseFirestore

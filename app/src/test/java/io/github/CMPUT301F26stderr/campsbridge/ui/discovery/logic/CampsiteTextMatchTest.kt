@@ -1,3 +1,7 @@
+/*
+ * F09 contracts for supported fields, exact substring behavior and locale independence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite

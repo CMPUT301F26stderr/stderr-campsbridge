@@ -1,3 +1,7 @@
+/*
+ * Real owner child navigation retains one saved parent and exposes only completed outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.ui.test.assertCountEquals

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Formats Kotlin sources with the repository-pinned ktlint version and configuration.
+
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

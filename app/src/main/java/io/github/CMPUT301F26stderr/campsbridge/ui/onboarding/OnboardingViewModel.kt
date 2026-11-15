@@ -1,3 +1,7 @@
+/*
+ * Owns one short onboarding flow; account facts remain in the repository.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.lifecycle.SavedStateHandle
@@ -23,7 +27,7 @@ import kotlinx.coroutines.launch
  * @param accounts Profile persistence and capability confirmation.
  * @param preferences Account-local completion and workspace preferences.
  * @param savedState Navigation-owned step and unsaved input; never stores repository objects.
- * @param parseName Reserved pure contract, or null while that implementation is pending.
+ * @param parseName Display-name parser; production supplies the completed helper.
  */
 class OnboardingViewModel(
     private val accountId: String,
@@ -223,7 +227,7 @@ class OnboardingViewModel(
             val record = account ?: accounts.create(accountId, ProfileUpdate(name, null, null))
             account = record
             if (record.name != name) {
-                accounts.updateProfile(accountId, ProfileUpdate(name, record.email, record.phone))
+                accounts.updateName(accountId, name)
                 account = record.copy(name = name)
             }
             moveTo(

@@ -1,5 +1,10 @@
+/*
+ * Coherent sample records shared by the offline workspace.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
+import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
@@ -18,12 +23,14 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
+import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
 import io.github.CMPUT301F26stderr.campsbridge.platform.assets.SceneryPhoto
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
@@ -40,27 +47,24 @@ class DemoPreviewData(
 ) {
     val now: Instant = Instant.parse("2027-05-10T18:00:00Z")
     val clock: Clock = Clock.fixed(now, ZoneOffset.UTC)
-    val ownerId = if (scenario == DemoScenario.OWNER) "demo-account" else "demo-host"
-    val entrantId = if (scenario == DemoScenario.ENTRANT) "demo-account" else "demo-entrant"
+    val ownerId = "demo-host"
+    val coOwnerId = "demo-cohost"
+    val entrantId = "demo-account"
     val photoReferences =
         mapOf(
             ImageTarget(ImageTargetType.CAMPSITE, "demo-river") to SceneryPhoto.JASPER.reference,
             ImageTarget(ImageTargetType.CAMPSITE, "demo-alpine") to SceneryPhoto.BANFF.reference,
             ImageTarget(ImageTargetType.CAMPSITE, "demo-lake") to SceneryPhoto.KANANASKIS.reference,
+            ImageTarget(ImageTargetType.CAMPSITE, "demo-cedar") to SceneryPhoto.JASPER.reference,
         )
     val accounts: List<Account> =
         listOf(
             account(ownerId, "Jordan Lee", setOf(Role.ENTRANT, Role.OWNER)),
+            account(coOwnerId, "Sam Rivera", setOf(Role.ENTRANT, Role.OWNER)),
             account(entrantId, "Alex Chen", setOf(Role.ENTRANT)),
             account("demo-other", "Morgan Park", setOf(Role.ENTRANT)),
-        ) +
-            if (scenario ==
-                DemoScenario.ADMIN
-            ) {
-                listOf(account("demo-account", "Taylor Brooks", setOf(Role.ADMIN)))
-            } else {
-                emptyList()
-            }
+            account("demo-admin", "Taylor Brooks", Role.entries.toSet()),
+        )
     val campsites: List<Campsite> =
         listOf(
             sampleCampsite("demo-river", ownerId).let {
@@ -109,6 +113,16 @@ class DemoPreviewData(
                         ),
                 )
             },
+            sampleCampsite("demo-cedar", coOwnerId).let {
+                it.copy(
+                    details =
+                        it.details.copy(
+                            name = "Cedar Ridge",
+                            nightlyPriceCents = 9000,
+                            description = "A sheltered forest pitch near Jasper's walking trails.",
+                        ),
+                )
+            },
             sampleCampsite("demo-draft", ownerId, published = false).let {
                 it.copy(details = it.details.copy(name = "Forest clearing"))
             },
@@ -120,6 +134,7 @@ class DemoPreviewData(
             lottery("demo-lost", "Long weekend draw"),
             lottery("demo-booked", "Riverside weekend"),
             lottery("demo-past", "Early spring camping", at = now.minusSeconds(1728000)),
+            lottery("demo-shared", "Riverside and cedar weekend").copy(participantOwnerIds = setOf(ownerId, coOwnerId)),
             lottery(
                 "demo-lottery-draft",
                 "Summer under the pines",
@@ -128,18 +143,27 @@ class DemoPreviewData(
     val offers: Map<String, List<LotteryOffer>> =
         lotteries.associate { draw ->
             draw.id to
-                listOf(
-                    LotteryOffer(
-                        "demo-river",
-                        if (draw.id ==
-                            "demo-won"
-                        ) {
-                            (18..21).map(::date)
-                        } else {
-                            (14..21).map(::date)
-                        },
-                    ),
-                )
+                if (draw.id == "demo-shared") {
+                    listOf(
+                        LotteryOffer("demo-river", (20..21).map(::date)),
+                        LotteryOffer("demo-cedar", (20..21).map(::date)),
+                    )
+                } else {
+                    listOf(
+                        LotteryOffer(
+                            "demo-river",
+                            if (draw.id == "demo-past") {
+                                (5..6).map(::date)
+                            } else if (draw.id ==
+                                "demo-won"
+                            ) {
+                                (18..21).map(::date)
+                            } else {
+                                (14..21).map(::date)
+                            },
+                        ),
+                    )
+                }
         }
     val entries: List<LotteryEntry> =
         listOf(
@@ -149,26 +173,85 @@ class DemoPreviewData(
             entry("demo-won", "demo-other", EntryState.LOST),
             entry("demo-lost", entrantId, EntryState.LOST),
             entry("demo-booked", entrantId, EntryState.OFFERED),
+            entry("demo-shared", entrantId, EntryState.OFFERED),
+            entry("demo-shared", "demo-other", EntryState.LOST),
+            entry("demo-past", entrantId, EntryState.OFFERED).copy(
+                joinedAt = now.minusSeconds(1900800),
+                stateChangedAt = now.minusSeconds(1814400),
+            ),
         )
+    val bookedReservationId =
+        io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys.reservation(
+            "demo-booked",
+            entrantId,
+        )
+    val pastReservationId =
+        io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys.reservation(
+            "demo-past",
+            entrantId,
+        )
+    val sharedReservationId = DocumentKeys.reservation("demo-shared", entrantId)
     val reservations: List<Reservation> =
-        listOf(stay("demo-stay", "demo-booked", 15), stay("demo-past-stay", "demo-past", 5))
+        listOf(
+            stay(bookedReservationId, "demo-booked", 15),
+            stay(pastReservationId, "demo-past", 5),
+            stay(sharedReservationId, "demo-shared", 20, "demo-cedar"),
+        )
     val calendars: Map<String, List<CalendarNight>> =
         campsites.associate { site ->
             site.id to
                 (1..31).map { day ->
+                    val date = date(day)
+                    val stay =
+                        reservations.firstOrNull {
+                            it.campsiteId == site.id && date >= it.checkInDate &&
+                                date < it.checkOutDate
+                        }
                     CalendarNight(
-                        date(day),
-                        day in 11..28,
-                        if (site.id == "demo-river" &&
-                            day in 15..16
-                        ) {
-                            "demo-stay"
-                        } else {
-                            null
-                        },
+                        date,
+                        day in 11..28 || stay != null,
+                        stay?.id,
                     )
                 }
         }
+    val reviews: List<Review> =
+        listOf(
+            Review("demo-river", entrantId, 4, null, now.minusSeconds(3600), now.minusSeconds(3600)),
+            Review(
+                "demo-river",
+                "demo-other",
+                5,
+                "Clear directions and plenty of shade.",
+                now.minusSeconds(7200),
+                now.minusSeconds(7200),
+            ),
+            Review(
+                "demo-cedar",
+                entrantId,
+                null,
+                "The host answered our arrival questions quickly.",
+                now.minusSeconds(1800),
+                now.minusSeconds(1800),
+            ),
+        )
+    val messages: List<Message> =
+        listOf(
+            Message(
+                "demo-arrival-question",
+                sharedReservationId,
+                entrantId,
+                "Can we arrive around six?",
+                now.minusSeconds(3600),
+                now.minusSeconds(1900),
+            ),
+            Message(
+                "demo-arrival-reply",
+                sharedReservationId,
+                coOwnerId,
+                "Yes, I'll meet you by the gate.",
+                now.minusSeconds(1800),
+            ),
+        )
     val events: List<Notification> =
         listOf(
             event("demo-notice-won", NotificationType.LOTTERY_WON, SubjectType.LOTTERY, "demo-won"),
@@ -176,7 +259,7 @@ class DemoPreviewData(
                 "demo-notice-stay",
                 NotificationType.RESERVATION_CONFIRMED,
                 SubjectType.RESERVATION,
-                "demo-stay",
+                bookedReservationId,
             ),
             event(
                 "demo-notice-lost",
@@ -195,11 +278,29 @@ class DemoPreviewData(
                 ),
                 now.minusSeconds(7200),
             ),
-        )
+            Notification(
+                "demo-shared-announcement",
+                coOwnerId,
+                NotificationType.OWNER_ANNOUNCEMENT,
+                NotificationSubject(SubjectType.LOTTERY, "demo-shared"),
+                Announcement("Arrival at Cedar Ridge", "Please use the marked entrance by the trail."),
+                now.minusSeconds(5400),
+            ),
+        ) +
+            messages.map { message ->
+                Notification(
+                    DocumentKeys.compound(NotificationType.NEW_MESSAGE.name, message.id),
+                    message.senderId,
+                    NotificationType.NEW_MESSAGE,
+                    NotificationSubject(SubjectType.MESSAGE, message.id),
+                    null,
+                    message.createdAt,
+                )
+            }
     val inboxes: Map<String, List<InboxReceipt>> =
         mapOf(
             entrantId to
-                events.map {
+                events.filter { it.type != NotificationType.NEW_MESSAGE || it.senderId != entrantId }.map {
                     InboxReceipt(
                         it.id,
                         if (it.id ==
@@ -212,6 +313,12 @@ class DemoPreviewData(
                     )
                 },
             ownerId to listOf(InboxReceipt("demo-notice-stay", null)),
+            coOwnerId to
+                messages.filter { it.senderId == entrantId }.map {
+                    InboxReceipt(DocumentKeys.compound(NotificationType.NEW_MESSAGE.name, it.id), it.readAt)
+                },
+            "demo-other" to
+                listOf(InboxReceipt("demo-notice-owner", null), InboxReceipt("demo-shared-announcement", null)),
         )
 
     /** Builds a fixture account with the same identity used by its sample records.
@@ -288,14 +395,16 @@ class DemoPreviewData(
      * @param id Saved reservation identity.
      * @param lotteryId Consumed draw identity.
      * @param day Arrival day in the fixed month.
+     * @param campsiteId Actual selected listing, including another participating owner's campsite.
      */
     private fun stay(
         id: String,
         lotteryId: String,
         day: Int,
+        campsiteId: String = "demo-river",
     ): Reservation {
-        val site = campsites[0]
-        val bookedAt = now.minusSeconds(if (day < 10) 864000 else 86400)
+        val site = campsites.single { it.id == campsiteId }
+        val bookedAt = now.minusSeconds(if (day < 10) 950400 else 86400)
         return Reservation(
             id,
             lotteryId,
@@ -312,7 +421,7 @@ class DemoPreviewData(
             ),
             AcceptedTerms(site.details.rules, BookingPolicy.VERSION, bookedAt),
             bookedAt,
-            Payment(13000, bookedAt),
+            Payment(site.details.nightlyPriceCents * 2, bookedAt),
         )
     }
 

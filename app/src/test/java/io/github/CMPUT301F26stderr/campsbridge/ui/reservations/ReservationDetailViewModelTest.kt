@@ -1,3 +1,7 @@
+/*
+ * Saved history has one cancellable read owner and no current-listing or payment dependency.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.lifecycle.ViewModelStore

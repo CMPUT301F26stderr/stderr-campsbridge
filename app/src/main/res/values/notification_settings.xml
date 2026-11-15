@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="notification_settings_title">Notifications</string>
+    <string name="notification_app_alerts">App alerts</string>
+    <string name="notification_inbox_retained">Your Inbox history is kept when alerts are off.</string>
+    <string name="notification_preference_saving">Saving alert preference…</string>
+    <string name="notification_preference_failed">Could not save your alert preference.</string>
+    <string name="notification_retry_save">Retry save</string>
+    <string name="notification_android_heading">Android notifications</string>
+    <string name="notification_android_allowed">Allowed by Android</string>
+    <string name="notification_android_blocked">Not allowed by Android</string>
+    <string name="notification_channel_absent">The result channel has not been created on this device.</string>
+    <string name="notification_channel_allowed">The result channel is enabled.</string>
+    <string name="notification_channel_blocked">The result channel is blocked in Android settings.</string>
+    <string name="notification_request_permission">Request permission</string>
+    <string name="notification_open_settings">Open Android settings</string>
+    <string name="notification_settings_unavailable">Android notification settings are unavailable.</string>
 </resources>

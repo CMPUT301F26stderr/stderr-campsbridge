@@ -1,3 +1,7 @@
+/*
+ * Gregorian month structure and configurable week-start contracts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import org.junit.Assert.assertEquals

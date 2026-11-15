@@ -1,3 +1,7 @@
+/*
+ * Existing-account hosting contracts; activation is separate from profile editor completion.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.lifecycle.SavedStateHandle

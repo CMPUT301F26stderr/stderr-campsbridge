@@ -1,3 +1,7 @@
+/*
+ * Defines lottery schedules, campsite allocations and entrant participation states.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.lottery
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation
@@ -32,10 +36,10 @@ data class LotteryConfiguration(
 }
 
 /**
- * Owner-created draw with derived lifecycle, waiting count, and optional cancellation.
+ * Shared lottery organized by one owner, with derived lifecycle and retained participation.
  *
  * @param id Lottery document ID.
- * @param ownerId Account ID of the campsite or lottery owner.
+ * @param ownerId Immutable organizer identity.
  * @param title Display title for the lottery or announcement.
  * @param description Listing or lottery description.
  * @param configuration Registration/booking windows and participation limits.
@@ -44,6 +48,7 @@ data class LotteryConfiguration(
  * @param publishedAt First publication time, or null while still a draft.
  * @param drawnAt Draw completion time, or null until all outcomes have committed.
  * @param cancellation Cancellation metadata, or null while not cancelled.
+ * @param participantOwnerIds Collaborating owners, including the immutable organizer.
  */
 data class Lottery(
     val id: String,
@@ -56,10 +61,12 @@ data class Lottery(
     val publishedAt: Instant? = null,
     val drawnAt: Instant? = null,
     val cancellation: Cancellation? = null,
+    val participantOwnerIds: Set<String> = setOf(ownerId),
 ) {
     init {
         require(title.isNotBlank())
         require(waitingCount >= 0)
+        require(ownerId in participantOwnerIds)
     }
 
     /**

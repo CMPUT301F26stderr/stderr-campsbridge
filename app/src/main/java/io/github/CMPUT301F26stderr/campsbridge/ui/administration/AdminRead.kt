@@ -1,3 +1,7 @@
+/*
+ * Distinguishes loading, missing, successful and failed admin inspection reads.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 /** Separates confirmed absence from unresolved or failed inspection reads.

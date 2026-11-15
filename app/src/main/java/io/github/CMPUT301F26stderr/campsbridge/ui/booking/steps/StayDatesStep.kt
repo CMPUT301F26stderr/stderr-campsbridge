@@ -1,3 +1,7 @@
+/*
+ * Displays booking dates, inventory and deadline feedback through the shared calendar.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps
 
 import androidx.compose.foundation.layout.Arrangement
@@ -23,17 +27,17 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInvent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.StayDateRangeCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 
 /** Prototype 07.02 with shared calendar, actual deadline and explicit occupied-night feedback.
  * @param state Current draft and confirmed inventory; no writes occur in this content.
  * @param onMonth Changes the displayed month only.
- * @param onDate Delivers a selectable cell to the parent.
+ * @param onDatesChange Updates arrival and exclusive checkout together.
  * @param onClear Clears all endpoints.
  * @param onRetryVisible Retries only failed displayed inventory.
  * @param onRetrySelected Retries only failed stay confirmation.
@@ -43,7 +47,7 @@ import java.time.ZoneId
 fun StayDatesStep(
     state: BookingUiState.Content,
     onMonth: (YearMonth) -> Unit,
-    onDate: (LocalDate) -> Unit,
+    onDatesChange: (LocalDate?, LocalDate?) -> Unit,
     onClear: () -> Unit,
     onRetryVisible: () -> Unit,
     onRetrySelected: () -> Unit,
@@ -60,7 +64,6 @@ fun StayDatesStep(
                 R.string.booking_deadline,
                 formatDateTime(
                     state.lottery.configuration.bookingClosesAt,
-                    ZoneId.of(state.campsite.details.timeZone),
                     locale,
                 ),
             ),
@@ -80,10 +83,12 @@ fun StayDatesStep(
         }
 
         CalendarInventoryRead.Failure -> {
-            Text(stringResource(R.string.booking_inventory_failed))
-            TextButton(onRetryVisible, enabled = enabled) {
-                Text(stringResource(R.string.booking_retry_visible))
-            }
+            FailureContent(
+                stringResource(R.string.booking_inventory_failed),
+                onRetryVisible,
+                enabled,
+                retryLabel = stringResource(R.string.booking_retry_visible),
+            )
         }
 
         else -> {
@@ -93,10 +98,12 @@ fun StayDatesStep(
             }
         }
     }
-    CampsiteCalendar(
+    StayDateRangeCalendar(
         bookingCalendarState(state),
+        state.draft.checkIn,
+        state.draft.checkOut,
         onMonth,
-        onDate,
+        onDatesChange,
         Modifier.testTag("booking-calendar"),
         enabled = enabled,
     )
@@ -139,9 +146,11 @@ fun StayDatesStep(
         Text(stringResource(R.string.booking_selected_loading))
     }
     if (state.calendar.selected == CalendarInventoryRead.Failure) {
-        Text(stringResource(R.string.booking_selected_inventory_failed))
-        TextButton(onRetrySelected, enabled = enabled) {
-            Text(stringResource(R.string.booking_retry_selected))
-        }
+        FailureContent(
+            stringResource(R.string.booking_selected_inventory_failed),
+            onRetrySelected,
+            enabled,
+            retryLabel = stringResource(R.string.booking_retry_selected),
+        )
     }
 }

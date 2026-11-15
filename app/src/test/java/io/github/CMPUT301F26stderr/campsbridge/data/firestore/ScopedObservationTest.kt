@@ -1,3 +1,7 @@
+/*
+ * Dynamic query membership owns and releases every related subscription.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.firestore
 
 import kotlinx.coroutines.CompletableDeferred

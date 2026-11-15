@@ -1,3 +1,7 @@
+/*
+ * Tests read-only recipient facts, independent retries and selected-child lifetimes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudience
@@ -123,6 +127,35 @@ class NotificationLogAudienceTest {
             assertEquals(eventReads, f.notifications.getRequests)
             assertEquals(1, f.listRequests)
             assertEquals(2, f.notifications.audienceRequests.size)
+        }
+
+    /** Refresh replaces captured receipt facts without restarting event or list reads. */
+    @Test fun loadedAudienceRefreshesIndependently() =
+        logTest { f ->
+            val event = logEvent()
+            f.notifications.records.value = listOf(event)
+            f.notifications.getAudienceHandler = { NotificationAudience.NoRecordedInformation }
+            val model = f.model()
+            runCurrent()
+            model.selectEvent(event.id)
+            model.setAudienceVisible(true)
+            runCurrent()
+            val eventReads = f.notifications.getRequests.toList()
+            val recorded =
+                NotificationAudience.Recorded(
+                    listOf(
+                        NotificationAudienceMember("read", NotificationAudienceDelivery.DELIVERED, CampingFixtures.now),
+                    ),
+                )
+            f.notifications.getAudienceHandler = { recorded }
+            model.retryAudience()
+            model.retryAudience()
+            runCurrent()
+            assertEquals(NotificationLogAudienceState.Content(event.id, recorded), model.audience.value)
+            assertEquals(eventReads, f.notifications.getRequests)
+            assertEquals(1, f.listRequests)
+            assertEquals(listOf(event.id, event.id), f.notifications.audienceRequests)
+            assertTrue(f.notifications.readRequests.isEmpty())
         }
 
     /** Leaving the audience cancels its work and ignores even a noncooperative late reply. */

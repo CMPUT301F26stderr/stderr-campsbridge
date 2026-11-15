@@ -1,3 +1,8 @@
+/*
+ * Configures the Android app, signed release build, dependencies, test suites, coverage and generated API
+ * documentation.
+ */
+
 plugins {
     jacoco
     alias(libs.plugins.android.application)
@@ -43,6 +48,8 @@ android {
             matchingFallbacks += "debug"
         }
         release {
+            // Use the existing installation key for the trusted Halfway distribution.
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = false
             }
@@ -129,6 +136,11 @@ dokka {
 }
 
 dependencies {
+    implementation(libs.wechat.qr.opencv)
+    implementation(libs.wechat.qr.detector)
+    implementation(libs.wechat.qr.scanning)
+    runtimeOnly(libs.wechat.qr.arm64)
+    runtimeOnly(libs.wechat.qr.x64)
     implementation(libs.google.oss.licenses)
     implementation(libs.maps.compose)
     implementation(libs.maps.sdk)
@@ -147,6 +159,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
@@ -181,15 +194,14 @@ tasks.register<Test>("firebaseIntegrationTest") {
         "FIRESTORE_EMULATOR_HOST",
         "FIREBASE_AUTH_EMULATOR_HOST",
         "FIREBASE_STORAGE_EMULATOR_HOST",
+        "FUNCTIONS_EMULATOR_HOST",
     ).forEach { variable ->
         providers.environmentVariable(variable).orNull?.let { environment(variable, it) }
     }
     maxParallelForks = 1
     maxHeapSize = "2g"
     outputs.upToDateWhen { false }
-    systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
     jvmArgs(
-        "--enable-native-access=ALL-UNNAMED",
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
         "--add-opens=java.base/java.util=ALL-UNNAMED",
         "--add-opens=java.base/java.io=ALL-UNNAMED",
@@ -201,6 +213,9 @@ tasks.register<Test>("firebaseIntegrationTest") {
 }
 
 tasks.withType<Test>().configureEach {
+    // Keep runtime SDK downloads off the rate-limited Maven Central endpoints.
+    systemProperty("robolectric.dependency.repo.url", "https://maven-central.storage-download.googleapis.com/maven2")
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
     if (name != "firebaseIntegrationTest") exclude("**/integration/firebase/**")
 }
 

@@ -1,3 +1,7 @@
+/*
+ * Supplies the shared Inbox/OS event title without doing reads or replacing owner-supplied text.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications
 
 import android.content.Context
@@ -32,6 +36,10 @@ fun notificationText(
     event.announcement?.let { return NotificationText(it.title, it.body) }
     val body =
         when (val subject = content.subject) {
+            is NotificationSubjectContent.MessageContent -> {
+                subject.message.body
+            }
+
             is NotificationSubjectContent.LotteryContent -> {
                 subject.lottery.title
             }

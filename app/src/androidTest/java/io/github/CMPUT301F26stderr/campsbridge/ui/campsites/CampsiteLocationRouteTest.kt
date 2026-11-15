@@ -1,3 +1,7 @@
+/*
+ * Restored child routes must explain unresolved parent facts and allow return/retry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.ui.test.assertIsDisplayed

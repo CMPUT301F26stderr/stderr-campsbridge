@@ -1,3 +1,7 @@
+/*
+ * Firebase-backed implementation for attachment metadata, uploaded blobs, and retryable publication/cleanup.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.image
 
 import com.google.firebase.firestore.FirebaseFirestore

@@ -1,0 +1,12 @@
+<resources>
+    <plurals name="allocation_offered_nights">
+        <item quantity="one">%d offered night</item>
+        <item quantity="other">%d offered nights</item>
+    </plurals>
+    <string name="feedback_rate_value">Rate %1$d out of 5</string>
+    <string name="feedback_rating_value">Rating: %1$d out of 5</string>
+    <string name="feedback_author_unavailable">Unavailable profile (%1$s)</string>
+    <string name="message_sent">Sent</string>
+    <string name="message_received">Received</string>
+    <string name="message_recipient">To: %1$s</string>
+</resources>

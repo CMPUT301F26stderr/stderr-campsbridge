@@ -1,3 +1,7 @@
+/*
+ * Tests profile persistence and independent update boundaries through real Firebase clients.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.account
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings

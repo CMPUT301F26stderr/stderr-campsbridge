@@ -1,3 +1,7 @@
+/*
+ * Ordinary controlled input examples; local state simulates presentation only.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.compose.foundation.layout.Arrangement

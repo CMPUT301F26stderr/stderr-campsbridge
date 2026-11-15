@@ -1,3 +1,7 @@
+/*
+ * Event and delivery-job writes that participate in the caller's transaction.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.notification
 
 import com.google.firebase.firestore.FirebaseFirestore

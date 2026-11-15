@@ -1,3 +1,7 @@
+/*
+ * Contract-first owner child reads keep entries, profile labels and result filtering independent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
@@ -64,7 +68,7 @@ class LotteryParticipantsControllerTest {
             reader.setVisible(true)
             for (value in listOf(
                 null,
-                parent.copy(ownerId = "other"),
+                parent.copy(ownerId = "other", participantOwnerIds = setOf("other")),
                 parent.copy(publishedAt = null),
                 parent.copy(id = "other"),
             )) {

@@ -1,3 +1,7 @@
+/*
+ * Controlled read boundary; writes are deliberately unsupported until a test needs them.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

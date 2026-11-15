@@ -1,3 +1,7 @@
+/*
+ * Binds graph-owned inputs and only the currently visible thumbnail readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -16,12 +20,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  * @param model Browse state owned by the admin graph.
  * @param onProfile Opens a profile by account ID.
  * @param onImage Opens an image slot.
+ * @param onCampsite Opens a saved campsite in read-only inspection.
  */
 @Composable
 fun AdminBrowseRoute(
     model: AdminBrowseViewModel,
     onProfile: (String) -> Unit,
     onImage: (ImageTarget) -> Unit,
+    onCampsite: (String) -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val photos by model.photos.collectAsStateWithLifecycle()
@@ -83,5 +89,6 @@ fun AdminBrowseRoute(
         onRetryThumbnail = model::retryThumbnail,
         onProfile = onProfile,
         onImage = onImage,
+        onCampsite = onCampsite,
     )
 }

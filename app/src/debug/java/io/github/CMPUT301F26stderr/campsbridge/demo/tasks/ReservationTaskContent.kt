@@ -1,3 +1,7 @@
+/*
+ * Opens the real saved pages against the task's existing local aggregate.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.compose.runtime.Composable

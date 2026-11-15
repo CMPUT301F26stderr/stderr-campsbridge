@@ -1,3 +1,7 @@
+/*
+ * Displays booked history, saved-page links and explicit cancellation confirmation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +18,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancell
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.StaySummary
@@ -39,6 +44,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param onConfirmCancel Confirms one guarded operation.
  * @param onDismissCancel Dismisses without writing.
  * @param onCheckCancellation Reads an uncertain result.
+ * @param onMessages Opens the saved participant conversation when registered.
  */
 @Composable
 fun ReservationDetailScreen(
@@ -55,6 +61,7 @@ fun ReservationDetailScreen(
     onConfirmCancel: () -> Unit = {},
     onDismissCancel: () -> Unit = {},
     onCheckCancellation: () -> Unit = {},
+    onMessages: (() -> Unit)? = null,
 ) {
     ReservationRecordScreen(
         R.string.reservation_title,
@@ -67,7 +74,7 @@ fun ReservationDetailScreen(
     ) { record ->
         Text(
             reservationStatusLabel(record),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
         )
         ReservationReference(record)
@@ -78,8 +85,13 @@ fun ReservationDetailScreen(
             record.guestCount,
             record.payment.amountCents,
         )
-        NavigationRow(stringResource(R.string.reservation_payment), onPayment)
-        NavigationRow(stringResource(R.string.reservation_accepted_terms), onTerms)
+        NavigationGroup(
+            buildList<@Composable () -> Unit> {
+                if (onMessages != null) add { NavigationRow(stringResource(R.string.conversation_title), onMessages) }
+                add { NavigationRow(stringResource(R.string.reservation_payment), onPayment) }
+                add { NavigationRow(stringResource(R.string.reservation_accepted_terms), onTerms) }
+            },
+        )
         SummarySection(stringResource(R.string.reservation_stay_details)) {
             DetailRow(
                 stringResource(R.string.campsite_location),

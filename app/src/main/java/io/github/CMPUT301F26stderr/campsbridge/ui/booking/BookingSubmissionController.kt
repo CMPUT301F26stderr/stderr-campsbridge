@@ -1,3 +1,7 @@
+/*
+ * Owns one guarded save, its uncertainty marker and the actual saved-page handoff.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

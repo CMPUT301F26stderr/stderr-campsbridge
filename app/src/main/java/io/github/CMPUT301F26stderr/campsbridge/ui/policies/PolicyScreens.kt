@@ -1,6 +1,9 @@
+/*
+ * Renders packaged policy lists and version-specific readers with caller-owned navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.policies
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -30,13 +34,14 @@ fun PoliciesScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(onBack = onBack)
     AppScreen(stringResource(R.string.policies_title), modifier, onBack) {
-        NavigationRow(
-            stringResource(R.string.onboarding_guidelines),
-            { onOpen(PolicyId.GUIDELINES) },
+        NavigationGroup(
+            listOf(
+                { NavigationRow(stringResource(R.string.onboarding_guidelines), { onOpen(PolicyId.GUIDELINES) }) },
+                { NavigationRow(stringResource(R.string.refund_policy_title), { onOpen(PolicyId.REFUND) }) },
+            ),
+            Modifier.padding(top = Spacing.medium),
         )
-        NavigationRow(stringResource(R.string.refund_policy_title), { onOpen(PolicyId.REFUND) })
     }
 }
 
@@ -51,7 +56,6 @@ fun PolicyReaderScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(onBack = onBack)
     AppScreen(
         stringResource(content?.title ?: R.string.policy_unavailable_title),
         modifier,

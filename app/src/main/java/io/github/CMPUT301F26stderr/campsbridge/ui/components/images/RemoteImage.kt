@@ -1,3 +1,7 @@
+/*
+ * Loads supplied image references and renders image states without repository lookups.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.images
 
 import androidx.compose.foundation.Image

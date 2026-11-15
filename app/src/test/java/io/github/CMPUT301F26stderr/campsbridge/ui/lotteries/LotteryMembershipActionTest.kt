@@ -1,3 +1,7 @@
+/*
+ * Contract-first membership actions use current facts, one command and observed confirmation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.ViewModelStore

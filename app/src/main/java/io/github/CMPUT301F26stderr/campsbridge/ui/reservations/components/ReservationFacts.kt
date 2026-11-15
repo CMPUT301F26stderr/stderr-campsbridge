@@ -1,3 +1,7 @@
+/*
+ * Displays retained reservation identity, stay facts and cancellation history without mutation actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.runtime.Composable
@@ -10,7 +14,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import java.time.Instant
-import java.time.ZoneId
 
 /** Identifies the exact retained record on each historical page.
  * @param record Complete saved reservation.
@@ -21,7 +24,7 @@ internal fun ReservationReference(record: Reservation) {
         DetailRow(stringResource(R.string.reservation_reference), record.id)
         DetailRow(
             stringResource(R.string.reservation_booked_at),
-            reservationTime(record, record.createdAt),
+            reservationTime(record.createdAt),
         )
     }
 }
@@ -35,7 +38,7 @@ internal fun ReservationCancellationDetails(record: Reservation) {
     SummarySection(stringResource(R.string.reservation_cancellation)) {
         DetailRow(
             stringResource(R.string.reservation_cancelled_at),
-            reservationTime(record, cancellation.at),
+            reservationTime(cancellation.at),
         )
         cancellation.reason?.takeIf { it.isNotBlank() }?.let { reason ->
             DetailRow(stringResource(R.string.reservation_reason), reason)
@@ -57,17 +60,12 @@ internal fun reservationStatusLabel(record: Reservation): String =
         },
     )
 
-/** Formats a saved timestamp in its booked campsite's explicit timezone.
- * @param record Source of the historical timezone.
+/** Formats a saved event timestamp in the shared display zone.
  * @param instant Saved event time.
  */
 @Composable
-internal fun reservationTime(
-    record: Reservation,
-    instant: Instant,
-): String =
+internal fun reservationTime(instant: Instant): String =
     formatDateTime(
         instant,
-        ZoneId.of(record.bookedCampsite.timeZone),
         LocalConfiguration.current.locales[0],
     )

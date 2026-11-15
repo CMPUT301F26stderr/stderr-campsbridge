@@ -1,3 +1,7 @@
+/*
+ * Admin browse tabs, search and rows; the route owns the ViewModel and navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.clickable
@@ -5,25 +9,31 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,6 +52,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppSearchField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -63,6 +74,7 @@ private const val METADATA_SEPARATOR = " · "
  * @param onRetryThumbnail Retries one failed thumbnail.
  * @param onProfile Opens a profile by account ID.
  * @param onImage Opens an image slot.
+ * @param onCampsite Opens a saved campsite in read-only inspection.
  * @param modifier Caller layout.
  */
 @Composable
@@ -79,6 +91,7 @@ fun AdminBrowseScreen(
     onRetryThumbnail: (ImageTarget) -> Unit,
     onProfile: (String) -> Unit,
     onImage: (ImageTarget) -> Unit,
+    onCampsite: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -91,16 +104,15 @@ fun AdminBrowseScreen(
                 )
             }
         }
-        OutlinedTextField(
+        AppSearchField(
             state.query,
             onQuery,
-            Modifier.fillMaxWidth().padding(Spacing.medium),
-            label = { Text(stringResource(R.string.admin_search)) },
-            singleLine = true,
+            stringResource(R.string.admin_search),
+            Modifier.fillMaxWidth().padding(vertical = Spacing.small),
         )
         if (state.tab == AdminBrowseTab.PROFILES) {
             FlowRow(
-                Modifier.fillMaxWidth().padding(horizontal = Spacing.medium),
+                Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
                 (listOf<Role?>(null) + Role.entries).forEach { role ->
@@ -181,7 +193,7 @@ fun AdminBrowseScreen(
                                 ).joinToString(METADATA_SEPARATOR),
                                 photos[target] ?: ImageSlotState(),
                                 { onRetryThumbnail(target) },
-                                { onImage(target) },
+                                { onCampsite(campsite.id) },
                             )
                         }
                     }
@@ -228,7 +240,7 @@ private fun <T> BrowseRows(
  */
 @Composable
 private fun BrowseFeedback(content: @Composable () -> Unit) {
-    Box(Modifier.padding(Spacing.medium)) { content() }
+    Box(Modifier.padding(vertical = Spacing.medium)) { content() }
 }
 
 /** One record row; a failed thumbnail stays inside its slot and keeps the metadata visible.
@@ -246,11 +258,30 @@ private fun BrowseRow(
     retry: () -> Unit,
     open: () -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().clickable(onClick = open).padding(Spacing.medium)) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Text(metadata)
-        AttachmentImage(photo, title, retry, Modifier.size(96.dp))
-        HorizontalDivider()
+    Column {
+        Row(
+            Modifier.fillMaxWidth().clickable(onClick = open).padding(vertical = Spacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.width(64.dp)) {
+                AttachmentImage(photo, title, retry, Modifier.size(64.dp).clip(MaterialTheme.shapes.small))
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    metadata,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
@@ -337,6 +368,7 @@ private fun AdminBrowsePreviewFrame(
                 rememberLazyListState(),
                 rememberLazyListState(),
                 rememberLazyGridState(),
+                {},
                 {},
                 {},
                 {},

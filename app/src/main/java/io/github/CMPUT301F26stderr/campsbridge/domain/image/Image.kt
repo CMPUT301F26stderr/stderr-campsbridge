@@ -1,3 +1,7 @@
+/*
+ * Defines uploaded-image metadata and stable account or campsite attachment targets.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.image
 
 import java.time.Instant

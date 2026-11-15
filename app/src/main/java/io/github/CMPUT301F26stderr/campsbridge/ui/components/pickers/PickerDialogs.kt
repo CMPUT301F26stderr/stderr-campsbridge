@@ -1,3 +1,7 @@
+/*
+ * Hosts Material date, range and time pickers whose values apply only on confirmation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers
 
 import androidx.compose.foundation.layout.Column

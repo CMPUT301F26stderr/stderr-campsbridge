@@ -1,3 +1,7 @@
+/*
+ * Exercises the production owner graph with controlled saved records and real Back/tab wiring.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.ui.test.assertIsDisplayed

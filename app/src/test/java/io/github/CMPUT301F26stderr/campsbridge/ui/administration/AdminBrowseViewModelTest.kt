@@ -1,3 +1,7 @@
+/*
+ * Tests read-only admin browsing with independent sources and injected search or role predicates.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

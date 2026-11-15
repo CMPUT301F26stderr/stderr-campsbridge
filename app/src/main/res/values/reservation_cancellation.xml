@@ -10,6 +10,7 @@
     <string name="reservation_reject_consequence">Reject the saved stay for camper %1$s. Their win remains used.</string>
     <string name="reservation_reject_without_record">Reject this saved stay. The camper cannot reuse this win.</string>
     <string name="reservation_refund_consequence">Full simulated refund will be recorded if cancellation is confirmed.</string>
+    <string name="reservation_refund_amount_consequence">Full simulated refund of %1$s will be recorded if cancellation is confirmed.</string>
     <string name="reservation_cancelling">Cancelling reservation…</string>
     <string name="reservation_rejecting">Rejecting reservation…</string>
     <string name="reservation_checking">Checking the saved reservation…</string>

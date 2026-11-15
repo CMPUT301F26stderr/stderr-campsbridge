@@ -1,3 +1,7 @@
+/*
+ * Presents startup loading/failure with an explicit retry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.runtime.Composable

@@ -1,3 +1,7 @@
+/*
+ * Packaged topic/version contracts; copy meaning is also reviewed against US 01.11.01.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.policies
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy

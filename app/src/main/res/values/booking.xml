@@ -67,4 +67,5 @@
     <string name="booking_rejected_quote">The price or rules changed. Review and accept the current details.</string>
     <string name="booking_rejected">The reservation was not made. Review your stay and try again.</string>
     <string name="booking_recheck_failed">Could not check for an existing reservation. Retry before confirming.</string>
+    <string name="booking_payment_notice">Confirming creates a simulated payment. No banking information is collected.</string>
 </resources>

@@ -1,3 +1,7 @@
+/*
+ * Supplies a passive complete record to main-source previews, without a fake backend.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.preview
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.AcceptedTerms

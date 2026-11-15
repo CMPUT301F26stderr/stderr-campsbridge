@@ -1,3 +1,7 @@
+/*
+ * Verifies saved sample relationships independently of the presentation or missing helpers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

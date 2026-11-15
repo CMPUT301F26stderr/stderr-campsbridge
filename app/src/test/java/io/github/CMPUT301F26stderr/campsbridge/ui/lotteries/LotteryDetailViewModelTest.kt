@@ -1,3 +1,7 @@
+/*
+ * Tests saved-owner lottery reads and independently recoverable child sources.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.ViewModelStore
@@ -139,7 +143,8 @@ class LotteryDetailViewModelTest {
             try {
                 val model = model()
                 runCurrent()
-                lotteries.records.value = listOf(record.copy(ownerId = "foreign"))
+                lotteries.records.value =
+                    listOf(record.copy(ownerId = "foreign", participantOwnerIds = setOf("foreign")))
                 runCurrent()
                 assertEquals(LotteryDetailUiState.Unavailable, model.state.value)
                 assertEquals(0, lotteries.activeOfferObservers)

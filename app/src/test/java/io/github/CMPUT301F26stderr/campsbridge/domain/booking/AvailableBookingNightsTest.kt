@@ -1,3 +1,7 @@
+/*
+ * F15 intersects actual lottery allocation and free inventory, without stay or time rules.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

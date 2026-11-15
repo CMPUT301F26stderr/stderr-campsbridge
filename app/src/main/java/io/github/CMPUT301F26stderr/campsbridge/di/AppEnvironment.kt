@@ -1,3 +1,7 @@
+/*
+ * Explicit client destination; cloud configuration comes from google-services resources.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 /** Explicit client destination; cloud configuration comes from google-services resources. */

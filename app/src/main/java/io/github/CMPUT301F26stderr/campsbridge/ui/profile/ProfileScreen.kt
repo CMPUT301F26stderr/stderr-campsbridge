@@ -1,3 +1,7 @@
+/*
+ * Shows the profile menu beneath the workspace's shared frame.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +36,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AccountAvatar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
@@ -57,7 +63,7 @@ fun ProfileScreen(
     onContactDetails: () -> Unit = {},
     onSettings: (() -> Unit)? = null,
     photoReference: String? = null,
-    workspaceContent: @Composable () -> Unit = {},
+    workspaceContent: (@Composable () -> Unit)? = null,
     onStartHosting: (() -> Unit)? = null,
 ) {
     ProfileStateContent(state, onRetry, modifier) { content ->
@@ -73,33 +79,45 @@ fun ProfileScreen(
                 textAlign = TextAlign.Center,
             )
         }
-        Column {
-            NavigationRow(
-                stringResource(R.string.personal_details),
-                onPersonalDetails,
-                supportingText = stringResource(R.string.personal_details_summary),
-                icon = Icons.Default.Person,
-            )
-            NavigationRow(
-                stringResource(R.string.contact_details),
-                onContactDetails,
-                supportingText = stringResource(R.string.contact_details_summary),
-                icon = Icons.Default.Email,
-            )
-            workspaceContent()
-            if (Role.OWNER !in content.account.roles && onStartHosting != null) {
-                NavigationRow(stringResource(R.string.onboarding_host_label), onStartHosting)
-            }
-            if (onSettings !=
-                null
-            ) {
-                NavigationRow(
-                    stringResource(R.string.settings_title),
-                    onSettings,
-                    icon = Icons.Default.Settings,
-                )
-            }
-        }
+        NavigationGroup(
+            buildList<@Composable () -> Unit> {
+                add {
+                    NavigationRow(
+                        stringResource(R.string.personal_details),
+                        onPersonalDetails,
+                        supportingText = stringResource(R.string.personal_details_summary),
+                        icon = Icons.Default.Person,
+                    )
+                }
+                add {
+                    NavigationRow(
+                        stringResource(R.string.contact_details),
+                        onContactDetails,
+                        supportingText = stringResource(R.string.contact_details_summary),
+                        icon = Icons.Default.Email,
+                    )
+                }
+                workspaceContent?.let { add(it) }
+                if (Role.OWNER !in content.account.roles && onStartHosting != null) {
+                    add {
+                        NavigationRow(
+                            stringResource(R.string.onboarding_host_label),
+                            onStartHosting,
+                            icon = Icons.Default.Home,
+                        )
+                    }
+                }
+                if (onSettings != null) {
+                    add {
+                        NavigationRow(
+                            stringResource(R.string.settings_title),
+                            onSettings,
+                            icon = Icons.Default.Settings,
+                        )
+                    }
+                }
+            },
+        )
     }
 }
 

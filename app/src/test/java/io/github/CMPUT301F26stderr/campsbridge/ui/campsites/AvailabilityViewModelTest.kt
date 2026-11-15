@@ -1,3 +1,7 @@
+/*
+ * Tests availability editor state with controlled inventory and comparison inputs.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * Actual account-root Inbox and saved targets preserve explicit action and source lifetimes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.ui.test.assertHasNoClickAction
@@ -17,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
@@ -74,8 +79,8 @@ class InboxNavigationTest {
         compose.runOnIdle { host.close() }
     }
 
-    /** Default limited history is genuinely empty and does not invent an unread total. */
-    @Test fun emptyInboxKeepsItsPrimaryFrameAndExplicitPendingHelpers() {
+    /** Confirmed empty history displays its actual unread total in the primary frame. */
+    @Test fun emptyInboxKeepsItsPrimaryFrameAndConfirmedUnreadCount() {
         start()
         compose.onNode(hasText("Inbox") and hasClickAction()).assertIsSelected()
         compose.onNodeWithText("No notifications yet.").assertIsDisplayed()
@@ -83,7 +88,7 @@ class InboxNavigationTest {
             .onNodeWithText(
                 "Notification ordering and unread count are pending in this build.",
             ).assertDoesNotExist()
-        compose.onNodeWithText("0 unread").assertDoesNotExist()
+        compose.onNodeWithText("0 unread").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, host.inboxCreations)
             assertEquals(listOf("account-1"), host.notifications.inboxRequests)
@@ -243,6 +248,9 @@ class InboxNavigationTest {
      * acknowledgement.
      */
     @Test fun unsupportedMessageHistoryHasNoClickableTarget() {
+        val reservation = previewReservation().copy(id = "message-stay", entrantId = "account-1")
+        host.bookings.records.value = listOf(reservation)
+        host.messages.records.value = listOf(Message("thread", reservation.id, "owner", "Use the east gate", now))
         val event =
             winner.copy(
                 id = "message",
@@ -277,7 +285,7 @@ class InboxNavigationTest {
         compose.onNodeWithTag("inbox-receipt-missing-event").assertDoesNotExist()
         compose.runOnIdle {
             assertEquals(listOf("missing-event", "missing-event"), host.notifications.getRequests)
-            assertEquals(listOf("account-1", "account-1"), host.notifications.inboxRequests)
+            assertEquals(listOf("account-1"), host.notifications.inboxRequests)
             assertTrue(host.notifications.readRequests.isEmpty())
         }
     }

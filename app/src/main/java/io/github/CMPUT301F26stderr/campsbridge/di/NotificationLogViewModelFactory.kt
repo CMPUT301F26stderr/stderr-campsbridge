@@ -1,3 +1,7 @@
+/*
+ * Supplies the read-only log with the host's existing event and context readers.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider
@@ -16,7 +20,12 @@ fun notificationLogViewModelFactory(services: AppServices): ViewModelProvider.Fa
             val repositories = services.repositories
             NotificationLogViewModel(
                 repositories.notifications,
-                NotificationContentLoader(repositories.notifications, repositories.lotteries, repositories.bookings),
+                NotificationContentLoader(
+                    repositories.notifications,
+                    repositories.lotteries,
+                    repositories.bookings,
+                    repositories.messages,
+                ),
                 createSavedStateHandle(),
             )
         }

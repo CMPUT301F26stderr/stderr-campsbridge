@@ -1,3 +1,7 @@
+/*
+ * Tests cancellation coordination with controlled repository acknowledgements and saved-record recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
 
 import androidx.lifecycle.SavedStateHandle

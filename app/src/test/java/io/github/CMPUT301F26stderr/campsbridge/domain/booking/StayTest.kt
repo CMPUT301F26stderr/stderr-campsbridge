@@ -1,3 +1,7 @@
+/*
+ * Tests consecutive local stay dates and booking value boundaries.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures

@@ -1,3 +1,7 @@
+/*
+ * Application-scoped persistence composition root; platform services are wired in AppServices.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.FirestoreAccountRepository
@@ -44,16 +48,16 @@ class AppContainer(
         FirestoreCampsiteRepository(clients.firestore, clock)
     private val lotteryImplementation = FirestoreLotteryRepository(clients.firestore, clock, random)
     override val lotteries: LotteryRepository = lotteryImplementation
-    override val bookings: BookingRepository = FirestoreBookingRepository(clients.firestore, clock)
+    override val bookings: BookingRepository = FirestoreBookingRepository(clients.firestore, clock, clients.functions)
     private val imageImplementation =
         FirebaseImageRepository(clients.firestore, clients.storage, clock)
     override val images: ImageRepository = imageImplementation
     override val reviews: ReviewRepository = FirestoreReviewRepository(clients.firestore, clock)
     override val notifications: NotificationRepository =
         FirestoreNotificationRepository(clients.firestore, clock)
-    val messages: MessageRepository = FirestoreMessageRepository(clients.firestore, clock)
-    val moderation: ModerationRepository =
-        FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock)
+    override val messages: MessageRepository = FirestoreMessageRepository(clients.firestore, clock)
+    override val moderation: ModerationRepository =
+        FirestoreModerationRepository(clients.firestore, images, lotteryImplementation, clock, clients.functions)
 
     override val pendingWork: PendingWork =
         SessionPendingWork(
@@ -61,7 +65,7 @@ class AppContainer(
             clock,
         )
 
-    val maintenance =
+    override val maintenance =
         AdminMaintenance(
             clients.firestore,
             moderation,

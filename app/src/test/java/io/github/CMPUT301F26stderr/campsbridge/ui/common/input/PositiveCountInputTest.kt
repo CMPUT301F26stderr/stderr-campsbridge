@@ -1,3 +1,7 @@
+/*
+ * Whole-count input contracts independent of a form or repository.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.input
 
 import org.junit.Assert.assertEquals

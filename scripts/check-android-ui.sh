@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Runs Android interaction tests on an isolated emulator with the selected pinned test configuration.
+
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

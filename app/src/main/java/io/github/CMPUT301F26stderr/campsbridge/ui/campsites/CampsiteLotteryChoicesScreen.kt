@@ -1,3 +1,7 @@
+/*
+ * Same-parent choice list; an allocation failure cannot hide a real associated lottery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement
@@ -90,7 +94,7 @@ internal fun CampsiteLotteryChoicesScreen(
                                 LotteryCard(
                                     choice.lottery,
                                     stringResource(R.string.lottery_registration_open),
-                                    campsiteLotteryDeadline(choice.lottery, site.details.timeZone),
+                                    campsiteLotteryDeadline(choice.lottery),
                                     { onOpenLottery(choice.lottery.id) },
                                     supportingContent = {
                                         when (val offer = choice.offer) {

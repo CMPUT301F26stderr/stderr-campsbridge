@@ -1,3 +1,7 @@
+/*
+ * Coordinates month inventory reads, local offer edits and explicit saves for campsite availability editors.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

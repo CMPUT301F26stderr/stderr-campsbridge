@@ -1,3 +1,7 @@
+/*
+ * Scoped command owner; its parent supplies observations and owns every query and deadline.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

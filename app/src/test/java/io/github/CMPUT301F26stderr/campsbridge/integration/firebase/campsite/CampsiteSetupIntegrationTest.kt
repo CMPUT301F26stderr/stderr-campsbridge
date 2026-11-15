@@ -1,3 +1,7 @@
+/*
+ * Exercises the real setup controller through authenticated Firestore and Storage repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.campsite
 
 import androidx.lifecycle.SavedStateHandle

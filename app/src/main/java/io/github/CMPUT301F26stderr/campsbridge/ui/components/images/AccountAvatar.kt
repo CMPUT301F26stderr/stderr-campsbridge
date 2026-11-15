@@ -1,3 +1,7 @@
+/*
+ * Circular account imagery using the existing loader and a native person fallback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.images
 
 import androidx.compose.foundation.layout.Box

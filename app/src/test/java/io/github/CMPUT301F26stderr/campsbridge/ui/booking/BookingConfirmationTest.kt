@@ -1,3 +1,7 @@
+/*
+ * The parent owns one guarded attempt, primitive uncertainty and explicit read-only recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.lifecycle.SavedStateHandle

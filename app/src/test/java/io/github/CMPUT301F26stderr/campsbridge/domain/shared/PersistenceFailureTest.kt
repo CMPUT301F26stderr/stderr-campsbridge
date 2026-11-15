@@ -1,3 +1,7 @@
+/*
+ * Covers the existing typed invariant guard used by repository operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.shared
 
 import org.junit.Assert.assertEquals

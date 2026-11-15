@@ -1,3 +1,7 @@
+/*
+ * Supplies realistic account, campsite and lottery fixtures for passive component examples.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.AcceptedTerms

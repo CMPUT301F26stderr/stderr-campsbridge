@@ -1,3 +1,7 @@
+/*
+ * Connects the read owner to real navigation and retains a scroll position per category.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -14,13 +18,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 /** Connects the read owner to real navigation and retains a scroll position per category.
  * @param model Account-scoped source owner.
- * @param onCreate Registered new-setup entry, absent in entrant presentation.
  * @param onOpen Navigation using the selected actual row identity.
  */
 @Composable
 fun LotteryListRoute(
     model: LotteryListViewModel,
-    onCreate: (() -> Unit)?,
     onOpen: (LotteryListItem) -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -61,7 +63,6 @@ fun LotteryListRoute(
         model::retry,
         listState = listState,
         contexts = contexts,
-        onCreate = onCreate,
         campsiteId = campsite,
         onClearCampsite = { model.selectCampsite(null) },
     )

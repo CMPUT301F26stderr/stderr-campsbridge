@@ -1,3 +1,7 @@
+/*
+ * Real root, routes and ViewModels, using explicit persistence/name-contract test doubles.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import android.view.KeyEvent

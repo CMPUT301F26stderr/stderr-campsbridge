@@ -1,3 +1,7 @@
+/*
+ * Saved-parent contracts keep participant reads scoped, restorable and independent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

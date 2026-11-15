@@ -1,3 +1,7 @@
+/*
+ * Observes the selected campsite's inventory ranges independently of booking input and writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository

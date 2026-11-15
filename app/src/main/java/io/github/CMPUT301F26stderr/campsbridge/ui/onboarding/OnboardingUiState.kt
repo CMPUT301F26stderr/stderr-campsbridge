@@ -1,3 +1,7 @@
+/*
+ * Defines onboarding steps, retained editable input and setup read or save outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
@@ -26,7 +30,7 @@ data class OnboardingDraft(
  * @param failed Whether the last load or save failed and can be retried.
  * @param unavailable Whether the account is removed.
  * @param completed Whether required setup writes have succeeded.
- * @param nameValidationPending Whether the reserved parser has not been integrated yet.
+ * @param nameValidationPending Whether this host omitted the display-name parser.
  */
 data class OnboardingUiState(
     val step: OnboardingStep = OnboardingStep.WELCOME,

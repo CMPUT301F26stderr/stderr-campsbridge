@@ -1,14 +1,13 @@
+/*
+ * Arranges short onboarding steps from supplied state, without persistence or navigation lookup.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,14 +23,12 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepTransition
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.IntentStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.InterestsStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.NameStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.OwnerIntroductionStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.steps.WelcomeStep
-import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
-import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
@@ -45,6 +42,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onSkip Finish without saving optional interests.
  * @param onRetryLoad Retry a failed initial read.
  * @param modifier Caller layout.
+ * @param onGuidelines Opens the packaged guidelines destination.
  */
 @Composable
 fun OnboardingScreen(
@@ -57,138 +55,133 @@ fun OnboardingScreen(
     onSkip: () -> Unit,
     onRetryLoad: () -> Unit,
     modifier: Modifier = Modifier,
+    onGuidelines: () -> Unit = {},
 ) {
-    var guidelines by rememberSaveable { mutableStateOf(false) }
-    if (guidelines && !state.unavailable) {
-        PolicyReaderScreen(policyContent(PolicyId.GUIDELINES), onBack = { guidelines = false })
-        return
-    }
-    BackHandler(enabled = state.step != OnboardingStep.WELCOME && !state.unavailable) {
-        if (!state.isSubmitting) onBack()
-    }
-    when {
-        state.unavailable -> {
-            UnavailableAccountScreen()
-        }
-
-        state.isLoading || state.completed -> {
-            AppScreen(stringResource(R.string.app_name), modifier) {
-                LoadingContent(
-                    stringResource(
-                        if (state.completed) {
-                            R.string.onboarding_finishing
-                        } else {
-                            R.string.onboarding_load
-                        },
-                    ),
-                )
+    StepTransition(state, { it.step.ordinal }, modifier) { state ->
+        when {
+            state.unavailable -> {
+                UnavailableAccountScreen()
             }
-        }
 
-        state.failed && state.step == OnboardingStep.WELCOME -> {
-            AppScreen(stringResource(R.string.app_name), modifier) {
-                FailureContent(stringResource(R.string.onboarding_load_failure), onRetryLoad)
+            state.isLoading || state.completed -> {
+                AppScreen(stringResource(R.string.app_name)) {
+                    LoadingContent(
+                        stringResource(
+                            if (state.completed) {
+                                R.string.onboarding_finishing
+                            } else {
+                                R.string.onboarding_load
+                            },
+                        ),
+                    )
+                }
             }
-        }
 
-        state.step == OnboardingStep.WELCOME -> {
-            WelcomeStep(onNext, { guidelines = true }, modifier)
-        }
+            state.failed && state.step == OnboardingStep.WELCOME -> {
+                AppScreen(stringResource(R.string.app_name)) {
+                    FailureContent(stringResource(R.string.onboarding_load_failure), onRetryLoad)
+                }
+            }
 
-        else -> {
-            val position =
-                when (state.step) {
-                    OnboardingStep.INTENT -> 1
-                    OnboardingStep.NAME -> 2
-                    else -> 3
-                }
-            val label =
-                when (state.step) {
-                    OnboardingStep.INTENT -> R.string.onboarding_intent_label
-                    OnboardingStep.NAME -> R.string.onboarding_name_label
-                    OnboardingStep.INTERESTS -> R.string.onboarding_interests_label
-                    else -> R.string.onboarding_host_label
-                }
-            val title =
-                when (state.step) {
-                    OnboardingStep.INTENT -> R.string.onboarding_intent_title
-                    OnboardingStep.NAME -> R.string.onboarding_name_title
-                    OnboardingStep.INTERESTS -> R.string.onboarding_interests_title
-                    else -> R.string.onboarding_host_title
-                }
-            val nextLabel =
-                when (state.step) {
-                    OnboardingStep.INTENT -> R.string.next
-                    OnboardingStep.NAME -> R.string.onboarding_continue
-                    OnboardingStep.INTERESTS -> R.string.onboarding_finish
-                    else -> R.string.onboarding_finish
-                }
-            val nextEnabled =
-                when (state.step) {
-                    OnboardingStep.INTENT -> state.draft.intent != null
-                    OnboardingStep.NAME -> !state.nameValidationPending
-                    else -> true
-                }
-            StepScaffold(
-                title = stringResource(R.string.app_name),
-                progress = stringResource(R.string.onboarding_step, position, 3),
-                onBack = onBack,
-                onNext = onNext,
-                modifier = modifier,
-                nextEnabled = nextEnabled,
-                isSubmitting = state.isSubmitting,
-                nextLabel = stringResource(nextLabel),
-                steps = StepProgress(position, 3),
-                onSkip = if (state.step == OnboardingStep.INTERESTS) onSkip else null,
-                stepLabel = stringResource(label),
-                contentArrangement =
-                    if (state.step == OnboardingStep.OWNER) {
-                        Arrangement.spacedBy(Spacing.large, Alignment.CenterVertically)
-                    } else {
-                        Arrangement.spacedBy(Spacing.medium)
-                    },
-            ) {
-                if (state.step != OnboardingStep.OWNER) {
-                    Text(stringResource(title), style = MaterialTheme.typography.headlineSmall)
-                }
-                when (state.step) {
-                    OnboardingStep.INTENT -> {
-                        IntentStep(state.draft.intent, onIntent, !state.isSubmitting)
+            state.step == OnboardingStep.WELCOME -> {
+                WelcomeStep(onNext, onGuidelines)
+            }
+
+            else -> {
+                val position =
+                    when (state.step) {
+                        OnboardingStep.INTENT -> 1
+                        OnboardingStep.NAME -> 2
+                        else -> 3
                     }
+                val label =
+                    when (state.step) {
+                        OnboardingStep.INTENT -> R.string.onboarding_intent_label
+                        OnboardingStep.NAME -> R.string.onboarding_name_label
+                        OnboardingStep.INTERESTS -> R.string.onboarding_interests_label
+                        else -> R.string.onboarding_host_label
+                    }
+                val title =
+                    when (state.step) {
+                        OnboardingStep.INTENT -> R.string.onboarding_intent_title
+                        OnboardingStep.NAME -> R.string.onboarding_name_title
+                        OnboardingStep.INTERESTS -> R.string.onboarding_interests_title
+                        else -> R.string.onboarding_host_title
+                    }
+                val nextLabel =
+                    when (state.step) {
+                        OnboardingStep.INTENT -> R.string.next
+                        OnboardingStep.NAME -> R.string.onboarding_continue
+                        OnboardingStep.INTERESTS -> R.string.onboarding_finish
+                        else -> R.string.onboarding_finish
+                    }
+                val nextEnabled =
+                    when (state.step) {
+                        OnboardingStep.INTENT -> state.draft.intent != null
+                        OnboardingStep.NAME -> !state.nameValidationPending
+                        else -> true
+                    }
+                StepScaffold(
+                    title = stringResource(R.string.app_name),
+                    progress = stringResource(R.string.onboarding_step, position, 3),
+                    onBack = onBack,
+                    onNext = onNext,
+                    modifier = Modifier,
+                    nextEnabled = nextEnabled,
+                    isSubmitting = state.isSubmitting,
+                    nextLabel = stringResource(nextLabel),
+                    steps = StepProgress(position, 3),
+                    onSkip = if (state.step == OnboardingStep.INTERESTS) onSkip else null,
+                    stepLabel = stringResource(label),
+                    contentArrangement =
+                        if (state.step == OnboardingStep.OWNER) {
+                            Arrangement.spacedBy(Spacing.large, Alignment.CenterVertically)
+                        } else {
+                            Arrangement.spacedBy(Spacing.medium)
+                        },
+                ) {
+                    if (state.step != OnboardingStep.OWNER) {
+                        Text(stringResource(title), style = MaterialTheme.typography.headlineSmall)
+                    }
+                    when (state.step) {
+                        OnboardingStep.INTENT -> {
+                            IntentStep(state.draft.intent, onIntent, !state.isSubmitting)
+                        }
 
-                    OnboardingStep.NAME -> {
-                        NameStep(
-                            state.draft.name,
-                            onName,
-                            state.nameRequired,
-                            !state.isSubmitting,
-                            { if (nextEnabled && !state.isSubmitting) onNext() },
+                        OnboardingStep.NAME -> {
+                            NameStep(
+                                state.draft.name,
+                                onName,
+                                state.nameRequired,
+                                !state.isSubmitting,
+                                { if (nextEnabled && !state.isSubmitting) onNext() },
+                            )
+                        }
+
+                        OnboardingStep.INTERESTS -> {
+                            InterestsStep(state.draft.preferences, onPreferences, !state.isSubmitting)
+                        }
+
+                        OnboardingStep.OWNER -> {
+                            OwnerIntroductionStep()
+                        }
+
+                        OnboardingStep.WELCOME -> {
+                            Unit
+                        }
+                    }
+                    if (state.step == OnboardingStep.NAME && state.nameValidationPending) {
+                        InlineNotice(
+                            stringResource(R.string.setup_title),
+                            stringResource(R.string.onboarding_name_pending),
                         )
                     }
-
-                    OnboardingStep.INTERESTS -> {
-                        InterestsStep(state.draft.preferences, onPreferences, !state.isSubmitting)
+                    if (state.failed) {
+                        Text(
+                            stringResource(R.string.onboarding_save_failure),
+                            color = MaterialTheme.colorScheme.error,
+                        )
                     }
-
-                    OnboardingStep.OWNER -> {
-                        OwnerIntroductionStep()
-                    }
-
-                    OnboardingStep.WELCOME -> {
-                        Unit
-                    }
-                }
-                if (state.step == OnboardingStep.NAME && state.nameValidationPending) {
-                    InlineNotice(
-                        stringResource(R.string.setup_title),
-                        stringResource(R.string.onboarding_name_pending),
-                    )
-                }
-                if (state.failed) {
-                    Text(
-                        stringResource(R.string.onboarding_save_failure),
-                        color = MaterialTheme.colorScheme.error,
-                    )
                 }
             }
         }
@@ -258,14 +251,14 @@ private fun IntentPreview() {
     OnboardingPreviewContent(OnboardingStep.INTENT)
 }
 
-/** Shows ordinary name-entry composition independently of the reserved validator. */
+/** Shows name-entry content independently of the injected validator. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 private fun NamePreview() {
     OnboardingPreviewContent(OnboardingStep.NAME)
 }
 
-/** Name input with the explicit reserved implementation boundary. */
+/** Shows name input when this host omits its validator. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 private fun PendingNamePreview() {

@@ -1,3 +1,7 @@
+/*
+ * Explicit capability priority and preference contracts independent of UI state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

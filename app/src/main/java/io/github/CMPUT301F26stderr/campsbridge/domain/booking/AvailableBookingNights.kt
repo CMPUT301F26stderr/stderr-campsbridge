@@ -1,3 +1,7 @@
+/*
+ * Returns allocation dates whose supplied physical inventory is offered and unclaimed.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

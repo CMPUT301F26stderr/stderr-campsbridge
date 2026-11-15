@@ -1,3 +1,7 @@
+/*
+ * Restored availability intent must remain protected before the saved parent can be read.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.ui.test.assertIsDisplayed

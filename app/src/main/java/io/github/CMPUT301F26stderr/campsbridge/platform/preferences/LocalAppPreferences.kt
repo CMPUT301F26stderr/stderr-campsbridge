@@ -1,3 +1,7 @@
+/*
+ * Defines account-keyed local setup progress and workspace preferences, separate from shared profile data.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.preferences
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

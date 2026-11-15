@@ -1,3 +1,7 @@
+/*
+ * Supplies real-shaped saved content and read outcomes without constructing repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable
@@ -212,7 +216,7 @@ internal class LotteryOffersPreviewProvider : PreviewParameterProvider<LotteryDe
 @Composable
 private fun LotterySchedulePreview() {
     CampsbridgeTheme {
-        LotteryScheduleScreen(LotteryDetailPreviewProvider().values.elementAt(1), {}, {}, {})
+        LotteryScheduleScreen(LotteryDetailPreviewProvider().values.elementAt(1), {}, {})
     }
 }
 
@@ -221,7 +225,7 @@ private fun LotterySchedulePreview() {
 @Composable
 private fun LotteryScheduleUnavailableZonePreview() {
     val state = LotteryDetailPreviewProvider().values.elementAt(11)
-    CampsbridgeTheme { LotteryScheduleScreen(state, {}, {}, {}) }
+    CampsbridgeTheme { LotteryScheduleScreen(state, {}, {}) }
 }
 
 /** Shows confirmed allocation facts and independent empty/missing/failure states.

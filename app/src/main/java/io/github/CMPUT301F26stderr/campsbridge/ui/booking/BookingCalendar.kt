@@ -1,3 +1,8 @@
+/*
+ * Projects confirmed inventory and eligibility, separating checkout permission from occupancy. A selectable
+ * departure does not validate the intervening nights or change the draft.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead

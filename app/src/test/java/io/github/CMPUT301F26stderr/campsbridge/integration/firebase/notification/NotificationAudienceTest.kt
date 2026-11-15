@@ -1,3 +1,7 @@
+/*
+ * Tests read-only intended and delivered recipient facts against the Firestore emulator.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.notification
 
 import com.google.firebase.firestore.FirebaseFirestoreException

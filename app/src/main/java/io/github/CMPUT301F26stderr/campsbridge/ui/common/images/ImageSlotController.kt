@@ -1,3 +1,8 @@
+/*
+ * Owns one image slot's preview, explicit writes, and transient display references. Call actions on the parent
+ * dispatcher (normally Main); the parent owns its lifetime.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
@@ -78,7 +83,11 @@ class ImageSlotController(
                 val published =
                     checkNotNull(result.attachment) { "Replacement did not return an attachment" }
                 mutableState.value =
-                    state.value.copy(operation = ImageOperation.IDLE, candidate = null)
+                    state.value.copy(
+                        operation = ImageOperation.IDLE,
+                        candidate = null,
+                        obsoleteBlobId = result.obsoleteBlobId,
+                    )
                 acceptAttachment(published)
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -121,7 +130,8 @@ class ImageSlotController(
             try {
                 val result = images.delete(target)
                 currentCoroutineContext().ensureActive()
-                mutableState.value = state.value.copy(operation = ImageOperation.IDLE)
+                mutableState.value =
+                    state.value.copy(operation = ImageOperation.IDLE, obsoleteBlobId = result.obsoleteBlobId)
                 acceptAttachment(result.attachment)
             } catch (cancelled: CancellationException) {
                 throw cancelled

@@ -1,3 +1,7 @@
+/*
+ * Checks the production picker intent and result callbacks using a controlled activity-result registry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.images
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner

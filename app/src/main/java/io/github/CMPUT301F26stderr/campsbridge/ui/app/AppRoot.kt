@@ -1,3 +1,7 @@
+/*
+ * Selects one root branch from lifecycle-aware session state without imperative navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.runtime.Composable
@@ -42,6 +46,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param notificationLogFactory Factory for the independent read-only notification-log graph.
  * @param notificationPermission Explicit host-owned Android inspection/settings dependency.
  * @param notificationEntries Activity/root tap owner, independent of the session navigation store.
+ * @param requestedDestination Optional host-owned saved-record handoff.
+ * @param onDestinationOpened Acknowledges the opened handoff.
  */
 @Composable
 fun AppRoot(
@@ -64,6 +70,8 @@ fun AppRoot(
     notificationLogFactory: () -> ViewModelProvider.Factory,
     notificationPermission: NotificationPermission,
     notificationEntries: NotificationEntryViewModel,
+    requestedDestination: String? = null,
+    onDestinationOpened: () -> Unit = {},
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val entry by notificationEntries.state.collectAsStateWithLifecycle()
@@ -159,6 +167,8 @@ fun AppRoot(
                                 notificationEntries::retry,
                                 notificationEntries::dismiss,
                                 notificationEntries::consume,
+                                requestedDestination = requestedDestination,
+                                onDestinationOpened = onDestinationOpened,
                             )
                         }
                     }

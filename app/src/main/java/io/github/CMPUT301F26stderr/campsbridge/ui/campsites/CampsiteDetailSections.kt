@@ -1,3 +1,8 @@
+/*
+ * Renders saved campsite descriptions, amenities, rules, maps and related lotteries under the shared detail
+ * parent.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -258,7 +264,6 @@ fun CampsiteAvailabilityScreen(
                     offeredNightCalendarState(month, inventory, emptyMap())
                         .copy(selectionEnabled = false),
                     onMonthChange,
-                    {},
                 )
             }
         }
@@ -281,7 +286,15 @@ fun CampsiteRulesScreen(
     CampsiteSectionFrame(CampsiteDetailSection.RULES, state, onBack, onRetry) { site ->
         Text(site.details.name, style = MaterialTheme.typography.headlineSmall)
         Text(site.details.rules.ifBlank { stringResource(R.string.campsite_no_rules) })
-        Text(stringResource(R.string.up_to_guests, site.details.maxGuests))
+        Text(
+            pluralStringResource(
+                R.plurals.up_to_guests,
+                site.details.maxGuests
+                    .coerceAtMost(Int.MAX_VALUE.toLong())
+                    .toInt(),
+                site.details.maxGuests,
+            ),
+        )
         NavigationRow(stringResource(R.string.onboarding_guidelines), {
             onOpenPolicy(PolicyId.GUIDELINES)
         })

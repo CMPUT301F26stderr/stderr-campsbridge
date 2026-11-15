@@ -1,6 +1,10 @@
+/*
+ * Parses optional email and phone input while preserving valid spelling and deliberate cleared values.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic
 
-/** Result contract for the reserved optional-email and optional-phone parsers. */
+/** Result contract for optional email and phone parsing. */
 sealed interface OptionalContactInput {
     /** Accepted contact spelling, or a deliberate cleared optional field.
      * @param value Trimmed contact, or null for blank input.

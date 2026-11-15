@@ -1,6 +1,9 @@
+/*
+ * Binds the working editor to its actual parent, consuming no repository write.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -92,7 +95,6 @@ fun SearchFiltersScreen(
     initialMonth: YearMonth? = null,
 ) {
     var choosingDates by rememberSaveable { mutableStateOf(false) }
-    BackHandler(onBack = onBack)
     val locale = LocalConfiguration.current.locales[0]
     AppScreen(
         stringResource(R.string.filters),

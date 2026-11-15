@@ -1,3 +1,7 @@
+/*
+ * Shared localized capability label.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common
 
 import androidx.compose.runtime.Composable

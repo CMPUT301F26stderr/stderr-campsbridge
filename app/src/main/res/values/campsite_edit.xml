@@ -1,0 +1,16 @@
+<resources>
+    <string name="campsite_edit_title">Edit campsite</string>
+    <string name="campsite_edit_details">Campsite details</string>
+    <string name="campsite_edit_basics">Basics</string>
+    <string name="campsite_edit_photo">Photo</string>
+    <string name="campsite_edit_capacity">Capacity &amp; price</string>
+    <string name="campsite_edit_options">Amenities &amp; tags</string>
+    <string name="campsite_edit_rules">Rules</string>
+    <string name="campsite_edit_save">Save details</string>
+    <string name="campsite_edit_photo_unsaved">Unsaved photo change</string>
+    <string name="campsite_edit_photo_loading">Loading photo</string>
+    <string name="campsite_edit_photo_help">Photo changes save separately from campsite details.</string>
+    <string name="campsite_edit_photo_description">Campsite photo</string>
+    <string name="campsite_edit_capacity_summary">%1$s guests · CAD %2$s / night</string>
+    <string name="campsite_edit_saved_photo_pending">Details saved. Your photo change is still unsaved.</string>
+</resources>

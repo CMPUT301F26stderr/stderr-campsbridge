@@ -1,3 +1,7 @@
+/*
+ * Realistic feature content without repository construction, derived business rules or writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import androidx.compose.foundation.layout.Arrangement
@@ -42,7 +46,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDa
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarDayStatus
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarSelection
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CalendarState
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.CampsiteCalendar
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.NightRangeCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.StatusLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.ImageSlot
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
@@ -54,7 +58,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.LotteryCa
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationCard
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.YearMonth
-import java.time.ZoneId
 
 /** Realistic feature content without repository construction, derived business rules or writes.
  * @param scroll Caller-retained content scroll position.
@@ -114,7 +117,6 @@ internal fun ContentGallery(
                     stringResource(R.string.gallery_registration_open),
                     formatDateTime(
                         lottery.configuration.registrationClosesAt,
-                        ZoneId.of(site.details.timeZone),
                         locale,
                     ),
                     { onAction(lottery.title) },
@@ -145,7 +147,7 @@ internal fun ContentGallery(
                                 day != 20,
                             )
                     }
-                CampsiteCalendar(
+                NightRangeCalendar(
                     CalendarState(
                         month,
                         days,
@@ -153,16 +155,7 @@ internal fun ContentGallery(
                         selectionEnabled = true,
                     ),
                     { month = it },
-                    { date ->
-                        dates =
-                            if (date in
-                                dates
-                            ) {
-                                dates - date
-                            } else {
-                                dates + date
-                            }
-                    },
+                    { dates = it },
                 )
             }
         }

@@ -1,3 +1,7 @@
+/*
+ * Restores or establishes one anonymous SDK session; never creates an account document.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.identity
 
 import com.google.android.gms.tasks.Task

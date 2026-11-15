@@ -1,3 +1,7 @@
+/*
+ * Reuses the task session's saved reader for one selected sample identity.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext

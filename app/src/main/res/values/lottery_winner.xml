@@ -1,0 +1,15 @@
+<resources>
+    <string name="lottery_choose_campsite">Choose campsite</string>
+    <string name="lottery_choose_campsite_hint">One campsite per win. Choose a campsite, then select your stay from its available nights.</string>
+    <string name="lottery_choose_campsite_action">Choose %1$s</string>
+    <string name="lottery_win_unavailable">This win is not available for booking. Return to the lottery to check its current status.</string>
+    <string name="lottery_decline_action">Decline opportunity</string>
+    <string name="lottery_decline_title">Decline opportunity?</string>
+    <string name="lottery_decline_body">You will give up this booking opportunity.</string>
+    <string name="lottery_decline_confirm">Decline</string>
+    <string name="lottery_decline_keep">Keep opportunity</string>
+    <string name="lottery_declining">Declining opportunity</string>
+    <string name="lottery_decline_updating">Updating your entry</string>
+    <string name="lottery_decline_failed">Could not decline this opportunity.</string>
+    <string name="lottery_decline_retry">Retry decline</string>
+</resources>

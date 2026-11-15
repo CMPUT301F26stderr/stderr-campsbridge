@@ -1,3 +1,7 @@
+/*
+ * A passive tag, without a disabled control appearance or a misleading click target.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
 import androidx.compose.foundation.BorderStroke
@@ -23,14 +27,14 @@ fun TagLabel(
     Surface(
         modifier = modifier,
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Text(
             text,
-            Modifier.padding(horizontal = Spacing.medium, vertical = Spacing.small),
-            style = MaterialTheme.typography.labelLarge,
+            Modifier.padding(horizontal = Spacing.small, vertical = 4.dp),
+            style = MaterialTheme.typography.labelMedium,
         )
     }
 }

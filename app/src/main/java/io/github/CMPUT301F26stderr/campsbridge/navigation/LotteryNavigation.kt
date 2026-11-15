@@ -1,3 +1,7 @@
+/*
+ * Registers scoped lottery lists and saved-detail children under their existing navigation owners.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.remember
@@ -12,33 +16,29 @@ import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryOffersState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.ParticipantListRoute
 
 /** Registers account-scoped primary lists and the owner-management association filter.
  * @param controller Account navigation host.
  * @param state Ready session and selected workspace.
  * @param onSelectWorkspace Root-owned capability switch.
- * @param navigationItems Registered owner peers.
- * @param entrantItems Registered entrant peers.
- * @param onSelectDestination Retained primary navigation.
  * @param factory Scoped constructor keyed by context and optional campsite association.
  */
 internal fun NavGraphBuilder.lotteryListGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
-    navigationItems: List<WorkspaceNavigationItem>,
-    entrantItems: List<WorkspaceNavigationItem>,
-    onSelectDestination: (String) -> Unit,
     factory: (LotteryContext, String?) -> ViewModelProvider.Factory,
 ) {
     for (pattern in listOf(
@@ -67,25 +67,19 @@ internal fun NavGraphBuilder.lotteryListGraph(
                     LotteryContext.OWNER
                 }
             val model: LotteryListViewModel = viewModel(factory = factory(context, id))
+            val createAction: @androidx.compose.runtime.Composable () -> Unit = {
+                if (context == LotteryContext.OWNER) {
+                    CreateAction(stringResource(R.string.lottery_create)) {
+                        controller.navigate(AppDestination.LOTTERY_SETUP) { launchSingleTop = true }
+                    }
+                }
+            }
             val content: @androidx.compose.runtime.Composable () -> Unit = {
                 LotteryListRoute(
                     model,
-                    onCreate =
-                        if (context == LotteryContext.OWNER) {
-                            {
-                                controller.navigate(AppDestination.LOTTERY_SETUP) {
-                                    launchSingleTop =
-                                        true
-                                }
-                            }
-                        } else {
-                            null
-                        },
                 ) { item ->
                     controller.navigate(
-                        if (item.lottery.publishedAt ==
-                            null
-                        ) {
+                        if (item.canContinueDraft) {
                             AppDestination.lotterySetupGraph(item.lottery.id)
                         } else {
                             AppDestination.lotteryDetail(item.lottery.id, context)
@@ -101,14 +95,14 @@ internal fun NavGraphBuilder.lotteryListGraph(
                     state,
                     onSelectWorkspace,
                     stringResource(R.string.my_lotteries),
-                    if (context == LotteryContext.OWNER) navigationItems else entrantItems,
-                    pattern,
-                    onSelectDestination,
+                    floatingActionButton = createAction,
                 ) { content() }
             } else {
-                AppScreen(stringResource(R.string.campsite_lotteries), onBack = {
-                    controller.popBackStack()
-                }) { content() }
+                AppScreen(
+                    stringResource(R.string.campsite_lotteries),
+                    onBack = { controller.popBackStack() },
+                    floatingActionButton = createAction,
+                ) { content() }
             }
         }
     }
@@ -119,14 +113,14 @@ internal fun NavGraphBuilder.lotteryListGraph(
  * @param factory Dependencies keyed by actual saved ID and explicit caller context.
  * @param onReservation Actual registered consuming-record destination, absent in isolated hosts.
  * @param onBooking Actual registered single-site winner flow, absent in isolated hosts.
- * @param onCampsite Actual saved campsite calendar, absent in isolated hosts.
+ * @param onCampsite Saved calendar with the viewer's context and the listing's actual owner, if loaded.
  */
 internal fun NavGraphBuilder.lotteryDetailGraph(
     controller: NavHostController,
     factory: (String, LotteryContext) -> ViewModelProvider.Factory,
     onReservation: ((String) -> Unit)? = null,
     onBooking: ((String, String) -> Unit)? = null,
-    onCampsite: ((String, LotteryContext) -> Unit)? = null,
+    onCampsite: ((String, LotteryContext, String?) -> Unit)? = null,
 ) {
     for (context in LotteryContext.entries) {
         val pattern = AppDestination.lotteryDetailPattern(context)
@@ -186,7 +180,16 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                         },
                         onCampsite =
                             onCampsite?.let { open ->
-                                { campsiteId -> open(campsiteId, context) }
+                                { campsiteId ->
+                                    val offers = (model.state.value as? LotteryDetailUiState.Content)?.offers
+                                    val ownerId =
+                                        (offers as? LotteryOffersState.Content)
+                                            ?.offers
+                                            ?.firstOrNull { it.offer.campsiteId == campsiteId }
+                                            ?.campsite
+                                            ?.ownerId
+                                    open(campsiteId, context, ownerId)
+                                }
                             },
                     )
                 }

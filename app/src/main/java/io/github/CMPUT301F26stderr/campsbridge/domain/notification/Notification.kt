@@ -1,3 +1,7 @@
+/*
+ * Defines shared notification events, linked subjects and per-account Inbox receipts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.notification
 
 import java.time.Instant

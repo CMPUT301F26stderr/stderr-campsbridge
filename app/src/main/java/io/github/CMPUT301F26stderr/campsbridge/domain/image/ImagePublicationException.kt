@@ -1,3 +1,7 @@
+/*
+ * Upload succeeded, but publication acknowledgement failed. Reconcile the attachment before cleanup.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.image
 
 /**

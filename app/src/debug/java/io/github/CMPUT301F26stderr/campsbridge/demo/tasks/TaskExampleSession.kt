@@ -1,3 +1,7 @@
+/*
+ * Owns one task's actual controllers and sample repositories until reset or exit.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 
 import androidx.lifecycle.SavedStateHandle
@@ -8,6 +12,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.demo.data.DemoReviewRepository
+import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
@@ -87,6 +92,23 @@ class TaskExampleSession(
                     },
                 sortCampsites = { it },
                 clock = TaskExampleData.clock,
+            )
+        }
+
+    /** Supplies the real dates owner with the accepted helper and local inventory. */
+    fun bookingDates(): BookingViewModel =
+        model(BookingViewModel::class.java) {
+            BookingViewModel(
+                TaskExampleData.ACCOUNT_ID,
+                TaskExampleData.lottery.id,
+                TaskExampleData.sites[0].id,
+                lotteries,
+                campsites,
+                bookings,
+                images,
+                TaskExampleData.clock,
+                SavedStateHandle(),
+                bindings.availableNights,
             )
         }
 

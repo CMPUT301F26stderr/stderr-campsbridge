@@ -1,3 +1,7 @@
+/*
+ * Represents the owner's inventory tabs and their independent read outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
@@ -16,7 +20,7 @@ sealed interface CampsiteListUiState {
 
     /** Confirmed rows, with explicit pending ordering and independently resolved images.
      * @param campsites Rows for the selected tab.
-     * @param orderingPending Whether the reserved ordering helper is absent.
+     * @param orderingPending Whether this host omitted the ordering helper.
      * @param photos Transient image reads for currently visible records.
      */
     data class Content(

@@ -1,3 +1,7 @@
+/*
+ * Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -34,6 +38,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityPro
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
@@ -90,6 +95,7 @@ class TestAppHost : AutoCloseable {
     var reservationDetailCreations = 0
     val reservationDetailRequests = mutableListOf<Pair<String, ReservationContext>>()
     val notifications = FakeNotificationRepository()
+    val messages = FakeMessageRepository()
     var logNotifications: NotificationRepository = notifications
     var notificationLogCreations = 0
     var inboxCreations = 0
@@ -134,7 +140,7 @@ class TestAppHost : AutoCloseable {
         }
     val notificationEntries by lazy {
         NotificationEntryViewModel(
-            NotificationContentLoader(notifications, lotteries, bookings),
+            NotificationContentLoader(notifications, lotteries, bookings, messages),
             SavedStateHandle(),
         ).also { store.put("notification-entry", it) }
     }

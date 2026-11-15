@@ -1,3 +1,7 @@
+/*
+ * Selects entries by exact state, preserving their original order without modifying the input.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState

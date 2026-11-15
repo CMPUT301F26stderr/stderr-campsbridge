@@ -1,3 +1,7 @@
+/*
+ * Tests booking content callbacks and submission feedback without performing a live booking.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.booking
 
 import androidx.compose.foundation.layout.Box
@@ -23,6 +27,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.espresso.Espresso.pressBack
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.onCalendarDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
@@ -37,7 +42,7 @@ class BookingScreenTest {
     @get:Rule val compose = createComposeRule()
     private val next = mutableListOf<BookingStep>()
     private val edits = mutableListOf<BookingStep>()
-    private val dates = mutableListOf<LocalDate>()
+    private val dates = mutableListOf<Pair<LocalDate?, LocalDate?>>()
     private val guests = mutableListOf<String>()
     private val agreements = mutableListOf<Triple<Boolean, String, String>>()
     private val quotes = mutableListOf<Long>()
@@ -83,8 +88,8 @@ class BookingScreenTest {
         val current = mutableStateOf(initial)
         show({ current.value })
         val arrival = requireNotNull(initial.draft.checkIn)
-        compose.onNodeWithTag("calendar-date-$arrival").performScrollTo().performClick()
-        assertEquals(listOf(arrival), dates)
+        compose.onCalendarDate(arrival).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(listOf(arrival to null), dates) }
         compose.onNodeWithText("Clear dates").performScrollTo().performClick()
         assertEquals(1, clears)
         compose.runOnIdle {
@@ -103,7 +108,7 @@ class BookingScreenTest {
         compose.onNodeWithText("Retry selected dates").performScrollTo().performClick()
         assertEquals(1, visibleRetries)
         assertEquals(1, selectedRetries)
-        compose.onNodeWithTag("calendar-date-$arrival").performScrollTo().assertIsNotEnabled()
+        compose.onCalendarDate(arrival).performScrollTo().assertIsNotEnabled()
     }
 
     /** Raw invalid text is preserved, while bounded controls use the supplied parsed count. */
@@ -293,7 +298,7 @@ class BookingScreenTest {
                             onNext = { next.add(it) },
                             onCancel = {},
                             onMonth = {},
-                            onDate = { dates.add(it) },
+                            onDatesChange = { start, end -> dates.add(start to end) },
                             onClearDates = { clears++ },
                             onGuests = { guests.add(it) },
                             onAccept = {

@@ -1,3 +1,7 @@
+/*
+ * Existing-profile activation through the real root, local workspace selection and owner graph.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.compose.ui.test.assertIsDisplayed

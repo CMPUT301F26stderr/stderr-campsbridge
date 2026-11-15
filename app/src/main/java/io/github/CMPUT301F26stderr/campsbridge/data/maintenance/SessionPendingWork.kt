@@ -1,3 +1,7 @@
+/*
+ * Represents account-scoped due work and runs its resumable persistence operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.maintenance
 
 import io.github.CMPUT301F26stderr.campsbridge.data.notification.DeliveryJob

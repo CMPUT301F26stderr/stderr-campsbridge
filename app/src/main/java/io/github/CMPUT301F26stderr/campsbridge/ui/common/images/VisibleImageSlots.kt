@@ -1,3 +1,8 @@
+/*
+ * Owns visible attachment displays independently of the parent list source and its membership. All calls use the
+ * owning ViewModel's main-thread scope; closing does not cancel that scope.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository

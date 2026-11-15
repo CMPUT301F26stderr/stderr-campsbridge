@@ -1,3 +1,7 @@
+/*
+ * Tests foreground recovery composed with alert initialization and observation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import android.content.Intent
@@ -19,6 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.preferences.AlertDeliver
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
@@ -254,6 +259,7 @@ private class ForegroundFixture {
                 notifications,
                 FakeLotteryRepository(listOf(CampingFixtures.lottery())),
                 FakeBookingRepository(),
+                FakeMessageRepository(),
             ),
             object : NotificationPermission {
                 /** Reports explicitly allowed device facts for this composition fixture. */

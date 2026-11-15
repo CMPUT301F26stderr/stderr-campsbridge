@@ -1,3 +1,7 @@
+/*
+ * Tests onboarding input, setup state and explicit persistence through controlled dependencies.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.onboarding
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * Stable ordinary domain values used only by themed content previews.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

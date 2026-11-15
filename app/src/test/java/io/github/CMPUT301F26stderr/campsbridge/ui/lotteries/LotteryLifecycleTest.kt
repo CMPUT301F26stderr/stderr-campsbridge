@@ -1,3 +1,7 @@
+/*
+ * Exact saved-parent boundaries precede list/detail lifecycle presentation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Cancellation

@@ -1,3 +1,7 @@
+/*
+ * Verifies setup's caller-supplied inventory mapping, without duplicating calendar geometry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight

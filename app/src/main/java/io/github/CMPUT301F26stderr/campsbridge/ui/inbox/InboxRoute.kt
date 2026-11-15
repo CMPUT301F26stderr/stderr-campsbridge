@@ -1,8 +1,14 @@
+/*
+ * Connects the inbox ViewModel to the screen and handles navigation to saved lottery/reservation targets.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
@@ -21,14 +27,23 @@ fun InboxRoute(
 ) {
     val state by model.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state) {
-        val content = state as? InboxUiState.Content ?: return@LaunchedEffect
-        val opening = content.openingItem ?: return@LaunchedEffect
-        model.consumeOpen()
+    val pending by model.pendingOpen.collectAsStateWithLifecycle()
+    val owner = LocalLifecycleOwner.current
+    val lifecycle by owner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
+    LaunchedEffect(pending, lifecycle) {
+        if (lifecycle != Lifecycle.State.RESUMED || owner.lifecycle.currentState != Lifecycle.State.RESUMED) {
+            return@LaunchedEffect
+        }
+        val request = pending ?: return@LaunchedEffect
+        if (model.pendingOpen.value != request) return@LaunchedEffect
+        val opening =
+            model.state.value.items
+                .firstOrNull { it.notification.id == request.notificationId }
+                ?: return@LaunchedEffect
         when (val subject = opening.subject) {
             is NotificationSubjectContent.LotteryContent -> {
                 val context =
-                    if (subject.lottery.ownerId == model.accountId) {
+                    if (model.accountId in subject.lottery.participantOwnerIds) {
                         LotteryContext.OWNER
                     } else {
                         LotteryContext.ENTRANT
@@ -46,17 +61,22 @@ fun InboxRoute(
                 onOpenReservation(subject.reservation.id, resContext)
             }
 
+            is NotificationSubjectContent.MessageContent,
             NotificationSubjectContent.Failure,
             NotificationSubjectContent.Unavailable,
             NotificationSubjectContent.Unsupported,
             -> {}
         }
+        model.acknowledgeOpen(request.notificationId)
     }
 
     InboxScreen(
         state = state,
-        onOpenItem = model::open,
-        onRetry = model::retry,
-        onRetryMarkRead = model::retryMarkRead,
+        onOpen = {
+            if (owner.lifecycle.currentState == Lifecycle.State.RESUMED) model.openItem(it)
+        },
+        onRetrySource = model::retry,
+        onRetryRead = model::retryReadAcknowledgement,
+        onRetryItem = model::retryItem,
     )
 }

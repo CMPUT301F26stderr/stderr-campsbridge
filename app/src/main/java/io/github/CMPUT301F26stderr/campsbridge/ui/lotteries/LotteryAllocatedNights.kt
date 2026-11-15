@@ -1,3 +1,7 @@
+/*
+ * Shows the actual allocation count and every selected night without merging separate dates.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.Arrangement

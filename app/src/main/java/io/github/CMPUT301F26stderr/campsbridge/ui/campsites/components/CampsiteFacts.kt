@@ -1,3 +1,7 @@
+/*
+ * Compact saved capacity and nightly price, wrapping together at enlarged text sizes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
@@ -28,7 +33,13 @@ fun CampsiteFacts(
         verticalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
         Text(
-            stringResource(R.string.up_to_guests, campsite.details.maxGuests),
+            pluralStringResource(
+                R.plurals.up_to_guests,
+                campsite.details.maxGuests
+                    .coerceAtMost(Int.MAX_VALUE.toLong())
+                    .toInt(),
+                campsite.details.maxGuests,
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

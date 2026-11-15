@@ -1,3 +1,7 @@
+/*
+ * Represents attachment reads, local selections and image mutation or reconciliation progress.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.common.images
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
@@ -23,6 +27,7 @@ enum class ImageFailure { SAVE, REMOVE, SELECTION }
  * @param operation Pending explicit action.
  * @param failure Recoverable user-action failure.
  * @param unconfirmedBlobId Uploaded blob awaiting server reconciliation.
+ * @param obsoleteBlobId Previous file still awaiting repository cleanup after a confirmed change.
  */
 data class ImageSlotState(
     val loadState: ImageLoadState = ImageLoadState.LOADING,
@@ -34,6 +39,7 @@ data class ImageSlotState(
     val operation: ImageOperation = ImageOperation.IDLE,
     val failure: ImageFailure? = null,
     val unconfirmedBlobId: String? = null,
+    val obsoleteBlobId: String? = null,
 ) {
     /** A new local choice is safe when no mutation or confirmation is pending. */
     val canChoose: Boolean get() = operation == ImageOperation.IDLE && unconfirmedBlobId == null
