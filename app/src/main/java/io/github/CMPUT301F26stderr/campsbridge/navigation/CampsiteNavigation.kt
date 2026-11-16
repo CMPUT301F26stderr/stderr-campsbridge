@@ -42,6 +42,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
  * @param detailFactory Saved reader dependencies for an ID/context.
  * @param availabilityFactory Dependencies for the separate saved inventory editor.
  * @param setupFactory Local editor dependencies for a new or existing draft.
+ * @param editFactory Published listing editor dependencies.
  */
 internal fun NavGraphBuilder.campsiteGraph(
     controller: NavHostController,
@@ -51,6 +52,7 @@ internal fun NavGraphBuilder.campsiteGraph(
     detailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     setupFactory: (String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String) -> ViewModelProvider.Factory,
+    editFactory: (String) -> ViewModelProvider.Factory,
 ) {
     composable(AppDestination.ownerCampsites()) {
         val model: CampsiteListViewModel = viewModel(factory = listFactory)
@@ -112,6 +114,8 @@ internal fun NavGraphBuilder.campsiteGraph(
                 controller.navigate(
                     AppDestination.availabilityEditor(id),
                 ) { launchSingleTop = true }
+            }, onEdit = {
+                controller.navigate(AppDestination.campsiteEditGraph(id)) { launchSingleTop = true }
             }, onResume = {
                 controller.navigate(
                     AppDestination.campsiteSetupGraph(id),
@@ -121,6 +125,7 @@ internal fun NavGraphBuilder.campsiteGraph(
     }
     campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.PREVIEW, detailFactory)
     campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.VIEW, detailFactory)
+    campsiteEditGraph(controller, editFactory)
     composable(
         AppDestination.AVAILABILITY_EDITOR,
         arguments =
