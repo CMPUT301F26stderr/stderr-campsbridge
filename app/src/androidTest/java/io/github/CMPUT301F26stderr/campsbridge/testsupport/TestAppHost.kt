@@ -213,6 +213,7 @@ class TestAppHost : AutoCloseable {
                                 createSavedStateHandle(),
                                 Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                                 lotteries,
+                                createQrBitmap = createQrBitmap,
                             )
                         }
                     }
