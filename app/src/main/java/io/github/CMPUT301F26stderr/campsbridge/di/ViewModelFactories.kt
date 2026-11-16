@@ -14,6 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityDifferen
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.sortCampsitesByName
@@ -57,6 +58,28 @@ fun lotteryListViewModelFactory(
                 services.clock,
                 createSavedStateHandle(),
                 campsiteId,
+            )
+        }
+    }
+
+/** Constructs a saved listing editor with independent image operations.
+ * @param services Selected host's shared repository interfaces.
+ * @param ownerId Confirmed owner identity.
+ * @param campsiteId Existing published listing identity.
+ */
+fun campsiteEditViewModelFactory(
+    services: AppServices,
+    ownerId: String,
+    campsiteId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            CampsiteEditViewModel(
+                campsiteId,
+                ownerId,
+                services.repositories.campsites,
+                services.repositories.images,
+                createSavedStateHandle(),
             )
         }
     }

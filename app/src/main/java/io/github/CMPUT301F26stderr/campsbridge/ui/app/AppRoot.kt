@@ -48,6 +48,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param notificationEntries Activity/root tap owner, independent of the session navigation store.
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
+ * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  */
 @Composable
 fun AppRoot(
@@ -73,6 +74,7 @@ fun AppRoot(
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
     accountRemoval: AccountRemovalViewModel,
+    campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
     val removal by accountRemoval.state.collectAsStateWithLifecycle()
@@ -181,6 +183,7 @@ fun AppRoot(
                                             session.account.id,
                                         )
                                 },
+                                campsiteEditFactory = { id -> campsiteEditFactory(session.account.id, id) },
                             )
                         }
                     }
