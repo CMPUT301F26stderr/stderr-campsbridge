@@ -25,6 +25,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewMo
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteLocationRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteQrRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
@@ -116,11 +117,23 @@ internal fun NavGraphBuilder.campsiteGraph(
                 ) { launchSingleTop = true }
             }, onEdit = {
                 controller.navigate(AppDestination.campsiteEditGraph(id)) { launchSingleTop = true }
+            }, onShowQr = {
+                controller.navigate(AppDestination.campsiteQr(id)) { launchSingleTop = true }
             }, onResume = {
                 controller.navigate(
                     AppDestination.campsiteSetupGraph(id),
                 ) { launchSingleTop = true }
             }) { controller.popBackStack() }
+        }
+        composable(parentPattern + "/qr") { entry ->
+            val parent = remember(entry) { controller.getBackStackEntry(parentPattern) }
+            val id = checkNotNull(parent.arguments?.getString("campsiteId"))
+            val model: CampsiteDetailViewModel =
+                viewModel(
+                    viewModelStoreOwner = parent,
+                    factory = detailFactory(id, context),
+                )
+            CampsiteQrRoute(model) { controller.popBackStack() }
         }
     }
     campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.PREVIEW, detailFactory)
