@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.isImeVisible
@@ -31,6 +32,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.platform.qr.createCampsiteQrBitmap
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
@@ -119,6 +121,7 @@ class TestAppHost : AutoCloseable {
     var remainingAvailabilityEdits: AvailabilityDifference? = null
     var campsiteListCreations = 0
     var campsiteDetailCreations = 0
+    var createQrBitmap: (String) -> Bitmap = { createCampsiteQrBitmap(it) }
     var profileCreations = 0
     var parseEmail: ((String) -> OptionalContactInput)? = null
     var parsePhone: ((String) -> OptionalContactInput)? = null
@@ -210,6 +213,7 @@ class TestAppHost : AutoCloseable {
                                 createSavedStateHandle(),
                                 Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                                 lotteries,
+                                createQrBitmap = createQrBitmap,
                             )
                         }
                     }

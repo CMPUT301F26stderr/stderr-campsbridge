@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.icons.QrCode
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -207,7 +208,13 @@ fun CampsiteManagementScreen(
                                     }
                                 }
                                 if (site.isPublished && onShowQr != null) {
-                                    add { NavigationRow(stringResource(R.string.campsite_show_qr), onShowQr) }
+                                    add {
+                                        NavigationRow(
+                                            stringResource(R.string.campsite_show_qr),
+                                            onShowQr,
+                                            icon = Icons.Default.QrCode,
+                                        )
+                                    }
                                 }
                                 if (onAvailability != null) {
                                     add {
