@@ -41,9 +41,11 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageReposi
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLocalAppPreferences
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
@@ -97,6 +99,7 @@ class TestAppHost : AutoCloseable {
     val reservationListRequests = mutableListOf<Pair<ReservationContext, String?>>()
     var reservationDetailCreations = 0
     val reservationDetailRequests = mutableListOf<Pair<String, ReservationContext>>()
+    val moderation = FakeModerationRepository()
     val notifications = FakeNotificationRepository()
     val messages = FakeMessageRepository()
     var logNotifications: NotificationRepository = notifications
@@ -148,14 +151,24 @@ class TestAppHost : AutoCloseable {
             SavedStateHandle(),
         ).also { store.put("notification-entry", it) }
     }
+    private val removal by lazy {
+        AccountRemovalViewModel(
+            identity,
+            accounts,
+            moderation,
+            SavedStateHandle(),
+        ).also { store.put("account-removal", it) }
+    }
     private val app by lazy {
         AppViewModel(identity, accounts, preferences).also { store.put("app", it) }
     }
 
-    /** Composes production navigation without production bootstrap or network access. */
+    /** Composes production navigation without production bootstrap or network access.
+     * @param accountRemoval Optional actual Activity-owned root operation for recreation contracts.
+     */
     @OptIn(ExperimentalLayoutApi::class)
     @Composable
-    fun Content() {
+    fun Content(accountRemoval: AccountRemovalViewModel? = null) {
         val visible = WindowInsets.isImeVisible
         SideEffect { keyboardVisible = visible }
         CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
@@ -330,6 +343,7 @@ class TestAppHost : AutoCloseable {
                 notificationLogFactory(),
                 notificationPermission,
                 notificationEntries,
+                accountRemoval = accountRemoval ?: removal,
                 campsiteEditFactory = { ownerId, id ->
                     viewModelFactory {
                         initializer { CampsiteEditViewModel(id, ownerId, campsites, images, createSavedStateHandle()) }

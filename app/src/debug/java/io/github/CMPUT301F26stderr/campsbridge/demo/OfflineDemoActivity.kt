@@ -45,9 +45,11 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
@@ -67,6 +69,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFact
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocalDemoMap
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingStep
@@ -91,10 +94,15 @@ class OfflineDemoActivity : ComponentActivity() {
             val failure by host.failure.collectAsStateWithLifecycle()
             val requestedDestination by host.destination.collectAsStateWithLifecycle()
             val session = current
+            var removalGeneration by rememberSaveable { mutableStateOf(0) }
+            val resetDemo = {
+                removalGeneration++
+                host.reset()
+            }
             if (session == null) {
                 CampsbridgeTheme {
                     if (failure) {
-                        TextButton({ host.reset() }) { Text(stringResource(R.string.demo_reset)) }
+                        TextButton(resetDemo) { Text(stringResource(R.string.demo_reset)) }
                     } else {
                         LoadingContent()
                     }
@@ -108,12 +116,23 @@ class OfflineDemoActivity : ComponentActivity() {
             }.collectAsStateWithLifecycle(
                 initialValue = session.store.read { journeyAction(session.store.clock.instant()) },
             )
+            val boundGeneration = remember(session.store) { removalGeneration }
+            val removal: AccountRemovalViewModel =
+                viewModel(
+                    viewModelStoreOwner = this@OfflineDemoActivity,
+                    key = "account-removal/$boundGeneration/${session.scenario.name}",
+                    factory = accountRemovalViewModelFactory(session.services),
+                )
+            val removalState by removal.state.collectAsStateWithLifecycle()
+            val canSwitch = !removalState.blocksPersonChange
             val savedAreas = rememberSaveableStateHolder()
             CampsbridgeTheme {
                 Column(Modifier.fillMaxSize().statusBarsPadding()) {
                     DemoToolbar(
-                        host::select,
-                        { host.reset() },
+                        { if (canSwitch) host.select(it) },
+                        {
+                            if (canSwitch) resetDemo()
+                        },
                         {
                             startActivity(
                                 Intent(this@OfflineDemoActivity, DemoActivity::class.java),
@@ -138,8 +157,9 @@ class OfflineDemoActivity : ComponentActivity() {
                         },
                         session.scenario,
                         nextAction,
-                        host::follow,
+                        { if (canSwitch) host.follow(it) },
                         failure,
+                        canSwitch,
                     )
                     Box(Modifier.weight(1f).consumeWindowInsets(WindowInsets.statusBars)) {
                         savedAreas.SaveableStateProvider(
@@ -251,6 +271,7 @@ class OfflineDemoActivity : ComponentActivity() {
                                     session.notificationEntries,
                                     requestedDestination,
                                     host::consumeDestination,
+                                    accountRemoval = removal,
                                     campsiteEditFactory = { ownerId, id ->
                                         campsiteEditViewModelFactory(session.services, ownerId, id)
                                     },
@@ -274,6 +295,7 @@ class OfflineDemoActivity : ComponentActivity() {
  * @param nextAction Contextual saved-record handoff.
  * @param onNext Executes that handoff.
  * @param failed Whether a local operation needs retry.
+ * @param canSwitch Whether the current root removal permits changing/resetting people.
  */
 @Composable
 private fun DemoToolbar(
@@ -286,6 +308,7 @@ private fun DemoToolbar(
     nextAction: DemoJourneyAction,
     onNext: (DemoJourneyAction) -> Unit,
     failed: Boolean,
+    canSwitch: Boolean,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     var previews by remember { mutableStateOf(false) }
@@ -297,7 +320,10 @@ private fun DemoToolbar(
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             for (area in listOf(DemoScenario.ENTRANT, DemoScenario.OWNER, DemoScenario.ADMIN)) {
-                TextButton({ onScenario(area) }, enabled = area != scenario) { Text(stringResource(area.areaLabel())) }
+                TextButton(
+                    { onScenario(area) },
+                    enabled = canSwitch && area != scenario,
+                ) { Text(stringResource(area.areaLabel())) }
             }
         }
         if (failed) Text(stringResource(R.string.demo_operation_failed))
@@ -318,7 +344,10 @@ private fun DemoToolbar(
                         )
                     }
                     Box {
-                        TextButton({ expanded = true }) { Text(stringResource(R.string.demo_tools)) }
+                        TextButton(
+                            { expanded = true },
+                            enabled = canSwitch,
+                        ) { Text(stringResource(R.string.demo_tools)) }
                         DropdownMenu(expanded, { expanded = false }) {
                             for (scenario in DemoScenario.entries) {
                                 DropdownMenuItem(
@@ -367,7 +396,7 @@ private fun DemoToolbar(
                         }
                     }
                 }
-                TextButton({ onNext(nextAction) }, Modifier.fillMaxWidth()) {
+                TextButton({ onNext(nextAction) }, Modifier.fillMaxWidth(), enabled = canSwitch) {
                     Text(stringResource(nextAction.label))
                 }
             }
