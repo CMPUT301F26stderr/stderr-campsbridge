@@ -30,6 +30,8 @@ Keep these same sessions throughout the presentation. Recreating an emulator or 
 | Yuduo | Winner booking and notification logs | Whichever camper wins; later admin |
 | Yan | Admin Browse, owner profile and campsite image | Admin |
 
+Jordan’s owner section and Alex’s joining section also include their preparation steps, so opening those sections directly does not skip device setup. Complete that preparation before the timed run.
+
 **Run sheet**
 
 | Time | Action | Handoff |
