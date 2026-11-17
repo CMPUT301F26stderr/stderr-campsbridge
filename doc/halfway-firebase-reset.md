@@ -21,7 +21,11 @@ mkdir -p .firebase/halfway-demo
 cp firebase/halfway-demo/actors.example.json .firebase/halfway-demo/actors.json
 ```
 
-The file needs `host`, `camper`, `newcamper` and `admin`. These are existing anonymous Auth identities. Reset changes Firestore records and role bindings but does not delete or recreate Auth accounts.
+The file needs `host`, `camper`, `newcamper` and `admin`. Use the identities of the actual presentation devices, including newly created emulators. A matching display name does not connect a new installation to an older account.
+
+Before resetting, finish Jordan Lee’s onboarding with **Manage campsites** on the owner emulator and Alex Chen’s onboarding with **Find a campsite** on the returning camper emulator. Their Firestore `accounts` document IDs are their Auth UIDs. Launch Riley’s emulator so its anonymous Auth identity exists, but leave onboarding for the presentation; confirm its UID in Firebase Authentication. Keep Pixel9’s current admin identity. Bind Jordan to `host`, Alex to `camper`, Riley to `newcamper`, and Pixel9 to `admin`.
+
+Reset changes Firestore records and role bindings but does not delete or recreate Auth accounts. It gives Jordan the prepared River Camp and Forest clearing draft, and gives Alex the existing December 9–11 reservation and other history. Riley’s profile is absent afterward. These records are prepared examples, not the result of registering a name.
 
 Run the local contract check when the pinned Firebase CLI and JDK 21 are available:
 
@@ -66,7 +70,7 @@ node firebase/halfway-demo/cli.cjs reset \
 
 Demo mode uses Tuesday, November 17 at 6:00 PM Edmonton time. Registration closes at 6:08 PM. For another presentation slot, update `demoStart` in the config or supply `--anchor` explicitly. It includes the December 1–3 booking path, a prepared December 9–11 owner rejection, the Forest clearing draft, and a future lottery draft. The newcomer profile is absent so onboarding can be shown. The declared role bindings return to the four installed identities.
 
-Reopen the release app after the reset without clearing app data or reinstalling. Check the owner, camper and admin sessions. Follow the [Halfway walkthrough](../pages/halfway-demo/index.html) and [story checklist](../pages/halfway-demo/checklist.pdf).
+Reopen the release app after the reset without clearing app data or reinstalling. Check that Jordan sees River Camp and the Forest clearing draft, Alex sees the December 9–11 reservation, Riley is at onboarding, and Pixel9 opens admin Browse. Do not start the walkthrough until these checks match. Follow the [Halfway walkthrough](../pages/halfway-demo/index.html) and [story checklist](../pages/halfway-demo/checklist.pdf).
 
 **Restore a saved snapshot**
 
