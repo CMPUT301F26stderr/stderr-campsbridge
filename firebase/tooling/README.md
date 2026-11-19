@@ -1,6 +1,6 @@
 # Persistence tooling
 
-For the published Halfway APK, use the separate [snapshot and reset guide](../../doc/halfway-firebase-reset.md). Its frozen fixture and commands do not deploy the Final schema.
+The completed Halfway demo’s [walkthrough](../../pages/archive/halfway-demo/index.html) and [reset notes](../../doc/archive/halfway-firebase-reset.md) are archived. Its scripts and fixtures are preserved in the [Halfway archive](https://github.com/CMPUT301F26stderr/stderr-campsbridge/tree/halfway-demo-archive); the setup below targets Final.
 
 The Final development declarations are in `../fixtures/halfway.json`. The filename is historical: the fixture now includes shared lotteries and nullable ratings that the published Halfway Firebase APK doesn't fully support. Keep that demo on its existing Firebase project. Use a separate project for Final and build its Firebase APK with the matching `app/google-services.json`.
 
@@ -21,7 +21,7 @@ npm --prefix firebase/functions run seed -- --project YOUR_PROJECT --actors /pat
 
 Use the rehearsal start time as the anchor. Use `--reset` after changing the schema or declarations, including the Final participant/review changes. An ordinary seed preserves existing campsites, lotteries and their children; it adds missing aggregates and grants declared roles without replacing profile edits. The seed writes related Firestore records together after the photo uploads. Reset replaces the declared campsite/lottery/reservation history and refreshes its windows; Auth accounts and unrelated records remain. The seed uploads the declared photos before publishing their attachment metadata. Set `FIREBASE_STORAGE_BUCKET` when targeting a bucket other than the checked-in app's bucket.
 
-Current source includes the Final collaboration, feedback, reservation conversation and in-app QR flows. The published beta APKs are the Halfway snapshot. CSV export, external QR launches and closed-app push banners remain separate work. Admin Browse's **Resume pending work** action retries saved removals, due draws, Inbox deliveries and obsolete image cleanup through the existing repositories; it doesn't reseed data.
+Current source includes the Final collaboration, feedback, reservation conversation and in-app QR flows. The [Halfway release](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/tag/halfway-demo) preserves the checkpoint APKs; beta builds follow main. CSV export, external QR launches and closed-app push banners remain separate work. Admin Browse's **Resume pending work** action retries saved removals, due draws, Inbox deliveries and obsolete image cleanup through the existing repositories; it doesn't reseed data.
 
 Final deployment/reseeding and a real closed-app rehearsal are still pending. After deploying `processPendingWork`, each minute tick starts due draws and resumes persisted Inbox delivery without a foreground app. Seeded history supports inspection; the live lottery creates new results through the shared draw protocol.
 
