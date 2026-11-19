@@ -72,7 +72,13 @@ fun AdminImageRoute(
     val image = (inspection as? AdminInspectionUiState.Image)?.takeIf { it.target == target }
     AdminImageScreen(
         state = image ?: AdminInspectionUiState.Image(target),
-        onBack = { if (removal?.state?.value?.blocksNavigation != true) onBack() },
+        onBack = {
+            if (removal?.state?.value?.phase !in
+                setOf(AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING)
+            ) {
+                onBack()
+            }
+        },
         removalAction =
             if (removal != null && session != null) {
                 { attachment -> AdminRemovalImageAction(removal, session, attachment) }
@@ -82,7 +88,11 @@ fun AdminImageRoute(
         onRetryPhoto = model::retryInspectionPhoto,
         onRetryParent = model::retryImageParent,
         onParent = parent@{
-            if (removal?.state?.value?.blocksNavigation == true) return@parent
+            if (removal?.state?.value?.phase in
+                setOf(AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING)
+            ) {
+                return@parent
+            }
             // Recheck the live reader at click time, including transitions to missing/failed data.
             val current = model.inspection.value as? AdminInspectionUiState.Image
             val parent = (current?.parent as? AdminRead.Content)?.value
