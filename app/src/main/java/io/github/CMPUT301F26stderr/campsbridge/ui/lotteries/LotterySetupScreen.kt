@@ -55,6 +55,7 @@ import java.time.YearMonth
  * @param onRetryLoad Retries only a failed authoritative target read.
  * @param modifier Caller layout.
  * @param onRemoveCampsite Removes one applied campsite without changing the other offers.
+ * @param onCapacity Changes raw optional waitlist capacity.
  */
 @Composable
 fun LotterySetupScreen(
@@ -80,6 +81,7 @@ fun LotterySetupScreen(
     onRetrySave: () -> Unit = {},
     onRetryLoad: () -> Unit = {},
     onRemoveCampsite: (String) -> Unit = {},
+    onCapacity: (String) -> Unit = {},
 ) {
     val submitting = state.savePhase != LotterySavePhase.IDLE
     if (state.targetLoad != LotteryTargetLoad.READY || state.publicationPending) {
@@ -208,7 +210,7 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.WINNERS -> {
-                    LotteryWinnersStep(state, onWinners)
+                    LotteryWinnersStep(state, onWinners, onCapacity)
                 }
 
                 LotteryStep.REVIEW -> {
