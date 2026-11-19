@@ -54,6 +54,7 @@ import java.time.YearMonth
  * @param onRetrySave Retries retained intent or resolves uncertain publication.
  * @param onRetryLoad Retries only a failed authoritative target read.
  * @param modifier Caller layout.
+ * @param onRemoveCampsite Removes one applied campsite without changing the other offers.
  */
 @Composable
 fun LotterySetupScreen(
@@ -78,6 +79,7 @@ fun LotterySetupScreen(
     onPublish: () -> Unit = {},
     onRetrySave: () -> Unit = {},
     onRetryLoad: () -> Unit = {},
+    onRemoveCampsite: (String) -> Unit = {},
 ) {
     val submitting = state.savePhase != LotterySavePhase.IDLE
     if (state.targetLoad != LotteryTargetLoad.READY || state.publicationPending) {
@@ -180,7 +182,7 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.SITE -> {
-                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices)
+                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices, onRemoveCampsite)
                 }
 
                 LotteryStep.REGISTRATION -> {
