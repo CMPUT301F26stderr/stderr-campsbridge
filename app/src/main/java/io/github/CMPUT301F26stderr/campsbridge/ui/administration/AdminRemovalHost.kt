@@ -79,3 +79,45 @@ fun AdminRemovalAccountAction(
     ) { model.requestAccount(account) }
 }
 
+/** Slot for an inspected admin campsite, never owner management or entrant participation. */
+@Composable
+fun AdminRemovalCampsiteAction(
+    model: AdminRemovalViewModel,
+    session: SessionState,
+    campsite: Campsite,
+) {
+    AdminRemovalAction(model, session, campsite.removal == null, R.string.admin_remove_campsite) {
+        model.requestCampsite(campsite)
+    }
+}
+
+/** Slot for the confirmed attachment metadata; thumbnail failure does not disable moderation. */
+@Composable
+fun AdminRemovalImageAction(
+    model: AdminRemovalViewModel,
+    session: SessionState,
+    attachment: ImageAttachment,
+) {
+    AdminRemovalAction(model, session, true, R.string.admin_remove_image) { model.requestImage(attachment) }
+}
+
+@Composable
+private fun AdminRemovalAction(
+    model: AdminRemovalViewModel,
+    session: SessionState,
+    available: Boolean,
+    label: Int,
+    request: () -> Unit,
+) {
+    val ready = session as? SessionState.Ready ?: return
+    if (!ready.account.isActive || Role.ADMIN !in ready.account.roles || !available) return
+    val state by model.state.collectAsStateWithLifecycle()
+    TextButton(
+        enabled = state.phase == AdminRemovalPhase.IDLE,
+        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+        onClick = {
+            model.updateSession(session)
+            request()
+        },
+    ) { Text(stringResource(label)) }
+}
