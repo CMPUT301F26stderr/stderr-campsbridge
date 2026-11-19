@@ -85,3 +85,86 @@ fun AdminRemovalContent(
                         Text(stringResource(R.string.admin_removal_unknown))
                     }
 
+                    AdminRemovalPhase.CLEANUP_PENDING -> {
+                        Text(
+                            stringResource(
+                                if (target is AdminRemovalTarget.Image) {
+                                    R.string.admin_removal_image_cleanup_pending
+                                } else {
+                                    R.string.admin_removal_record_cleanup_pending
+                                },
+                            ),
+                        )
+                    }
+
+                    AdminRemovalPhase.COMPLETE -> {
+                        Text(stringResource(R.string.admin_removal_complete))
+                    }
+
+                    AdminRemovalPhase.UNAVAILABLE -> {
+                        Text(
+                            stringResource(
+                                when (state.problem) {
+                                    AdminRemovalProblem.MISSING -> R.string.admin_removal_missing
+                                    AdminRemovalProblem.CHANGED -> R.string.admin_removal_changed
+                                    else -> R.string.admin_removal_denied
+                                },
+                            ),
+                        )
+                    }
+
+                    else -> {
+                        Unit
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !busy, onClick = { if (canClose) onDismiss() else onRetry() }) {
+                Text(
+                    stringResource(
+                        when {
+                            canClose -> R.string.admin_removal_close
+                            state.phase == AdminRemovalPhase.UNKNOWN -> R.string.admin_removal_check_status
+                            state.phase == AdminRemovalPhase.CLEANUP_PENDING -> R.string.admin_removal_retry_cleanup
+                            else -> R.string.retry
+                        },
+                    ),
+                )
+            }
+        },
+    )
+}
+
+/** The confirmation always displays the original identity, not the current selection. */
+@Composable
+private fun AdminRemovalIdentity(target: AdminRemovalTarget) {
+    when (target) {
+        is AdminRemovalTarget.Account -> {
+            Text(target.name.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided))
+            Text(stringResource(R.string.admin_removal_target_id, target.id))
+        }
+
+        is AdminRemovalTarget.Campsite -> {
+            Text(target.name.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided))
+            Text(stringResource(R.string.admin_removal_target_id, target.id))
+        }
+
+        is AdminRemovalTarget.Image -> {
+            Text(
+                stringResource(
+                    if (target.target.type ==
+                        ImageTargetType.ACCOUNT
+                    ) {
+                        R.string.admin_target_account
+                    } else {
+                        R.string.admin_target_campsite
+                    },
+                ),
+            )
+            Text(stringResource(R.string.admin_removal_target_id, target.target.id))
+            Text(stringResource(R.string.admin_removal_image_reference, target.blobId))
+        }
+    }
+}
+
