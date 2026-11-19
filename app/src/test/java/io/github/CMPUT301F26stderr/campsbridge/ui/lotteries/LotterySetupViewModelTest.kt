@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
@@ -615,6 +616,43 @@ class LotterySetupViewModelTest {
             runCurrent()
             checkNotNull(retired).emit(emptyList())
             assertNull(model.state.value.allocation)
+        }
+
+    /** Applying or cancelling a focused calendar changes no other campsite's offered nights. */
+    @Test fun appliedAllocationsRemainIndependentAcrossFocusAndCancel() =
+        runTest {
+            val editor = model()
+            runCurrent()
+            toSite(editor)
+            editor.chooseCampsite(a.id)
+            allocate(editor)
+            editor.chooseCampsite(b.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(day.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            val applied = listOf(LotteryOffer(a.id, listOf(day)), LotteryOffer(b.id, listOf(day.plusDays(1))))
+            assertEquals(applied, editor.state.value.draft.allocations)
+            editor.chooseCampsite(a.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            assertEquals(
+                setOf(day),
+                editor.state.value.allocation!!
+                    .selected,
+            )
+            editor.toggleAllocationDate(day.plusDays(1))
+            editor.cancelAllocation()
+            assertEquals(applied, editor.state.value.draft.allocations)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.selectAllocationDates(setOf(day.plusDays(1)))
+            assertTrue(editor.applyAllocation())
+            assertEquals(
+                listOf(LotteryOffer(b.id, listOf(day.plusDays(1))), LotteryOffer(a.id, listOf(day.plusDays(1)))),
+                editor.state.value.draft.allocations,
+            )
+            assertEquals(0, sites.writeCalls)
         }
 
     /** Advances through the real title action to the site step.
