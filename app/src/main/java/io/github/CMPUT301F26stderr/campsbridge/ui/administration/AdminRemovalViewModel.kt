@@ -87,3 +87,70 @@ class AdminRemovalViewModel(
         request(AdminRemovalTarget.Image(attachment.target, attachment.blobId))
     }
 
+    private fun request(target: AdminRemovalTarget) {
+        if (closed || state.value.phase != AdminRemovalPhase.IDLE || !isAdmin()) return
+        val id =
+            when (target) {
+                is AdminRemovalTarget.Account -> target.id
+                is AdminRemovalTarget.Campsite -> target.id
+                is AdminRemovalTarget.Image -> target.target.id
+            }
+        if (id.isBlank() || (target is AdminRemovalTarget.Image && target.blobId.isBlank())) return
+        mutableState.value =
+            AdminRemovalUiState(
+                phase =
+                    if (target is AdminRemovalTarget.Account && target.id == adminId) {
+                        AdminRemovalPhase.ROOT_HANDOFF
+                    } else {
+                        AdminRemovalPhase.CONFIRMING
+                    },
+                request = AdminRemovalRequest(adminId, target),
+            )
+    }
+
+    /** The root host must call its existing request flow, then acknowledge this one-shot handoff. */
+    fun acknowledgeRootHandoff() {
+        if (!closed && state.value.phase == AdminRemovalPhase.ROOT_HANDOFF) {
+            mutableState.value = AdminRemovalUiState()
+        }
+    }
+
+    /** Freezes one original request before launching any preflight or write. */
+    fun confirm() {
+        if (closed || state.value.phase != AdminRemovalPhase.CONFIRMING || !isAdmin()) return
+        val request = state.value.request ?: return
+        retain()
+        remove(request)
+    }
+
+    /** Pending byte cleanup never deletes the slot again, even if a replacement is now attached. */
+    fun retry() {
+        if (closed || !isAdmin()) return
+        val request = state.value.request ?: return
+        when (state.value.phase) {
+            AdminRemovalPhase.UNKNOWN -> checkRecovery(request)
+            AdminRemovalPhase.FAILED, AdminRemovalPhase.CLEANUP_PENDING -> remove(request)
+            else -> Unit
+        }
+    }
+
+    /** Cancelling an unsubmitted prompt changes nothing; unresolved cleanup cannot be forgotten. */
+    fun dismiss() {
+        if (closed || state.value.phase !in
+            setOf(
+                AdminRemovalPhase.CONFIRMING,
+                AdminRemovalPhase.UNAVAILABLE,
+                AdminRemovalPhase.COMPLETE,
+            )
+        ) {
+            return
+        }
+        clearRetained()
+        mutableState.value = AdminRemovalUiState()
+    }
+
+    private fun isAdmin(): Boolean {
+        val ready = session as? SessionState.Ready ?: return false
+        return ready.account.id == adminId && ready.account.isActive && Role.ADMIN in ready.account.roles
+    }
+
