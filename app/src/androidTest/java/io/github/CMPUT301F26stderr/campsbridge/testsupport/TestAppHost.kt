@@ -66,6 +66,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.OptionalContactInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
+import io.github.CMPUT301F26stderr.campsbridge.ui.reviews.CampsiteReviewsViewModel
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -344,6 +345,21 @@ class TestAppHost : AutoCloseable {
                 notificationPermission,
                 notificationEntries,
                 accountRemoval = accountRemoval ?: removal,
+                reviewsFactory = { actorId, id, workspace ->
+                    viewModelFactory {
+                        initializer {
+                            CampsiteReviewsViewModel(
+                                actorId,
+                                id,
+                                workspace,
+                                campsites,
+                                reviews,
+                                accounts,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
                 campsiteEditFactory = { ownerId, id ->
                     viewModelFactory {
                         initializer { CampsiteEditViewModel(id, ownerId, campsites, images, createSavedStateHandle()) }

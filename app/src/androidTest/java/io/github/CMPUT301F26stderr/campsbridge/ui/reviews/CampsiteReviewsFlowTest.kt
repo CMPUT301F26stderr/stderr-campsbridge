@@ -41,7 +41,7 @@ class CampsiteReviewsFlowTest {
     @Test fun savedReaderFeedbackActionsFollowObservedRecordsAndKeepConfirmedStarsAfterDiscard() {
         host.matchesText = { _, _ -> true }
         host.matchesCapacity = { _, _ -> true }
-        host.clock = Clock.fixed(now, ZoneOffset.UTC)
+        host.fixedClock = Clock.fixed(now, ZoneOffset.UTC)
         host.campsites.records.value = listOf(site)
         host.reviews.ratings(site.id).value = listOf(other)
         host.reviews.setRatingHandler = { _, _, value ->

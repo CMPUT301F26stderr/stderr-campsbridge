@@ -22,18 +22,22 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyReaderScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.policyContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.reviews.CampsiteReviewsRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.reviews.CampsiteReviewsViewModel
 
 /** Registers saved children with entrant actions confined to the actual VIEW graph.
  * @param controller Current account's navigation host.
  * @param workspace Owning workspace; preview/inspection never borrow an entrant model.
  * @param context Fixed presentation validated by the owning graph.
  * @param factory Saved ID/context constructor binding.
+ * @param reviewsFactory Entry-scoped saved feedback dependencies, absent in isolated reader hosts.
  */
 internal fun NavGraphBuilder.campsiteReadGraph(
     controller: NavHostController,
     workspace: Role,
     context: CampsiteDetailContext,
     factory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
+    reviewsFactory: ((String, Role) -> ViewModelProvider.Factory)? = null,
 ) {
     require(context != CampsiteDetailContext.MANAGE)
     val pattern = AppDestination.campsitePattern(workspace, context)
@@ -74,6 +78,17 @@ internal fun NavGraphBuilder.campsiteReadGraph(
                         } else {
                             null
                         },
+                    onReviews =
+                        if (reviewsFactory != null) {
+                            {
+                                controller.navigate(AppDestination.campsiteReviews(workspace, id, context)) {
+                                    launchSingleTop =
+                                        true
+                                }
+                            }
+                        } else {
+                            null
+                        },
                     onOpenSection = { selected ->
                         controller.navigate(
                             "$actual/${selected.routeKey}",
@@ -86,6 +101,14 @@ internal fun NavGraphBuilder.campsiteReadGraph(
                         ) { launchSingleTop = true }
                     },
                 ) { controller.popBackStack() }
+            }
+        }
+        if (reviewsFactory != null) {
+            composable("$pattern/reviews") { entry ->
+                val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                val id = checkNotNull(parent.arguments?.getString("campsiteId"))
+                val model: CampsiteReviewsViewModel = viewModel(factory = reviewsFactory(id, workspace))
+                CampsiteReviewsRoute(model) { controller.popBackStack() }
             }
         }
         composable(

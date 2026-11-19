@@ -56,6 +56,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
@@ -272,6 +273,13 @@ class OfflineDemoActivity : ComponentActivity() {
                                     requestedDestination,
                                     host::consumeDestination,
                                     accountRemoval = removal,
+                                    reviewsFactory = {
+                                        actorId,
+                                        id,
+                                        workspace,
+                                        ->
+                                        campsiteReviewsViewModelFactory(session.services, actorId, id, workspace)
+                                    },
                                     campsiteEditFactory = { ownerId, id ->
                                         campsiteEditViewModelFactory(session.services, ownerId, id)
                                     },
