@@ -261,6 +261,11 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
     override val values: Sequence<LotterySetupUiState> =
         LotteryStep.entries.asSequence().map { step ->
             val site = previewCampsite()
+            val coast =
+                site.copy(
+                    id = "coastal-preview",
+                    details = site.details.copy(name = "Coastal family campsite", timeZone = "America/Vancouver"),
+                )
             LotterySetupUiState(
                 draft =
                     LotteryDraft(
@@ -271,6 +276,7 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
                         allocations =
                             listOf(
                                 LotteryOffer(site.id, listOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15))),
+                                LotteryOffer(coast.id, listOf(LocalDate.of(2027, 5, 16))),
                             ),
                         schedule =
                             LotterySchedulePoint.entries
@@ -283,7 +289,7 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
                                 }.toMap(),
                         maximumWinnersText = "2",
                     ),
-                choices = LotteryCampsiteChoices.Content(listOf(site)),
+                choices = LotteryCampsiteChoices.Content(listOf(site, coast)),
                 errors =
                     if (step == LotteryStep.REVIEW) {
                         LotterySetupErrors(windowsPending = true)
