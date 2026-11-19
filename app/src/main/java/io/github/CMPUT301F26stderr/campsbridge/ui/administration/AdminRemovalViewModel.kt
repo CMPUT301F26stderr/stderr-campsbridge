@@ -154,3 +154,65 @@ class AdminRemovalViewModel(
         return ready.account.id == adminId && ready.account.isActive && Role.ADMIN in ready.account.roles
     }
 
+    private fun remove(request: AdminRemovalRequest) {
+        val committed = state.value.committed
+        val cleanup = state.value.cleanupBlobId
+        mutableState.value = state.value.copy(phase = AdminRemovalPhase.REMOVING, problem = null)
+        launchOperation {
+            // Self-removal is deliberately never executed in a navigation-scoped controller.
+            if (!isAdmin() || request.actorId != adminId ||
+                (request.target is AdminRemovalTarget.Account && request.target.id == adminId)
+            ) {
+                unavailable(AdminRemovalProblem.DENIED)
+                return@launchOperation
+            }
+            if (request.target is AdminRemovalTarget.Image && committed && cleanup != null) {
+                try {
+                    images.retryCleanup(cleanup)
+                    ensureCurrent()
+                    complete()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    ensureCurrent()
+                    pending(cleanup)
+                }
+                return@launchOperation
+            }
+            var attempted = false
+            try {
+                when (val target = request.target) {
+                    is AdminRemovalTarget.Account -> {
+                        val account = accounts.get(target.id)
+                        ensureCurrent()
+                        if (account?.id !=
+                            target.id
+                        ) {
+                            unavailable(AdminRemovalProblem.MISSING)
+                            return@launchOperation
+                        }
+                        if (!preflightRemoval(account.removal, committed)) return@launchOperation
+                        if (!isAdmin()) {
+                            unavailable(AdminRemovalProblem.DENIED)
+                            return@launchOperation
+                        }
+                        attempted = true
+                        moderation.removeAccount(target.id, request.actorId)
+                    }
+
+                    is AdminRemovalTarget.Campsite -> {
+                        val site = campsites.get(target.id)
+                        ensureCurrent()
+                        if (site?.id != target.id) {
+                            unavailable(AdminRemovalProblem.MISSING)
+                            return@launchOperation
+                        }
+                        if (!preflightRemoval(site.removal, committed)) return@launchOperation
+                        if (!isAdmin()) {
+                            unavailable(AdminRemovalProblem.DENIED)
+                            return@launchOperation
+                        }
+                        attempted = true
+                        moderation.removeCampsite(target.id, request.actorId)
+                    }
+
