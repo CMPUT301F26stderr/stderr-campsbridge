@@ -1011,6 +1011,13 @@ class LotterySetupViewModel(
         val available = allocationsAvailable(current)
         val schedule = scheduleErrors(draft, LotterySchedulePoint.entries)
         val count = parsePositiveCount(draft.maximumWinnersText, Long.MAX_VALUE)
+        val capacity =
+            draft.waitlistCapacityText.takeUnless { it.isBlank() }?.let {
+                parsePositiveCount(
+                    it,
+                    Long.MAX_VALUE,
+                )
+            }
         val instants =
             if (available && schedule.isEmpty()) {
                 LotterySchedulePoint.entries.map {
@@ -1034,10 +1041,11 @@ class LotterySetupViewModel(
                 count as? PositiveCountInput.Error,
                 windows?.takeUnless { it == LotteryWindowInput.Valid },
                 windowsPending = instants.size == 4 && validateWindows == null,
+                waitlistCapacity = capacity as? PositiveCountInput.Error,
             )
         val valid =
             !errors.titleRequired && !errors.campsiteRequired && !errors.allocationRequired &&
-                schedule.isEmpty() && count is PositiveCountInput.Value &&
+                schedule.isEmpty() && count is PositiveCountInput.Value && capacity !is PositiveCountInput.Error &&
                 windows == LotteryWindowInput.Valid
         val configuration =
             if (valid) {
@@ -1047,7 +1055,7 @@ class LotterySetupViewModel(
                     instants[2],
                     instants[3],
                     (count as PositiveCountInput.Value).count,
-                    waitlistCapacity = null,
+                    waitlistCapacity = (capacity as? PositiveCountInput.Value)?.count,
                 )
             } else {
                 null
