@@ -46,6 +46,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.SettingsScreen
  * @param profileFactory Dependencies for the shared parent profile model.
  * @param onOwnerWorkspaceReady Opens the selected owner primary after removing the introduction.
  * @param notificationPermission Explicit platform inspection/settings dependency.
+ * @param onDeleteProfile Requests confirmation outside this graph's lifetime.
  */
 internal fun NavGraphBuilder.profileGraph(
     controller: NavHostController,
@@ -55,6 +56,7 @@ internal fun NavGraphBuilder.profileGraph(
     profileFactory: ViewModelProvider.Factory,
     onOwnerWorkspaceReady: () -> Unit,
     notificationPermission: NotificationPermission,
+    onDeleteProfile: () -> Unit,
 ) {
     navigation(
         AppDestination.profileMenu(workspace),
@@ -142,6 +144,7 @@ internal fun NavGraphBuilder.profileGraph(
         }
         composable(AppDestination.settings(workspace)) {
             SettingsScreen(
+                onDeleteProfile = onDeleteProfile,
                 onPolicies = {
                     controller.navigate(AppDestination.policies(workspace)) {
                         launchSingleTop =

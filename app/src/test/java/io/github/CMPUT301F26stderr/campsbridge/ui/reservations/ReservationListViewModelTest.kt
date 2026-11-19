@@ -517,6 +517,215 @@ class ReservationListViewModelTest {
             assertEquals(2, ownerRequests.size)
         }
 
+    /** RH-01: actor categories project saved identities and retain rows with missing labels. */
+    @Test fun historyCategoriesProjectOnlyTheirSavedStayKinds() =
+        listTest {
+            val rows =
+                listOf("upcoming", "ongoing", "past", "cancelled").mapIndexed { index, id ->
+                    base.copy(id = id, campsiteId = if (index % 2 == 0) "site" else "other")
+                }
+            categories.putAll(
+                mapOf(
+                    "upcoming" to ReservationCategory.UPCOMING,
+                    "ongoing" to ReservationCategory.IN_PROGRESS,
+                    "past" to ReservationCategory.PAST,
+                    "cancelled" to ReservationCategory.CANCELLED,
+                ),
+            )
+            bookings.records.value = rows
+            for (context in ReservationContext.entries) {
+                val model = model(context, key = context.name)
+                runCurrent()
+                assertEquals(listOf("upcoming", "ongoing"), ids(model))
+                assertEquals(
+                    if (context ==
+                        ReservationContext.OWNER
+                    ) {
+                        ReservationListCategory.entries.toList()
+                    } else {
+                        listOf(ReservationListCategory.ACTIVE, ReservationListCategory.PAST)
+                    },
+                    model.categories,
+                )
+                model.selectCategory(ReservationListCategory.PAST)
+                runCurrent()
+                assertEquals(listOf("past"), ids(model))
+                if (context == ReservationContext.OWNER) {
+                    model.selectCategory(ReservationListCategory.CANCELLED)
+                    runCurrent()
+                    assertEquals(listOf("cancelled"), ids(model))
+                    assertEquals(ReservationEntrantName.Unavailable, content(model).items.single().name)
+                }
+            }
+        }
+
+    /** RH-02: the owner's campsite filter applies in every category and survives reconstruction. */
+    @Test fun historySelectionAndCampsiteFilterRestoreTogether() =
+        listTest {
+            val rows =
+                ReservationListCategory.entries.flatMap { group ->
+                    listOf("site", "other").map { site ->
+                        val id = "${group.name}:$site"
+                        categories[id] =
+                            when (group) {
+                                ReservationListCategory.ACTIVE -> ReservationCategory.UPCOMING
+                                ReservationListCategory.PAST -> ReservationCategory.PAST
+                                ReservationListCategory.CANCELLED -> ReservationCategory.CANCELLED
+                            }
+                        base.copy(id = id, campsiteId = site)
+                    }
+                }
+            bookings.records.value = rows
+            val saved = SavedStateHandle()
+            val model = model(ReservationContext.OWNER, saved = saved)
+            runCurrent()
+            model.selectCampsite("other")
+            for (group in ReservationListCategory.entries) {
+                model.selectCategory(group)
+                runCurrent()
+                assertEquals(listOf("${group.name}:other"), ids(model))
+                assertEquals("other", model.campsiteId.value)
+            }
+            val restored =
+                model(
+                    ReservationContext.OWNER,
+                    key = "restored-history",
+                    saved =
+                        SavedStateHandle(
+                            saved
+                                .keys()
+                                .associateWith {
+                                    saved.get<Any?>(it)
+                                },
+                        ),
+                )
+            runCurrent()
+            assertEquals(ReservationListCategory.CANCELLED, restored.category.value)
+            assertEquals("other", restored.campsiteId.value)
+            assertEquals(listOf("CANCELLED:other"), ids(restored))
+        }
+
+    /** History ordering follows checkout/cancellation time rather than arrival ordering. */
+    @Test fun historicalOrderingUsesSavedEndTimesAndStableIdentity() =
+        listTest {
+            val pastA =
+                base.copy(
+                    id = "past-a",
+                    checkInDate = LocalDate.parse("2027-04-01"),
+                    checkOutDate = LocalDate.parse("2027-05-14"),
+                )
+            val pastB =
+                base.copy(
+                    id = "past-b",
+                    checkInDate = LocalDate.parse("2027-05-01"),
+                    checkOutDate = LocalDate.parse("2027-05-15"),
+                )
+            val pastC = pastB.copy(id = "past-c")
+            val cancelledA =
+                base.copy(
+                    id = "cancel-a",
+                    cancellation = ReservationCancellation(clock.instant(), "owner", Role.OWNER, "Closure"),
+                )
+            val cancelledB =
+                base.copy(
+                    id = "cancel-b",
+                    cancellation =
+                        ReservationCancellation(
+                            clock.instant().plusSeconds(60),
+                            "entrant",
+                            Role.ENTRANT,
+                            null,
+                        ),
+                )
+            val cancelledC =
+                cancelledB.copy(
+                    id = "cancel-c",
+                    cancellation = cancelledB.cancellation!!.copy(initiatedAs = Role.ADMIN),
+                )
+            bookings.records.value = listOf(pastC, cancelledC, pastA, cancelledA, pastB, cancelledB)
+            listOf(pastA, pastB, pastC).forEach { categories[it.id] = ReservationCategory.PAST }
+            listOf(cancelledA, cancelledB, cancelledC).forEach { categories[it.id] = ReservationCategory.CANCELLED }
+            val model = model(ReservationContext.OWNER, order = { it.reversed() })
+            runCurrent()
+            model.selectCategory(ReservationListCategory.PAST)
+            assertEquals(listOf("past-b", "past-c", "past-a"), ids(model))
+            model.selectCategory(ReservationListCategory.CANCELLED)
+            assertEquals(listOf("cancel-b", "cancel-c", "cancel-a"), ids(model))
+            assertEquals(1, ownerRequests.size)
+            assertTrue(bookings.cancellationRequests.isEmpty())
+        }
+
+    /** Unsupported restored categories cannot expose owner-only history to an entrant. */
+    @Test fun entrantRestorationRejectsOwnerOnlyAndUnknownCategories() =
+        listTest {
+            bookings.records.value = listOf(base)
+            for (restored in listOf("CANCELLED", "unknown")) {
+                val model = model(key = restored, saved = SavedStateHandle(mapOf("reservationCategory" to restored)))
+                runCurrent()
+                assertEquals(ReservationListCategory.ACTIVE, model.category.value)
+                model.selectCategory(ReservationListCategory.CANCELLED)
+                assertEquals(ReservationListCategory.ACTIVE, model.category.value)
+                assertEquals(listOf(base.id), ids(model))
+            }
+        }
+
+    /** A failed history source keeps both local selections and retries only its aggregate. */
+    @Test fun historyFailureRetainsSelectionsAndDoesNotWrite() =
+        listTest {
+            val past = base.copy(id = "past")
+            categories[past.id] = ReservationCategory.PAST
+            bookings.records.value = listOf(past)
+            val model = model(ReservationContext.OWNER)
+            runCurrent()
+            model.selectCategory(ReservationListCategory.PAST)
+            model.selectCampsite(past.campsiteId)
+            ownerFailure.value = IOException("offline")
+            runCurrent()
+            assertEquals(ReservationListUiState.Failure, model.state.value)
+            ownerFailure.value = null
+            model.retry()
+            model.retry()
+            runCurrent()
+            assertEquals(ReservationListCategory.PAST, model.category.value)
+            assertEquals(past.campsiteId, model.campsiteId.value)
+            assertEquals(listOf(past.id), ids(model))
+            assertEquals(2, ownerRequests.size)
+            assertEquals(1, activeOwners)
+            assertTrue(bookings.cancellationRequests.isEmpty())
+            assertTrue(bookings.reserveRequests.isEmpty())
+        }
+
+    /** Local midnight moves one stay to Past without replacing the source or persisting a status. */
+    @Test fun localCheckoutAppearsInPastOnTheOriginalSource() =
+        listTest {
+            val stay =
+                base.copy(
+                    checkInDate = LocalDate.parse("2027-05-15"),
+                    checkOutDate = LocalDate.parse("2027-05-17"),
+                    bookedCampsite = base.bookedCampsite.copy(timeZone = "UTC"),
+                )
+            bookings.records.value = listOf(stay)
+            val model =
+                model(classify = {
+                    record,
+                    today,
+                    ->
+                    io.github.CMPUT301F26stderr.campsbridge.domain.booking
+                        .classifyReservation(record, today)
+                })
+            runCurrent()
+            assertEquals(listOf(stay.id), ids(model))
+            clock.advance(Duration.ofSeconds(1))
+            advanceTimeBy(1000)
+            runCurrent()
+            assertTrue(ids(model).isEmpty())
+            model.selectCategory(ReservationListCategory.PAST)
+            assertEquals(listOf(stay.id), ids(model))
+            assertEquals(1, bookings.entrantRequests.size)
+            assertTrue(bookings.reserveRequests.isEmpty())
+            assertTrue(bookings.cancellationRequests.isEmpty())
+        }
+
     /** Creates one explicit owner with supplied fixed helper results, never real helper bodies.
      * @param context Actor workspace.
      * @param key Retained graph identity for this test.

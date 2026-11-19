@@ -1,5 +1,5 @@
 /*
- * Reads one actor's saved stays and projects the active rows.
+ * Reads one actor's saved stays and projects the selected history category.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
@@ -29,17 +29,17 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
-/** Reads one actor's saved stays and projects the active rows.
+/** Reads one actor's saved stays and projects the selected history category.
  * @param accountId Current actor identity.
  * @param context Entrant or owner presentation.
  * @param bookings Authoritative scoped stay source.
  * @param accounts Independent owner-row names.
  * @param images Independent visible photos.
  * @param clock Source of booked-local dates.
- * @param savedState Retained campsite selection.
+ * @param savedState Retained history category and campsite selection.
  * @param initialCampsiteId Optional management-entry filter.
- * @param classify Date-category dependency, absent while integration is pending.
- * @param order Arrival-order dependency, absent while integration is pending.
+ * @param classify F17 date classifier; null exposes a missing dependency in isolated hosts.
+ * @param order F18 arrival ordering; null exposes a missing dependency in isolated hosts.
  */
 class ReservationListViewModel(
     private val accountId: String,
@@ -56,6 +56,38 @@ class ReservationListViewModel(
     private val mutableState =
         MutableStateFlow<ReservationListUiState>(ReservationListUiState.Loading)
     val state = mutableState.asStateFlow()
+    val categories =
+        if (context ==
+            ReservationContext.OWNER
+        ) {
+            ReservationListCategory.entries.toList()
+        } else {
+            listOf(ReservationListCategory.ACTIVE, ReservationListCategory.PAST)
+        }
+    private val selectedCategory =
+        MutableStateFlow(
+            savedState
+                .get<String>(CATEGORY_KEY)
+                ?.let { value ->
+                    ReservationListCategory.entries.firstOrNull {
+                        it.name ==
+                            value
+                    }
+                }?.takeIf { it in categories } ?: ReservationListCategory.ACTIVE,
+        )
+    val category = selectedCategory.asStateFlow()
+
+    /** Selects one supported local history category without changing saved records.
+     * @param category Requested list category.
+     */
+    fun selectCategory(category: ReservationListCategory) {
+        if (closed || category !in categories || category == this.category.value) return
+        // 只改变本地投影；切换分类不重查订单，也不写入状态。
+        selectedCategory.value = category
+        savedState[CATEGORY_KEY] = category.name
+        publish()
+    }
+
     private val selectedCampsite =
         MutableStateFlow(
             when {
@@ -216,15 +248,44 @@ class ReservationListViewModel(
                 ?.let { classifier ->
                     current.associate { it.id to classifier(it, localToday(it)) }
                 }.orEmpty()
-        val active =
-            current.filter {
-                (
-                    categories[it.id] == ReservationCategory.UPCOMING ||
-                        categories[it.id] == ReservationCategory.IN_PROGRESS
-                ) &&
-                    (campsiteId.value == null || it.campsiteId == campsiteId.value)
+        val selected =
+            current.filter { record ->
+                val matchesCategory =
+                    when (category.value) {
+                        ReservationListCategory.ACTIVE -> {
+                            categories[record.id] == ReservationCategory.UPCOMING ||
+                                categories[record.id] == ReservationCategory.IN_PROGRESS
+                        }
+
+                        ReservationListCategory.PAST -> {
+                            categories[record.id] == ReservationCategory.PAST
+                        }
+
+                        ReservationListCategory.CANCELLED -> {
+                            categories[record.id] == ReservationCategory.CANCELLED
+                        }
+                    }
+                matchesCategory && (campsiteId.value == null || record.campsiteId == campsiteId.value)
             }
-        val ordered = order?.invoke(active) ?: active
+        // 历史记录按结束/取消时间倒序，不能沿用 Active 的入住日期排序。
+        val ordered =
+            when (category.value) {
+                ReservationListCategory.ACTIVE -> {
+                    order?.invoke(selected) ?: selected
+                }
+
+                ReservationListCategory.PAST -> {
+                    selected.sortedWith(
+                        compareByDescending<Reservation> { it.checkOutDate }.thenBy { it.id },
+                    )
+                }
+
+                ReservationListCategory.CANCELLED -> {
+                    selected.sortedWith(
+                        compareByDescending<Reservation> { it.cancellation?.at }.thenBy { it.id },
+                    )
+                }
+            }
         val displayedNames =
             if (context == ReservationContext.OWNER) {
                 ordered.map { it.entrantId }.toSet()
@@ -360,8 +421,9 @@ class ReservationListViewModel(
         super.onCleared()
     }
 
-    /** Only the small owner filter is retained across recreation. */
+    /** Retains only category/filter primitives across recreation. */
     private companion object {
         const val FILTER_KEY = "reservationCampsite"
+        const val CATEGORY_KEY = "reservationCategory"
     }
 }

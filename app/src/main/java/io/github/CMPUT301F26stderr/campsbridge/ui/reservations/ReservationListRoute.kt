@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -27,8 +28,11 @@ fun ReservationListRoute(
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val campsite by model.campsiteId.collectAsStateWithLifecycle()
+    val category by model.category.collectAsStateWithLifecycle()
     val photos by model.photos.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
+    // 每个分类保留自己的滚动位置，返回详情或恢复页面时不串位。
+    val positions = model.categories.associateWith { item -> key(item) { rememberLazyListState() } }
+    val listState = positions.getValue(category)
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val rowIds =
         (state as? ReservationListUiState.Content)
@@ -37,7 +41,7 @@ fun ReservationListRoute(
             .map {
                 it.reservation.id
             }.toSet()
-    LaunchedEffect(model, listState, rowIds) {
+    LaunchedEffect(model, listState, rowIds, category) {
         snapshotFlow {
             listState.layoutInfo.visibleItemsInfo
                 .mapNotNull { item ->
@@ -77,5 +81,8 @@ fun ReservationListRoute(
         listState = listState,
         photos = photos.mapKeys { it.key.id },
         onRetryPhoto = model::retryPhoto,
+        category = category,
+        categories = model.categories,
+        onCategory = model::selectCategory,
     )
 }

@@ -2,9 +2,16 @@ name: Publish project site
 
 on:
   workflow_call:
+  workflow_dispatch:
+    inputs:
+      api-docs-run-id:
+        description: Successful CI run whose API documentation should be reused
+        required: true
+        type: string
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: github-pages
@@ -17,6 +24,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      actions: read
       pages: write
       id-token: write
     environment:
@@ -33,6 +41,8 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: api-docs
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.api-docs-run-id || github.run_id }}
           path: ${{ runner.temp }}/pages-${{ github.run_id }}-${{ github.run_attempt }}/docs
       - name: Build static site
         env:
@@ -41,6 +51,7 @@ jobs:
           test -f "$SITE_DIR/docs/index.html"
           mkdir -p "$SITE_DIR/storyboard"
           cp pages/index.html "$SITE_DIR/index.html"
+          cp -R pages/archive "$SITE_DIR/archive"
           cp -R pages/halfway-demo "$SITE_DIR/halfway-demo"
           cp prototype/index.html prototype/prototype.css prototype/prototype.js \
             prototype/hotspots.css prototype/wiring.json "$SITE_DIR/storyboard/"
