@@ -80,7 +80,7 @@ class LotterySetupFlowTest {
         schedule("Booking closing", 8)
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Maximum winners").assertIsDisplayed()
-        compose.onNodeWithText("Unlimited registrations").assertIsDisplayed()
+        compose.onNodeWithText("Leave blank for an unlimited waitlist.").assertIsDisplayed()
         compose.onNodeWithText("Maximum winners").performTextInput("2")
         closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
