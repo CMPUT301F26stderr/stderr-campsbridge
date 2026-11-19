@@ -30,6 +30,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
+import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
@@ -351,6 +352,7 @@ private fun AdminProfileSectionFailuresPreview() {
  * @param onRetryPhoto Retries only attachment or display reads.
  * @param onRetryParent Retries only failed parent metadata.
  * @param onParent Opens the confirmed parent identity; never enabled for inferred facts.
+ * @param removalAction Shared moderation action for saved metadata, independent of display success.
  * @param modifier Caller layout.
  */
 @Composable
@@ -361,6 +363,7 @@ fun AdminImageScreen(
     onRetryParent: () -> Unit,
     onParent: () -> Unit,
     modifier: Modifier = Modifier,
+    removalAction: (@Composable (ImageAttachment) -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val parent = (state.parent as? AdminRead.Content)?.value
@@ -385,7 +388,7 @@ fun AdminImageScreen(
             Modifier.verticalScroll(rememberScrollState()).padding(vertical = Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.large),
         ) {
-            Text(stringResource(R.string.admin_inspection_read_only))
+            if (removalAction == null) Text(stringResource(R.string.admin_inspection_read_only))
             InspectionField(stringResource(R.string.admin_image_slot), state.target.id)
             Text(
                 stringResource(
@@ -413,7 +416,8 @@ fun AdminImageScreen(
                 ) {
                     EmptyContent(stringResource(R.string.admin_image_no_attachment))
                 }
-                state.photo.attachment?.let { attachment ->
+                state.photo.attachment?.takeIf { it.target == state.target }?.let { attachment ->
+                    removalAction?.invoke(attachment)
                     InspectionField(
                         stringResource(R.string.admin_image_uploaded_at),
                         formatDateTime(attachment.uploadedAt, locale),

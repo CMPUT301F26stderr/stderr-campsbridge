@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 
@@ -21,6 +22,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
  * @param onBack Returns to the actual caller.
  * @param onProfile Opens the confirmed account parent.
  * @param onCampsite Opens the confirmed campsite parent in read-only inspection.
+ * @param removal Browse-parent removal controller, also retained across image selections.
+ * @param session Actual account session used to gate removal.
+ * @param onRequestRootRemoval Delegates self-removal to the root-owned controller.
  */
 @Composable
 fun AdminImageRoute(
@@ -29,6 +33,9 @@ fun AdminImageRoute(
     onBack: () -> Unit,
     onProfile: (String) -> Unit,
     onCampsite: (String) -> Unit,
+    removal: AdminRemovalViewModel? = null,
+    session: SessionState? = null,
+    onRequestRootRemoval: (String) -> Unit = {},
 ) {
     val inspection by model.inspection.collectAsStateWithLifecycle()
     DisposableEffect(model, target) {
@@ -41,13 +48,41 @@ fun AdminImageRoute(
         }
         return
     }
+    if (removal != null && session != null) {
+        val removalState by removal.state.collectAsStateWithLifecycle()
+        val frozen = removalState.request?.target
+        val identity =
+            when (frozen) {
+                is AdminRemovalTarget.Account -> frozen.id
+                is AdminRemovalTarget.Campsite -> frozen.id
+                is AdminRemovalTarget.Image -> frozen.target.id
+                null -> target.id
+            }
+        AdminRemovalHost(
+            removal,
+            session,
+            AdminRemovalWarnings(
+                stringResource(R.string.admin_remove_profile_body, identity),
+                stringResource(R.string.admin_remove_site_body, identity),
+                stringResource(R.string.admin_remove_image_body, identity),
+            ),
+            onRequestRootRemoval,
+        )
+    }
     val image = (inspection as? AdminInspectionUiState.Image)?.takeIf { it.target == target }
     AdminImageScreen(
         state = image ?: AdminInspectionUiState.Image(target),
-        onBack = onBack,
+        onBack = { if (removal?.state?.value?.blocksNavigation != true) onBack() },
+        removalAction =
+            if (removal != null && session != null) {
+                { attachment -> AdminRemovalImageAction(removal, session, attachment) }
+            } else {
+                null
+            },
         onRetryPhoto = model::retryInspectionPhoto,
         onRetryParent = model::retryImageParent,
-        onParent = {
+        onParent = parent@{
+            if (removal?.state?.value?.blocksNavigation == true) return@parent
             // Recheck the live reader at click time, including transitions to missing/failed data.
             val current = model.inspection.value as? AdminInspectionUiState.Image
             val parent = (current?.parent as? AdminRead.Content)?.value
