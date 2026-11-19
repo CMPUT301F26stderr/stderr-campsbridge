@@ -152,6 +152,14 @@ class LotterySetupViewModel(
         editDraft { it.copy(campsiteId = id) }
     }
 
+    /** Removes one applied offer locally; other campsite nights and saved records stay intact.
+     * @param id Allocated campsite identity explicitly removed by the owner.
+     */
+    fun removeCampsite(id: String) {
+        if (!canEdit() || state.value.draft.step != LotteryStep.SITE) return
+        editDraft { it.copy(allocations = it.allocations.filterNot { offer -> offer.campsiteId == id }) }
+    }
+
     /** Updates one explicit local date.
      * @param point Fixed schedule input.
      * @param value Local selected date.
