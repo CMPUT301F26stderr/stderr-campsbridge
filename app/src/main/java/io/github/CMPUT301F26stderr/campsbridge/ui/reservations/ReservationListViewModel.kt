@@ -56,6 +56,34 @@ class ReservationListViewModel(
     private val mutableState =
         MutableStateFlow<ReservationListUiState>(ReservationListUiState.Loading)
     val state = mutableState.asStateFlow()
+    val categories =
+        if (context ==
+            ReservationContext.OWNER
+        ) {
+            ReservationListCategory.entries.toList()
+        } else {
+            listOf(ReservationListCategory.ACTIVE, ReservationListCategory.PAST)
+        }
+    private val selectedCategory =
+        MutableStateFlow(
+            savedState
+                .get<String>("reservationCategory")
+                ?.let { value ->
+                    ReservationListCategory.entries.firstOrNull {
+                        it.name ==
+                            value
+                    }
+                }?.takeIf { it in categories } ?: ReservationListCategory.ACTIVE,
+        )
+    val category = selectedCategory.asStateFlow()
+
+    /** Selects one supported local history category without changing saved records.
+     * @param category Requested list category.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun selectCategory(category: ReservationListCategory) =
+        Unit
+
     private val selectedCampsite =
         MutableStateFlow(
             when {
