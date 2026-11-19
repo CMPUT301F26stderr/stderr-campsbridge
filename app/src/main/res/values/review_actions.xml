@@ -1,0 +1,4 @@
+<resources>
+    <string name="reviews_rating_save">Save rating</string>
+    <string name="reviews_discard_all_body">Your unsaved rating and written changes will be discarded. Saved feedback will stay.</string>
+</resources>

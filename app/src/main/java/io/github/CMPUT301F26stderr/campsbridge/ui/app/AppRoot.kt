@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.navigation.AppNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.OnboardingNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.SessionNavigationOwner
@@ -48,6 +49,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param notificationEntries Activity/root tap owner, independent of the session navigation store.
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
+ * @param reviewsFactory Entry-scoped saved feedback dependencies.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  */
 @Composable
@@ -74,6 +76,7 @@ fun AppRoot(
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
     accountRemoval: AccountRemovalViewModel,
+    reviewsFactory: (String, String, Role) -> ViewModelProvider.Factory,
     campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
@@ -183,6 +186,7 @@ fun AppRoot(
                                             session.account.id,
                                         )
                                 },
+                                reviewsFactory = { id, workspace -> reviewsFactory(session.account.id, id, workspace) },
                                 campsiteEditFactory = { id -> campsiteEditFactory(session.account.id, id) },
                             )
                         }
