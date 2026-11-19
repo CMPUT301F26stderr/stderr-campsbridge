@@ -216,3 +216,92 @@ class AdminRemovalViewModel(
                         moderation.removeCampsite(target.id, request.actorId)
                     }
 
+                    is AdminRemovalTarget.Image -> {
+                        val current = images.get(target.target)
+                        ensureCurrent()
+                        if (current == null) {
+                            unavailable(AdminRemovalProblem.MISSING)
+                            return@launchOperation
+                        }
+                        if (current.target != target.target || current.blobId != target.blobId) {
+                            unavailable(AdminRemovalProblem.CHANGED)
+                            return@launchOperation
+                        }
+                        if (!isAdmin()) {
+                            unavailable(AdminRemovalProblem.DENIED)
+                            return@launchOperation
+                        }
+                        attempted = true
+                        val result = images.delete(target.target)
+                        ensureCurrent()
+                        if (result.attachment != null) {
+                            mutableState.value =
+                                state.value.copy(
+                                    phase = AdminRemovalPhase.UNKNOWN,
+                                    problem = AdminRemovalProblem.WRITE_FAILED,
+                                )
+                            retain()
+                            return@launchOperation
+                        }
+                        if (result.obsoleteBlobId != null) {
+                            pending(result.obsoleteBlobId)
+                            return@launchOperation
+                        }
+                    }
+                }
+                ensureCurrent()
+                complete()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                ensureCurrent()
+                if (attempted) {
+                    recover(request)
+                } else {
+                    mutableState.value =
+                        state.value.copy(phase = AdminRemovalPhase.UNKNOWN, problem = AdminRemovalProblem.READ_FAILED)
+                    retain()
+                }
+            }
+        }
+    }
+
+    private fun preflightRemoval(
+        removal: Removal?,
+        committed: Boolean,
+    ): Boolean {
+        if (removal == null) return true
+        if (committed && removal.actorId == adminId) return true
+        unavailable(AdminRemovalProblem.CHANGED)
+        return false
+    }
+
+    /** Read-only restoration/reconciliation; no marking or deletion is automatically replayed. */
+    private fun checkRecovery(request: AdminRemovalRequest) {
+        mutableState.value = state.value.copy(phase = AdminRemovalPhase.CHECKING, problem = null)
+        launchOperation { recover(request) }
+    }
+
+    private suspend fun recover(request: AdminRemovalRequest) {
+        try {
+            when (val target = request.target) {
+                is AdminRemovalTarget.Account -> {
+                    val account = accounts.get(target.id)
+                    ensureCurrent()
+                    if (account?.id != target.id) {
+                        unavailable(AdminRemovalProblem.MISSING)
+                    } else {
+                        recoveredRemoval(account.removal, request.actorId)
+                    }
+                }
+
+                is AdminRemovalTarget.Campsite -> {
+                    val site = campsites.get(target.id)
+                    ensureCurrent()
+                    if (site?.id != target.id) {
+                        unavailable(AdminRemovalProblem.MISSING)
+                    } else {
+                        recoveredRemoval(site.removal, request.actorId)
+                    }
+                }
+
