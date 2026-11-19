@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
@@ -265,7 +266,10 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
                         title = "May weekends 2027",
                         description = "Quiet riverside camping for the May weekends.",
                         campsiteId = site.id,
-                        nights = setOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15)),
+                        allocations =
+                            listOf(
+                                LotteryOffer(site.id, listOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15))),
+                            ),
                         schedule =
                             LotterySchedulePoint.entries
                                 .mapIndexed { index, point ->

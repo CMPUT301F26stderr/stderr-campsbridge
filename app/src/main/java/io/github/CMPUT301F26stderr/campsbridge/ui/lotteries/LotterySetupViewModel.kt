@@ -143,19 +143,13 @@ class LotterySetupViewModel(
     fun editDescription(value: String) =
         editDraft { it.copy(description = value) }
 
-    /** Replaces the selected allocation while retaining other restored owned offers.
+    /** Focuses one campsite without changing any applied allocation.
      * @param id Current saved choice identity.
      */
     fun chooseCampsite(id: String) {
         if (!canEdit() || state.value.draft.step != LotteryStep.SITE) return
         if (choices().none { it.id == id } || state.value.draft.campsiteId == id) return
-        editDraft {
-            it.copy(
-                campsiteId = id,
-                nights = emptySet(),
-                allocations = it.allocations.filterNot { offer -> offer.campsiteId == it.campsiteId },
-            )
-        }
+        editDraft { it.copy(campsiteId = id) }
     }
 
     /** Updates one explicit local date.
@@ -408,7 +402,12 @@ class LotterySetupViewModel(
         stopCalendar()
         publish(
             current.copy(
-                draft = current.draft.copy(nights = allocation.selected.toSet()),
+                draft =
+                    current.draft.copy(
+                        allocations =
+                            current.draft.allocations.filterNot { it.campsiteId == current.draft.campsiteId } +
+                                LotteryOffer(checkNotNull(current.draft.campsiteId), allocation.selected.sorted()),
+                    ),
                 allocation = null,
                 errors = LotterySetupErrors(),
                 configuration = null,
@@ -498,8 +497,7 @@ class LotterySetupViewModel(
                 draft.title,
                 draft.description,
                 configuration,
-                draft.allocations.filterNot { it.campsiteId == draft.campsiteId } +
-                    LotteryOffer(checkNotNull(draft.campsiteId), draft.nights.sorted()),
+                draft.allocations.toList(),
                 allowCreate = savedState.get<Boolean>("${SETUP_KEY}allowCreate") == true,
                 action = action,
             )
@@ -662,7 +660,6 @@ class LotterySetupViewModel(
                     title = record.title,
                     description = record.description,
                     campsiteId = offer?.campsiteId,
-                    nights = offer?.nights?.toSet().orEmpty(),
                     maximumWinnersText = record.configuration.winnerCount.toString(),
                     allocations = content.offers.filter { sites[it.campsiteId]?.ownerId == ownerId },
                 )
@@ -712,7 +709,13 @@ class LotterySetupViewModel(
      * @param draft Current or server-baseline form.
      */
     private fun normalized(draft: LotteryDraft): LotteryDraft =
-        draft.copy(id = null, step = LotteryStep.BASICS, returnToReview = false)
+        draft.copy(
+            id = null,
+            campsiteId = null,
+            step = LotteryStep.BASICS,
+            returnToReview = false,
+            allocations = draft.allocations.sortedBy { it.campsiteId },
+        )
 
     /**
      * Updates local input only when its parent form is active, invalidating any prior
@@ -1029,7 +1032,6 @@ class LotterySetupViewModel(
         savedState["${SETUP_KEY}title"] = draft.title
         savedState["${SETUP_KEY}description"] = draft.description
         savedState["${SETUP_KEY}campsite"] = draft.campsiteId
-        savedState["${SETUP_KEY}nights"] = ArrayList(draft.nights.map(LocalDate::toString))
         savedState["${SETUP_KEY}winners"] = draft.maximumWinnersText
         savedState["${SETUP_KEY}reviewReturn"] = draft.returnToReview
         val previousSites = savedState.get<ArrayList<String>>("${SETUP_KEY}allocationSites").orEmpty()
@@ -1084,7 +1086,6 @@ class LotterySetupViewModel(
                 title = savedState["${SETUP_KEY}title"] ?: "",
                 description = savedState["${SETUP_KEY}description"] ?: "",
                 campsiteId = savedState["${SETUP_KEY}campsite"],
-                nights = savedDates("nights"),
                 schedule = schedule,
                 maximumWinnersText = savedState["${SETUP_KEY}winners"] ?: "",
                 returnToReview = savedState["${SETUP_KEY}reviewReturn"] ?: false,
