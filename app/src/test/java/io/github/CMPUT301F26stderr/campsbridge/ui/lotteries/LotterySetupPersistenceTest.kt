@@ -624,6 +624,31 @@ class LotterySetupPersistenceTest {
         assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
     }
 
+    /** Saved limited and unlimited capacities reopen with every owned campsite allocation. */
+    @Test fun reopeningWaitlistCapacityKeepsAllOwnedAllocations() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val offers = listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer(other.id, listOf(night.plusDays(1))))
+            for (capacity in listOf(null, 3L)) {
+                val saved =
+                    savedLottery().let { it.copy(configuration = it.configuration.copy(waitlistCapacity = capacity)) }
+                lotteries.records.value = listOf(saved)
+                lotteries.serverOffers[saved.id] = offers
+                val editor = model(id = saved.id)
+                runCurrent()
+                assertEquals(capacity?.toString().orEmpty(), editor.state.value.draft.waitlistCapacityText)
+                assertEquals(offers, editor.state.value.draft.allocations)
+                assertNotNull(editor.state.value.configuration)
+                assertEquals(
+                    capacity,
+                    editor.state.value.configuration
+                        ?.waitlistCapacity,
+                )
+                assertTrue(lotteries.detailsRequests.isEmpty())
+            }
+        }
+
     /**
      * Supplies explicit mutation acknowledgements; production behavior remains in the real
      * writer.
