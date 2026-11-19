@@ -19,4 +19,22 @@
     <string name="admin_remove_confirmed">Removal for %1$s is complete.</string>
     <string name="admin_remove_image_cleanup">The image is detached. Cleanup of the old file is still pending.</string>
     <string name="admin_remove_retry">Retry removal</string>
+    <string name="admin_remove_account">Remove profile</string>
+    <string name="admin_remove_campsite">Remove campsite</string>
+    <string name="admin_removal_confirm">Confirm removal</string>
+    <string name="admin_removal_target_id">Target ID: %1$s</string>
+    <string name="admin_removal_image_reference">Image reference: %1$s</string>
+    <string name="admin_removal_working">Removing the original target...</string>
+    <string name="admin_removal_checking">Checking the saved removal...</string>
+    <string name="admin_removal_failed">The original target is still active or attached. Retry the same confirmed request.</string>
+    <string name="admin_removal_unknown">The result is not confirmed. Check the saved target before retrying removal.</string>
+    <string name="admin_removal_record_cleanup_pending">The record is marked removed. Dependent cleanup has not finished.</string>
+    <string name="admin_removal_image_cleanup_pending">The original attachment is no longer current. Image byte cleanup has not finished.</string>
+    <string name="admin_removal_complete">Removal and cleanup completed.</string>
+    <string name="admin_removal_missing">The original target is missing or unavailable. Return to inspection to check its current state.</string>
+    <string name="admin_removal_changed">The original target has changed or is already removed. Return to inspection to check its current state.</string>
+    <string name="admin_removal_denied">This removal does not match the current administrator. It cannot be continued here.</string>
+    <string name="admin_removal_close">Return to inspection</string>
+    <string name="admin_removal_check_status">Check status</string>
+    <string name="admin_removal_retry_cleanup">Retry cleanup</string>
 </resources>
