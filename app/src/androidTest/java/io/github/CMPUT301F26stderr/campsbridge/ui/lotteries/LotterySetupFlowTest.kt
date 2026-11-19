@@ -448,6 +448,20 @@ class LotterySetupFlowTest {
         }
     }
 
+    /** Removing the last allocation requires a new applied night before leaving the campsite step. */
+    @Test fun removingTheLastAllocationCannotCreateOrPublishAnEmptyLottery() {
+        configureSaves()
+        start()
+        toSite()
+        compose.onNodeWithText(site.details.name).performClick()
+        allocate(day)
+        compose.onNodeWithContentDescription("Remove campsite ${site.details.name}").performScrollTo().performClick()
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
+        compose.onNodeWithText("Allocate at least one available night.").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, host.lotteries.events.count { it.startsWith("create:") }) }
+    }
+
     /**
      * Supplies fixed F13 feedback and explicit acknowledgements without implementing the
      * reserved rule.
