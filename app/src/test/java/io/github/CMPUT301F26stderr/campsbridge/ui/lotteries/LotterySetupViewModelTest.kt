@@ -744,6 +744,36 @@ class LotterySetupViewModelTest {
             }
         }
 
+    /** Capacity feedback is independent of winner errors and keeps invalid spelling until corrected. */
+    @Test fun invalidCapacityBlocksTheWinnersStepUntilCorrected() =
+        runTest {
+            for (raw in listOf("0", "-1", "1.5", "abc", "9223372036854775808")) {
+                val editor = model()
+                toReview(editor)
+                editor.editStep(LotteryStep.WINNERS)
+                editor.editWinnerCount("")
+                editor.editWaitlistCapacity(raw)
+                editor.next()
+                assertEquals(LotteryStep.WINNERS, editor.state.value.draft.step)
+                assertNotNull(editor.state.value.errors.winnerCount)
+                assertNotNull(editor.state.value.errors.waitlistCapacity)
+                editor.editWinnerCount("2")
+                editor.next()
+                assertNull(editor.state.value.errors.winnerCount)
+                assertNotNull(editor.state.value.errors.waitlistCapacity)
+                assertEquals(raw, editor.state.value.draft.waitlistCapacityText)
+                assertNull(editor.state.value.configuration)
+                editor.editWaitlistCapacity("1")
+                editor.next()
+                assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+                assertEquals(
+                    1L,
+                    editor.state.value.configuration!!
+                        .waitlistCapacity,
+                )
+            }
+        }
+
     /** Advances through the real title action to the site step.
      * @param model Current graph owner.
      */
