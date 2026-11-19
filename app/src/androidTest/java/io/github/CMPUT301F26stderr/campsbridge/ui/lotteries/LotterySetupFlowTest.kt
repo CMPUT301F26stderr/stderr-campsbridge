@@ -397,6 +397,57 @@ class LotterySetupFlowTest {
         }
     }
 
+    /** Two calendars can be removed, reapplied and reopened as one saved lottery. */
+    @Test fun multipleCampsitesRemainPairedWithTheirNightsThroughSaveAndReopen() {
+        configureSaves()
+        start()
+        toSite()
+        compose.onNodeWithText(site.details.name).performClick()
+        allocate(day)
+        compose.onNodeWithText(coast.details.name).performClick()
+        allocate(day.plusDays(1))
+        compose.onNodeWithText("Next").performClick()
+        schedule("Registration opening", 5)
+        schedule("Registration closing", 6)
+        compose.onNodeWithText("Next").performClick()
+        schedule("Booking opening", 7)
+        schedule("Booking closing", 8)
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Maximum winners").performTextInput("2")
+        closeReadyKeyboard()
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText(site.details.name).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(coast.details.name).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Edit Campsites & nights").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Remove campsite ${coast.details.name}").performScrollTo().performClick()
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText(coast.details.name).assertDoesNotExist()
+        compose.onNodeWithContentDescription("Edit Campsites & nights").performScrollTo().performClick()
+        compose.onNodeWithText(coast.details.name).performScrollTo().performClick()
+        compose.onNodeWithText("Allocate nights").performScrollTo().performClick()
+        compose.addCalendarNights(day.plusDays(1))
+        compose.onNodeWithText("Cancel").performClick()
+        compose.onNodeWithText("0 nights allocated").assertIsDisplayed()
+        allocate(day.plusDays(1))
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Save draft").performClick()
+        compose.onNodeWithText("Continue setup").performScrollTo().performClick()
+        compose.onNodeWithText("Step 6 of 6").assertIsDisplayed()
+        compose.onNodeWithText(site.details.name).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(coast.details.name).performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            val offers = host.lotteries.serverOffers.getValue("lottery/new")
+            assertEquals(
+                mapOf(site.id to listOf(day), coast.id to listOf(day.plusDays(1))),
+                offers.associate {
+                    it.campsiteId to
+                        it.nights
+                },
+            )
+            assertEquals(1, host.lotteries.events.count { it == "create:lottery/new" })
+        }
+    }
+
     /**
      * Supplies fixed F13 feedback and explicit acknowledgements without implementing the
      * reserved rule.
