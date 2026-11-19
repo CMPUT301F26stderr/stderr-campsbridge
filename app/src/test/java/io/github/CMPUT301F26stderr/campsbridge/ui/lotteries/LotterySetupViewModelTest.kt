@@ -655,6 +655,43 @@ class LotterySetupViewModelTest {
             assertEquals(0, sites.writeCalls)
         }
 
+    /** Primitive restoration keeps all applied allocations and the focused calendar's unsaved selection. */
+    @Test fun multipleAllocationsAndWorkingSelectionSurviveRecreation() =
+        runTest {
+            val saved = SavedStateHandle()
+            val first = model(saved)
+            runCurrent()
+            toSite(first)
+            first.chooseCampsite(a.id)
+            allocate(first)
+            first.chooseCampsite(b.id)
+            assertTrue(first.beginAllocation())
+            runCurrent()
+            first.toggleAllocationDate(day.plusDays(1))
+            assertTrue(first.applyAllocation())
+            assertTrue(first.beginAllocation())
+            runCurrent()
+            first.toggleAllocationDate(day)
+            val applied = first.state.value.draft.allocations
+            val restored = model(SavedStateHandle(saved.keys().associateWith { saved.get<Any?>(it) }))
+            runCurrent()
+            assertEquals(2, applied.size)
+            assertEquals(applied, restored.state.value.draft.allocations)
+            assertEquals(
+                setOf(day, day.plusDays(1)),
+                restored.state.value.allocation!!
+                    .selected,
+            )
+            sites.streamFailure.value = IOException("offline")
+            runCurrent()
+            assertEquals(applied, restored.state.value.draft.allocations)
+            sites.streamFailure.value = null
+            restored.retryChoices()
+            runCurrent()
+            restored.cancelAllocation()
+            assertEquals(applied, restored.state.value.draft.allocations)
+        }
+
     /** Advances through the real title action to the site step.
      * @param model Current graph owner.
      */
