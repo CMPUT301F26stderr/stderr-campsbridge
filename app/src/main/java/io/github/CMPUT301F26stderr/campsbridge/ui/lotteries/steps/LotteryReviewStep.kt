@@ -116,7 +116,18 @@ fun LotteryReviewStep(
                 color = MaterialTheme.colorScheme.error,
             )
         }
-        Text(stringResource(R.string.lottery_unlimited))
+        DetailRow(
+            stringResource(R.string.lottery_capacity),
+            state.configuration?.waitlistCapacity?.toString()
+                ?: draft.waitlistCapacityText.takeUnless { it.isBlank() }
+                ?: stringResource(R.string.lottery_unlimited),
+        )
+        if (state.errors.waitlistCapacity != null) {
+            Text(
+                stringResource(R.string.lottery_capacity_invalid),
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
     }
     if (state.errors.windowsPending) Text(stringResource(R.string.lottery_window_pending))
     val windowError =

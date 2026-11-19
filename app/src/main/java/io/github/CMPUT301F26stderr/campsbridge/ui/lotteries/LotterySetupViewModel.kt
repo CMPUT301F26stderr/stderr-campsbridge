@@ -182,11 +182,17 @@ class LotterySetupViewModel(
         editSchedule(point) { it.copy(time = value) }
     }
 
-    /** Updates raw maximum-winner input without a registration-cap field.
+    /** Updates raw maximum-winner input.
      * @param value Raw positive-count spelling.
      */
     fun editWinnerCount(value: String) =
         editDraft { it.copy(maximumWinnersText = value) }
+
+    /** Retains optional capacity spelling until explicit validation.
+     * @param value Raw positive-count text, or blank for unlimited.
+     */
+    fun editWaitlistCapacity(value: String) =
+        editDraft { it.copy(waitlistCapacityText = value) }
 
     /** Advances only after this step's local prerequisites pass. */
     fun next() {
@@ -249,6 +255,10 @@ class LotterySetupViewModel(
                                 draft.maximumWinnersText,
                                 Long.MAX_VALUE,
                             ) as? PositiveCountInput.Error,
+                        waitlistCapacity =
+                            draft.waitlistCapacityText.takeUnless { it.isBlank() }?.let {
+                                parsePositiveCount(it, Long.MAX_VALUE) as? PositiveCountInput.Error
+                            },
                     )
                 }
 
@@ -681,6 +691,10 @@ class LotterySetupViewModel(
                     description = record.description,
                     campsiteId = focused?.campsiteId,
                     maximumWinnersText = record.configuration.winnerCount.toString(),
+                    waitlistCapacityText =
+                        record.configuration.waitlistCapacity
+                            ?.toString()
+                            .orEmpty(),
                     allocations = ownedOffers,
                 )
             fresh = withSchedule(fresh, record.configuration)
@@ -997,6 +1011,13 @@ class LotterySetupViewModel(
         val available = allocationsAvailable(current)
         val schedule = scheduleErrors(draft, LotterySchedulePoint.entries)
         val count = parsePositiveCount(draft.maximumWinnersText, Long.MAX_VALUE)
+        val capacity =
+            draft.waitlistCapacityText.takeUnless { it.isBlank() }?.let {
+                parsePositiveCount(
+                    it,
+                    Long.MAX_VALUE,
+                )
+            }
         val instants =
             if (available && schedule.isEmpty()) {
                 LotterySchedulePoint.entries.map {
@@ -1020,10 +1041,11 @@ class LotterySetupViewModel(
                 count as? PositiveCountInput.Error,
                 windows?.takeUnless { it == LotteryWindowInput.Valid },
                 windowsPending = instants.size == 4 && validateWindows == null,
+                waitlistCapacity = capacity as? PositiveCountInput.Error,
             )
         val valid =
             !errors.titleRequired && !errors.campsiteRequired && !errors.allocationRequired &&
-                schedule.isEmpty() && count is PositiveCountInput.Value &&
+                schedule.isEmpty() && count is PositiveCountInput.Value && capacity !is PositiveCountInput.Error &&
                 windows == LotteryWindowInput.Valid
         val configuration =
             if (valid) {
@@ -1033,7 +1055,7 @@ class LotterySetupViewModel(
                     instants[2],
                     instants[3],
                     (count as PositiveCountInput.Value).count,
-                    waitlistCapacity = null,
+                    waitlistCapacity = (capacity as? PositiveCountInput.Value)?.count,
                 )
             } else {
                 null
@@ -1055,6 +1077,7 @@ class LotterySetupViewModel(
         savedState["${SETUP_KEY}description"] = draft.description
         savedState["${SETUP_KEY}campsite"] = draft.campsiteId
         savedState["${SETUP_KEY}winners"] = draft.maximumWinnersText
+        savedState["${SETUP_KEY}capacity"] = draft.waitlistCapacityText
         savedState["${SETUP_KEY}reviewReturn"] = draft.returnToReview
         val previousSites = savedState.get<ArrayList<String>>("${SETUP_KEY}allocationSites").orEmpty()
         for (index in previousSites.indices) {
@@ -1110,6 +1133,7 @@ class LotterySetupViewModel(
                 campsiteId = savedState["${SETUP_KEY}campsite"],
                 schedule = schedule,
                 maximumWinnersText = savedState["${SETUP_KEY}winners"] ?: "",
+                waitlistCapacityText = savedState["${SETUP_KEY}capacity"] ?: "",
                 returnToReview = savedState["${SETUP_KEY}reviewReturn"] ?: false,
                 allocations =
                     savedState.get<ArrayList<String>>("${SETUP_KEY}allocationSites").orEmpty().mapIndexed { index, id ->

@@ -102,3 +102,5 @@ The profile currently connects this path to its existing account's image slot. T
 - [Image loading guidance](https://developer.android.com/develop/ui/compose/graphics/images/loading) and [Coil](https://github.com/coil-kt/coil)
 
 Lottery creation retains one applied allocation per campsite. Selecting another campsite changes calendar focus; Apply updates only that campsite, and Cancel keeps its previous nights. Owners can remove individual allocations before saving. Review lists each campsite and its timezone with its own nights, and reopening a draft restores the whole set. The existing lottery writer saves the owned offers under one retained lottery identity.
+
+The winners step accepts an optional positive whole-number waitlist capacity; blank input means unlimited. Review shows the chosen limit, and saved drafts reopen with it. Raw spelling stays editable through navigation, recreation and failed saves. Joining and withdrawal use the existing repository capacity transaction.

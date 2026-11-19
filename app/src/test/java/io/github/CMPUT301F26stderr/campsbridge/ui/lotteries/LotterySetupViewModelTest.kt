@@ -720,6 +720,94 @@ class LotterySetupViewModelTest {
             assertNotNull(editor.state.value.configuration)
         }
 
+    /** Blank input is unlimited; positive Long values keep their original editable spelling. */
+    @Test fun optionalCapacityAcceptsBlankAndPositiveWholeCounts() =
+        runTest {
+            for ((raw, expected) in listOf(
+                "" to null,
+                "   " to null,
+                "1" to 1L,
+                "0007" to 7L,
+                Long.MAX_VALUE.toString() to Long.MAX_VALUE,
+            )) {
+                val editor = model()
+                toReview(editor)
+                editor.editWaitlistCapacity(raw)
+                assertEquals(raw, editor.state.value.draft.waitlistCapacityText)
+                assertNull(editor.state.value.errors.waitlistCapacity)
+                assertNotNull(editor.state.value.configuration)
+                assertEquals(
+                    expected,
+                    editor.state.value.configuration!!
+                        .waitlistCapacity,
+                )
+            }
+        }
+
+    /** Capacity feedback is independent of winner errors and keeps invalid spelling until corrected. */
+    @Test fun invalidCapacityBlocksTheWinnersStepUntilCorrected() =
+        runTest {
+            for (raw in listOf("0", "-1", "1.5", "abc", "9223372036854775808")) {
+                val editor = model()
+                toReview(editor)
+                editor.editStep(LotteryStep.WINNERS)
+                editor.editWinnerCount("")
+                editor.editWaitlistCapacity(raw)
+                editor.next()
+                assertEquals(LotteryStep.WINNERS, editor.state.value.draft.step)
+                assertNotNull(editor.state.value.errors.winnerCount)
+                assertNotNull(editor.state.value.errors.waitlistCapacity)
+                editor.editWinnerCount("2")
+                editor.next()
+                assertNull(editor.state.value.errors.winnerCount)
+                assertNotNull(editor.state.value.errors.waitlistCapacity)
+                assertEquals(raw, editor.state.value.draft.waitlistCapacityText)
+                assertNull(editor.state.value.configuration)
+                editor.editWaitlistCapacity("1")
+                editor.next()
+                assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+                assertEquals(
+                    1L,
+                    editor.state.value.configuration!!
+                        .waitlistCapacity,
+                )
+            }
+        }
+
+    /** Primitive recreation retains raw limited and unlimited choices alongside every allocation. */
+    @Test fun capacityAndMultipleAllocationsSurviveRecreation() =
+        runTest {
+            val saved = SavedStateHandle()
+            val editor = model(saved)
+            toReview(editor)
+            editor.editStep(LotteryStep.SITE)
+            editor.chooseCampsite(b.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(day.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            editor.next()
+            val offers = editor.state.value.draft.allocations
+            editor.editWaitlistCapacity(" 0003 ")
+            val restored = model(SavedStateHandle(saved.keys().associateWith { saved.get<Any?>(it) }))
+            runCurrent()
+            assertEquals(" 0003 ", restored.state.value.draft.waitlistCapacityText)
+            assertEquals(offers, restored.state.value.draft.allocations)
+            assertEquals(
+                3L,
+                restored.state.value.configuration!!
+                    .waitlistCapacity,
+            )
+            restored.editStep(LotteryStep.WINNERS)
+            restored.editWaitlistCapacity("  ")
+            restored.next()
+            assertNull(
+                restored.state.value.configuration!!
+                    .waitlistCapacity,
+            )
+            assertEquals(offers, restored.state.value.draft.allocations)
+        }
+
     /** Advances through the real title action to the site step.
      * @param model Current graph owner.
      */
