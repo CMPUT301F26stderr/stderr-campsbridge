@@ -7,6 +7,8 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
@@ -69,6 +71,9 @@ internal fun NavGraphBuilder.discoveryGraph(
                 viewModel(viewModelStoreOwner = parent, factory = exploreFactory)
             var scanError by remember { mutableStateOf<ScanError?>(null) }
             val context = LocalContext.current
+            val launchSettings = rememberLauncherForActivityResult(
+                ActivityResultContracts.StartActivityForResult(),
+            ) { }
             val launchScanner = rememberQrScanner { result ->
                 when (result) {
                     QrScanResult.Cancelled -> {
@@ -135,9 +140,8 @@ internal fun NavGraphBuilder.discoveryGraph(
                                             val intent =
                                                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                                                     data = Uri.fromParts("package", context.packageName, null)
-                                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                                 }
-                                            context.startActivity(intent)
+                                            launchSettings.launch(intent)
                                         },
                                     ) {
                                         Text(stringResource(R.string.scan_qr_settings))
