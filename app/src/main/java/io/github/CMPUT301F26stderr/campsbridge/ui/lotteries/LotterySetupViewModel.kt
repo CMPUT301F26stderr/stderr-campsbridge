@@ -255,6 +255,10 @@ class LotterySetupViewModel(
                                 draft.maximumWinnersText,
                                 Long.MAX_VALUE,
                             ) as? PositiveCountInput.Error,
+                        waitlistCapacity =
+                            draft.waitlistCapacityText.takeUnless { it.isBlank() }?.let {
+                                parsePositiveCount(it, Long.MAX_VALUE) as? PositiveCountInput.Error
+                            },
                     )
                 }
 
