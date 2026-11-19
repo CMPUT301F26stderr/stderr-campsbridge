@@ -523,6 +523,22 @@ class LotterySetupPersistenceTest {
             assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
         }
 
+    /** Reopening several owned offers hydrates one usable review without changing saved data. */
+    @Test fun reopeningSeveralOwnedOffersShowsEveryAllocationInReview() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val offers = listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer(other.id, listOf(night.plusDays(1))))
+            lotteries.records.value = listOf(savedLottery())
+            lotteries.serverOffers["saved"] = offers
+            val editor = model(id = "saved")
+            runCurrent()
+            assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+            assertEquals(offers, editor.state.value.draft.allocations)
+            assertNotNull(editor.state.value.configuration)
+            assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
+        }
+
     /**
      * Supplies explicit mutation acknowledgements; production behavior remains in the real
      * writer.
