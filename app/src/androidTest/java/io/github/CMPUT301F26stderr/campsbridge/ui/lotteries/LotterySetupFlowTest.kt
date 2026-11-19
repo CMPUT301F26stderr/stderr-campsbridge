@@ -104,8 +104,7 @@ class LotterySetupFlowTest {
     }
 
     /**
-     * Working selection survives saved-state restoration; Back cancels and changing site
-     * clears allocation.
+     * Working selection survives restoration; Back cancels while other applied campsite nights remain.
      */
     @Test fun allocationRestoresAndCancelsWithinOneParent() {
         val restoration = StateRestorationTester(compose)
