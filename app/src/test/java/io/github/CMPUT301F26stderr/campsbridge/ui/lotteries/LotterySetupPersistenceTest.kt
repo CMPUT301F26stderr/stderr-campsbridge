@@ -506,24 +506,20 @@ class LotterySetupPersistenceTest {
      * A multiple-site draft needs an explicit site/allocation choice before one-site
      * reconciliation.
      */
-    @Test fun multipleSavedOffersDoNotChooseAndDeleteAnAllocationImplicitly() =
+    @Test fun missingSavedAllocationRemainsVisibleAndBlocksSaving() =
         runTest {
+            val offers =
+                listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer("another-site", listOf(night.plusDays(1))))
             lotteries.records.value = listOf(savedLottery())
-            lotteries.serverOffers["saved"] =
-                listOf(
-                    LotteryOffer(site.id, listOf(night)),
-                    LotteryOffer("another-site", listOf(night.plusDays(1))),
-                )
-            val model = model(id = "saved")
+            lotteries.serverOffers["saved"] = offers
+            val editor = model(id = "saved")
             runCurrent()
-            assertEquals(LotteryStep.SITE, model.state.value.draft.step)
-            assertNull(model.state.value.draft.campsiteId)
-            assertTrue(
-                model.state.value.draft.nights
-                    .isEmpty(),
-            )
-            model.saveDraft()
-            model.publishLottery()
+            assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+            assertEquals(offers, editor.state.value.draft.allocations)
+            assertTrue(editor.state.value.errors.campsiteRequired)
+            assertNull(editor.state.value.configuration)
+            editor.saveDraft()
+            editor.publishLottery()
             assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
         }
 
