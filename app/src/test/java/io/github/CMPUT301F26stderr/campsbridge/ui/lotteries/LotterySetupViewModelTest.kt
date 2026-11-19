@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
@@ -434,7 +435,7 @@ class LotterySetupViewModelTest {
         }
 
     /**
-     * Changing sites clears old nights without changing the shared display-zone interpretation.
+     * Changing focus preserves the other campsite and the shared display-zone interpretation.
      */
     @Test fun changedSiteKeepsTheDisplayZoneInterpretation() =
         runTest {
@@ -615,6 +616,108 @@ class LotterySetupViewModelTest {
             runCurrent()
             checkNotNull(retired).emit(emptyList())
             assertNull(model.state.value.allocation)
+        }
+
+    /** Applying or cancelling a focused calendar changes no other campsite's offered nights. */
+    @Test fun appliedAllocationsRemainIndependentAcrossFocusAndCancel() =
+        runTest {
+            val editor = model()
+            runCurrent()
+            toSite(editor)
+            editor.chooseCampsite(a.id)
+            allocate(editor)
+            editor.chooseCampsite(b.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(day.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            val applied = listOf(LotteryOffer(a.id, listOf(day)), LotteryOffer(b.id, listOf(day.plusDays(1))))
+            assertEquals(applied, editor.state.value.draft.allocations)
+            editor.chooseCampsite(a.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            assertEquals(
+                setOf(day),
+                editor.state.value.allocation!!
+                    .selected,
+            )
+            editor.toggleAllocationDate(day.plusDays(1))
+            editor.cancelAllocation()
+            assertEquals(applied, editor.state.value.draft.allocations)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.selectAllocationDates(setOf(day.plusDays(1)))
+            assertTrue(editor.applyAllocation())
+            assertEquals(
+                listOf(LotteryOffer(b.id, listOf(day.plusDays(1))), LotteryOffer(a.id, listOf(day.plusDays(1)))),
+                editor.state.value.draft.allocations,
+            )
+            assertEquals(0, sites.writeCalls)
+        }
+
+    /** Primitive restoration keeps all applied allocations and the focused calendar's unsaved selection. */
+    @Test fun multipleAllocationsAndWorkingSelectionSurviveRecreation() =
+        runTest {
+            val saved = SavedStateHandle()
+            val first = model(saved)
+            runCurrent()
+            toSite(first)
+            first.chooseCampsite(a.id)
+            allocate(first)
+            first.chooseCampsite(b.id)
+            assertTrue(first.beginAllocation())
+            runCurrent()
+            first.toggleAllocationDate(day.plusDays(1))
+            assertTrue(first.applyAllocation())
+            assertTrue(first.beginAllocation())
+            runCurrent()
+            first.toggleAllocationDate(day)
+            val applied = first.state.value.draft.allocations
+            val restored = model(SavedStateHandle(saved.keys().associateWith { saved.get<Any?>(it) }))
+            runCurrent()
+            assertEquals(2, applied.size)
+            assertEquals(applied, restored.state.value.draft.allocations)
+            assertEquals(
+                setOf(day, day.plusDays(1)),
+                restored.state.value.allocation!!
+                    .selected,
+            )
+            sites.streamFailure.value = IOException("offline")
+            runCurrent()
+            assertEquals(applied, restored.state.value.draft.allocations)
+            sites.streamFailure.value = null
+            restored.retryChoices()
+            runCurrent()
+            restored.cancelAllocation()
+            assertEquals(applied, restored.state.value.draft.allocations)
+        }
+
+    /** Losing an unfocused campsite blocks review without discarding either allocation. */
+    @Test fun unavailableUnfocusedCampsiteBlocksReviewWithoutDroppingOffers() =
+        runTest {
+            val editor = model()
+            toReview(editor)
+            editor.editStep(LotteryStep.SITE)
+            editor.chooseCampsite(b.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(day.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            editor.next()
+            assertNotNull(editor.state.value.configuration)
+            sites.records.value = listOf(b)
+            runCurrent()
+            assertTrue(editor.state.value.errors.campsiteRequired)
+            assertNull(editor.state.value.configuration)
+            assertEquals(
+                setOf(a.id, b.id),
+                editor.state.value.draft.allocations
+                    .map { it.campsiteId }
+                    .toSet(),
+            )
+            sites.records.value = listOf(a, b)
+            runCurrent()
+            assertNotNull(editor.state.value.configuration)
         }
 
     /** Advances through the real title action to the site step.

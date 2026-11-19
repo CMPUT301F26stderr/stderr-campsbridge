@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
@@ -53,6 +54,7 @@ import java.time.YearMonth
  * @param onRetrySave Retries retained intent or resolves uncertain publication.
  * @param onRetryLoad Retries only a failed authoritative target read.
  * @param modifier Caller layout.
+ * @param onRemoveCampsite Removes one applied campsite without changing the other offers.
  */
 @Composable
 fun LotterySetupScreen(
@@ -77,6 +79,7 @@ fun LotterySetupScreen(
     onPublish: () -> Unit = {},
     onRetrySave: () -> Unit = {},
     onRetryLoad: () -> Unit = {},
+    onRemoveCampsite: (String) -> Unit = {},
 ) {
     val submitting = state.savePhase != LotterySavePhase.IDLE
     if (state.targetLoad != LotteryTargetLoad.READY || state.publicationPending) {
@@ -179,7 +182,7 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.SITE -> {
-                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices)
+                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices, onRemoveCampsite)
                 }
 
                 LotteryStep.REGISTRATION -> {
@@ -258,6 +261,11 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
     override val values: Sequence<LotterySetupUiState> =
         LotteryStep.entries.asSequence().map { step ->
             val site = previewCampsite()
+            val coast =
+                site.copy(
+                    id = "coastal-preview",
+                    details = site.details.copy(name = "Coastal family campsite", timeZone = "America/Vancouver"),
+                )
             LotterySetupUiState(
                 draft =
                     LotteryDraft(
@@ -265,7 +273,11 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
                         title = "May weekends 2027",
                         description = "Quiet riverside camping for the May weekends.",
                         campsiteId = site.id,
-                        nights = setOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15)),
+                        allocations =
+                            listOf(
+                                LotteryOffer(site.id, listOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15))),
+                                LotteryOffer(coast.id, listOf(LocalDate.of(2027, 5, 16))),
+                            ),
                         schedule =
                             LotterySchedulePoint.entries
                                 .mapIndexed { index, point ->
@@ -277,7 +289,7 @@ class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState
                                 }.toMap(),
                         maximumWinnersText = "2",
                     ),
-                choices = LotteryCampsiteChoices.Content(listOf(site)),
+                choices = LotteryCampsiteChoices.Content(listOf(site, coast)),
                 errors =
                     if (step == LotteryStep.REVIEW) {
                         LotterySetupErrors(windowsPending = true)

@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -502,29 +503,86 @@ class LotterySetupPersistenceTest {
             assertEquals(0, sites.activeObservers)
         }
 
-    /**
-     * A multiple-site draft needs an explicit site/allocation choice before one-site
-     * reconciliation.
-     */
-    @Test fun multipleSavedOffersDoNotChooseAndDeleteAnAllocationImplicitly() =
+    /** An unavailable saved allocation remains visible for correction and blocks saving. */
+    @Test fun missingSavedAllocationRemainsVisibleAndBlocksSaving() =
         runTest {
+            val offers =
+                listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer("another-site", listOf(night.plusDays(1))))
             lotteries.records.value = listOf(savedLottery())
-            lotteries.serverOffers["saved"] =
-                listOf(
-                    LotteryOffer(site.id, listOf(night)),
-                    LotteryOffer("another-site", listOf(night.plusDays(1))),
-                )
-            val model = model(id = "saved")
+            lotteries.serverOffers["saved"] = offers
+            val editor = model(id = "saved")
             runCurrent()
-            assertEquals(LotteryStep.SITE, model.state.value.draft.step)
-            assertNull(model.state.value.draft.campsiteId)
-            assertTrue(
-                model.state.value.draft.nights
-                    .isEmpty(),
-            )
-            model.saveDraft()
-            model.publishLottery()
+            assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+            assertEquals(offers, editor.state.value.draft.allocations)
+            assertTrue(editor.state.value.errors.campsiteRequired)
+            assertNull(editor.state.value.configuration)
+            editor.saveDraft()
+            editor.publishLottery()
             assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
+        }
+
+    /** Reopening several owned offers hydrates one usable review without changing saved data. */
+    @Test fun reopeningSeveralOwnedOffersShowsEveryAllocationInReview() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val offers = listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer(other.id, listOf(night.plusDays(1))))
+            lotteries.records.value = listOf(savedLottery())
+            lotteries.serverOffers["saved"] = offers
+            val editor = model(id = "saved")
+            runCurrent()
+            assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+            assertEquals(offers, editor.state.value.draft.allocations)
+            assertNotNull(editor.state.value.configuration)
+            assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
+        }
+
+    /** A failed multi-offer save retains both allocations and retries publication under the same identity. */
+    @Test fun failedMultiOfferPublicationRetriesTheSameCompleteAllocationSet() =
+        runTest {
+            configureWrites()
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val editor = model()
+            review(editor)
+            editor.editStep(LotteryStep.SITE)
+            editor.chooseCampsite(other.id)
+            sites.calendarNights.value = listOf(CalendarNight(night.plusDays(1), true))
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(night.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            editor.next()
+            val attempts = mutableListOf<Pair<String, List<LotteryOffer>>>()
+            var rejected = true
+            lotteries.replaceOwnerOffersHandler = { id, _, offers ->
+                attempts.add(id to offers.toList())
+                if (rejected) throw IOException("A requested night is no longer offered")
+                lotteries.serverOffers[id] = offers
+            }
+            editor.publishLottery()
+            runCurrent()
+            assertNotNull(editor.state.value.saveFailure)
+            assertNull(editor.completion.value)
+            assertEquals(2, editor.state.value.draft.allocations.size)
+            assertEquals(0, lotteries.events.count { it.startsWith("publish:") })
+            rejected = false
+            editor.retrySave()
+            runCurrent()
+            assertEquals("new-1", editor.completion.value)
+            assertEquals(1, allocatedIds)
+            assertEquals(2, attempts.size)
+            assertEquals(attempts.first(), attempts.last())
+            assertEquals(
+                setOf(site.id, other.id),
+                attempts
+                    .last()
+                    .second
+                    .map { it.campsiteId }
+                    .toSet(),
+            )
+            assertEquals(1, lotteries.events.count { it == "create:new-1" })
+            assertEquals(1, lotteries.events.count { it == "publish:new-1" })
         }
 
     /**

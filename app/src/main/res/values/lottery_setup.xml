@@ -16,6 +16,7 @@
     <string name="lottery_no_sites">Publish a campsite before creating a lottery.</string>
     <string name="lottery_site_failure">Could not load your published campsites.</string>
     <string name="lottery_selected_site_unavailable">A campsite is unavailable. Return to Campsites &amp; nights to review your list.</string>
+    <string name="lottery_campsite_focus_hint">Select a campsite to add or edit its nights. Applied nights for other campsites are kept.</string>
     <string name="lottery_add_campsite">Add campsite</string>
     <string name="lottery_edit_nights">Edit nights</string>
     <string name="lottery_edit_nights_for">Edit nights for %1$s</string>
