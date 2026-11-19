@@ -687,6 +687,10 @@ class LotterySetupViewModel(
                     description = record.description,
                     campsiteId = focused?.campsiteId,
                     maximumWinnersText = record.configuration.winnerCount.toString(),
+                    waitlistCapacityText =
+                        record.configuration.waitlistCapacity
+                            ?.toString()
+                            .orEmpty(),
                     allocations = ownedOffers,
                 )
             fresh = withSchedule(fresh, record.configuration)
