@@ -692,6 +692,34 @@ class LotterySetupViewModelTest {
             assertEquals(applied, restored.state.value.draft.allocations)
         }
 
+    /** Losing an unfocused campsite blocks review without discarding either allocation. */
+    @Test fun unavailableUnfocusedCampsiteBlocksReviewWithoutDroppingOffers() =
+        runTest {
+            val editor = model()
+            toReview(editor)
+            editor.editStep(LotteryStep.SITE)
+            editor.chooseCampsite(b.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(day.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            editor.next()
+            assertNotNull(editor.state.value.configuration)
+            sites.records.value = listOf(b)
+            runCurrent()
+            assertTrue(editor.state.value.errors.campsiteRequired)
+            assertNull(editor.state.value.configuration)
+            assertEquals(
+                setOf(a.id, b.id),
+                editor.state.value.draft.allocations
+                    .map { it.campsiteId }
+                    .toSet(),
+            )
+            sites.records.value = listOf(a, b)
+            runCurrent()
+            assertNotNull(editor.state.value.configuration)
+        }
+
     /** Advances through the real title action to the site step.
      * @param model Current graph owner.
      */
