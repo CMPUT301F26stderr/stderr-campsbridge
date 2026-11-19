@@ -48,6 +48,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onRetryRow Retries optional reads for one visible ID.
  * @param listState Caller-owned saveable scroll state.
  * @param modifier Caller layout.
+ * @param onScan Opens the registered native scanner from an explicit click.
  */
 @Composable
 fun ExploreScreen(
@@ -60,6 +61,7 @@ fun ExploreScreen(
     onRetryRow: (String) -> Unit,
     listState: LazyListState = rememberLazyListState(),
     modifier: Modifier = Modifier,
+    onScan: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxSize()) {
         Column(
@@ -73,6 +75,7 @@ fun ExploreScreen(
                 onOpenFilters,
                 onSearch = onSearch,
                 showViewToggle = false,
+                onScan = onScan,
             )
             AppliedFilterSummary(state.filters)
         }

@@ -17,12 +17,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  * @param model Primary discovery owner, shared with its filter child.
  * @param onOpenFilters Opens the registered working filter child.
  * @param onOpenCampsite Opens a separate saved-ID detail parent.
+ * @param onScan Opens the registered native scanner from an explicit click.
  */
 @Composable
 fun ExploreRoute(
     model: ExploreViewModel,
     onOpenFilters: () -> Unit,
     onOpenCampsite: (String) -> Unit,
+    onScan: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val list = rememberLazyListState()
@@ -35,8 +37,18 @@ fun ExploreRoute(
             .collect(model::setVisibleCampsites)
     }
     DisposableEffect(model) { onDispose { model.setVisibleCampsites(emptySet()) } }
-    ExploreScreen(state, model::editQuery, model::submitSearch, {
-        model.beginFilters()
-        onOpenFilters()
-    }, onOpenCampsite, model::retry, model::retryRow, list)
+    ExploreScreen(
+        state,
+        model::editQuery,
+        model::submitSearch,
+        {
+            model.beginFilters()
+            onOpenFilters()
+        },
+        onOpenCampsite,
+        model::retry,
+        model::retryRow,
+        list,
+        onScan = onScan,
+    )
 }
