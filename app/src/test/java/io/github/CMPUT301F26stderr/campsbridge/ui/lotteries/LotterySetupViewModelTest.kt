@@ -774,6 +774,40 @@ class LotterySetupViewModelTest {
             }
         }
 
+    /** Primitive recreation retains raw limited and unlimited choices alongside every allocation. */
+    @Test fun capacityAndMultipleAllocationsSurviveRecreation() =
+        runTest {
+            val saved = SavedStateHandle()
+            val editor = model(saved)
+            toReview(editor)
+            editor.editStep(LotteryStep.SITE)
+            editor.chooseCampsite(b.id)
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(day.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            editor.next()
+            val offers = editor.state.value.draft.allocations
+            editor.editWaitlistCapacity(" 0003 ")
+            val restored = model(SavedStateHandle(saved.keys().associateWith { saved.get<Any?>(it) }))
+            runCurrent()
+            assertEquals(" 0003 ", restored.state.value.draft.waitlistCapacityText)
+            assertEquals(offers, restored.state.value.draft.allocations)
+            assertEquals(
+                3L,
+                restored.state.value.configuration!!
+                    .waitlistCapacity,
+            )
+            restored.editStep(LotteryStep.WINNERS)
+            restored.editWaitlistCapacity("  ")
+            restored.next()
+            assertNull(
+                restored.state.value.configuration!!
+                    .waitlistCapacity,
+            )
+            assertEquals(offers, restored.state.value.draft.allocations)
+        }
+
     /** Advances through the real title action to the site step.
      * @param model Current graph owner.
      */
