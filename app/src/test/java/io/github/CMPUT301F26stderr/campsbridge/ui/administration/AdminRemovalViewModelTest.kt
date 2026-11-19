@@ -75,3 +75,89 @@ class AdminRemovalViewModelTest {
             assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
         }
 
+    @Test fun committedAccountFailureRetainsOriginalTargetUntilCleanupFinishes() =
+        scenario { f ->
+            f.moderation.removeAccountHandler = { id, actor, _ ->
+                f.accountRecords[id] = f.owner.copy(removal = Removal(Instant.EPOCH, actor))
+                throw IOException("dependent cancellations offline")
+            }
+            f.model.requestAccount(f.owner)
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.CLEANUP_PENDING, f.model.state.value.phase)
+            assertTrue(f.model.state.value.committed)
+            f.model.requestCampsite(f.site)
+            f.moderation.removeAccountHandler = { _, _, _ -> }
+            f.model.retry()
+            f.model.retry()
+            runCurrent()
+            assertEquals(List(2) { "account:${f.owner.id}" }, f.moderation.requests)
+            assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
+        }
+
+    @Test fun campsiteUsesModerationAndItsOwnConfirmedCleanupResult() =
+        scenario { f ->
+            f.moderation.removeCampsiteHandler = { id, actor, _ ->
+                f.sites.records.value = listOf(f.site.copy(removal = Removal(Instant.EPOCH, actor)))
+                assertEquals(f.site.id, id)
+                throw IOException("cleanup")
+            }
+            f.model.requestCampsite(f.site)
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.CLEANUP_PENDING, f.model.state.value.phase)
+            f.moderation.removeCampsiteHandler = { _, _, _ -> }
+            f.model.retry()
+            runCurrent()
+            assertEquals(List(2) { "campsite:${f.site.id}" }, f.moderation.requests)
+            assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
+            assertEquals(0, f.sites.writeCalls)
+        }
+
+    @Test fun currentAdminIsHandedToRootWithoutAnAdminOwnedWrite() =
+        scenario { f ->
+            f.model.requestAccount(f.admin)
+            assertEquals(AdminRemovalPhase.ROOT_HANDOFF, f.model.state.value.phase)
+            f.model.confirm()
+            f.model.retry()
+            runCurrent()
+            assertTrue(f.moderation.requests.isEmpty())
+            assertEquals(
+                f.admin.id,
+                (
+                    f.model.state.value.request
+                        ?.target as AdminRemovalTarget.Account
+                ).id,
+            )
+            f.model.acknowledgeRootHandoff()
+            assertEquals(AdminRemovalPhase.IDLE, f.model.state.value.phase)
+        }
+
+    @Test fun imageCleanupRetriesOnlyTheOriginalBlobAfterReplacement() =
+        scenario { f ->
+            f.photos.deleteResult = ImageUpdateResult(null, f.attachment.blobId)
+            f.model.requestImage(f.attachment)
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.CLEANUP_PENDING, f.model.state.value.phase)
+            assertTrue(f.model.state.value.committed)
+            f.photos.attachment.value = f.attachment.copy(blobId = "new-live-image")
+            f.cleanupFailure = IOException("bytes offline")
+            f.model.retry()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.CLEANUP_PENDING, f.model.state.value.phase)
+            f.cleanupFailure = null
+            f.model.retry()
+            f.model.retry()
+            runCurrent()
+            assertEquals(listOf(f.attachment.blobId, f.attachment.blobId), f.cleanupCalls)
+            assertEquals(1, f.photos.deleteCalls)
+            assertEquals(
+                "new-live-image",
+                f.photos.attachment.value
+                    ?.blobId,
+            )
+            assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
+            assertTrue(f.moderation.requests.isEmpty())
+        }
+
