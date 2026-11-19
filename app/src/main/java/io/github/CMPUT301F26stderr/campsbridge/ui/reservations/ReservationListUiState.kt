@@ -1,5 +1,5 @@
 /*
- * Represents active reservation rows, actor filters and independent referenced-profile reads.
+ * Represents selected reservation rows, actor filters and independent referenced-profile reads.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations
@@ -28,7 +28,7 @@ sealed interface ReservationEntrantName {
 
 /** Saved aggregate plus presentation results; booked facts retain one authoritative owner.
  * @param reservation Complete stored stay/payment/cancellation.
- * @param category Supplied active category for the current booked-local date.
+ * @param category Supplied saved-stay category for the current booked-local date.
  * @param name Owner-only supplemental entrant label; null for entrant presentation.
  */
 data class ReservationListItem(
@@ -46,7 +46,7 @@ data class ReservationCampsiteChoice(
     val name: String,
 )
 
-/** Active-list source outcome; the small selected filter remains independent of this read. */
+/** Selected-list source outcome; the small selected filter remains independent of this read. */
 sealed interface ReservationListUiState {
     /** The scoped aggregate has not emitted a confirmed result. */
     data object Loading : ReservationListUiState
@@ -55,10 +55,10 @@ sealed interface ReservationListUiState {
     data object Failure : ReservationListUiState
 
     /** Confirmed saved source projected through available category/order dependencies.
-     * @param items Active rows, with no fallback category implementation.
+     * @param items Selected rows, with no fallback category implementation.
      * @param campsites Owner choices from the full scoped aggregate, including retained history.
-     * @param classificationPending Reserved F17 is absent; items cannot claim active membership.
-     * @param orderingPending Reserved F18 is absent; supplied/source order is shown explicitly.
+     * @param classificationPending This host omitted F17; items cannot claim category membership.
+     * @param orderingPending This host omitted F18; supplied/source order is shown explicitly.
      */
     data class Content(
         val items: List<ReservationListItem>,
