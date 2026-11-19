@@ -391,3 +391,81 @@ class AdminRemovalViewModel(
     private fun savedString(key: String) =
         saved.get<Any?>(key) as? String
 
+    private fun restoreRequest(): AdminRemovalRequest? {
+        val actor = savedString(ACTOR)?.takeIf { it.isNotBlank() } ?: return null
+        val id = savedString(TARGET)?.takeIf { it.isNotBlank() } ?: return null
+        val label = savedString(LABEL).orEmpty()
+        val target =
+            when (savedString(KIND)) {
+                "ACCOUNT" -> {
+                    AdminRemovalTarget.Account(id, label)
+                }
+
+                "CAMPSITE" -> {
+                    AdminRemovalTarget.Campsite(id, label)
+                }
+
+                "IMAGE" -> {
+                    val type = ImageTargetType.entries.firstOrNull { it.name == savedString(IMAGE_TYPE) } ?: return null
+                    val blob = savedString(BLOB)?.takeIf { it.isNotBlank() } ?: return null
+                    AdminRemovalTarget.Image(ImageTarget(type, id), blob)
+                }
+
+                else -> {
+                    return null
+                }
+            }
+        return AdminRemovalRequest(actor, target)
+    }
+
+    private fun retain() {
+        val request = state.value.request ?: return
+        saved[ACTOR] = request.actorId
+        when (val target = request.target) {
+            is AdminRemovalTarget.Account -> {
+                saved[KIND] = "ACCOUNT"
+                saved[TARGET] = target.id
+                saved[LABEL] =
+                    target.name
+            }
+
+            is AdminRemovalTarget.Campsite -> {
+                saved[KIND] = "CAMPSITE"
+                saved[TARGET] = target.id
+                saved[LABEL] =
+                    target.name
+            }
+
+            is AdminRemovalTarget.Image -> {
+                saved[KIND] = "IMAGE"
+                saved[TARGET] = target.target.id
+                saved[IMAGE_TYPE] = target.target.type.name
+                saved[BLOB] =
+                    target.blobId
+            }
+        }
+        saved[COMMITTED] = state.value.committed
+        saved[CLEANUP] = state.value.cleanupBlobId.orEmpty()
+    }
+
+    private fun clearRetained() {
+        for (key in listOf(ACTOR, KIND, TARGET, LABEL, IMAGE_TYPE, BLOB, COMMITTED, CLEANUP)) saved.remove<Any?>(key)
+    }
+
+    override fun onCleared() {
+        closed = true
+        generation++
+        job?.cancel()
+    }
+
+    private companion object {
+        const val ACTOR = "adminRemovalActor"
+        const val KIND = "adminRemovalKind"
+        const val TARGET = "adminRemovalTarget"
+        const val LABEL = "adminRemovalLabel"
+        const val IMAGE_TYPE = "adminRemovalImageType"
+        const val BLOB = "adminRemovalBlob"
+        const val COMMITTED = "adminRemovalCommitted"
+        const val CLEANUP = "adminRemovalCleanup"
+    }
+}
