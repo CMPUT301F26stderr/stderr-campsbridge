@@ -178,6 +178,7 @@ class AdminRemovalViewModel(
             }
             if (request.target is AdminRemovalTarget.Image && committed && cleanup != null) {
                 try {
+                    // The saved blob belongs to this removal; the slot may already hold a replacement.
                     images.retryCleanup(cleanup)
                     ensureCurrent()
                     complete()
