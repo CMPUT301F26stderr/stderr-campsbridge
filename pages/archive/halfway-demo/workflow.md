@@ -1,3 +1,5 @@
+**Archived Halfway demo, November 17, 2026.** These steps describe the completed presentation. For Final development, use the [current Firebase tooling](https://github.com/CMPUT301F26stderr/stderr-campsbridge/blob/main/firebase/tooling/README.md).
+
 **Halfway demo**
 
 Use the [published Halfway release APK](https://github.com/CMPUT301F26stderr/stderr-campsbridge/releases/tag/halfway-demo). It connects to the shared live Firebase project. The illustrated timeline shows that APK running on emulators with separate live sign-ins. Pixel9 has the same release installed and its live identity is assigned to admin. The presentation uses Pixel9 for admin, plus three emulators for owner, new camper and returning camper.
@@ -16,7 +18,7 @@ Complete this setup before 6:00, outside the timed walkthrough. Fresh installati
 
 1. On the owner emulator, tap **Get started → Manage campsites → Next**, enter **Jordan Lee → Continue**, then **Finish setup**. On Alex’s emulator, choose **Find a campsite**, enter **Alex Chen**, and finish setup. Launch Riley’s emulator but leave it at the welcome screen for step 1. Pixel9 keeps its admin session.
 2. Have the person running the seed bind the actual four device identities in `.firebase/halfway-demo/actors.json`: Jordan is `host`, Alex is `camper`, Riley is `newcamper`, and Pixel9 is `admin`. For a completed profile, its Firestore `accounts` document ID is the Auth UID. Confirm Riley’s identity from Firebase Authentication after launching that device. Check IDs, not just names or old emulator bindings.
-3. Finish saves, stop all four app sessions, and follow the [Halfway Firebase reset guide](../../doc/halfway-firebase-reset.md) with **demo** mode for the 6:00 presentation. This loads River Camp, Forest clearing, the lotteries and Alex’s existing bookings under the chosen identities. It leaves Riley without a profile so onboarding remains visible. Use **practice** mode for a rehearsal instead.
+3. Finish saves, stop all four app sessions, and follow the [Halfway Firebase reset guide](https://github.com/CMPUT301F26stderr/stderr-campsbridge/blob/main/doc/archive/halfway-firebase-reset.md) with **demo** mode for the 6:00 presentation. This loads River Camp, Forest clearing, the lotteries and Alex’s existing bookings under the chosen identities. It leaves Riley without a profile so onboarding remains visible. Use **practice** mode for a rehearsal instead.
 4. Reopen the apps without clearing data or reinstalling. Check that Jordan sees **River Camp** and the **Forest clearing** draft, Alex has the **December 9–11** River Camp reservation, Riley is at onboarding, and Pixel9 opens admin Browse. Copy the credited `assets/photos/banff.jpg` into the owner and Riley emulators’ Pictures folder as `Campsbridge-demo.jpg`.
 
 Keep these same sessions throughout the presentation. Recreating an emulator or clearing app data changes its anonymous identity and requires binding and seeding again before starting. Introduce Jordan and Alex as accounts with prepared history; Riley is the new camper whose setup is shown live.
@@ -29,6 +31,8 @@ Keep these same sessions throughout the presentation. Recreating an emulator or 
 | Jixin | Joining, withdrawal, participant filters and receipt status | Returning camper; owner for the participant list |
 | Yuduo | Winner booking and notification logs | Whichever camper wins; later admin |
 | Yan | Admin Browse, owner profile and campsite image | Admin |
+
+Jordan’s owner section and Alex’s joining section also include their preparation steps, so opening those sections directly does not skip device setup. Complete that preparation before the timed run.
 
 **Run sheet**
 
