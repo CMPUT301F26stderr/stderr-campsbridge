@@ -161,3 +161,78 @@ class AdminRemovalFlowTest {
         compose.runOnIdle { assertEquals(List(2) { "campsite:${site.id}" }, moderation.requests) }
     }
 
+    @Test fun detachedImageCleanupDoesNotDeleteANewAttachmentOrItsParent() {
+        photos.deleteResult = ImageUpdateResult(null, attachment.blobId)
+        content()
+        compose.onNodeWithText("Remove image").performClick()
+        compose.onNodeWithText("Image reference: ${attachment.blobId}").assertIsDisplayed()
+        compose.onNodeWithText("Confirm removal").performClick()
+        compose
+            .onNodeWithText(
+                "The original attachment is no longer current. Image byte cleanup has not finished.",
+            ).assertIsDisplayed()
+        compose.runOnIdle { photos.attachment.value = attachment.copy(blobId = "new-live-image") }
+        compose.onNodeWithText("Retry cleanup").performClick()
+        compose.onNodeWithText("Removal and cleanup completed.").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(1, photos.deleteCalls)
+            assertEquals(listOf(attachment.blobId), cleanupCalls)
+            assertEquals("new-live-image", photos.attachment.value?.blobId)
+            assertTrue(moderation.requests.isEmpty())
+            assertEquals(owner, records[owner.id])
+        }
+    }
+
+    @Test fun cancellingImageConfirmationLeavesAttachmentAndBytesAlone() {
+        content()
+        compose.onNodeWithText("Remove image").performClick()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.runOnIdle {
+            assertEquals(0, photos.deleteCalls)
+            assertTrue(cleanupCalls.isEmpty())
+            assertEquals(attachment, photos.attachment.value)
+        }
+    }
+
+    @Test fun missingTargetIsExplainedWithoutReportingSuccessOrTouchingAnotherRecord() {
+        content()
+        compose.onNodeWithText("Remove profile").performClick()
+        compose.runOnIdle { records.remove(owner.id) }
+        compose.onNodeWithText("Confirm removal").performClick()
+        compose
+            .onNodeWithText(
+                "The original target is missing or unavailable. Return to inspection to check its current state.",
+            ).assertIsDisplayed()
+        compose.onNodeWithText("Removal and cleanup completed.").assertDoesNotExist()
+        compose.runOnIdle { assertTrue(moderation.requests.isEmpty()) }
+    }
+
+    @Test fun currentAdminUsesTheAcceptedRootFlowAndOutlivesTheAdminOwner() {
+        val gate = CompletableDeferred<Unit>().also(gates::add)
+        moderation.removeAccountHandler =
+            { id, actor, _ ->
+                records[id] = admin.copy(removal = Removal(Instant.EPOCH, actor))
+                gate.await()
+            }
+        content()
+        compose.runOnIdle { model.requestAccount(admin) }
+        compose.onNodeWithText("Delete profile?").assertIsDisplayed()
+        compose.onNodeWithText("Delete permanently").performClick()
+        compose.runOnIdle {
+            root.updateSession(SessionState.Unavailable)
+            store.clear()
+            assertEquals(AccountRemovalPhase.REMOVING, root.state.value.phase)
+            gate.complete(Unit)
+        }   
+        compose.waitUntil(5_000) { root.state.value.phase == AccountRemovalPhase.COMPLETE }
+        compose.runOnIdle { assertEquals(listOf("account:${admin.id}"), moderation.requests) }
+    }
+
+    @Test fun nonAdminSessionHasNoModerationActions() {
+        content(SessionState.Ready(admin.copy(roles = setOf(Role.OWNER)), Role.OWNER))
+        compose.onNodeWithText("Remove profile").assertDoesNotExist()
+        compose.onNodeWithText("Remove campsite").assertDoesNotExist()
+        compose.onNodeWithText("Remove image").assertDoesNotExist()
+        compose.runOnIdle { assertTrue(moderation.requests.isEmpty()) }
+    }
+}
