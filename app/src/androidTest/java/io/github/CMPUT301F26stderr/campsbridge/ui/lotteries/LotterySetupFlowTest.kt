@@ -16,7 +16,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.Density
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.pressBack
@@ -459,6 +461,77 @@ class LotterySetupFlowTest {
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
         compose.onNodeWithText("Allocate at least one available night.").performScrollTo().assertIsDisplayed()
         compose.runOnIdle { assertEquals(0, host.lotteries.events.count { it.startsWith("create:") }) }
+    }
+
+    /** Limited and unlimited capacities stay paired with every campsite through correction and reopening. */
+    @Test fun waitlistCapacitySurvivesCorrectionRecreationAndMultiCampsiteSaving() {
+        configureSaves()
+        host.lotteries.updateHandler = { input ->
+            host.lotteries.records.value =
+                host.lotteries.records.value.map {
+                    if (it.id == input.id) it.copy(configuration = input.configuration) else it
+                }
+        }
+        val restoration = StateRestorationTester(compose)
+        start(restoration)
+        toSite()
+        compose.onNodeWithText(site.details.name).performClick()
+        allocate(day)
+        compose.onNodeWithText(coast.details.name).performClick()
+        allocate(day.plusDays(1))
+        compose.onNodeWithText("Next").performClick()
+        schedule("Registration opening", 5)
+        schedule("Registration closing", 6)
+        compose.onNodeWithText("Next").performClick()
+        schedule("Booking opening", 7)
+        schedule("Booking closing", 8)
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Maximum winners").performTextInput("2")
+        compose.onNodeWithText("Waitlist capacity (optional)").performScrollTo().performTextInput("0")
+        closeReadyKeyboard()
+        compose.onNodeWithText("Next").performClick()
+        compose
+            .onNodeWithText("Enter a positive whole number, or leave blank for an unlimited waitlist.")
+            .performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("Waitlist capacity (optional)").performScrollTo().performTextReplacement("0003")
+        closeReadyKeyboard()
+        compose.onNodeWithText("Next").performClick()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Waitlist capacity").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("3").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Edit Maximum winners").performScrollTo().performClick()
+        compose.onNodeWithText("0003").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Save draft").performClick()
+        compose.onNodeWithText("Continue setup").performScrollTo().performClick()
+        compose.onNodeWithText("Waitlist capacity").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("3").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Edit Maximum winners").performScrollTo().performClick()
+        compose.onNodeWithText("Waitlist capacity (optional)").performScrollTo().performTextClearance()
+        closeReadyKeyboard()
+        compose.onNodeWithText("Next").performClick()
+        compose.onNodeWithText("Unlimited waitlist").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Save draft").performClick()
+        compose.onNodeWithText("Continue setup").performScrollTo().performClick()
+        compose.onNodeWithText("Unlimited waitlist").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(site.details.name).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(coast.details.name).performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(
+                null,
+                host.lotteries.records.value
+                    .single()
+                    .configuration.waitlistCapacity,
+            )
+            assertEquals(
+                2,
+                host.lotteries.serverOffers
+                    .getValue("lottery/new")
+                    .size,
+            )
+            assertEquals(1, host.lotteries.events.count { it == "create:lottery/new" })
+        }
     }
 
     /**
