@@ -27,7 +27,7 @@ Coil and WeChatQRCode are the current community-library integrations. Keep versi
 
 ## Shared foundation
 
-Use `AppScreen` for app bars, system/keyboard insets, gutters, optional bottom actions, and snackbar placement. Do not add a permanent header divider. Use `StepScaffold` for focused wizard steps: short content keeps whitespace and long/enlarged content can scroll while Next stays reachable.
+Use `AppScreen` for app bars, system/keyboard insets, gutters, optional bottom actions, and snackbar placement. Do not add a permanent header divider. Use `StepScaffold` for focused wizard steps: short content keeps whitespace and long content can scroll while Next stays reachable.
 
 `AppActionButton` blocks repeated taps while submitting. `AppTextField` handles labels, errors, and IME callbacks; callers supply validation. `LoadingContent`, `EmptyContent`, and `FailureContent` distinguish outcomes. `ConfirmationDialog` separates confirm, cancel, and dismissal. Compose ordinary Material components directly when a shared wrapper adds no useful behavior.
 
@@ -42,7 +42,7 @@ adb shell am start -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActivity
 adb shell am start -S -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActivity --ei page 1
 ```
 
-`--ez large true` starts with enlarged app typography/controls; system font scaling remains independent. `--ei section N` opens a zero-based section for visual review. The page tabs and Large text action are also interactive. Themed normal/enlarged previews are colocated with the gallery. This activity and its example state are absent from release builds.
+`--ei section N` opens a zero-based section for visual review. The page tabs are also interactive. Themed previews are colocated with the gallery. This activity and its example state are absent from release builds.
 
 ## Shared component ownership
 
@@ -89,9 +89,9 @@ The profile currently connects this path to its existing account's image slot. T
 ## Accessibility and previews
 
 - Use shared colors, typography, spacing, and shapes; put user-visible text in string resources.
-- Preserve system font scaling and apply the account's font/control scaling consistently. Use layouts that tolerate large text.
+- Preserve system font scaling and apply the account's font/control scaling consistently. Use flexible layouts.
 - Provide meaningful semantics and labels. Communicate availability and errors with more than color alone; color-blind mode uses a shared palette.
-- Put themed `@Preview` functions at the bottom of the screen or component file in `src/main`, so Android Studio shows them while editing that content. Use small sample values without repositories or Firebase. Cover realistic content, feedback and enlarged fonts.
+- Put themed `@Preview` functions at the bottom of the screen or component file in `src/main`, so Android Studio shows them while editing that content. Use small sample values without repositories or Firebase. Cover realistic content and feedback.
 - Keep interactive demo activities, galleries, fake repositories and shared test fixtures in `src/debug`. Production screens must not fake successful saves or contain throwing placeholders in preview paths.
 
 ## References
