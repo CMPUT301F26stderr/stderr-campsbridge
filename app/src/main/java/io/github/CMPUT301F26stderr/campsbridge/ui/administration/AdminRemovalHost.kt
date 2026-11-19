@@ -1,11 +1,5 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,7 +7,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -21,11 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
-import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Required owner-approved effects/retention wording; there is no unreviewed default copy. */
 data class AdminRemovalWarnings(
@@ -60,7 +49,15 @@ fun AdminRemovalHost(
             }
         }
     }
-    BackHandler(enabled = state.blocksNavigation) {}
+    if (!state.dialogVisible) {
+        val account = (session as? SessionState.Ready)?.account
+        TextButton(
+            enabled = account?.isActive == true && Role.ADMIN in account.roles,
+            onClick = model::resume,
+        ) {
+            Text(stringResource(R.string.admin_removal_resume))
+        }
+    }
     AdminRemovalContent(state, warnings, model::confirm, model::retry, model::dismiss)
 }
 

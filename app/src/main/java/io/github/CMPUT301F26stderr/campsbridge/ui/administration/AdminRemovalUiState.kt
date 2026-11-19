@@ -41,21 +41,19 @@ enum class AdminRemovalPhase {
 
 enum class AdminRemovalProblem { MISSING, CHANGED, DENIED, READ_FAILED, WRITE_FAILED }
 
-/** Marking/detaching is distinct from the repository confirming all cleanup finished. */
+/** Marking/detaching is distinct from the repository confirming all cleanup finished.
+ * @param phase Current confirmation, operation or recovery state.
+ * @param request Original administrator and inspected target.
+ * @param committed Whether marking or detaching has already succeeded.
+ * @param cleanupBlobId Original detached blob still awaiting cleanup.
+ * @param problem Reason the operation cannot proceed.
+ * @param dialogVisible Whether to show the retained request's dialog.
+ */
 data class AdminRemovalUiState(
     val phase: AdminRemovalPhase = AdminRemovalPhase.IDLE,
     val request: AdminRemovalRequest? = null,
     val committed: Boolean = false,
     val cleanupBlobId: String? = null,
     val problem: AdminRemovalProblem? = null,
-) {
-    val blocksNavigation: Boolean get() =
-        phase in
-            setOf(
-                AdminRemovalPhase.REMOVING,
-                AdminRemovalPhase.CHECKING,
-                AdminRemovalPhase.FAILED,
-                AdminRemovalPhase.UNKNOWN,
-                AdminRemovalPhase.CLEANUP_PENDING,
-            )
-}
+    val dialogVisible: Boolean = true,
+)

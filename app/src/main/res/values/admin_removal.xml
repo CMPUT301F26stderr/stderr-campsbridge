@@ -35,6 +35,7 @@
     <string name="admin_removal_changed">The original target has changed or is already removed. Return to inspection to check its current state.</string>
     <string name="admin_removal_denied">This removal does not match the current administrator. It cannot be continued here.</string>
     <string name="admin_removal_close">Return to inspection</string>
+    <string name="admin_removal_resume">Review pending removal</string>
     <string name="admin_removal_check_status">Check status</string>
     <string name="admin_removal_retry_cleanup">Retry cleanup</string>
 </resources>

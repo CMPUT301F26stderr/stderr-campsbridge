@@ -29,7 +29,11 @@ fun AdminRemovalContent(
     onDismiss: () -> Unit,
 ) {
     val request = state.request ?: return
-    if (state.phase == AdminRemovalPhase.IDLE || state.phase == AdminRemovalPhase.ROOT_HANDOFF) return
+    if (!state.dialogVisible || state.phase == AdminRemovalPhase.IDLE ||
+        state.phase == AdminRemovalPhase.ROOT_HANDOFF
+    ) {
+        return
+    }
     val target = request.target
     val title =
         stringResource(
@@ -60,7 +64,7 @@ fun AdminRemovalContent(
     val busy = state.phase == AdminRemovalPhase.REMOVING || state.phase == AdminRemovalPhase.CHECKING
     val canClose = state.phase == AdminRemovalPhase.COMPLETE || state.phase == AdminRemovalPhase.UNAVAILABLE
     AlertDialog(
-        onDismissRequest = { if (canClose) onDismiss() },
+        onDismissRequest = { if (!busy) onDismiss() },
         title = { Text(title) },
         text = {
             Column(
@@ -131,6 +135,13 @@ fun AdminRemovalContent(
                         },
                     ),
                 )
+            }
+        },
+        dismissButton = {
+            if (!busy && !canClose) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.admin_removal_close))
+                }
             }
         },
     )

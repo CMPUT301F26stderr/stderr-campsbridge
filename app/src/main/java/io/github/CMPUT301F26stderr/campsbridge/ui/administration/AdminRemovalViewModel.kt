@@ -134,19 +134,29 @@ class AdminRemovalViewModel(
         }
     }
 
-    /** Cancelling an unsubmitted prompt changes nothing; unresolved cleanup cannot be forgotten. */
+    /** Closes the dialog after work stops; unresolved requests remain available for retry. */
     fun dismiss() {
-        if (closed || state.value.phase !in
-            setOf(
-                AdminRemovalPhase.CONFIRMING,
-                AdminRemovalPhase.UNAVAILABLE,
-                AdminRemovalPhase.COMPLETE,
-            )
-        ) {
-            return
+        if (closed) return
+        when (state.value.phase) {
+            AdminRemovalPhase.FAILED, AdminRemovalPhase.UNKNOWN, AdminRemovalPhase.CLEANUP_PENDING -> {
+                mutableState.value = state.value.copy(dialogVisible = false)
+            }
+
+            AdminRemovalPhase.CONFIRMING, AdminRemovalPhase.UNAVAILABLE, AdminRemovalPhase.COMPLETE -> {
+                clearRetained()
+                mutableState.value = AdminRemovalUiState()
+            }
+
+            else -> {
+                return
+            }
         }
-        clearRetained()
-        mutableState.value = AdminRemovalUiState()
+    }
+
+    /** Reopens the original pending request without reading or writing its target. */
+    fun resume() {
+        if (closed || !isAdmin() || state.value.dialogVisible) return
+        mutableState.value = state.value.copy(dialogVisible = true)
     }
 
     private fun isAdmin(): Boolean {
