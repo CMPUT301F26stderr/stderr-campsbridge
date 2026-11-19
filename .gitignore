@@ -348,4 +348,6 @@ __pycache__/
 # Personal reference documents; keep the team roster tracked.
 /doc/*
 !/doc/team.txt
-!/doc/halfway-firebase-reset.md
+!/doc/archive/
+/doc/archive/*
+!/doc/archive/halfway-firebase-reset.md
