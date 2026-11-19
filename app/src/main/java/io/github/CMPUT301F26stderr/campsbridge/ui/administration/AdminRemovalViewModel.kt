@@ -305,3 +305,89 @@ class AdminRemovalViewModel(
                     }
                 }
 
+                is AdminRemovalTarget.Image -> {
+                    // A returned cleanup ID is an exact saved obligation, independent of the slot now.
+                    if (state.value.committed && state.value.cleanupBlobId != null) {
+                        pending(state.value.cleanupBlobId)
+                        return
+                    }
+                    val current = images.get(target.target)
+                    ensureCurrent()
+                    if (current != null && current.target != target.target) {
+                        unavailable(AdminRemovalProblem.CHANGED)
+                    } else if (current == null || current.blobId != target.blobId) {
+                        pending(target.blobId)
+                    } else {
+                        failed()
+                    }
+                }
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            ensureCurrent()
+            mutableState.value =
+                state.value.copy(phase = AdminRemovalPhase.UNKNOWN, problem = AdminRemovalProblem.READ_FAILED)
+            retain()
+        }
+    }
+
+    private fun recoveredRemoval(
+        removal: Removal?,
+        actor: String,
+    ) {
+        when {
+            removal == null -> failed()
+            removal.actorId == actor -> pending(null)
+            else -> unavailable(AdminRemovalProblem.CHANGED)
+        }
+    }
+
+    private fun failed() {
+        mutableState.value =
+            state.value.copy(
+                phase = AdminRemovalPhase.FAILED,
+                committed = false,
+                problem = AdminRemovalProblem.WRITE_FAILED,
+            )
+        retain()
+    }
+
+    private fun pending(blob: String?) {
+        mutableState.value =
+            state.value.copy(
+                phase = AdminRemovalPhase.CLEANUP_PENDING,
+                committed = true,
+                cleanupBlobId = blob,
+                problem = null,
+            )
+        retain()
+    }
+
+    private fun unavailable(problem: AdminRemovalProblem) {
+        mutableState.value = state.value.copy(phase = AdminRemovalPhase.UNAVAILABLE, problem = problem)
+    }
+
+    private fun complete() {
+        mutableState.value =
+            state.value.copy(phase = AdminRemovalPhase.COMPLETE, committed = true, cleanupBlobId = null, problem = null)
+        clearRetained()
+    }
+
+    private fun launchOperation(operation: suspend () -> Unit) {
+        val token = ++generation
+        job?.cancel()
+        job =
+            viewModelScope.launch {
+                if (!closed && token == generation) operation()
+            }
+    }
+
+    private suspend fun ensureCurrent() {
+        currentCoroutineContext().ensureActive()
+        if (closed) throw CancellationException("Admin removal owner retired")
+    }
+
+    private fun savedString(key: String) =
+        saved.get<Any?>(key) as? String
+
