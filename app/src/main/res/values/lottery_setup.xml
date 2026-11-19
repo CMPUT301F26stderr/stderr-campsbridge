@@ -22,9 +22,10 @@
     <string name="lottery_edit_nights_for">Edit nights for %1$s</string>
     <string name="lottery_remove_offer">Remove</string>
     <string name="lottery_remove_campsite_label">Remove campsite %1$s</string>
-    <string name="lottery_capacity_optional">Registration limit (optional)</string>
-    <string name="lottery_capacity_invalid">Enter a positive whole number, or leave blank for unlimited registrations.</string>
-    <string name="lottery_capacity_hint">Leave blank for unlimited registrations.</string>
+    <string name="lottery_capacity">Waitlist capacity</string>
+    <string name="lottery_capacity_optional">Waitlist capacity (optional)</string>
+    <string name="lottery_capacity_invalid">Enter a positive whole number, or leave blank for an unlimited waitlist.</string>
+    <string name="lottery_capacity_hint">Leave blank for an unlimited waitlist.</string>
     <string name="lottery_allocate">Allocate nights</string>
     <string name="lottery_apply_nights">Apply nights</string>
     <string name="lottery_selected_nights">Selected nights</string>
@@ -51,7 +52,7 @@
     <string name="lottery_booking_invalid">Booking opening must precede booking closing.</string>
     <string name="lottery_winners_invalid">Enter a positive whole number of winners.</string>
     <string name="lottery_winners_hint">Fewer entrants may result in fewer winners.</string>
-    <string name="lottery_unlimited">Unlimited registrations</string>
+    <string name="lottery_unlimited">Unlimited waitlist</string>
     <string name="lottery_window_pending">Schedule validation is pending in this build.</string>
     <string name="lottery_publish">Publish lottery</string>
     <string name="lottery_edit_section">Edit %1$s</string>
