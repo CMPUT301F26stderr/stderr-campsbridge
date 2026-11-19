@@ -720,6 +720,30 @@ class LotterySetupViewModelTest {
             assertNotNull(editor.state.value.configuration)
         }
 
+    /** Blank input is unlimited; positive Long values keep their original editable spelling. */
+    @Test fun optionalCapacityAcceptsBlankAndPositiveWholeCounts() =
+        runTest {
+            for ((raw, expected) in listOf(
+                "" to null,
+                "   " to null,
+                "1" to 1L,
+                "0007" to 7L,
+                Long.MAX_VALUE.toString() to Long.MAX_VALUE,
+            )) {
+                val editor = model()
+                toReview(editor)
+                editor.editWaitlistCapacity(raw)
+                assertEquals(raw, editor.state.value.draft.waitlistCapacityText)
+                assertNull(editor.state.value.errors.waitlistCapacity)
+                assertNotNull(editor.state.value.configuration)
+                assertEquals(
+                    expected,
+                    editor.state.value.configuration!!
+                        .waitlistCapacity,
+                )
+            }
+        }
+
     /** Advances through the real title action to the site step.
      * @param model Current graph owner.
      */
