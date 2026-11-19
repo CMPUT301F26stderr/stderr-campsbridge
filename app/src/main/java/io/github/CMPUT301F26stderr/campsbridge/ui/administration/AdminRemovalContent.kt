@@ -168,3 +168,50 @@ private fun AdminRemovalIdentity(target: AdminRemovalTarget) {
     }
 }
 
+@Composable
+private fun RemovalPreview(
+    phase: AdminRemovalPhase,
+    target: AdminRemovalTarget,
+) {
+    val warnings =
+        AdminRemovalWarnings(
+            stringResource(R.string.admin_remove_profile_body, "owner/one"),
+            stringResource(R.string.admin_remove_site_body, "site/one"),
+            stringResource(R.string.admin_remove_image_body, "owner/one"),
+        )
+    CampsbridgeTheme {
+        AdminRemovalContent(
+            AdminRemovalUiState(
+                phase,
+                AdminRemovalRequest("preview-admin", target),
+                committed =
+                    phase == AdminRemovalPhase.CLEANUP_PENDING,
+            ),
+            warnings,
+            {},
+            {},
+            {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 800)
+@Composable
+private fun AdminRemovalConfirmationPreview() {
+    RemovalPreview(AdminRemovalPhase.CONFIRMING, AdminRemovalTarget.Account("owner/one", "Taylor Owner"))
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 800, fontScale = 1.5f)
+@Composable
+private fun AdminRemovalPendingImageCleanupPreview() {
+    RemovalPreview(
+        AdminRemovalPhase.CLEANUP_PENDING,
+        AdminRemovalTarget.Image(ImageTarget(ImageTargetType.ACCOUNT, "owner/one"), "original-blob"),
+    )
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 800)
+@Composable
+private fun AdminRemovalUnknownPreview() {
+    RemovalPreview(AdminRemovalPhase.UNKNOWN, AdminRemovalTarget.Campsite("site/one", "River Camp"))
+}
