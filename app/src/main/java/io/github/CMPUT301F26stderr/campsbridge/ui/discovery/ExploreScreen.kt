@@ -6,6 +6,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +34,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
@@ -48,6 +52,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onRetryRow Retries optional reads for one visible ID.
  * @param listState Caller-owned saveable scroll state.
  * @param modifier Caller layout.
+ * @param onScan Explicit native scan action, absent in passive previews.
+ * @param scanFeedback Recoverable platform/payload outcome, independent of search.
+ * @param onOpenSettings Opens this application's camera-permission settings.
  */
 @Composable
 fun ExploreScreen(
@@ -60,6 +67,9 @@ fun ExploreScreen(
     onRetryRow: (String) -> Unit,
     listState: LazyListState = rememberLazyListState(),
     modifier: Modifier = Modifier,
+    onScan: (() -> Unit)? = null,
+    scanFeedback: QrScanFeedback? = null,
+    onOpenSettings: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxSize()) {
         Column(
@@ -73,8 +83,10 @@ fun ExploreScreen(
                 onOpenFilters,
                 onSearch = onSearch,
                 showViewToggle = false,
+                onScan = onScan,
             )
             AppliedFilterSummary(state.filters)
+            if (scanFeedback != null && onScan != null) ScanFeedbackContent(scanFeedback, onScan, onOpenSettings)
         }
         when (val result = state.result) {
             ExploreResult.Loading -> {
@@ -246,4 +258,38 @@ private fun ExploreFailurePreview() {
 @Composable
 private fun ExploreLoadingPreview() {
     ExplorePreviewContent(ExploreUiState())
+}
+
+/** Shows only the recovery actions appropriate to the last native/payload result.
+ * @param feedback Distinct permission, startup or foreign-code outcome.
+ * @param onRetry Opens another scan only after an explicit click.
+ * @param onSettings Opens this app's details settings when camera permission is denied.
+ */
+@Composable
+private fun ScanFeedbackContent(
+    feedback: QrScanFeedback,
+    onRetry: () -> Unit,
+    onSettings: (() -> Unit)?,
+) {
+    val (title, body) =
+        when (feedback) {
+            QrScanFeedback.PERMISSION_DENIED -> R.string.scan_qr_permission_title to R.string.scan_qr_permission_body
+            QrScanFeedback.STARTUP_FAILED -> R.string.scan_qr_failed_title to R.string.scan_qr_failed_body
+            QrScanFeedback.FOREIGN_CODE -> R.string.scan_qr_foreign_title to R.string.scan_qr_foreign_body
+        }
+    InlineNotice(
+        stringResource(
+            title,
+        ),
+        stringResource(body),
+        modifier = Modifier.verticalScroll(rememberScrollState()),
+        action = {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                TextButton(onRetry) { Text(stringResource(R.string.scan_qr_retry)) }
+                if (feedback == QrScanFeedback.PERMISSION_DENIED && onSettings != null) {
+                    TextButton(onSettings) { Text(stringResource(R.string.scan_qr_settings)) }
+                }
+            }
+        },
+    )
 }
