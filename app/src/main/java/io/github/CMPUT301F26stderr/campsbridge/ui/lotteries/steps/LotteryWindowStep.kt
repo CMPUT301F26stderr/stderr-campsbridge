@@ -55,10 +55,13 @@ fun LotteryWindowStep(
     onDate: (LotterySchedulePoint, LocalDate) -> Unit,
     onTime: (LotterySchedulePoint, LocalTime) -> Unit,
 ) {
-    val site =
+    val ids =
         (state.choices as? LotteryCampsiteChoices.Content)
             ?.campsites
-            ?.firstOrNull { it.id == state.draft.campsiteId }
+            .orEmpty()
+            .map { it.id }
+            .toSet()
+    val available = state.draft.allocations.isNotEmpty() && state.draft.allocations.all { it.campsiteId in ids }
     Text(
         stringResource(
             if (opening == LotterySchedulePoint.REGISTRATION_OPEN) {
@@ -70,7 +73,7 @@ fun LotteryWindowStep(
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    if (site == null) {
+    if (!available) {
         Text(stringResource(R.string.lottery_selected_site_unavailable))
     } else {
         Text(
