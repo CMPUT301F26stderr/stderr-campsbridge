@@ -99,7 +99,7 @@ fun LotteryWindowStep(
                 state.draft.schedule[point] ?: LotteryLocalDateTime(),
                 state.errors.schedule[point],
                 initialMonth,
-                site != null,
+                available,
                 { onDate(point, it) },
                 { onTime(point, it) },
             )
