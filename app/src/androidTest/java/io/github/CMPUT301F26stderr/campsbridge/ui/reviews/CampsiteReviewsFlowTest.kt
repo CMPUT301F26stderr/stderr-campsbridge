@@ -18,9 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
-import java.time.Clock
 import java.time.Instant
-import java.time.ZoneOffset
 
 /** RV-05 through the saved campsite graph, with observed records and independent author actions. */
 class CampsiteReviewsFlowTest {
@@ -41,7 +39,6 @@ class CampsiteReviewsFlowTest {
     @Test fun savedReaderFeedbackActionsFollowObservedRecordsAndKeepConfirmedStarsAfterDiscard() {
         host.matchesText = { _, _ -> true }
         host.matchesCapacity = { _, _ -> true }
-        host.fixedClock = Clock.fixed(now, ZoneOffset.UTC)
         host.campsites.records.value = listOf(site)
         host.reviews.ratings(site.id).value = listOf(other)
         host.reviews.setRatingHandler = { _, _, value ->
