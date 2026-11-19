@@ -657,15 +657,13 @@ class LotterySetupViewModel(
         try {
             val sites = content.offers.associate { it.campsiteId to campsites.get(it.campsiteId) }
             val ownedOffers =
-                content.offers.filter {
-                    sites[it.campsiteId]?.ownerId.let { owner ->
-                        owner == null ||
-                            owner == ownerId
-                    }
+                content.offers.filter { offer ->
+                    val siteOwner = sites[offer.campsiteId]?.ownerId
+                    siteOwner == null || siteOwner == ownerId
                 }
             val focused =
-                ownedOffers.firstOrNull { sites[it.campsiteId]?.ownerId == ownerId } ?: ownedOffers.firstOrNull()
-            currentCoroutineContext().ensureActive()
+                ownedOffers.firstOrNull { sites[it.campsiteId]?.ownerId == ownerId }
+                    ?: ownedOffers.firstOrNull()
             val record = content.lottery
             var fresh =
                 LotteryDraft(
