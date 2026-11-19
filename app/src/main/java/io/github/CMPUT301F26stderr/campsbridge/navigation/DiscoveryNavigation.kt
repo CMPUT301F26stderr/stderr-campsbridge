@@ -27,6 +27,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.SearchFiltersRoute
  * @param onSelectWorkspace Root-owned permitted workspace selection.
  * @param exploreFactory Dependencies for one parent discovery model.
  * @param detailFactory Dependencies for an ID/context-qualified saved reader.
+ * @param reviewsFactory Saved feedback dependencies.
  */
 internal fun NavGraphBuilder.discoveryGraph(
     controller: NavHostController,
@@ -34,6 +35,7 @@ internal fun NavGraphBuilder.discoveryGraph(
     onSelectWorkspace: (Role) -> Unit,
     exploreFactory: ViewModelProvider.Factory,
     detailFactory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
+    reviewsFactory: ((String, Role) -> ViewModelProvider.Factory)? = null,
 ) {
     navigation(
         startDestination = AppDestination.EXPLORE + "/results",
@@ -69,5 +71,5 @@ internal fun NavGraphBuilder.discoveryGraph(
             SearchFiltersRoute(model) { controller.popBackStack() }
         }
     }
-    campsiteReadGraph(controller, Role.ENTRANT, CampsiteDetailContext.VIEW, detailFactory)
+    campsiteReadGraph(controller, Role.ENTRANT, CampsiteDetailContext.VIEW, detailFactory, reviewsFactory)
 }

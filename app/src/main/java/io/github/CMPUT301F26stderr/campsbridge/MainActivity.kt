@@ -13,6 +13,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
@@ -20,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
@@ -35,6 +37,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactor
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.bindNotificationEntries
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
@@ -58,6 +61,11 @@ class MainActivity : ComponentActivity() {
             ViewModelProvider(this, notificationEntryViewModelFactory(services))[
                 NotificationEntryViewModel::class.java,
             ]
+        val removal =
+            ViewModelProvider(
+                this,
+                accountRemovalViewModelFactory(services),
+            )[AccountRemovalViewModel::class.java]
         bindNotificationEntries(entries::accept)
         lifecycleScope.launch {
             ForegroundWorkRunner(services.foregroundWork) { failure ->
@@ -116,6 +124,14 @@ class MainActivity : ComponentActivity() {
                 { notificationLogViewModelFactory(services) },
                 AndroidNotificationPermission(this@MainActivity),
                 entries,
+                accountRemoval = removal,
+                reviewsFactory = {
+                    actorId,
+                    id,
+                    workspace,
+                    ->
+                    campsiteReviewsViewModelFactory(services, actorId, id, workspace)
+                },
                 campsiteEditFactory = { ownerId, id -> campsiteEditViewModelFactory(services, ownerId, id) },
             )
         }
