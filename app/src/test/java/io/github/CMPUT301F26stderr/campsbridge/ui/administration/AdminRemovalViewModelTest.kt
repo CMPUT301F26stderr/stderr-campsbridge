@@ -391,3 +391,19 @@ class AdminRemovalViewModelTest {
             photos.attachment.value = attachment
         }
 
+        fun recreate(
+            saved: SavedStateHandle = SavedStateHandle(),
+            images: ImageRepository = this.images,
+        ) {
+            store.clear()
+            this.saved = saved
+            model = create(images)
+        }
+
+        private fun create(images: ImageRepository): AdminRemovalViewModel =
+            AdminRemovalViewModel(admin.id, accounts, sites, images, moderation, saved).also {
+                store.put("admin-removal", it)
+                it.updateSession(SessionState.Ready(admin, Role.ADMIN))
+            }
+    }
+}
