@@ -302,3 +302,92 @@ class AdminRemovalViewModelTest {
             assertEquals(1, f.moderation.requests.size)
         }
 
+    @Test fun restoredImageCleanupNeverRepeatsDeletionOrTargetsTheReplacement() =
+        scenario { f ->
+            f.photos.deleteResult = ImageUpdateResult(null, f.attachment.blobId)
+            f.model.requestImage(f.attachment)
+            f.model.confirm()
+            runCurrent()
+            val snapshot = f.saved.keys().associateWith { f.saved.get<Any?>(it) }
+            f.photos.attachment.value = f.attachment.copy(blobId = "new-live-image")
+            f.recreate(saved = SavedStateHandle(snapshot))
+            runCurrent()
+            assertEquals(AdminRemovalPhase.CLEANUP_PENDING, f.model.state.value.phase)
+            assertEquals(1, f.photos.deleteCalls)
+            assertTrue(f.cleanupCalls.isEmpty())
+            f.model.retry()
+            runCurrent()
+            assertEquals(listOf(f.attachment.blobId), f.cleanupCalls)
+            assertEquals(1, f.photos.deleteCalls)
+            assertEquals(
+                "new-live-image",
+                f.photos.attachment.value
+                    ?.blobId,
+            )
+        }
+
+    @Test fun actorChangedDuringPreflightCannotStartTheWrite() =
+        scenario { f ->
+            val gate = CompletableDeferred<Unit>()
+            f.readGate = gate
+            f.model.requestAccount(f.owner)
+            f.model.confirm()
+            runCurrent()
+            f.model.updateSession(SessionState.Ready(f.admin.copy(id = "different-admin"), Role.ADMIN))
+            gate.complete(Unit)
+            runCurrent()
+            assertTrue(f.moderation.requests.isEmpty())
+            assertEquals(AdminRemovalProblem.DENIED, f.model.state.value.problem)
+        }
+
+    private fun scenario(block: suspend TestScope.(Fixture) -> Unit) =
+        runTest(main.dispatcher) {
+            val fixture = Fixture()
+            try {
+                block(fixture)
+            } finally {
+                fixture.store.clear()
+                runCurrent()
+            }
+        }
+
+    private class Fixture {
+        val admin = sampleAccount(setOf(Role.ADMIN)).copy(id = "admin-1")
+        val owner = sampleAccount(setOf(Role.OWNER)).copy(id = "owner/one", name = "Taylor Owner")
+        val accountRecords = mutableMapOf(admin.id to admin, owner.id to owner)
+        var readFailure: Exception? = null
+        var readGate: CompletableDeferred<Unit>? = null
+        val accounts =
+            object : AccountRepository by FakeAccountRepository() {
+                override suspend fun get(id: String): Account? {
+                    readGate?.await()
+                    readFailure?.let { throw it }
+                    return accountRecords[id]
+                }
+            }
+        val site = sampleCampsite("site/one", owner.id)
+        val sites = FakeCampsiteRepository(listOf(site))
+        val photos = FakeImageRepository()
+        val attachment = ImageAttachment(ImageTarget(ImageTargetType.ACCOUNT, owner.id), "original-blob", Instant.EPOCH)
+        val cleanupCalls = mutableListOf<String>()
+        var cleanupFailure: Exception? = null
+        val images =
+            object : ImageRepository by photos {
+                override suspend fun retryCleanup(blobId: String) {
+                    cleanupCalls += blobId
+                    cleanupFailure?.let { throw it }
+                }
+            }
+        val moderation =
+            FakeModerationRepository().apply {
+                removeAccountHandler = { _, _, _ -> }
+                removeCampsiteHandler = { _, _, _ -> }
+            }
+        val store = ViewModelStore()
+        var saved = SavedStateHandle()
+        var model = create(images)
+
+        init {
+            photos.attachment.value = attachment
+        }
+
