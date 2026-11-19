@@ -1061,6 +1061,7 @@ class LotterySetupViewModel(
         savedState["${SETUP_KEY}description"] = draft.description
         savedState["${SETUP_KEY}campsite"] = draft.campsiteId
         savedState["${SETUP_KEY}winners"] = draft.maximumWinnersText
+        savedState["${SETUP_KEY}capacity"] = draft.waitlistCapacityText
         savedState["${SETUP_KEY}reviewReturn"] = draft.returnToReview
         val previousSites = savedState.get<ArrayList<String>>("${SETUP_KEY}allocationSites").orEmpty()
         for (index in previousSites.indices) {
@@ -1116,6 +1117,7 @@ class LotterySetupViewModel(
                 campsiteId = savedState["${SETUP_KEY}campsite"],
                 schedule = schedule,
                 maximumWinnersText = savedState["${SETUP_KEY}winners"] ?: "",
+                waitlistCapacityText = savedState["${SETUP_KEY}capacity"] ?: "",
                 returnToReview = savedState["${SETUP_KEY}reviewReturn"] ?: false,
                 allocations =
                     savedState.get<ArrayList<String>>("${SETUP_KEY}allocationSites").orEmpty().mapIndexed { index, id ->
