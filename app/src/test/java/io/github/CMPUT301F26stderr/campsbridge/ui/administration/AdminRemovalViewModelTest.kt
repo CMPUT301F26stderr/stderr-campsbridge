@@ -161,3 +161,73 @@ class AdminRemovalViewModelTest {
             assertTrue(f.moderation.requests.isEmpty())
         }
 
+    @Test fun imageChangedDuringConfirmationIsNeverDeleted() =
+        scenario { f ->
+            f.model.requestImage(f.attachment)
+            f.photos.attachment.value = f.attachment.copy(blobId = "replacement")
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.UNAVAILABLE, f.model.state.value.phase)
+            assertEquals(AdminRemovalProblem.CHANGED, f.model.state.value.problem)
+            assertEquals(0, f.photos.deleteCalls)
+        }
+
+    @Test fun alreadyMissingImageIsExplicitAndDoesNotDelete() =
+        scenario { f ->
+            f.model.requestImage(f.attachment)
+            f.photos.attachment.value = null
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.UNAVAILABLE, f.model.state.value.phase)
+            assertEquals(AdminRemovalProblem.MISSING, f.model.state.value.problem)
+            assertEquals(0, f.photos.deleteCalls)
+        }
+
+    @Test fun uncertainImageRemovalRecoversWithoutDeletingItsReplacement() =
+        scenario { f ->
+            val images =
+                object : ImageRepository by f.images {
+                    override suspend fun delete(target: ImageTarget): ImageUpdateResult {
+                        f.photos.attachment.value = f.attachment.copy(blobId = "new-image")
+                        throw IOException("lost acknowledgement")
+                    }
+                }
+            f.recreate(images = images)
+            f.model.requestImage(f.attachment)
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.CLEANUP_PENDING, f.model.state.value.phase)
+            f.model.retry()
+            runCurrent()
+            assertEquals(listOf(f.attachment.blobId), f.cleanupCalls)
+            assertEquals(
+                "new-image",
+                f.photos.attachment.value
+                    ?.blobId,
+            )
+            assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
+        }
+
+    @Test fun failedRecoveryRequiresAReadBeforeAnotherWrite() =
+        scenario { f ->
+            f.moderation.removeAccountHandler =
+                { _, _, _ ->
+                    f.readFailure = IOException("read offline")
+                    throw IOException("write offline")
+                }
+            f.model.requestAccount(f.owner)
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.UNKNOWN, f.model.state.value.phase)
+            f.readFailure = null
+            f.model.retry()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.FAILED, f.model.state.value.phase)
+            assertEquals(1, f.moderation.requests.size)
+            f.moderation.removeAccountHandler = { _, _, _ -> }
+            f.model.retry()
+            runCurrent()
+            assertEquals(2, f.moderation.requests.size)
+            assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
+        }
+
