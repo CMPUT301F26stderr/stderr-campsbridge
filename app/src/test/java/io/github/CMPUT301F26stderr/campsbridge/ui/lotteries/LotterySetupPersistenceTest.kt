@@ -585,6 +585,45 @@ class LotterySetupPersistenceTest {
             assertEquals(1, lotteries.events.count { it == "publish:new-1" })
         }
 
+    /** Invalid review capacity preserves its spelling and cannot create or publish a lottery. */
+    @Test fun invalidWaitlistCapacityCannotAllocateALotteryId() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val editor = model()
+            reviewBothCampsites(editor, other.id)
+            editor.editWaitlistCapacity("2.5")
+            editor.saveDraft()
+            editor.publishLottery()
+            runCurrent()
+            assertEquals("2.5", editor.state.value.draft.waitlistCapacityText)
+            assertNotNull(editor.state.value.errors.waitlistCapacity)
+            assertNull(editor.state.value.configuration)
+            assertNull(editor.state.value.draft.id)
+            assertEquals(0, allocatedIds)
+            assertTrue(lotteries.events.isEmpty())
+        }
+
+    /** Extends the normal review journey through a separately applied second campsite.
+     * @param editor Actual creation controller.
+     * @param otherId Published owned campsite receiving its own allocated night.
+     */
+    private fun reviewBothCampsites(
+        editor: LotterySetupViewModel,
+        otherId: String,
+    ) {
+        review(editor)
+        editor.editStep(LotteryStep.SITE)
+        editor.chooseCampsite(otherId)
+        sites.calendarNights.value = listOf(CalendarNight(night.plusDays(1), true))
+        assertTrue(editor.beginAllocation())
+        main.dispatcher.scheduler.runCurrent()
+        editor.toggleAllocationDate(night.plusDays(1))
+        assertTrue(editor.applyAllocation())
+        editor.next()
+        assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+    }
+
     /**
      * Supplies explicit mutation acknowledgements; production behavior remains in the real
      * writer.
