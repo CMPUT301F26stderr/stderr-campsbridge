@@ -51,7 +51,7 @@ fun LotteryWinnersStep(
             },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         reserveSupportingSpace = true,
-        revealError = state.errors.waitlistCapacity != null,
+        revealError = state.errors.winnerCount == null && state.errors.waitlistCapacity != null,
     )
     Text(stringResource(R.string.lottery_capacity_hint))
 }
