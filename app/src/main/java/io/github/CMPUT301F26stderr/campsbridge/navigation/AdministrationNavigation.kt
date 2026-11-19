@@ -1,5 +1,5 @@
 /*
- * Registers Browse and its read-only profile/image children beneath one shared parent owner.
+ * Registers Browse and inspection children beneath one shared parent owner.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.navigation
@@ -21,21 +21,26 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseRout
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminBrowseViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminImageRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminProfileRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 
-/** Registers Browse and its read-only profile/image children beneath one shared parent owner.
+/** Registers Browse and inspection children beneath one shared parent owner.
  * @param controller Current account navigation host.
  * @param state Confirmed session used by the shared workspace frame.
  * @param onSelectWorkspace Root-owned capability selection.
  * @param factory Explicit repository/predicate dependencies for the Browse owner.
+ * @param removalFactory Shared moderation controller, owned by the same Browse parent.
+ * @param onRequestRootRemoval Delegates current-account removal to the activity owner.
  */
 internal fun NavGraphBuilder.administrationGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
     factory: ViewModelProvider.Factory,
+    removalFactory: ViewModelProvider.Factory? = null,
+    onRequestRootRemoval: () -> Unit = {},
 ) {
     navigation(
         startDestination = "${AppDestination.ADMIN_BROWSE}/list",
@@ -104,9 +109,13 @@ internal fun NavGraphBuilder.administrationGraph(
                 }
             val id = entry.arguments?.getString("targetId")
             val target = if (type != null && !id.isNullOrBlank()) ImageTarget(type, id) else null
+            val removal: AdminRemovalViewModel? = removalFactory?.let { viewModel(parent, factory = it) }
             AdminImageRoute(
                 model = model,
                 target = target,
+                removal = removal,
+                session = state,
+                onRequestRootRemoval = { onRequestRootRemoval() },
                 onBack = { controller.popBackStack() },
                 onProfile = {
                     controller.navigate(AppDestination.adminProfile(it)) {
