@@ -11,6 +11,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationListViewModel
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 /** Supplies the real saved reader and records its target and lifetime for route tests. */
 internal fun TestAppHost.reservationDetailFactory(): (
@@ -28,7 +31,7 @@ internal fun TestAppHost.reservationDetailFactory(): (
                     id,
                     context,
                     bookings,
-                    clock,
+                    Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                     createSavedStateHandle(),
                 )
             }
@@ -52,7 +55,7 @@ internal fun TestAppHost.reservationListFactory(): (
                     bookings,
                     reservationAccounts,
                     images,
-                    clock,
+                    Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
                     createSavedStateHandle(),
                     campsiteId,
                     classifyReservation,
