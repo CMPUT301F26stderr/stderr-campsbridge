@@ -35,7 +35,8 @@ data class LotteryLocalDateTime(
  * @param description Optional multiline description.
  * @param campsiteId Focused published identity for the next calendar edit.
  * @param schedule Four explicit local date/time inputs.
- * @param maximumWinnersText Raw positive winner count; no registration cap exists here.
+ * @param maximumWinnersText Raw positive winner count.
+ * @param waitlistCapacityText Raw optional capacity; blank means unlimited.
  * @param returnToReview Whether a valid edit returns directly to the review.
  * @param allocations Complete applied owned offers, with one entry per campsite.
  */
@@ -47,6 +48,7 @@ data class LotteryDraft(
     val campsiteId: String? = null,
     val schedule: Map<LotterySchedulePoint, LotteryLocalDateTime> = emptyMap(),
     val maximumWinnersText: String = "",
+    val waitlistCapacityText: String = "",
     val returnToReview: Boolean = false,
     val allocations: List<LotteryOffer> = emptyList(),
 ) {
