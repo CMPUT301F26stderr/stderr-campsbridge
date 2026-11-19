@@ -72,6 +72,7 @@ import java.util.Locale
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
  * @param onDeleteProfile Requests root-owned confirmation for the current account.
+ * @param reviewsFactory Saved feedback dependencies for each workspace.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  */
 @Composable
@@ -102,6 +103,7 @@ fun AppNavigation(
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
     onDeleteProfile: () -> Unit,
+    reviewsFactory: (String, Role) -> ViewModelProvider.Factory,
     campsiteEditFactory: (String) -> ViewModelProvider.Factory,
 ) {
     val controller = rememberNavController()
@@ -328,6 +330,7 @@ fun AppNavigation(
                 Role.ADMIN,
                 CampsiteDetailContext.INSPECT,
                 campsiteDetailFactory,
+                reviewsFactory,
             )
             discoveryGraph(
                 controller,
@@ -335,6 +338,7 @@ fun AppNavigation(
                 onSelectWorkspace,
                 exploreFactory,
                 campsiteDetailFactory,
+                reviewsFactory,
             )
             campsiteGraph(
                 controller,
@@ -345,6 +349,7 @@ fun AppNavigation(
                 campsiteSetupFactory,
                 availabilityFactory,
                 campsiteEditFactory,
+                reviewsFactory,
             )
         }
     }

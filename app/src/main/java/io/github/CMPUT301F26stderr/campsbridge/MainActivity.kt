@@ -21,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
@@ -124,6 +125,13 @@ class MainActivity : ComponentActivity() {
                 AndroidNotificationPermission(this@MainActivity),
                 entries,
                 accountRemoval = removal,
+                reviewsFactory = {
+                    actorId,
+                    id,
+                    workspace,
+                    ->
+                    campsiteReviewsViewModelFactory(services, actorId, id, workspace)
+                },
                 campsiteEditFactory = { ownerId, id -> campsiteEditViewModelFactory(services, ownerId, id) },
             )
         }
