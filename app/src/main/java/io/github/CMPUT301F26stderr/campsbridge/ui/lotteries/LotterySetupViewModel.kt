@@ -182,11 +182,17 @@ class LotterySetupViewModel(
         editSchedule(point) { it.copy(time = value) }
     }
 
-    /** Updates raw maximum-winner input without a registration-cap field.
+    /** Updates raw maximum-winner input.
      * @param value Raw positive-count spelling.
      */
     fun editWinnerCount(value: String) =
         editDraft { it.copy(maximumWinnersText = value) }
+
+    /** Retains optional capacity spelling until explicit validation.
+     * @param value Raw positive-count text, or blank for unlimited.
+     */
+    fun editWaitlistCapacity(value: String) =
+        editDraft { it.copy(waitlistCapacityText = value) }
 
     /** Advances only after this step's local prerequisites pass. */
     fun next() {
