@@ -9,7 +9,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.isPopup
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -20,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.Density
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
@@ -30,6 +34,8 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccoun
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.junit.After
@@ -40,7 +46,7 @@ import org.junit.Test
 import java.io.IOException
 import java.time.Instant
 
-/** Seven fixed interactions through actual account navigation and the shared saved reader. */
+/** Scoped list interactions through actual account navigation and the shared saved reader. */
 class ReservationListFlowTest {
     @get:Rule val compose = createComposeRule()
     private val host = TestAppHost()
@@ -186,11 +192,53 @@ class ReservationListFlowTest {
         }
     }
 
-    /** Observed cancellation changes Active membership without a client write or history UI. */
-    @Test fun confirmedCancellationLeavesActiveWithoutInventingHistoryActions() {
-        start()
-        compose.onNodeWithText(record.bookedCampsite.name).assertIsDisplayed()
-        compose.runOnIdle {
+    /** RH-03: category, campsite filter and per-category viewport survive detail and restoration. */
+    @Test fun historyTabFilterAndScrollSurviveDetailReturnAndSourceRetry() {
+        val restoration = StateRestorationTester(compose)
+        val failure = MutableStateFlow<Exception?>(null)
+        val history = (1..12).map { index -> other.copy(id = "past/${index.toString().padStart(2, '0')}") }
+        history.forEach { categories[it.id] = ReservationCategory.PAST }
+        host.bookings.ownerHandler = {
+            combine(host.bookings.records, failure) { rows, problem ->
+                problem?.let { throw it }
+                rows
+            }
+        }
+        start(owner = true, records = listOf(record, other) + history, restoration = restoration)
+        compose.onNodeWithText("Past").performClick()
+        select("Pine Camp")
+        val target = history[9]
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("reservation:${target.id}"))
+        compose.onNodeWithTag("reservation:${target.id}").performClick()
+        compose.onNodeWithText(target.id).assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Past").assertIsSelected()
+        compose.onNodeWithTag("reservation:${target.id}").assertIsDisplayed()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Past").assertIsSelected()
+        compose.onNodeWithTag("reservation:${target.id}").assertIsDisplayed()
+        compose.onNodeWithText(record.bookedCampsite.name).assertDoesNotExist()
+        compose.onNodeWithText("Active").performClick()
+        compose.onNodeWithTag("reservation:${other.id}").assertIsDisplayed()
+        compose.onNodeWithText("Past").performClick()
+        compose.onNodeWithTag("reservation:${target.id}").assertIsDisplayed()
+        compose.onNodeWithText("Cancelled").performClick()
+        compose.onNodeWithText("No cancelled reservations for this campsite.").assertIsDisplayed()
+        compose.onNodeWithText("Past").performClick()
+        compose.runOnIdle { failure.value = IOException("history offline") }
+        compose.onNodeWithText("Could not load reservations.").assertIsDisplayed()
+        compose.onNodeWithText("No past reservations.").assertDoesNotExist()
+        compose.runOnIdle { failure.value = null }
+        compose.onNodeWithText("Retry").performClick()
+        compose.onNodeWithText("Past").assertIsSelected()
+        compose.onNodeWithText(record.bookedCampsite.name).assertDoesNotExist()
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("reservation:${target.id}"))
+        compose.onNodeWithTag("reservation:${target.id}").assertIsDisplayed()
+    }
+
+    /** RH-04: actual rejection leaves Active and opens saved history, payment and accepted terms. */
+    @Test fun confirmedCancellationMovesToOwnerHistoryAndKeepsSavedChildren() {
+        host.bookings.cancelHandler = { request ->
             categories[record.id] = ReservationCategory.CANCELLED
             host.bookings.records.value =
                 listOf(
@@ -198,19 +246,40 @@ class ReservationListFlowTest {
                         cancellation =
                             ReservationCancellation(
                                 Instant.parse("2027-05-01T12:00:00Z"),
-                                "account-1",
-                                Role.ENTRANT,
-                                "Plans changed",
+                                request.actorId,
+                                request.initiatedAs,
+                                request.reason,
                             ),
+                        payment = record.payment.copy(refundedAt = Instant.parse("2027-05-01T12:00:00Z")),
                     ),
                 )
         }
+        start(owner = true)
+        compose.onNodeWithTag("reservation:${record.id}").performClick()
+        compose.onNodeWithText("Reject reservation").performScrollTo().performClick()
+        compose.onNode(hasText("Reject reservation") and hasAnyAncestor(isDialog())).performClick()
+        compose.onNodeWithText("Cancelled by owner").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("No active reservations.").assertIsDisplayed()
-        compose.onNodeWithText(record.bookedCampsite.name).assertDoesNotExist()
-        compose.onNodeWithText("Past").assertDoesNotExist()
-        compose.onNodeWithText("Cancelled").assertDoesNotExist()
-        compose.onNodeWithText("Map").assertDoesNotExist()
-        compose.runOnIdle { assertTrue(host.bookings.reserveRequests.isEmpty()) }
+        compose.onNodeWithText("Cancelled").performClick()
+        compose.onNodeWithText("Cancelled by owner").assertIsDisplayed()
+        compose.onNodeWithText("Cancelled at", substring = true).assertIsDisplayed()
+        compose.onNodeWithTag("reservation:${record.id}").performClick()
+        compose.onNodeWithText(record.id).assertIsDisplayed()
+        compose.onNodeWithText("Payment & refund").performScrollTo().performClick()
+        compose.onNodeWithText("Full simulated refund").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Accepted rules & policy").performScrollTo().performClick()
+        compose.onNodeWithText(record.acceptedTerms.rules).assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(
+                record.id,
+                host.bookings.cancellationRequests
+                    .single()
+                    .reservationId,
+            )
+            assertTrue(host.bookings.reserveRequests.isEmpty())
+        }
     }
 
     /** Large system text and multiline saved names retain a reachable actual-ID card action. */
@@ -286,7 +355,7 @@ class ReservationListFlowTest {
                         it.copy(details = it.details.copy(name = "Owner site"))
                     },
                 )
-            host.bookings.ownerHandler = { host.bookings.records.map { it } }
+            if (host.bookings.ownerHandler == null) host.bookings.ownerHandler = { host.bookings.records.map { it } }
         }
         val content: @androidx.compose.runtime.Composable () -> Unit = {
             CompositionLocalProvider(
