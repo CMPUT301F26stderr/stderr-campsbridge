@@ -231,3 +231,74 @@ class AdminRemovalViewModelTest {
             assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
         }
 
+    @Test fun recreationReadsOriginalFactsWithoutReplayingRemoval() =
+        scenario { f ->
+            f.moderation.removeAccountHandler = { id, actor, _ ->
+                f.accountRecords[id] = f.owner.copy(removal = Removal(Instant.EPOCH, actor))
+                throw IOException("cleanup offline")
+            }
+            f.model.requestAccount(f.owner)
+            f.model.confirm()
+            runCurrent()
+            val saved = f.saved.keys().associateWith { f.saved.get<Any?>(it) }
+            assertTrue(saved.values.all { it is String || it is Boolean })
+            f.recreate(saved = SavedStateHandle(saved))
+            runCurrent()
+            assertEquals(AdminRemovalPhase.CLEANUP_PENDING, f.model.state.value.phase)
+            assertEquals(1, f.moderation.requests.size)
+            f.moderation.removeAccountHandler = { _, _, _ -> }
+            f.model.retry()
+            runCurrent()
+            assertEquals(List(2) { "account:${f.owner.id}" }, f.moderation.requests)
+        }
+
+    @Test fun nonAdminAndChangedSessionsCannotStartOrRetargetRemoval() =
+        scenario { f ->
+            f.model.updateSession(SessionState.Ready(f.admin.copy(roles = setOf(Role.OWNER)), Role.OWNER))
+            f.model.requestAccount(f.owner)
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.IDLE, f.model.state.value.phase)
+            assertTrue(f.moderation.requests.isEmpty())
+            f.model.updateSession(SessionState.Ready(f.admin, Role.ADMIN))
+            f.model.requestAccount(f.owner)
+            f.model.updateSession(SessionState.Ready(f.admin.copy(id = "another-admin"), Role.ADMIN))
+            f.model.confirm()
+            runCurrent()
+            assertTrue(f.moderation.requests.isEmpty())
+        }
+
+    @Test fun mismatchedOrRemovedRecordsCannotStartANewRemoval() =
+        scenario { f ->
+            f.model.requestAccount(f.owner)
+            f.accountRecords[f.owner.id] = f.owner.copy(id = "foreign")
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.UNAVAILABLE, f.model.state.value.phase)
+            assertTrue(f.moderation.requests.isEmpty())
+            f.model.dismiss()
+            f.accountRecords[f.owner.id] = f.owner.copy(removal = Removal(Instant.EPOCH, "other-admin"))
+            f.model.requestAccount(f.owner)
+            f.model.confirm()
+            runCurrent()
+            assertEquals(AdminRemovalPhase.UNAVAILABLE, f.model.state.value.phase)
+            assertTrue(f.moderation.requests.isEmpty())
+        }
+
+    @Test fun clearingOwnerRejectsLateResultsAndActions() =
+        scenario { f ->
+            val gate = CompletableDeferred<Unit>()
+            f.moderation.removeAccountHandler = { _, _, _ -> withContext(NonCancellable) { gate.await() } }
+            f.model.requestAccount(f.owner)
+            f.model.confirm()
+            runCurrent()
+            val before = f.model.state.value
+            f.store.clear()
+            f.model.requestCampsite(f.site)
+            f.model.retry()
+            gate.complete(Unit)
+            runCurrent()
+            assertEquals(before, f.model.state.value)
+            assertEquals(1, f.moderation.requests.size)
+        }
+
