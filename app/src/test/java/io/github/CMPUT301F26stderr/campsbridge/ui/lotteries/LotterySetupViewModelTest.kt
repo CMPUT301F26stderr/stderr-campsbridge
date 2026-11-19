@@ -435,7 +435,7 @@ class LotterySetupViewModelTest {
         }
 
     /**
-     * Changing sites clears old nights without changing the shared display-zone interpretation.
+     * Changing focus preserves the other campsite and the shared display-zone interpretation.
      */
     @Test fun changedSiteKeepsTheDisplayZoneInterpretation() =
         runTest {

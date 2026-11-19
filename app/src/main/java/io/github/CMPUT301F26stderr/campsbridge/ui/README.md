@@ -100,3 +100,5 @@ The profile currently connects this path to its existing account's image slot. T
 - [Date pickers](https://developer.android.com/develop/ui/compose/components/datepickers), [carousel](https://developer.android.com/develop/ui/compose/components/carousel), and [accessibility](https://developer.android.com/develop/ui/compose/accessibility)
 - [Photo Picker](https://developer.android.com/training/data-storage/shared/photo-picker), [WeChatQRCode](https://github.com/jenly1314/WeChatQRCode/tree/2.6.0), and [Maps Compose](https://github.com/googlemaps/android-maps-compose)
 - [Image loading guidance](https://developer.android.com/develop/ui/compose/graphics/images/loading) and [Coil](https://github.com/coil-kt/coil)
+
+Lottery creation retains one applied allocation per campsite. Selecting another campsite changes calendar focus; Apply updates only that campsite, and Cancel keeps its previous nights. Owners can remove individual allocations before saving. Review lists each campsite and its timezone with its own nights, and reopening a draft restores the whole set. The existing lottery writer saves the owned offers under one retained lottery identity.

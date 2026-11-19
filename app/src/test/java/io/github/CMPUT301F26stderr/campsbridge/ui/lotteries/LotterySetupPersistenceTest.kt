@@ -503,10 +503,7 @@ class LotterySetupPersistenceTest {
             assertEquals(0, sites.activeObservers)
         }
 
-    /**
-     * A multiple-site draft needs an explicit site/allocation choice before one-site
-     * reconciliation.
-     */
+    /** An unavailable saved allocation remains visible for correction and blocks saving. */
     @Test fun missingSavedAllocationRemainsVisibleAndBlocksSaving() =
         runTest {
             val offers =
