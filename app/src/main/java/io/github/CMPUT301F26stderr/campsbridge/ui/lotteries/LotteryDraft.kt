@@ -28,17 +28,17 @@ data class LotteryLocalDateTime(
     val time: LocalTime? = null,
 )
 
-/** Local form retains every applied allocation and a separate campsite editing focus.
+/** Local lottery input with one authoritative list of the acting owner's applied offers.
  * @param id Stable saved target, allocated only when saving or supplied for reopening.
  * @param step Current position in the six-step flow.
  * @param title Exact editable title spelling.
  * @param description Optional multiline description.
- * @param campsiteId Focused published identity for the next calendar edit.
+ * @param campsiteId Local focus for the next calendar; changing it does not change applied offers.
  * @param schedule Four explicit local date/time inputs.
  * @param maximumWinnersText Raw positive winner count.
- * @param waitlistCapacityText Raw optional capacity; blank means unlimited.
  * @param returnToReview Whether a valid edit returns directly to the review.
- * @param allocations Complete applied owned offers, with one entry per campsite.
+ * @param allocations Complete applied offers owned by the acting person.
+ * @param waitlistCapacityText Optional registration limit; blank means unlimited.
  */
 data class LotteryDraft(
     val id: String? = null,
@@ -48,16 +48,16 @@ data class LotteryDraft(
     val campsiteId: String? = null,
     val schedule: Map<LotterySchedulePoint, LotteryLocalDateTime> = emptyMap(),
     val maximumWinnersText: String = "",
-    val waitlistCapacityText: String = "",
     val returnToReview: Boolean = false,
     val allocations: List<LotteryOffer> = emptyList(),
+    val waitlistCapacityText: String = "",
 ) {
-    /** Applied nights for the focused campsite; working calendar edits remain in child state. */
+    /** Applied nights for the focused calendar; working changes remain in the allocation child. */
     val nights: Set<LocalDate>
         get() =
             allocations
                 .firstOrNull { it.campsiteId == campsiteId }
                 ?.nights
-                ?.toSet()
                 .orEmpty()
+                .toSet()
 }
