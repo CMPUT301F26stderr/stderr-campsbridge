@@ -76,8 +76,12 @@ internal fun NavGraphBuilder.administrationGraph(
             val parent =
                 remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_BROWSE) }
             val model: AdminBrowseViewModel = viewModel(parent, factory = factory)
+            val removal: AdminRemovalViewModel? = removalFactory?.let { viewModel(parent, factory = it) }
             AdminProfileRoute(
                 model = model,
+                removal = removal,
+                session = state,
+                onRequestRootRemoval = { onRequestRootRemoval() },
                 accountId = entry.arguments?.getString("accountId").orEmpty(),
                 onBack = { controller.popBackStack() },
                 onImage = { controller.navigate(AppDestination.adminImage(it)) },

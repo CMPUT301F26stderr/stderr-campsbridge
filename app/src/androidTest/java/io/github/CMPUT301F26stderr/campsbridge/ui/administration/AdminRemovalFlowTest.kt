@@ -173,6 +173,50 @@ class AdminRemovalFlowTest {
         compose.onNodeWithText("No matching records").assertIsDisplayed()
     }
 
+    /** Profile inspection reaches the shared confirmation and removes only the inspected account. */
+    @Test fun profileInspectionConnectsAccountRemoval() {
+        inspectedRecordRemoval(removeCampsite = false)
+    }
+
+    /** An owned campsite opens inspection and removes the listing without deleting its owner. */
+    @Test fun ownedCampsiteInspectionConnectsRemoval() {
+        inspectedRecordRemoval(removeCampsite = true)
+    }
+
+    /** Exercises production profile and listing routes with controlled moderation results.
+     * @param removeCampsite Whether to follow the profile's owned-campsite link.
+     */
+    private fun inspectedRecordRemoval(removeCampsite: Boolean) {
+        val host = TestAppHost().also(appHosts::add)
+        val parent = FakeAccountRepository(owner)
+        host.accounts.account.value = admin
+        host.adminAccounts = parent
+        host.campsites.records.value = listOf(site)
+        host.moderation.removeAccountHandler = { _, _, _ -> }
+        host.moderation.removeCampsiteHandler = { _, _, _ -> }
+        compose.setContent { host.Content() }
+        compose.onNodeWithText("Profiles").performClick()
+        compose.onNodeWithText(owner.name).performClick()
+        if (removeCampsite) {
+            compose.onNodeWithText(site.details.name).performScrollTo().performClick()
+        }
+        val action = if (removeCampsite) "Remove campsite" else "Remove profile"
+        val target = if (removeCampsite) site.id else owner.id
+        compose.onNodeWithText(action).performScrollTo().performClick()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.runOnIdle { assertTrue(host.moderation.requests.isEmpty()) }
+        compose.onNodeWithText(action).performScrollTo().performClick()
+        compose.onNodeWithText("Remove").performClick()
+        compose.onNodeWithText("Removal for $target is complete.").assertIsDisplayed()
+        compose.onNodeWithText("Close").performClick()
+        compose.runOnIdle {
+            assertEquals(
+                listOf(if (removeCampsite) "campsite:${site.id}" else "account:${owner.id}"),
+                host.moderation.requests,
+            )
+        }
+    }
+
     /** Cancelling confirmation leaves the inspected account unchanged. */
     @Test fun cancellingAccountConfirmationChangesNothing() {
         content()

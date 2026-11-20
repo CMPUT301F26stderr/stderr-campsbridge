@@ -1,5 +1,5 @@
 /*
- * Read-only profile facts and three independently retryable source sections.
+ * Profile inspection with independently retryable facts and optional moderation.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
@@ -51,7 +51,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
 
-/** Read-only profile facts and three independently retryable source sections.
+/** Profile inspection with independently retryable facts and optional moderation.
  * @param state Current selected profile, including retained removal facts.
  * @param onBack Returns to the actual caller.
  * @param onRetryAccount Retries only the failed account source.
@@ -60,6 +60,8 @@ import java.time.Instant
  * @param onCampsite Opens a saved listing through read-only admin inspection.
  * @param onImage Opens this account's current photo for inspection.
  * @param modifier Caller layout.
+ * @param removalAction Optional administrator action for the confirmed profile.
+ * @param backEnabled Whether the retained removal permits leaving inspection.
  */
 @Composable
 fun AdminProfileScreen(
@@ -71,13 +73,16 @@ fun AdminProfileScreen(
     onCampsite: (String) -> Unit,
     onImage: () -> Unit,
     modifier: Modifier = Modifier,
+    removalAction: (@Composable () -> Unit)? = null,
+    backEnabled: Boolean = true,
 ) {
-    AppScreen(stringResource(R.string.admin_profile_inspection), modifier, onBack = onBack) {
+    AppScreen(stringResource(R.string.admin_profile_inspection), modifier, onBack = onBack, backEnabled = backEnabled) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(vertical = Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.large),
         ) {
-            Text(stringResource(R.string.admin_inspection_read_only))
+            if (removalAction == null) Text(stringResource(R.string.admin_inspection_read_only))
+            removalAction?.invoke()
             InspectionField(stringResource(R.string.admin_account_id), state.id)
             Column(
                 Modifier.fillMaxWidth().testTag("admin_profile_account"),

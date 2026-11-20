@@ -334,6 +334,9 @@ fun AppNavigation(
                 CampsiteDetailContext.INSPECT,
                 campsiteDetailFactory,
                 reviewsFactory,
+                removalFactory = adminRemovalFactory,
+                session = state,
+                onRequestRootRemoval = onDeleteProfile,
             )
             discoveryGraph(
                 controller,
