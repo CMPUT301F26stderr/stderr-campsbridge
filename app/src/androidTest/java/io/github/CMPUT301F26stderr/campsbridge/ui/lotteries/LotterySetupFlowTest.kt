@@ -80,7 +80,7 @@ class LotterySetupFlowTest {
         schedule("Booking closing", 8)
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Maximum winners").assertIsDisplayed()
-        compose.onNodeWithText("Leave blank for an unlimited waitlist.").assertIsDisplayed()
+        compose.onNodeWithText("Leave blank for unlimited registrations.").assertIsDisplayed()
         compose.onNodeWithText("Maximum winners").performTextInput("2")
         closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
@@ -252,6 +252,7 @@ class LotterySetupFlowTest {
                         { _, _ -> },
                         {},
                         {},
+                        onEdit = {},
                     )
                 }
             }
@@ -487,14 +488,14 @@ class LotterySetupFlowTest {
         schedule("Booking closing", 8)
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Maximum winners").performTextInput("2")
-        compose.onNodeWithText("Waitlist capacity (optional)").performScrollTo().performTextInput("0")
+        compose.onNodeWithText("Registration limit (optional)").performScrollTo().performTextInput("0")
         closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
         compose
-            .onNodeWithText("Enter a positive whole number, or leave blank for an unlimited waitlist.")
+            .onNodeWithText("Enter a positive whole number, or leave blank for unlimited registrations.")
             .performScrollTo()
             .assertIsDisplayed()
-        compose.onNodeWithText("Waitlist capacity (optional)").performScrollTo().performTextReplacement("0003")
+        compose.onNodeWithText("Registration limit (optional)").performScrollTo().performTextReplacement("0003")
         closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
         restoration.emulateSavedInstanceStateRestore()
@@ -508,7 +509,7 @@ class LotterySetupFlowTest {
         compose.onNodeWithText("Waitlist capacity").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("3").performScrollTo().assertIsDisplayed()
         compose.onNodeWithContentDescription("Edit Maximum winners").performScrollTo().performClick()
-        compose.onNodeWithText("Waitlist capacity (optional)").performScrollTo().performTextClearance()
+        compose.onNodeWithText("Registration limit (optional)").performScrollTo().performTextClearance()
         closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Unlimited waitlist").performScrollTo().assertIsDisplayed()
