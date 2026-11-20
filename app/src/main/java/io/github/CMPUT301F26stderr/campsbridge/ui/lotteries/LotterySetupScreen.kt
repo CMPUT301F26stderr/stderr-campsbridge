@@ -13,7 +13,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -53,6 +55,8 @@ import java.time.YearMonth
  * @param onRetrySave Retries retained intent or resolves uncertain publication.
  * @param onRetryLoad Retries only a failed authoritative target read.
  * @param modifier Caller layout.
+ * @param onRemoveCampsite Removes one applied campsite without changing the other offers.
+ * @param onCapacity Changes raw optional waitlist capacity.
  */
 @Composable
 fun LotterySetupScreen(
@@ -77,6 +81,8 @@ fun LotterySetupScreen(
     onPublish: () -> Unit = {},
     onRetrySave: () -> Unit = {},
     onRetryLoad: () -> Unit = {},
+    onRemoveCampsite: (String) -> Unit = {},
+    onCapacity: (String) -> Unit = {},
 ) {
     val submitting = state.savePhase != LotterySavePhase.IDLE
     if (state.targetLoad != LotteryTargetLoad.READY || state.publicationPending) {
@@ -179,7 +185,7 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.SITE -> {
-                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices)
+                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices, onRemoveCampsite)
                 }
 
                 LotteryStep.REGISTRATION -> {
@@ -205,7 +211,7 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.WINNERS -> {
-                    LotteryWinnersStep(state, onWinners)
+                    LotteryWinnersStep(state, onWinners, onCapacity)
                 }
 
                 LotteryStep.REVIEW -> {
@@ -256,36 +262,63 @@ private fun lotteryStepTitle(step: LotteryStep): String =
 /** Supplies all six content states without constructing repositories or simulating a save. */
 class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState> {
     override val values: Sequence<LotterySetupUiState> =
-        LotteryStep.entries.asSequence().map { step ->
-            val site = previewCampsite()
-            LotterySetupUiState(
-                draft =
-                    LotteryDraft(
-                        step = step,
-                        title = "May weekends 2027",
-                        description = "Quiet riverside camping for the May weekends.",
-                        campsiteId = site.id,
-                        nights = setOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15)),
-                        schedule =
-                            LotterySchedulePoint.entries
-                                .mapIndexed { index, point ->
-                                    point to
-                                        LotteryLocalDateTime(
-                                            LocalDate.of(2027, 5, 5 + index),
-                                            LocalTime.of(9, 0),
-                                        )
-                                }.toMap(),
-                        maximumWinnersText = "2",
-                    ),
-                choices = LotteryCampsiteChoices.Content(listOf(site)),
-                errors =
-                    if (step == LotteryStep.REVIEW) {
-                        LotterySetupErrors(windowsPending = true)
-                    } else {
-                        LotterySetupErrors()
-                    },
-            )
-        }
+        LotteryStep.entries
+            .asSequence()
+            .map { step ->
+                val site = previewCampsite()
+                val coast =
+                    site.copy(
+                        id = "coastal-preview",
+                        details = site.details.copy(name = "Coastal family campsite", timeZone = "America/Vancouver"),
+                    )
+                LotterySetupUiState(
+                    draft =
+                        LotteryDraft(
+                            step = step,
+                            title = "May weekends 2027",
+                            description = "Quiet riverside camping for the May weekends.",
+                            campsiteId = site.id,
+                            allocations =
+                                listOf(
+                                    LotteryOffer(site.id, listOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15))),
+                                    LotteryOffer(coast.id, listOf(LocalDate.of(2027, 5, 16))),
+                                ),
+                            schedule =
+                                LotterySchedulePoint.entries
+                                    .mapIndexed { index, point ->
+                                        point to
+                                            LotteryLocalDateTime(
+                                                LocalDate.of(2027, 5, 5 + index),
+                                                LocalTime.of(9, 0),
+                                            )
+                                    }.toMap(),
+                            maximumWinnersText = "2",
+                        ),
+                    choices = LotteryCampsiteChoices.Content(listOf(site, coast)),
+                    errors =
+                        if (step == LotteryStep.REVIEW) {
+                            LotterySetupErrors(windowsPending = true)
+                        } else {
+                            LotterySetupErrors()
+                        },
+                )
+            }.flatMap { state ->
+                if (state.draft.step in setOf(LotteryStep.WINNERS, LotteryStep.REVIEW)) {
+                    sequenceOf(
+                        state,
+                        state.copy(draft = state.draft.copy(waitlistCapacityText = "40")),
+                        state.copy(
+                            draft = state.draft.copy(waitlistCapacityText = "0"),
+                            errors =
+                                state.errors.copy(
+                                    waitlistCapacity = PositiveCountInput.Error.INVALID_WHOLE_NUMBER,
+                                ),
+                        ),
+                    )
+                } else {
+                    sequenceOf(state)
+                }
+            }
 }
 
 /** Passive themed previews cover each step, including the explicit pending review state.

@@ -60,6 +60,8 @@ fun LotterySetupRoute(
         onPublish = model::publishLottery,
         onRetrySave = model::retrySave,
         onRetryLoad = model::retryLoad,
+        onRemoveCampsite = model::removeCampsite,
+        onCapacity = model::editWaitlistCapacity,
     )
 }
 
