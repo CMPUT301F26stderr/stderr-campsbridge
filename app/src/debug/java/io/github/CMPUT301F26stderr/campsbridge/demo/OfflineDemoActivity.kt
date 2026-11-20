@@ -64,6 +64,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.messageLogViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.notificationLogViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
@@ -269,6 +270,7 @@ class OfflineDemoActivity : ComponentActivity() {
                                     },
                                     { adminBrowseViewModelFactory(session.services) },
                                     { notificationLogViewModelFactory(session.services) },
+                                    { messageLogViewModelFactory(session.services) },
                                     AndroidNotificationPermission(this@OfflineDemoActivity),
                                     session.notificationEntries,
                                     requestedDestination,

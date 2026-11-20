@@ -4,10 +4,19 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,6 +30,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.MessageLogDetailRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.MessageLogRoute
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.MessageLogViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogAudienceRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.NotificationLogRoute
@@ -33,13 +45,16 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
  * @param controller Current account navigation host.
  * @param state Confirmed session used by the shared workspace frame.
  * @param onSelectWorkspace Root-owned capability selection.
- * @param factory Explicit log/content repository dependencies.
+ * @param factory Explicit notification log/content dependencies.
+ * @param messageFactory Read-only actual message log and descriptive context dependencies.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 internal fun NavGraphBuilder.notificationLogGraph(
     controller: NavHostController,
     state: SessionState.Ready,
     onSelectWorkspace: (Role) -> Unit,
     factory: ViewModelProvider.Factory,
+    messageFactory: ViewModelProvider.Factory,
 ) {
     navigation(
         startDestination = "${AppDestination.ADMIN_LOGS}/list",
@@ -53,10 +68,46 @@ internal fun NavGraphBuilder.notificationLogGraph(
                 onSelectWorkspace,
                 stringResource(R.string.admin_logs),
             ) {
-                NotificationLogRoute(model) { id ->
-                    controller.navigate(AppDestination.adminNotification(id)) { launchSingleTop = true }
+                var messages by rememberSaveable { mutableStateOf(false) }
+                val pages = rememberSaveableStateHolder()
+                Column {
+                    PrimaryTabRow(if (messages) 1 else 0) {
+                        Tab(
+                            !messages,
+                            { messages = false },
+                            text = { Text(stringResource(R.string.message_log_notifications_tab)) },
+                        )
+                        Tab(
+                            messages,
+                            { messages = true },
+                            text = { Text(stringResource(R.string.message_log_messages_tab)) },
+                        )
+                    }
+                    pages.SaveableStateProvider(messages) {
+                        if (messages) {
+                            val messageModel: MessageLogViewModel = viewModel(parent, factory = messageFactory)
+                            MessageLogRoute(messageModel) { id ->
+                                controller.navigate(AppDestination.adminMessage(id)) {
+                                    launchSingleTop =
+                                        true
+                                }
+                            }
+                        } else {
+                            NotificationLogRoute(model) { id ->
+                                controller.navigate(AppDestination.adminNotification(id)) { launchSingleTop = true }
+                            }
+                        }
+                    }
                 }
             }
+        }
+        composable(AppDestination.ADMIN_MESSAGE, arguments = listOf(navArgument("messageId") {})) { entry ->
+            val parent = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_LOGS) }
+            val model: MessageLogViewModel = viewModel(parent, factory = messageFactory)
+            MessageLogDetailRoute(
+                model,
+                requireNotNull(entry.arguments?.getString("messageId")),
+            ) { controller.popBackStack() }
         }
         composable(
             AppDestination.ADMIN_NOTIFICATION,

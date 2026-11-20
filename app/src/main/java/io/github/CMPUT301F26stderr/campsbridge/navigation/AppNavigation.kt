@@ -63,6 +63,7 @@ import java.util.Locale
  * @param reservationListFactory Active-list dependencies keyed by actor context and filter.
  * @param adminBrowseFactory All-record read dependencies with explicitly pending predicates.
  * @param notificationLogFactory Read-only all-event and selected-content dependencies.
+ * @param messageLogFactory Read-only saved-message and descriptive context dependencies.
  * @param notificationPermission Host-owned Android inspection/settings dependency.
  * @param notificationEntry Immutable root tap outcome; receipt arrival never sets it.
  * @param onRetryNotificationEntry Explicit event/context retry.
@@ -94,6 +95,7 @@ fun AppNavigation(
     reservationListFactory: (ReservationContext, String?) -> ViewModelProvider.Factory,
     adminBrowseFactory: ViewModelProvider.Factory,
     notificationLogFactory: ViewModelProvider.Factory,
+    messageLogFactory: ViewModelProvider.Factory,
     notificationPermission: NotificationPermission,
     notificationEntry: NotificationEntryUiState,
     onRetryNotificationEntry: () -> Unit,
@@ -270,6 +272,7 @@ fun AppNavigation(
                 state,
                 onSelectWorkspace,
                 notificationLogFactory,
+                messageLogFactory,
             )
             lotterySetupGraph(controller, lotterySetupFactory)
             inboxGraph(

@@ -29,6 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.messageLogViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.notificationEntryViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.notificationLogViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
@@ -123,6 +124,7 @@ class MainActivity : ComponentActivity() {
                 },
                 { adminBrowseViewModelFactory(services) },
                 { notificationLogViewModelFactory(services) },
+                { messageLogViewModelFactory(services) },
                 AndroidNotificationPermission(this@MainActivity),
                 entries,
                 accountRemoval = removal,
