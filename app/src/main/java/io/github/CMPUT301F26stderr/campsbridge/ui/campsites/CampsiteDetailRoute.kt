@@ -29,6 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
  * @param onEdit Opens published listing details in their separate saved editor.
  * @param onShowQr Opens the published identity's generated promotional code.
  * @param onReviews Opens actual saved feedback in this reader's workspace.
+ * @param backEnabled Whether a retained admin removal permits Back input.
  * @param onRemove Requests explicit admin confirmation for the current saved listing.
  */
 @Composable
@@ -48,6 +49,7 @@ fun CampsiteDetailRoute(
     onShowQr: (() -> Unit)? = null,
     onReviews: (() -> Unit)? = null,
     onRemove: (() -> Unit)? = null,
+    backEnabled: Boolean = true,
     onBack: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -84,6 +86,7 @@ fun CampsiteDetailRoute(
                     onOpenSection = onOpenSection,
                     onReviews = onReviews,
                     onRemove = onRemove,
+                    backEnabled = backEnabled,
                     lotteryActions =
                         if (model.context == CampsiteDetailContext.VIEW &&
                             onOpenLottery != null &&

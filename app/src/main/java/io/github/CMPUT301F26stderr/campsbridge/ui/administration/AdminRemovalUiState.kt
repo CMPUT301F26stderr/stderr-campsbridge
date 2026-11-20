@@ -47,7 +47,6 @@ enum class AdminRemovalProblem { MISSING, CHANGED, DENIED, READ_FAILED, WRITE_FA
  * @param committed Whether marking or detaching has already succeeded.
  * @param cleanupBlobId Original detached blob still awaiting cleanup.
  * @param problem Reason the operation cannot proceed.
- * @param dialogVisible Whether to show the retained request's dialog.
  */
 data class AdminRemovalUiState(
     val phase: AdminRemovalPhase = AdminRemovalPhase.IDLE,
@@ -55,5 +54,4 @@ data class AdminRemovalUiState(
     val committed: Boolean = false,
     val cleanupBlobId: String? = null,
     val problem: AdminRemovalProblem? = null,
-    val dialogVisible: Boolean = true,
 )

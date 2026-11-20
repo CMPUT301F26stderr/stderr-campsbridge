@@ -49,6 +49,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param onOpenSection Opens a child within the same saved reader graph.
  * @param lotteryActions Optional current entrant actions owned by the saved route.
  * @param onReviews Opens saved rating and written feedback when registered.
+ * @param backEnabled Whether a retained admin removal permits Back input.
  * @param onRemove Requests admin confirmation for this active saved listing.
  */
 @Composable
@@ -66,11 +67,13 @@ fun CampsiteDetailScreen(
     lotteryActions: (@Composable () -> Unit)? = null,
     onReviews: (() -> Unit)? = null,
     onRemove: (() -> Unit)? = null,
+    backEnabled: Boolean = true,
 ) {
     AppScreen(
         stringResource(R.string.campsite),
         modifier,
         onBack = onBack,
+        backEnabled = backEnabled,
         bottomContent = {
             if (state is CampsiteDetailUiState.Content &&
                 context == CampsiteDetailContext.VIEW && lotteryActions != null

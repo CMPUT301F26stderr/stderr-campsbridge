@@ -3,10 +3,11 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,6 +19,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageUpdateResult
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeIdentityProvider
@@ -39,7 +41,7 @@ import org.junit.Test
 import java.io.IOException
 import java.time.Instant
 
-/** Hosted action/confirmation contracts; production inspection-slot wiring is an owner handoff. */
+/** Shared confirmation contracts and real gallery-to-inspection image removal navigation. */
 class AdminRemovalFlowTest {
     @get:Rule val compose = createComposeRule()
     private val admin = sampleAccount(setOf(Role.ADMIN))
@@ -78,6 +80,7 @@ class AdminRemovalFlowTest {
         AccountRemovalViewModel(FakeIdentityProvider(), accounts, moderation, SavedStateHandle()).also {
             rootStore.put("root", it)
         }
+    private val appHosts = mutableListOf<TestAppHost>()
     private val gates = mutableListOf<CompletableDeferred<Unit>>()
 
     @After fun close() {
@@ -85,6 +88,7 @@ class AdminRemovalFlowTest {
             gates.forEach { it.complete(Unit) }
             store.clear()
             rootStore.clear()
+            appHosts.forEach { it.close() }
         }
     }
 
@@ -102,7 +106,6 @@ class AdminRemovalFlowTest {
                 AdminRemovalHost(
                     model,
                     session,
-                    AdminRemovalWarnings("Test account warning", "Test campsite warning", "Test image warning"),
                     onRequestRootRemoval = root::request,
                 )
                 AccountRemovalHost(rootState, root::confirm, root::dismiss, root::retry, root::retryRecovery, {
@@ -112,11 +115,117 @@ class AdminRemovalFlowTest {
         }
     }
 
+    /** Removes a profile image through the actual gallery while preserving its account. */
+    @Test fun galleryProfileImageRemovalKeepsItsParentAndCancellationChangesNothing() {
+        galleryRemoval(ImageTarget(ImageTargetType.ACCOUNT, owner.id), "Profile")
+    }
+
+    /** Removes a campsite image through the actual gallery while preserving its listing. */
+    @Test fun galleryCampsiteImageRemovalKeepsItsParentAndCancellationChangesNothing() {
+        galleryRemoval(ImageTarget(ImageTargetType.CAMPSITE, site.id), "Campsite")
+    }
+
+    /** Exercises confirmation, cancellation and removal through the saved gallery route.
+     * @param target Actual profile or campsite attachment slot.
+     * @param kind Visible gallery target label.
+     */
+    private fun galleryRemoval(
+        target: ImageTarget,
+        kind: String,
+    ) {
+        val host = TestAppHost().also(appHosts::add)
+        val parent = FakeAccountRepository(owner)
+        host.accounts.account.value = admin
+        host.adminAccounts = parent
+        host.campsites.records.value = listOf(site)
+        host.images.attachment.value = attachment.copy(target = target)
+        // A broken display must still leave metadata available for inspection/removal.
+        host.images.urlFailures[attachment.blobId] = IOException("thumbnail offline")
+        compose.setContent { host.Content() }
+        compose.onNodeWithText("Images").performClick()
+        compose.onNodeWithText("$kind \u00b7 ${target.id}").performClick()
+        compose.onNodeWithText("Remove image").performScrollTo().performClick()
+        compose
+            .onNodeWithText(
+                "Remove the image attached to ${target.id}. The profile or campsite will remain.",
+            ).assertIsDisplayed()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.runOnIdle {
+            assertEquals(0, host.images.deleteCalls)
+            assertEquals(
+                attachment.blobId,
+                host.images.attachment.value
+                    ?.blobId,
+            )
+        }
+        compose.onNodeWithText("Remove image").performScrollTo().performClick()
+        compose.onNodeWithText("Remove").performClick()
+        compose.onNodeWithText("Removal for ${target.id} is complete.").assertIsDisplayed()
+        compose.onNodeWithText("Close").performClick()
+        compose.onNodeWithText("No image is attached to this target.").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf(target), host.images.removalTargets)
+            assertEquals(owner, parent.account.value)
+            assertEquals(listOf(site), host.campsites.records.value)
+            assertTrue(host.moderation.requests.isEmpty())
+        }
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("No matching records").assertIsDisplayed()
+    }
+
+    /** Profile inspection reaches the shared confirmation and removes only the inspected account. */
+    @Test fun profileInspectionConnectsAccountRemoval() {
+        inspectedRecordRemoval(removeCampsite = false)
+    }
+
+    /** An owned campsite opens inspection and removes the listing without deleting its owner. */
+    @Test fun ownedCampsiteInspectionConnectsRemoval() {
+        inspectedRecordRemoval(removeCampsite = true)
+    }
+
+    /** Exercises production profile and listing routes with controlled moderation results.
+     * @param removeCampsite Whether to follow the profile's owned-campsite link.
+     */
+    private fun inspectedRecordRemoval(removeCampsite: Boolean) {
+        val host = TestAppHost().also(appHosts::add)
+        val parent = FakeAccountRepository(owner)
+        host.accounts.account.value = admin
+        host.adminAccounts = parent
+        host.campsites.records.value = listOf(site)
+        host.moderation.removeAccountHandler = { _, _, _ -> }
+        host.moderation.removeCampsiteHandler = { _, _, _ -> }
+        compose.setContent { host.Content() }
+        compose.onNodeWithText("Profiles").performClick()
+        compose.onNodeWithText(owner.name).performClick()
+        if (removeCampsite) {
+            compose.onNodeWithText(site.details.name).performScrollTo().performClick()
+        }
+        val action = if (removeCampsite) "Remove campsite" else "Remove profile"
+        val target = if (removeCampsite) site.id else owner.id
+        compose.onNodeWithText(action).performScrollTo().performClick()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.runOnIdle { assertTrue(host.moderation.requests.isEmpty()) }
+        compose.onNodeWithText(action).performScrollTo().performClick()
+        compose.onNodeWithText("Remove").performClick()
+        compose.onNodeWithText("Removal for $target is complete.").assertIsDisplayed()
+        compose.onNodeWithText("Close").performClick()
+        compose.runOnIdle {
+            assertEquals(
+                listOf(if (removeCampsite) "campsite:${site.id}" else "account:${owner.id}"),
+                host.moderation.requests,
+            )
+        }
+    }
+
+    /** Cancelling confirmation leaves the inspected account unchanged. */
     @Test fun cancellingAccountConfirmationChangesNothing() {
         content()
         compose.onNodeWithText("Remove profile").performClick()
-        compose.onNodeWithText("Taylor Owner").assertIsDisplayed()
-        compose.onNodeWithText("Target ID: ${owner.id}").assertIsDisplayed()
+        compose.onNodeWithText("Remove profile?").assertIsDisplayed()
+        compose
+            .onNodeWithText(
+                "Remove profile ${owner.id} and its personal details. Affected active participation and listings will be removed, with cancellations and simulated refunds. History is retained.",
+            ).assertIsDisplayed()
         compose.onNodeWithText("Cancel").performClick()
         compose.runOnIdle {
             assertTrue(moderation.requests.isEmpty())
@@ -124,6 +233,7 @@ class AdminRemovalFlowTest {
         }
     }
 
+    /** A committed mark does not report success while cleanup is running. */
     @Test fun heldAccountMarkIsNotShownAsCompletedCleanup() {
         val gate = CompletableDeferred<Unit>().also(gates::add)
         moderation.removeAccountHandler =
@@ -133,15 +243,16 @@ class AdminRemovalFlowTest {
             }
         content()
         compose.onNodeWithText("Remove profile").performClick()
-        compose.onNodeWithText("Confirm removal").performClick()
-        compose.onNodeWithText("Removing the original target...").assertIsDisplayed()
-        compose.onNodeWithText("Removal and cleanup completed.").assertDoesNotExist()
-        compose.onNodeWithText("Retry").assertIsNotEnabled()
+        compose.onNodeWithText("Remove").performClick()
+        compose.onNodeWithText("Finishing removal for ${owner.id}.").assertIsDisplayed()
+        compose.onNodeWithText("Removal for ${owner.id} is complete.").assertDoesNotExist()
+        compose.onNodeWithText("Retry removal").assertDoesNotExist()
         compose.runOnIdle { gate.complete(Unit) }
-        compose.onNodeWithText("Removal and cleanup completed.").assertIsDisplayed()
+        compose.onNodeWithText("Removal for ${owner.id} is complete.").assertIsDisplayed()
         compose.runOnIdle { assertEquals(listOf("account:${owner.id}"), moderation.requests) }
     }
 
+    /** Retries committed campsite cleanup without switching to another selection. */
     @Test fun campsiteFailureShowsCommittedRemovalAndRetriesTheSameTarget() {
         moderation.removeCampsiteHandler = { _, actor, _ ->
             sites.records.value = listOf(site.copy(removal = Removal(Instant.EPOCH, actor)))
@@ -149,31 +260,35 @@ class AdminRemovalFlowTest {
         }
         content()
         compose.onNodeWithText("Remove campsite").performClick()
-        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Remove").performClick()
         compose.onNodeWithText("The record is marked removed. Dependent cleanup has not finished.").assertIsDisplayed()
         compose.runOnIdle {
             model.requestAccount(owner)
             moderation.removeCampsiteHandler = { _, _, _ -> }
         }
-        compose.onNodeWithText("Target ID: ${site.id}").assertIsDisplayed()
-        compose.onNodeWithText("Retry cleanup").performClick()
-        compose.onNodeWithText("Removal and cleanup completed.").assertIsDisplayed()
+        compose.onNodeWithText("Removal did not finish").assertIsDisplayed()
+        compose.onNodeWithText("Retry removal").performClick()
+        compose.onNodeWithText("Removal for ${site.id} is complete.").assertIsDisplayed()
         compose.runOnIdle { assertEquals(List(2) { "campsite:${site.id}" }, moderation.requests) }
     }
 
+    /** Retries the detached blob while preserving replacement images and parent records. */
     @Test fun detachedImageCleanupDoesNotDeleteANewAttachmentOrItsParent() {
         photos.deleteResult = ImageUpdateResult(null, attachment.blobId)
         content()
         compose.onNodeWithText("Remove image").performClick()
-        compose.onNodeWithText("Image reference: ${attachment.blobId}").assertIsDisplayed()
-        compose.onNodeWithText("Confirm removal").performClick()
         compose
             .onNodeWithText(
-                "The original attachment is no longer current. Image byte cleanup has not finished.",
+                "Remove the image attached to ${owner.id}. The profile or campsite will remain.",
+            ).assertIsDisplayed()
+        compose.onNodeWithText("Remove").performClick()
+        compose
+            .onNodeWithText(
+                "The image is detached. Cleanup of the old file is still pending.",
             ).assertIsDisplayed()
         compose.runOnIdle { photos.attachment.value = attachment.copy(blobId = "new-live-image") }
-        compose.onNodeWithText("Retry cleanup").performClick()
-        compose.onNodeWithText("Removal and cleanup completed.").assertIsDisplayed()
+        compose.onNodeWithText("Retry removal").performClick()
+        compose.onNodeWithText("Removal for ${owner.id} is complete.").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, photos.deleteCalls)
             assertEquals(listOf(attachment.blobId), cleanupCalls)
@@ -194,16 +309,17 @@ class AdminRemovalFlowTest {
         }
     }
 
+    /** Missing targets show failure without writing another record. */
     @Test fun missingTargetIsExplainedWithoutReportingSuccessOrTouchingAnotherRecord() {
         content()
         compose.onNodeWithText("Remove profile").performClick()
         compose.runOnIdle { records.remove(owner.id) }
-        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Remove").performClick()
         compose
             .onNodeWithText(
                 "The original target is missing or unavailable. Return to inspection to check its current state.",
             ).assertIsDisplayed()
-        compose.onNodeWithText("Removal and cleanup completed.").assertDoesNotExist()
+        compose.onNodeWithText("Removal for ${owner.id} is complete.").assertDoesNotExist()
         compose.runOnIdle { assertTrue(moderation.requests.isEmpty()) }
     }
 
@@ -223,7 +339,7 @@ class AdminRemovalFlowTest {
             store.clear()
             assertEquals(AccountRemovalPhase.REMOVING, root.state.value.phase)
             gate.complete(Unit)
-        }   
+        }
         compose.waitUntil(5_000) { root.state.value.phase == AccountRemovalPhase.COMPLETE }
         compose.runOnIdle { assertEquals(listOf("account:${admin.id}"), moderation.requests) }
     }

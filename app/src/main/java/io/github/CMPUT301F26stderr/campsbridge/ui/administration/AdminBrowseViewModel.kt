@@ -18,6 +18,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.VisibleImageSlots
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ import java.util.Locale
  * @param matchesSite Campsite text search; null leaves a search pending.
  * @param filterProfiles Profile role filter; null leaves a selected role pending.
  * @param matchesProfile Profile text search; null leaves a search pending.
+ * @param resumeWork Explicit administrative recovery; null omits the action in read-only hosts.
  */
 class AdminBrowseViewModel(
     private val campsites: CampsiteRepository,
@@ -40,7 +43,34 @@ class AdminBrowseViewModel(
     private val matchesSite: ((Campsite, String) -> Boolean)? = null,
     private val filterProfiles: ((List<Account>, Role?) -> List<Account>)? = null,
     private val matchesProfile: ((Account, String) -> Boolean)? = null,
+    private val resumeWork: (suspend () -> Unit)? = null,
 ) : ViewModel() {
+    private val mutableMaintenance = MutableStateFlow(resumeWork?.let { AdminMaintenanceState.READY })
+    val maintenance = mutableMaintenance.asStateFlow()
+
+    /** Resumes saved global work only after the administrator requests it. */
+    fun resumePendingWork() {
+        val resume = resumeWork ?: return
+        if (closed || maintenance.value == AdminMaintenanceState.RUNNING) return
+        mutableMaintenance.value = AdminMaintenanceState.RUNNING
+        viewModelScope.launch {
+            try {
+                resume()
+                currentCoroutineContext().ensureActive()
+                mutableMaintenance.value = AdminMaintenanceState.COMPLETE
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                currentCoroutineContext().ensureActive()
+                mutableMaintenance.value = AdminMaintenanceState.FAILED
+            } finally {
+                if (!closed && maintenance.value == AdminMaintenanceState.RUNNING) {
+                    mutableMaintenance.value = AdminMaintenanceState.FAILED
+                }
+            }
+        }
+    }
+
     /** Reads a saved string, ignoring a value of any other type.
      * @param key Saved-state key.
      */

@@ -5,8 +5,10 @@
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import android.net.Uri
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -14,9 +16,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminRemovalHost
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminRemovalPhase
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminRemovalViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailSection
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.policies.PolicyId
@@ -31,6 +38,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.reviews.CampsiteReviewsViewMod
  * @param context Fixed presentation validated by the owning graph.
  * @param factory Saved ID/context constructor binding.
  * @param reviewsFactory Entry-scoped saved feedback dependencies, absent in isolated reader hosts.
+ * @param removalFactory Browse-owned moderation dependencies for administrator inspection.
+ * @param session Current account capabilities for moderation.
+ * @param onRequestRootRemoval Delegates self-removal through the existing root controller.
  */
 internal fun NavGraphBuilder.campsiteReadGraph(
     controller: NavHostController,
@@ -38,6 +48,9 @@ internal fun NavGraphBuilder.campsiteReadGraph(
     context: CampsiteDetailContext,
     factory: (String, CampsiteDetailContext) -> ViewModelProvider.Factory,
     reviewsFactory: ((String, Role) -> ViewModelProvider.Factory)? = null,
+    removalFactory: ViewModelProvider.Factory? = null,
+    session: SessionState.Ready? = null,
+    onRequestRootRemoval: () -> Unit = {},
 ) {
     require(context != CampsiteDetailContext.MANAGE)
     val pattern = AppDestination.campsitePattern(workspace, context)
@@ -61,9 +74,41 @@ internal fun NavGraphBuilder.campsiteReadGraph(
                         viewModelStoreOwner = parent,
                         factory = factory(id, context),
                     )
+                val removal: AdminRemovalViewModel? =
+                    if (workspace == Role.ADMIN && context == CampsiteDetailContext.INSPECT && removalFactory != null) {
+                        val browse = remember(entry) { controller.getBackStackEntry(AppDestination.ADMIN_BROWSE) }
+                        viewModel(browse, factory = removalFactory)
+                    } else {
+                        null
+                    }
+                val removalPhase =
+                    removal
+                        ?.state
+                        ?.collectAsStateWithLifecycle()
+                        ?.value
+                        ?.phase
+                val site by model.state.collectAsStateWithLifecycle()
+                val inspected = (site as? CampsiteDetailUiState.Content)?.campsite
                 CampsiteDetailRoute(
                     model,
                     section = section,
+                    backEnabled = removalPhase !in setOf(AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING),
+                    onRemove =
+                        if (removal != null && session != null && inspected?.removal == null &&
+                            inspected?.id == id &&
+                            session.account.isActive &&
+                            Role.ADMIN in session.account.roles
+                        ) {
+                            {
+                                val current = (model.state.value as? CampsiteDetailUiState.Content)?.campsite
+                                if (current?.id == id && current.removal == null) {
+                                    removal.updateSession(session)
+                                    removal.requestCampsite(current)
+                                }
+                            }
+                        } else {
+                            null
+                        },
                     onOpenLottery =
                         if (context ==
                             CampsiteDetailContext.VIEW
@@ -101,6 +146,9 @@ internal fun NavGraphBuilder.campsiteReadGraph(
                         ) { launchSingleTop = true }
                     },
                 ) { controller.popBackStack() }
+                if (removal != null && session != null) {
+                    AdminRemovalHost(removal, session) { onRequestRootRemoval() }
+                }
             }
         }
         if (reviewsFactory != null) {

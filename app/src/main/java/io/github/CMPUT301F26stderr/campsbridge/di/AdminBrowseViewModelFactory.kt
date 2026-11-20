@@ -27,6 +27,9 @@ fun adminBrowseViewModelFactory(services: AppServices): ViewModelProvider.Factor
                 ::matchesCampsiteText,
                 ::filterProfilesByRole,
                 ::matchesProfileText,
+                resumeWork = {
+                    services.repositories.maintenance.resume(services.identity.establishIdentity())
+                },
             )
         }
     }

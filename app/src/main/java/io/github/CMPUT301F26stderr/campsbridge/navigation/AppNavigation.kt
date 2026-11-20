@@ -105,6 +105,7 @@ fun AppNavigation(
     onDeleteProfile: () -> Unit,
     reviewsFactory: (String, Role) -> ViewModelProvider.Factory,
     campsiteEditFactory: (String) -> ViewModelProvider.Factory,
+    adminRemovalFactory: ViewModelProvider.Factory? = null,
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -261,6 +262,8 @@ fun AppNavigation(
                 state,
                 onSelectWorkspace,
                 adminBrowseFactory,
+                adminRemovalFactory,
+                onDeleteProfile,
             )
             notificationLogGraph(
                 controller,
@@ -331,6 +334,9 @@ fun AppNavigation(
                 CampsiteDetailContext.INSPECT,
                 campsiteDetailFactory,
                 reviewsFactory,
+                removalFactory = adminRemovalFactory,
+                session = state,
+                onRequestRootRemoval = onDeleteProfile,
             )
             discoveryGraph(
                 controller,

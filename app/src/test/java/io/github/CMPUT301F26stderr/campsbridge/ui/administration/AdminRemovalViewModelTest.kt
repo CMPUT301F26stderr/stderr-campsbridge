@@ -133,6 +133,27 @@ class AdminRemovalViewModelTest {
             assertEquals(AdminRemovalPhase.IDLE, f.model.state.value.phase)
         }
 
+    @Test fun imageSuccessUsesTheRepositoryOutcomeWithoutRemovingItsParent() =
+        scenario { f ->
+            for (target in listOf(
+                f.attachment.target,
+                ImageTarget(ImageTargetType.CAMPSITE, f.site.id),
+            )) {
+                f.photos.attachment.value = f.attachment.copy(target = target)
+                f.model.requestImage(f.photos.attachment.value!!)
+                f.model.confirm()
+                runCurrent()
+                assertEquals(AdminRemovalPhase.COMPLETE, f.model.state.value.phase)
+                assertEquals(null, f.photos.attachment.value)
+                assertEquals(f.owner, f.accountRecords[f.owner.id])
+                assertEquals(listOf(f.site), f.sites.records.value)
+                assertTrue(f.moderation.requests.isEmpty())
+                assertTrue(f.cleanupCalls.isEmpty())
+                f.model.dismiss()
+            }
+            assertEquals(2, f.photos.deleteCalls)
+        }
+
     @Test fun imageCleanupRetriesOnlyTheOriginalBlobAfterReplacement() =
         scenario { f ->
             f.photos.deleteResult = ImageUpdateResult(null, f.attachment.blobId)
