@@ -16,5 +16,14 @@ fun MessageLogDetailRoute(
     onBack: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
-    MessageLogDetailScreen(model.find(id), state.read, id, model::retry, { model.retryContext(id) }, onBack)
+    val rows by model.savedRows.collectAsStateWithLifecycle()
+    MessageLogDetailScreen(
+        row = rows.firstOrNull { it.message.id == id },
+        read = state.read,
+        id = id,
+        onRetry = model::retry,
+        onRetryContext = model::retryContext,
+        onBack = onBack,
+        history = model.conversation(id),
+    )
 }

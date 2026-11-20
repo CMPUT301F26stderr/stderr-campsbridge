@@ -13,6 +13,8 @@
     <string name="message_log_context_loading">Loading stay and participant details…</string>
     <string name="message_log_context_failed">Some stay or participant details could not be loaded. The saved message is still available.</string>
     <string name="message_log_details">Message details</string>
+    <string name="message_log_history">Conversation history · oldest first</string>
+    <string name="message_log_history_empty">No saved messages in this conversation.</string>
     <string name="message_log_identity">Message %1$s</string>
     <string name="message_log_unavailable">This saved message is unavailable.</string>
 </resources>

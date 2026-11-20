@@ -62,7 +62,20 @@ class MessageLogFlowTest {
             }
         host.campsites.records.value = listOf(site)
         host.bookings.records.value = listOf(stay)
-        host.messages.records.value = listOf(message)
+        val reply =
+            message.copy(
+                id = "reply/B ?1",
+                senderId = stay.entrantId,
+                body = "Thank you. We arrive at noon.",
+                createdAt = Instant.EPOCH.plusSeconds(60),
+            )
+        val unrelated =
+            message.copy(
+                id = "other-message",
+                reservationId = "other-stay",
+                body = "Other reservation content.",
+            )
+        host.messages.records.value = listOf(reply, unrelated, message)
         host.messages.sendHandler = { _, _, _, _ ->
             sends++
             error("Logs cannot send")
@@ -75,6 +88,18 @@ class MessageLogFlowTest {
         compose.onNodeWithTag("admin-message-${message.id}").performScrollTo().performClick()
         compose.onNodeWithText("Message details").assertIsDisplayed()
         compose.onNodeWithText(message.body).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(reply.body).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(unrelated.body).assertDoesNotExist()
+        val followUp =
+            reply.copy(
+                id = "follow-up",
+                body = "We will bring our booking confirmation.",
+                createdAt = Instant.EPOCH.plusSeconds(120),
+            )
+        compose.runOnIdle {
+            host.messages.records.value = listOf(followUp, reply, unrelated, message)
+        }
+        compose.onNodeWithText(followUp.body).performScrollTo().assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Messages").assertIsSelected()
         compose.onNodeWithText("east gate").assertIsDisplayed()

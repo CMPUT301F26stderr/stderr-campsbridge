@@ -279,6 +279,69 @@ class MessageLogBasicBehaviorTest {
             assertEquals(MessageLogRead.LOADING, model.state.value.read)
         }
 
+    /** Conversation history uses exact reservation identity and remains complete while searching. */
+    @Test
+    fun conversationIsOrderedAndIndependentOfSearchAndMissingContext() =
+        runTest {
+            val older = message("older", "Meet at the gate.")
+            val newer = message("newer", "We arrive at noon.").copy(createdAt = Instant.EPOCH.plusSeconds(10))
+            val unrelated = message("unrelated", "Private other stay.").copy(reservationId = "other-stay")
+            val repository = FakeMessageRepository(listOf(newer, unrelated, older))
+            val model = createModel(repository)
+            runCurrent()
+
+            model.editQuery("gate")
+            assertEquals(
+                listOf(older),
+                model.state.value.rows
+                    .map { it.message },
+            )
+            assertEquals(listOf(older, newer), model.conversation(older.id).map { it.message })
+            assertTrue(model.conversation("missing-message").isEmpty())
+
+            val reply = message("reply", "Thanks for the directions.").copy(createdAt = Instant.EPOCH.plusSeconds(20))
+            repository.records.value = listOf(reply, unrelated, newer, older)
+            runCurrent()
+            assertEquals(listOf(older, newer, reply), model.conversation(older.id).map { it.message })
+            assertEquals(
+                listOf(older, newer, reply, unrelated).toSet(),
+                model.savedRows.value
+                    .map { it.message }
+                    .toSet(),
+            )
+
+            repository.records.value = listOf(newer, reply, unrelated)
+            runCurrent()
+            assertTrue(model.conversation(older.id).isEmpty())
+            assertTrue(repository.readRequests.isEmpty())
+        }
+
+    /** A failed history source retains known content and retries against the same message identity. */
+    @Test
+    fun conversationSurvivesFailureAndRecoversWithoutChangingTarget() =
+        runTest {
+            val original = message("selected", "Meet at the gate.")
+            val repository = FakeMessageRepository(listOf(original))
+            val model = createModel(repository)
+            runCurrent()
+            model.editQuery("no matches")
+
+            repository.logFailure.value = IOException("History offline")
+            runCurrent()
+            assertEquals(MessageLogRead.FAILURE, model.state.value.read)
+            assertEquals(listOf(original), model.conversation(original.id).map { it.message })
+
+            val reply = message("reply", "See you soon.").copy(createdAt = Instant.EPOCH.plusSeconds(1))
+            repository.records.value = listOf(reply, original)
+            repository.logFailure.value = null
+            model.retry()
+            runCurrent()
+            assertEquals(MessageLogRead.READY, model.state.value.read)
+            assertEquals("no matches", model.state.value.query)
+            assertEquals(listOf(original, reply), model.conversation(original.id).map { it.message })
+            assertTrue(repository.readRequests.isEmpty())
+        }
+
     /** Creates an owned ViewModel whose observation is stopped after each test.
      * @param repository Controlled message source.
      * @param savedState Small retained UI values.

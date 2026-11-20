@@ -32,6 +32,8 @@ class MessageLogViewModel(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(MessageLogUiState(query = saved.get<String>(QUERY).orEmpty()))
     val state = mutableState.asStateFlow()
+    private val mutableSavedRows = MutableStateFlow<List<MessageLogRow>>(emptyList())
+    val savedRows = mutableSavedRows.asStateFlow()
     private val records = linkedMapOf<String, MessageLogRow>()
     private val contextJobs = mutableMapOf<String, Job>()
     private val contextTokens = mutableMapOf<String, Long>()
@@ -70,6 +72,17 @@ class MessageLogViewModel(
      */
     fun find(id: String): MessageLogRow? =
         records[id]
+
+    /** Reads only the selected record's saved reservation history, independently of search.
+     * @param id Original selected message identity; a missing target exposes no other history.
+     */
+    fun conversation(id: String): List<MessageLogRow> {
+        val rows = savedRows.value
+        val selected = rows.firstOrNull { it.message.id == id } ?: return emptyList()
+        return rows
+            .filter { it.message.reservationId == selected.message.reservationId }
+            .sortedWith(compareBy<MessageLogRow> { it.message.createdAt }.thenBy { it.message.id })
+    }
 
     /** Observes actual messages; a source failure never becomes an empty successful result. */
     private fun observe() {
@@ -232,30 +245,33 @@ class MessageLogViewModel(
     /** Filters descriptive facts while preserving the original source order and identities. */
     private fun project() {
         val query = state.value.query.trim()
-        val rows =
+        val allRows =
             records.values
                 .sortedWith(
                     compareByDescending<MessageLogRow> { it.message.createdAt }.thenBy { it.message.id },
-                ).filter { row ->
-                    query.isBlank() ||
-                        listOfNotNull(
-                            row.message.id,
-                            row.message.body,
-                            row.message.reservationId,
-                            row.message.senderId,
-                            row.recipientId,
-                            row.ownerId,
-                            row.senderLabel,
-                            row.recipientLabel,
-                            row.reservation?.bookedCampsite?.name,
-                            row.direction.name.replace('_', ' '),
-                            when (row.direction) {
-                                MessageLogDirection.OWNER_TO_ENTRANT -> "owner to camper"
-                                MessageLogDirection.ENTRANT_TO_OWNER -> "camper to owner"
-                                MessageLogDirection.UNAVAILABLE -> null
-                            },
-                        ).any { it.contains(query, ignoreCase = true) }
-                }
+                )
+        mutableSavedRows.value = allRows
+        val rows =
+            allRows.filter { row ->
+                query.isBlank() ||
+                    listOfNotNull(
+                        row.message.id,
+                        row.message.body,
+                        row.message.reservationId,
+                        row.message.senderId,
+                        row.recipientId,
+                        row.ownerId,
+                        row.senderLabel,
+                        row.recipientLabel,
+                        row.reservation?.bookedCampsite?.name,
+                        row.direction.name.replace('_', ' '),
+                        when (row.direction) {
+                            MessageLogDirection.OWNER_TO_ENTRANT -> "owner to camper"
+                            MessageLogDirection.ENTRANT_TO_OWNER -> "camper to owner"
+                            MessageLogDirection.UNAVAILABLE -> null
+                        },
+                    ).any { it.contains(query, ignoreCase = true) }
+            }
         mutableState.value = state.value.copy(rows = rows)
     }
 

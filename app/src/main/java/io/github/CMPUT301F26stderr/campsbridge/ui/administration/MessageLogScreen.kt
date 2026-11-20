@@ -125,13 +125,14 @@ fun MessageLogContent(
     }
 }
 
-/** Shows one complete saved message or an explicit primary-source outcome.
+/** Shows ordered saved reservation history or an explicit primary-source outcome.
  * @param row Original saved record and any descriptive facts already resolved.
  * @param read Primary message observation outcome.
  * @param id Original message identity, independent of notification event IDs.
  * @param onRetry Retries the primary observation.
- * @param onRetryContext Retries only this record's failed linked facts.
+ * @param onRetryContext Retries one history record's failed linked facts.
  * @param onBack Returns to the retained caller.
+ * @param history Selected reservation's saved messages, oldest first and independent of search.
  */
 @Composable
 fun MessageLogDetailScreen(
@@ -139,8 +140,9 @@ fun MessageLogDetailScreen(
     read: MessageLogRead,
     id: String,
     onRetry: () -> Unit,
-    onRetryContext: () -> Unit,
+    onRetryContext: (String) -> Unit,
     onBack: () -> Unit,
+    history: List<MessageLogRow> = listOfNotNull(row),
 ) {
     AppScreen(stringResource(R.string.message_log_details), onBack = onBack) {
         Column(
@@ -150,7 +152,22 @@ fun MessageLogDetailScreen(
             when {
                 row != null -> {
                     Text(stringResource(R.string.message_log_identity, id))
-                    MessageLogContent(row, onRetryContext)
+                    Text(
+                        stringResource(R.string.message_log_history),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    if (read == MessageLogRead.FAILURE) {
+                        FailureContent(stringResource(R.string.message_log_failed), onRetry)
+                    } else if (read == MessageLogRead.LOADING) {
+                        LoadingContent()
+                    }
+                    if (history.isEmpty()) {
+                        EmptyContent(stringResource(R.string.message_log_history_empty))
+                    }
+                    for (entry in history) {
+                        MessageLogContent(entry, { onRetryContext(entry.message.id) })
+                        HorizontalDivider()
+                    }
                 }
 
                 read == MessageLogRead.LOADING -> {
