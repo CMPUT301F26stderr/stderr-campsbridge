@@ -272,6 +272,9 @@ class LotteryDetailViewModel(
                                             record.publishedAt == null &&
                                             record.cancellation == null,
                                     lifecycle = lotteryLifecycle(record, clock.instant()),
+                                    canEditDetails =
+                                        context == LotteryContext.OWNER && record.ownerId == accountId &&
+                                            record.cancellation == null,
                                 )
                             if (prior == null) {
                                 observeOffers()

@@ -21,6 +21,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * @param section Registered read-only child of the same saved parent.
  * @param onOpenSection Registered overview menu actions, absent in isolated examples.
  * @param onCampsite Registered saved campsite calendar, absent in isolated examples.
+ * @param onEditDetails Opens the organizer's saved details editor.
+ * @param onEditAllocations Opens the current participant's owned allocation editor.
  */
 @Composable
 fun LotteryDetailRoute(
@@ -33,6 +35,8 @@ fun LotteryDetailRoute(
     section: LotteryDetailSection = LotteryDetailSection.OVERVIEW,
     onOpenSection: ((LotteryDetailSection) -> Unit)? = null,
     onCampsite: ((String) -> Unit)? = null,
+    onEditDetails: (() -> Unit)? = null,
+    onEditAllocations: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
@@ -59,6 +63,8 @@ fun LotteryDetailRoute(
                 onReservation = onReservation,
                 onBooking = onBooking,
                 onOpenSection = onOpenSection,
+                onEditDetails = onEditDetails,
+                onEditAllocations = onEditAllocations,
             )
         }
 

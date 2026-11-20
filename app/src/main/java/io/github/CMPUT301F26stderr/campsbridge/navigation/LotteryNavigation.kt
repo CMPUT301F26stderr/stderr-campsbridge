@@ -137,14 +137,34 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                         viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
                     LotteryDetailRoute(
                         model,
-                        {
+                        onEditAllocations =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(
+                                        AppDestination.lotteryAllocationsEdit(id),
+                                    ) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
+                        onEditDetails =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(
+                                        AppDestination.lotteryDetailsEdit(id),
+                                    ) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
+                        onBack = {
                             if (section == LotteryDetailSection.OVERVIEW) {
                                 controller.popBackStack(pattern, inclusive = true)
                             } else {
                                 controller.popBackStack()
                             }
                         },
-                        {
+                        onContinue = {
                             controller.navigate(AppDestination.lotterySetupGraph(id)) {
                                 launchSingleTop =
                                     true
