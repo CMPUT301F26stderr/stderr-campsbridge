@@ -120,7 +120,7 @@ class LotteryCapacityRenderingTest {
                             ) {
                                 "Registration limit (optional)"
                             } else {
-                                "Waitlist capacity"
+                                "Registration limit"
                             },
                         ).performScrollTo()
                         .assertIsDisplayed()
