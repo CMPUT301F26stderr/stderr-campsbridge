@@ -1,12 +1,10 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
@@ -15,28 +13,18 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 
-/** Required owner-approved effects/retention wording; there is no unreviewed default copy. */
-data class AdminRemovalWarnings(
-    val account: String,
-    val campsite: String,
-    val image: String,
-) {
-    init {
-        require(account.isNotBlank() && campsite.isNotBlank() && image.isNotBlank())
-    }
-}
-
-/** One host for account, campsite and image removal. Mount beside the inspection action slots.
- * The caller must supply approved warning copy and delegate self-removal to the existing
- * root AccountRemovalViewModel.request, with AccountRemovalHost still mounted at AppRoot.
- * This host never creates a second root-removal controller or confirms its operation itself.
+/** Connects the retained operation to confirmation and cleanup feedback.
+ * @param model Browse-owned original-target controller.
+ * @param session Current account capabilities.
+ * @param onRequestRootRemoval Delegates current-account removal to the root controller.
  */
 @Composable
 fun AdminRemovalHost(
     model: AdminRemovalViewModel,
     session: SessionState,
-    warnings: AdminRemovalWarnings,
     onRequestRootRemoval: (String) -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -49,19 +37,14 @@ fun AdminRemovalHost(
             }
         }
     }
-    if (!state.dialogVisible) {
-        val account = (session as? SessionState.Ready)?.account
-        TextButton(
-            enabled = account?.isActive == true && Role.ADMIN in account.roles,
-            onClick = model::resume,
-        ) {
-            Text(stringResource(R.string.admin_removal_resume))
-        }
-    }
-    AdminRemovalContent(state, warnings, model::confirm, model::retry, model::dismiss)
+    AdminRemovalContent(state, model::confirm, model::retry, model::dismiss)
 }
 
-/** Slot for a confirmed active inspected account; a supplied root session gates the action. */
+/** Requests confirmation for an active inspected account.
+ * @param model Retained operation owner.
+ * @param session Current administrator session.
+ * @param account Inspected account captured on click.
+ */
 @Composable
 fun AdminRemovalAccountAction(
     model: AdminRemovalViewModel,
@@ -76,7 +59,11 @@ fun AdminRemovalAccountAction(
     ) { model.requestAccount(account) }
 }
 
-/** Slot for an inspected admin campsite, never owner management or entrant participation. */
+/** Requests confirmation from campsite inspection.
+ * @param model Retained operation owner.
+ * @param session Current administrator session.
+ * @param campsite Inspected listing captured on click.
+ */
 @Composable
 fun AdminRemovalCampsiteAction(
     model: AdminRemovalViewModel,
@@ -88,7 +75,11 @@ fun AdminRemovalCampsiteAction(
     }
 }
 
-/** Slot for the confirmed attachment metadata; thumbnail failure does not disable moderation. */
+/** Requests confirmation even when the attachment preview fails.
+ * @param model Retained operation owner.
+ * @param session Current administrator session.
+ * @param attachment Original metadata captured on click.
+ */
 @Composable
 fun AdminRemovalImageAction(
     model: AdminRemovalViewModel,
@@ -98,6 +89,13 @@ fun AdminRemovalImageAction(
     AdminRemovalAction(model, session, true, R.string.admin_remove_image) { model.requestImage(attachment) }
 }
 
+/** Offers an explicitly confirmed action only to the active administrator.
+ * @param model Original-target operation owner.
+ * @param session Current capabilities.
+ * @param available Whether the inspected record permits removal.
+ * @param label Localized action label.
+ * @param request Captures the inspected target without writing.
+ */
 @Composable
 private fun AdminRemovalAction(
     model: AdminRemovalViewModel,
@@ -109,12 +107,14 @@ private fun AdminRemovalAction(
     val ready = session as? SessionState.Ready ?: return
     if (!ready.account.isActive || Role.ADMIN !in ready.account.roles || !available) return
     val state by model.state.collectAsStateWithLifecycle()
-    TextButton(
+    AppActionButton(
+        label = stringResource(label),
+        modifier = Modifier.fillMaxWidth(),
         enabled = state.phase == AdminRemovalPhase.IDLE,
-        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+        style = ActionStyle.DESTRUCTIVE_OUTLINED,
         onClick = {
             model.updateSession(session)
             request()
         },
-    ) { Text(stringResource(label)) }
+    )
 }

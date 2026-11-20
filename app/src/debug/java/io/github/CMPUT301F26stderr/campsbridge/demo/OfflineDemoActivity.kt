@@ -51,6 +51,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.adminRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
@@ -273,6 +274,7 @@ class OfflineDemoActivity : ComponentActivity() {
                                     requestedDestination,
                                     host::consumeDestination,
                                     accountRemoval = removal,
+                                    adminRemovalFactory = { id -> adminRemovalViewModelFactory(session.services, id) },
                                     reviewsFactory = {
                                         actorId,
                                         id,

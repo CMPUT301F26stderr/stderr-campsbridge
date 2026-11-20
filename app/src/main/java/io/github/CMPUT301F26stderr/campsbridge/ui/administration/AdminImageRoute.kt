@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
@@ -48,40 +49,28 @@ fun AdminImageRoute(
         }
         return
     }
-    if (removal != null && session != null) {
-        val removalState by removal.state.collectAsStateWithLifecycle()
-        val frozen = removalState.request?.target
-        val identity =
-            when (frozen) {
-                is AdminRemovalTarget.Account -> frozen.id
-                is AdminRemovalTarget.Campsite -> frozen.id
-                is AdminRemovalTarget.Image -> frozen.target.id
-                null -> target.id
-            }
-        AdminRemovalHost(
-            removal,
-            session,
-            AdminRemovalWarnings(
-                stringResource(R.string.admin_remove_profile_body, identity),
-                stringResource(R.string.admin_remove_site_body, identity),
-                stringResource(R.string.admin_remove_image_body, identity),
-            ),
-            onRequestRootRemoval,
-        )
-    }
+    val phase =
+        removal
+            ?.state
+            ?.collectAsStateWithLifecycle()
+            ?.value
+            ?.phase
+    val canLeave = phase !in setOf(AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING)
     val image = (inspection as? AdminInspectionUiState.Image)?.takeIf { it.target == target }
     AdminImageScreen(
         state = image ?: AdminInspectionUiState.Image(target),
-        onBack = {
-            if (removal?.state?.value?.phase !in
-                setOf(AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING)
+        onBack = onBack,
+        backEnabled = canLeave,
+        onRemove =
+            if (removal != null && session is SessionState.Ready &&
+                session.account.isActive && Role.ADMIN in session.account.roles
             ) {
-                onBack()
-            }
-        },
-        removalAction =
-            if (removal != null && session != null) {
-                { attachment -> AdminRemovalImageAction(removal, session, attachment) }
+                image?.photo?.attachment?.takeIf { it.target == target }?.let { attachment ->
+                    {
+                        removal.updateSession(session)
+                        removal.requestImage(attachment)
+                    }
+                }
             } else {
                 null
             },
@@ -119,4 +108,7 @@ fun AdminImageRoute(
             }
         },
     )
+    if (removal != null && session != null) {
+        AdminRemovalHost(removal, session, onRequestRootRemoval)
+    }
 }

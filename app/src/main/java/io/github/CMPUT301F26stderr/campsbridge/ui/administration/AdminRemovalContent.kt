@@ -1,7 +1,5 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -17,179 +15,158 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
-import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
-/** Pure confirmation/progress content; required copy is supplied by the inspection owner. */
+/** Presents the original target's confirmation, progress and settled feedback.
+ * @param state Retained request and repository-confirmed outcome.
+ * @param onConfirm Confirms the displayed target.
+ * @param onRetry Retries or checks the same original request.
+ * @param onDismiss Closes feedback without cancelling committed cleanup.
+ */
 @Composable
 fun AdminRemovalContent(
     state: AdminRemovalUiState,
-    warnings: AdminRemovalWarnings,
     onConfirm: () -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val request = state.request ?: return
-    if (!state.dialogVisible || state.phase == AdminRemovalPhase.IDLE ||
-        state.phase == AdminRemovalPhase.ROOT_HANDOFF
-    ) {
-        return
-    }
-    val target = request.target
+    val target = state.request?.target ?: return
+    if (state.phase == AdminRemovalPhase.IDLE || state.phase == AdminRemovalPhase.ROOT_HANDOFF) return
+    val name =
+        when (target) {
+            is AdminRemovalTarget.Account -> target.id
+            is AdminRemovalTarget.Campsite -> target.id
+            is AdminRemovalTarget.Image -> target.target.id
+        }
     val title =
-        stringResource(
-            when (target) {
-                is AdminRemovalTarget.Account -> R.string.admin_remove_account
-                is AdminRemovalTarget.Campsite -> R.string.admin_remove_campsite
-                is AdminRemovalTarget.Image -> R.string.admin_remove_image
-            },
-        )
+        when (target) {
+            is AdminRemovalTarget.Account -> {
+                when (state.phase) {
+                    AdminRemovalPhase.CONFIRMING -> R.string.admin_remove_profile_question
+                    AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING -> R.string.account_removal_progress
+                    AdminRemovalPhase.COMPLETE -> R.string.admin_remove_profile_done
+                    else -> R.string.admin_remove_retry_title
+                }
+            }
+
+            is AdminRemovalTarget.Campsite -> {
+                when (state.phase) {
+                    AdminRemovalPhase.CONFIRMING -> R.string.admin_remove_site_question
+                    AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING -> R.string.admin_remove_site_progress
+                    AdminRemovalPhase.COMPLETE -> R.string.admin_remove_site_done
+                    else -> R.string.admin_remove_retry_title
+                }
+            }
+
+            is AdminRemovalTarget.Image -> {
+                when (state.phase) {
+                    AdminRemovalPhase.CONFIRMING -> R.string.admin_remove_image_question
+                    AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING -> R.string.admin_remove_image_progress
+                    AdminRemovalPhase.COMPLETE -> R.string.admin_remove_image_done
+                    else -> R.string.admin_remove_retry_title
+                }
+            }
+        }
     if (state.phase == AdminRemovalPhase.CONFIRMING) {
+        val body =
+            when (target) {
+                is AdminRemovalTarget.Account -> R.string.admin_remove_profile_body
+                is AdminRemovalTarget.Campsite -> R.string.admin_remove_site_body
+                is AdminRemovalTarget.Image -> R.string.admin_remove_image_body
+            }
         ConfirmationDialog(
-            title = title,
-            description =
-                when (target) {
-                    is AdminRemovalTarget.Account -> warnings.account
-                    is AdminRemovalTarget.Campsite -> warnings.campsite
-                    is AdminRemovalTarget.Image -> warnings.image
-                },
-            onConfirm = onConfirm,
-            onCancel = onDismiss,
-            onDismiss = onDismiss,
-            confirmLabel = stringResource(R.string.admin_removal_confirm),
+            stringResource(title),
+            stringResource(body, name),
+            onConfirm,
+            onDismiss,
+            onDismiss,
+            confirmLabel = stringResource(R.string.remove),
             destructive = true,
-            supportingContent = { AdminRemovalIdentity(target) },
         )
         return
     }
-    val busy = state.phase == AdminRemovalPhase.REMOVING || state.phase == AdminRemovalPhase.CHECKING
-    val canClose = state.phase == AdminRemovalPhase.COMPLETE || state.phase == AdminRemovalPhase.UNAVAILABLE
+    val pending = state.phase in setOf(AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING)
+    val complete = state.phase == AdminRemovalPhase.COMPLETE
+    val closeOnly = complete || state.phase == AdminRemovalPhase.UNAVAILABLE
     AlertDialog(
-        onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text(title) },
+        onDismissRequest = { if (!pending) onDismiss() },
+        title = { Text(stringResource(title)) },
         text = {
-            Column(
-                Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-            ) {
-                AdminRemovalIdentity(target)
-                when (state.phase) {
-                    AdminRemovalPhase.REMOVING -> {
-                        LoadingContent(stringResource(R.string.admin_removal_working))
-                    }
+            if (pending) {
+                LoadingContent(
+                    if (state.phase == AdminRemovalPhase.CHECKING) {
+                        stringResource(R.string.admin_removal_checking)
+                    } else {
+                        stringResource(R.string.admin_remove_wait, name)
+                    },
+                )
+            } else {
+                Text(
+                    when {
+                        state.cleanupBlobId != null -> {
+                            stringResource(R.string.admin_remove_image_cleanup)
+                        }
 
-                    AdminRemovalPhase.CHECKING -> {
-                        LoadingContent(stringResource(R.string.admin_removal_checking))
-                    }
+                        state.phase == AdminRemovalPhase.CLEANUP_PENDING -> {
+                            stringResource(R.string.admin_removal_record_cleanup_pending)
+                        }
 
-                    AdminRemovalPhase.FAILED -> {
-                        Text(stringResource(R.string.admin_removal_failed))
-                    }
+                        state.phase == AdminRemovalPhase.UNKNOWN -> {
+                            stringResource(R.string.admin_removal_unknown)
+                        }
 
-                    AdminRemovalPhase.UNKNOWN -> {
-                        Text(stringResource(R.string.admin_removal_unknown))
-                    }
-
-                    AdminRemovalPhase.CLEANUP_PENDING -> {
-                        Text(
-                            stringResource(
-                                if (target is AdminRemovalTarget.Image) {
-                                    R.string.admin_removal_image_cleanup_pending
-                                } else {
-                                    R.string.admin_removal_record_cleanup_pending
-                                },
-                            ),
-                        )
-                    }
-
-                    AdminRemovalPhase.COMPLETE -> {
-                        Text(stringResource(R.string.admin_removal_complete))
-                    }
-
-                    AdminRemovalPhase.UNAVAILABLE -> {
-                        Text(
+                        state.phase == AdminRemovalPhase.UNAVAILABLE -> {
                             stringResource(
                                 when (state.problem) {
                                     AdminRemovalProblem.MISSING -> R.string.admin_removal_missing
                                     AdminRemovalProblem.CHANGED -> R.string.admin_removal_changed
                                     else -> R.string.admin_removal_denied
                                 },
-                            ),
-                        )
-                    }
+                            )
+                        }
 
-                    else -> {
-                        Unit
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(enabled = !busy, onClick = { if (canClose) onDismiss() else onRetry() }) {
-                Text(
-                    stringResource(
-                        when {
-                            canClose -> R.string.admin_removal_close
-                            state.phase == AdminRemovalPhase.UNKNOWN -> R.string.admin_removal_check_status
-                            state.phase == AdminRemovalPhase.CLEANUP_PENDING -> R.string.admin_removal_retry_cleanup
-                            else -> R.string.retry
-                        },
-                    ),
+                        else -> {
+                            stringResource(
+                                if (complete) R.string.admin_remove_confirmed else R.string.admin_remove_failed,
+                                name,
+                            )
+                        }
+                    },
+                    Modifier.verticalScroll(rememberScrollState()),
                 )
             }
         },
-        dismissButton = {
-            if (!busy && !canClose) {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.admin_removal_close))
+        confirmButton = {
+            if (!pending) {
+                TextButton(if (closeOnly) onDismiss else onRetry) {
+                    Text(
+                        stringResource(
+                            when {
+                                closeOnly -> R.string.notification_entry_close
+                                state.phase == AdminRemovalPhase.UNKNOWN -> R.string.admin_removal_check_status
+                                else -> R.string.admin_remove_retry
+                            },
+                        ),
+                    )
                 }
+            }
+        },
+        dismissButton = {
+            if (!pending && !closeOnly) {
+                TextButton(onDismiss) { Text(stringResource(R.string.notification_entry_close)) }
             }
         },
     )
 }
 
-/** The confirmation always displays the original identity, not the current selection. */
-@Composable
-private fun AdminRemovalIdentity(target: AdminRemovalTarget) {
-    when (target) {
-        is AdminRemovalTarget.Account -> {
-            Text(target.name.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided))
-            Text(stringResource(R.string.admin_removal_target_id, target.id))
-        }
-
-        is AdminRemovalTarget.Campsite -> {
-            Text(target.name.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided))
-            Text(stringResource(R.string.admin_removal_target_id, target.id))
-        }
-
-        is AdminRemovalTarget.Image -> {
-            Text(
-                stringResource(
-                    if (target.target.type ==
-                        ImageTargetType.ACCOUNT
-                    ) {
-                        R.string.admin_target_account
-                    } else {
-                        R.string.admin_target_campsite
-                    },
-                ),
-            )
-            Text(stringResource(R.string.admin_removal_target_id, target.target.id))
-            Text(stringResource(R.string.admin_removal_image_reference, target.blobId))
-        }
-    }
-}
-
+/** Shows one passive request without constructing an operation owner.
+ * @param phase Confirmation, progress or settled feedback.
+ * @param target Original inspected identity.
+ */
 @Composable
 private fun RemovalPreview(
     phase: AdminRemovalPhase,
     target: AdminRemovalTarget,
 ) {
-    val warnings =
-        AdminRemovalWarnings(
-            stringResource(R.string.admin_remove_profile_body, "owner/one"),
-            stringResource(R.string.admin_remove_site_body, "site/one"),
-            stringResource(R.string.admin_remove_image_body, "owner/one"),
-        )
     CampsbridgeTheme {
         AdminRemovalContent(
             AdminRemovalUiState(
@@ -197,8 +174,11 @@ private fun RemovalPreview(
                 AdminRemovalRequest("preview-admin", target),
                 committed =
                     phase == AdminRemovalPhase.CLEANUP_PENDING,
+                cleanupBlobId =
+                    (target as? AdminRemovalTarget.Image)?.blobId?.takeIf {
+                        phase == AdminRemovalPhase.CLEANUP_PENDING
+                    },
             ),
-            warnings,
             {},
             {},
             {},
@@ -206,12 +186,14 @@ private fun RemovalPreview(
     }
 }
 
+/** Shows a profile confirmation using the original target. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 800)
 @Composable
 private fun AdminRemovalConfirmationPreview() {
     RemovalPreview(AdminRemovalPhase.CONFIRMING, AdminRemovalTarget.Account("owner/one", "Taylor Owner"))
 }
 
+/** Shows detached-image cleanup awaiting retry. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 800, fontScale = 1.5f)
 @Composable
 private fun AdminRemovalPendingImageCleanupPreview() {
@@ -221,8 +203,49 @@ private fun AdminRemovalPendingImageCleanupPreview() {
     )
 }
 
+/** Shows an unresolved request with a status-check action. */
 @Preview(showBackground = true, widthDp = 390, heightDp = 800)
 @Composable
 private fun AdminRemovalUnknownPreview() {
     RemovalPreview(AdminRemovalPhase.UNKNOWN, AdminRemovalTarget.Campsite("site/one", "River Camp"))
+}
+
+/** Shows the image removal question and its consequence. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 800)
+@Composable
+private fun AdminImageRemovalConfirmationPreview() {
+    RemovalPreview(
+        AdminRemovalPhase.CONFIRMING,
+        AdminRemovalTarget.Image(ImageTarget(ImageTargetType.CAMPSITE, "preview-campsite"), "preview-blob"),
+    )
+}
+
+/** Shows image removal while the repository owns the operation. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 800)
+@Composable
+private fun AdminImageRemovalProgressPreview() {
+    RemovalPreview(
+        AdminRemovalPhase.REMOVING,
+        AdminRemovalTarget.Image(ImageTarget(ImageTargetType.CAMPSITE, "preview-campsite"), "preview-blob"),
+    )
+}
+
+/** Shows confirmed image removal with Close. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 800)
+@Composable
+private fun AdminImageRemovalCompletePreview() {
+    RemovalPreview(
+        AdminRemovalPhase.COMPLETE,
+        AdminRemovalTarget.Image(ImageTarget(ImageTargetType.CAMPSITE, "preview-campsite"), "preview-blob"),
+    )
+}
+
+/** Shows retryable image removal without claiming success. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 800)
+@Composable
+private fun AdminImageRemovalFailurePreview() {
+    RemovalPreview(
+        AdminRemovalPhase.FAILED,
+        AdminRemovalTarget.Image(ImageTarget(ImageTargetType.CAMPSITE, "preview-campsite"), "preview-blob"),
+    )
 }
