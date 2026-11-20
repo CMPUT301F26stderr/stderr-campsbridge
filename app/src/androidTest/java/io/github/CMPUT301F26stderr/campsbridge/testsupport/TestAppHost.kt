@@ -45,6 +45,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeModerationR
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
@@ -345,6 +346,20 @@ class TestAppHost : AutoCloseable {
                 notificationPermission,
                 notificationEntries,
                 accountRemoval = accountRemoval ?: removal,
+                adminRemovalFactory = { adminId ->
+                    viewModelFactory {
+                        initializer {
+                            AdminRemovalViewModel(
+                                adminId,
+                                adminAccounts,
+                                adminCampsites,
+                                adminImages,
+                                moderation,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
                 reviewsFactory = { actorId, id, workspace ->
                     viewModelFactory {
                         initializer {

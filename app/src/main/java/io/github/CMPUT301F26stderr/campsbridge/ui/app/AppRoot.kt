@@ -77,6 +77,7 @@ fun AppRoot(
     onDestinationOpened: () -> Unit = {},
     accountRemoval: AccountRemovalViewModel,
     reviewsFactory: (String, String, Role) -> ViewModelProvider.Factory,
+    adminRemovalFactory: ((String) -> ViewModelProvider.Factory)? = null,
     campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
@@ -187,6 +188,7 @@ fun AppRoot(
                                         )
                                 },
                                 reviewsFactory = { id, workspace -> reviewsFactory(session.account.id, id, workspace) },
+                                adminRemovalFactory = adminRemovalFactory?.invoke(session.account.id),
                                 campsiteEditFactory = { id -> campsiteEditFactory(session.account.id, id) },
                             )
                         }
