@@ -11,6 +11,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -70,7 +73,6 @@ class LotterySetupFlowTest {
     @Test fun sixStepsReachReviewWithNativeScheduleInput() {
         start()
         toSite()
-        compose.onNodeWithText(site.details.name).performClick()
         allocate(day)
         compose.onNodeWithText("Next").performClick()
         schedule("Registration opening", 5)
@@ -112,23 +114,25 @@ class LotterySetupFlowTest {
         val restoration = StateRestorationTester(compose)
         start(restoration)
         toSite()
-        compose.onNodeWithText(site.details.name).performClick()
         allocate(day)
-        compose.onNodeWithText("Allocate nights").performClick()
+        openAllocation(site.details.name)
         compose.addCalendarNights(day.plusDays(1))
         restoration.emulateSavedInstanceStateRestore()
         compose.onNodeWithText("Remove May 14–15, 2027").performScrollTo().assertIsDisplayed()
         pressBack()
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
         compose.onNodeWithText("1 night allocated").assertIsDisplayed()
-        compose.onNodeWithText(coast.details.name).performClick()
+        openAllocation(coast.details.name)
         compose.onNodeWithText("0 nights allocated").assertIsDisplayed()
-        compose.onNodeWithText("Allocate nights").performClick()
         compose.onNodeWithText("America/Vancouver").assertIsDisplayed()
         compose.onNodeWithText("Remove May 14, 2027").assertDoesNotExist()
         compose.addCalendarNights(day.plusDays(1))
         compose.onNodeWithText("Apply nights").performClick()
-        compose.onNodeWithText("1 night allocated").assertIsDisplayed()
+        compose
+            .onAllNodesWithText("1 night allocated")
+            .onFirst()
+            .performScrollTo()
+            .assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, host.lotterySetupCreations)
             assertEquals(
@@ -149,9 +153,8 @@ class LotterySetupFlowTest {
     @Test fun allocationFailureCanRetryWithoutRepicking() {
         start()
         toSite()
-        compose.onNodeWithText(site.details.name).performClick()
         compose.runOnIdle { host.campsites.calendarFailure.value = IOException("calendar offline") }
-        compose.onNodeWithText("Allocate nights").performClick()
+        openAllocation(site.details.name)
         compose.onNodeWithText("Apply nights").assertIsNotEnabled()
         compose
             .onNodeWithText(
@@ -404,10 +407,8 @@ class LotterySetupFlowTest {
         configureSaves()
         start()
         toSite()
-        compose.onNodeWithText(site.details.name).performClick()
         allocate(day)
-        compose.onNodeWithText(coast.details.name).performClick()
-        allocate(day.plusDays(1))
+        allocate(day.plusDays(1), coast.details.name)
         compose.onNodeWithText("Next").performClick()
         schedule("Registration opening", 5)
         schedule("Registration closing", 6)
@@ -425,12 +426,14 @@ class LotterySetupFlowTest {
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText(coast.details.name).assertDoesNotExist()
         compose.onNodeWithContentDescription("Edit Campsites & nights").performScrollTo().performClick()
-        compose.onNodeWithText(coast.details.name).performScrollTo().performClick()
-        compose.onNodeWithText("Allocate nights").performScrollTo().performClick()
+        openAllocation(coast.details.name)
         compose.addCalendarNights(day.plusDays(1))
-        compose.onNodeWithText("Cancel").performClick()
+        pressBack()
+        openAllocation(coast.details.name)
         compose.onNodeWithText("0 nights allocated").assertIsDisplayed()
-        allocate(day.plusDays(1))
+        compose.addCalendarNights(day.plusDays(1))
+        compose.onNodeWithText("Apply nights").performClick()
+        compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Save draft").performClick()
         compose.onNodeWithText("Continue setup").performScrollTo().performClick()
@@ -455,7 +458,6 @@ class LotterySetupFlowTest {
         configureSaves()
         start()
         toSite()
-        compose.onNodeWithText(site.details.name).performClick()
         allocate(day)
         compose.onNodeWithContentDescription("Remove campsite ${site.details.name}").performScrollTo().performClick()
         compose.onNodeWithText("Next").performClick()
@@ -476,10 +478,8 @@ class LotterySetupFlowTest {
         val restoration = StateRestorationTester(compose)
         start(restoration)
         toSite()
-        compose.onNodeWithText(site.details.name).performClick()
         allocate(day)
-        compose.onNodeWithText(coast.details.name).performClick()
-        allocate(day.plusDays(1))
+        allocate(day.plusDays(1), coast.details.name)
         compose.onNodeWithText("Next").performClick()
         schedule("Registration opening", 5)
         schedule("Registration closing", 6)
@@ -499,23 +499,23 @@ class LotterySetupFlowTest {
         closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
         restoration.emulateSavedInstanceStateRestore()
-        compose.onNodeWithText("Waitlist capacity").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("3").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithContentDescription("Edit Maximum winners").performScrollTo().performClick()
+        compose.onNodeWithText("Registration limit").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("0003").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Edit Winners").performScrollTo().performClick()
         compose.onNodeWithText("0003").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Next").performClick()
         compose.onNodeWithText("Save draft").performClick()
         compose.onNodeWithText("Continue setup").performScrollTo().performClick()
-        compose.onNodeWithText("Waitlist capacity").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Registration limit").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("3").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithContentDescription("Edit Maximum winners").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Edit Winners").performScrollTo().performClick()
         compose.onNodeWithText("Registration limit (optional)").performScrollTo().performTextClearance()
         closeReadyKeyboard()
         compose.onNodeWithText("Next").performClick()
-        compose.onNodeWithText("Unlimited waitlist").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Unlimited registrations").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Save draft").performClick()
         compose.onNodeWithText("Continue setup").performScrollTo().performClick()
-        compose.onNodeWithText("Unlimited waitlist").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Unlimited registrations").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(site.details.name).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(coast.details.name).performScrollTo().assertIsDisplayed()
         compose.runOnIdle {
@@ -577,7 +577,6 @@ class LotterySetupFlowTest {
      */
     private fun completeReview() {
         toSite()
-        compose.onNodeWithText(site.details.name).performClick()
         allocate(day)
         compose.onNodeWithText("Next").performClick()
         schedule("Registration opening", 5)
@@ -633,11 +632,37 @@ class LotterySetupFlowTest {
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
     }
 
+    /** Opens the applied row, initial suggestion or Add campsite picker for one known listing.
+     * @param name Actual published campsite name shown by the production UI.
+     */
+    private fun openAllocation(name: String) {
+        val editLabel = "Edit nights for $name"
+        when {
+            compose.onAllNodesWithContentDescription(editLabel).fetchSemanticsNodes().isNotEmpty() -> {
+                compose.onNodeWithContentDescription(editLabel).performScrollTo().performClick()
+            }
+
+            name == site.details.name &&
+                compose.onAllNodesWithText("Allocate nights").fetchSemanticsNodes().isNotEmpty() -> {
+                compose.onNodeWithText("Allocate nights").performScrollTo().performClick()
+            }
+
+            else -> {
+                compose.onNodeWithText("Add campsite").performScrollTo().performClick()
+                compose.onNodeWithText(name).performClick()
+            }
+        }
+    }
+
     /** Selects and applies one real known free date through the shared calendar child.
      * @param date Actual offered fixture night.
+     * @param name Actual published campsite to add or edit.
      */
-    private fun allocate(date: LocalDate) {
-        compose.onNodeWithText("Allocate nights").performClick()
+    private fun allocate(
+        date: LocalDate,
+        name: String = site.details.name,
+    ) {
+        openAllocation(name)
         compose.addCalendarNights(date)
         compose.onNodeWithText("Apply nights").performClick()
         compose.onNodeWithText("Step 2 of 6").assertIsDisplayed()
