@@ -26,7 +26,9 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactor
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryAllocationsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.notificationEntryViewModelFactory
@@ -135,6 +137,18 @@ class MainActivity : ComponentActivity() {
                 },
                 adminRemovalFactory = { id -> adminRemovalViewModelFactory(services, id) },
                 campsiteEditFactory = { ownerId, id -> campsiteEditViewModelFactory(services, ownerId, id) },
+                lotteryDetailsEditFactory = {
+                    ownerId,
+                    id,
+                    ->
+                    lotteryDetailsEditViewModelFactory(services, ownerId, id)
+                },
+                lotteryAllocationsEditFactory = {
+                    ownerId,
+                    id,
+                    ->
+                    lotteryAllocationsEditViewModelFactory(services, ownerId, id)
+                },
             )
         }
     }

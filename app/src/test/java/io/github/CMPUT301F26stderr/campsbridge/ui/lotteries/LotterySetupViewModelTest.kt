@@ -649,8 +649,9 @@ class LotterySetupViewModelTest {
             editor.selectAllocationDates(setOf(day.plusDays(1)))
             assertTrue(editor.applyAllocation())
             assertEquals(
-                listOf(LotteryOffer(b.id, listOf(day.plusDays(1))), LotteryOffer(a.id, listOf(day.plusDays(1)))),
-                editor.state.value.draft.allocations,
+                setOf(LotteryOffer(b.id, listOf(day.plusDays(1))), LotteryOffer(a.id, listOf(day.plusDays(1)))),
+                editor.state.value.draft.allocations
+                    .toSet(),
             )
             assertEquals(0, sites.writeCalls)
         }
@@ -734,7 +735,7 @@ class LotterySetupViewModelTest {
                 toReview(editor)
                 editor.editWaitlistCapacity(raw)
                 assertEquals(raw, editor.state.value.draft.waitlistCapacityText)
-                assertNull(editor.state.value.errors.waitlistCapacity)
+                assertNull(editor.state.value.errors.capacity)
                 assertNotNull(editor.state.value.configuration)
                 assertEquals(
                     expected,
@@ -756,11 +757,11 @@ class LotterySetupViewModelTest {
                 editor.next()
                 assertEquals(LotteryStep.WINNERS, editor.state.value.draft.step)
                 assertNotNull(editor.state.value.errors.winnerCount)
-                assertNotNull(editor.state.value.errors.waitlistCapacity)
+                assertNotNull(editor.state.value.errors.capacity)
                 editor.editWinnerCount("2")
                 editor.next()
                 assertNull(editor.state.value.errors.winnerCount)
-                assertNotNull(editor.state.value.errors.waitlistCapacity)
+                assertNotNull(editor.state.value.errors.capacity)
                 assertEquals(raw, editor.state.value.draft.waitlistCapacityText)
                 assertNull(editor.state.value.configuration)
                 editor.editWaitlistCapacity("1")

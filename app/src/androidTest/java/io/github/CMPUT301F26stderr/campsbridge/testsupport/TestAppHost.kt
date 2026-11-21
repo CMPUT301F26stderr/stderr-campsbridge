@@ -58,7 +58,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocationsEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailsEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
@@ -75,6 +77,7 @@ import java.time.ZoneOffset
 
 /** Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime. */
 class TestAppHost : AutoCloseable {
+    var clock: Clock = Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC)
     val accounts = FakeAccountRepository(sampleAccount())
     var profileAccounts = accounts
     val identity = FakeIdentityProvider()
@@ -226,7 +229,7 @@ class TestAppHost : AutoCloseable {
                                 campsiteOwners,
                                 reviews,
                                 createSavedStateHandle(),
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 lotteries,
                                 createQrBitmap = createQrBitmap,
                             )
@@ -242,7 +245,7 @@ class TestAppHost : AutoCloseable {
                                 id,
                                 campsites,
                                 images,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 remainingAvailabilityEdits = remainingAvailabilityEdits,
                             )
@@ -257,7 +260,7 @@ class TestAppHost : AutoCloseable {
                                 accountId,
                                 id,
                                 campsites,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 remainingAvailabilityEdits,
                             )
@@ -275,11 +278,7 @@ class TestAppHost : AutoCloseable {
                                 createSavedStateHandle(),
                                 matchesText,
                                 matchesCapacity,
-                                clock =
-                                    Clock.fixed(
-                                        Instant.parse("2027-05-01T12:00:00Z"),
-                                        ZoneOffset.UTC,
-                                    ),
+                                clock = clock,
                             )
                         }
                     }
@@ -292,7 +291,7 @@ class TestAppHost : AutoCloseable {
                                 ownerId,
                                 campsites,
                                 lotteries,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 validateLotteryWindows,
                                 lotteryId = id,
@@ -310,7 +309,7 @@ class TestAppHost : AutoCloseable {
                                 id,
                                 lotteries,
                                 campsites,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 bookings,
                                 context,
                                 lotteryAccounts,
@@ -330,7 +329,7 @@ class TestAppHost : AutoCloseable {
                                 lotteries,
                                 bookings,
                                 campsites,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 campsiteId,
                             )
@@ -370,6 +369,33 @@ class TestAppHost : AutoCloseable {
                                 campsites,
                                 reviews,
                                 accounts,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
+                lotteryDetailsEditFactory = { ownerId, id ->
+                    viewModelFactory {
+                        initializer {
+                            LotteryDetailsEditViewModel(
+                                id,
+                                ownerId,
+                                lotteries,
+                                clock,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
+                lotteryAllocationsEditFactory = { ownerId, id ->
+                    viewModelFactory {
+                        initializer {
+                            LotteryAllocationsEditViewModel(
+                                id,
+                                ownerId,
+                                campsites,
+                                lotteries,
+                                clock,
                                 createSavedStateHandle(),
                             )
                         }

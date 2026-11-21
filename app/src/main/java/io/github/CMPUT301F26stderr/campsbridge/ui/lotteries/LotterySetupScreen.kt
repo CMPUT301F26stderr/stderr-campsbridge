@@ -15,7 +15,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -43,20 +42,19 @@ import java.time.YearMonth
  * @param onConfirmDiscard Abandons this local form.
  * @param onTitle Changes raw title text.
  * @param onDescription Changes raw optional description.
- * @param onChooseCampsite Selects one actual published identity.
- * @param onAllocate Opens this parent's allocation child.
+ * @param onAllocate Opens one owned campsite's working calendar.
+ * @param onRemoveAllocation Removes one applied offer from the local form.
  * @param onRetryChoices Retries the independent campsite source.
  * @param onDate Confirms one local schedule date.
  * @param onTime Confirms one local schedule time.
  * @param onWinners Changes raw positive winner-count input.
+ * @param onCapacity Changes the optional waitlist limit.
  * @param onEdit Returns to the requested step from review.
  * @param onSaveDraft Saves valid reviewed input under its retained identity.
  * @param onPublish Publishes valid reviewed input after the current-clock check.
  * @param onRetrySave Retries retained intent or resolves uncertain publication.
  * @param onRetryLoad Retries only a failed authoritative target read.
  * @param modifier Caller layout.
- * @param onRemoveCampsite Removes one applied campsite without changing the other offers.
- * @param onCapacity Changes raw optional waitlist capacity.
  */
 @Composable
 fun LotterySetupScreen(
@@ -69,20 +67,19 @@ fun LotterySetupScreen(
     onConfirmDiscard: () -> Unit,
     onTitle: (String) -> Unit,
     onDescription: (String) -> Unit,
-    onChooseCampsite: (String) -> Unit,
-    onAllocate: () -> Unit,
+    onAllocate: (String) -> Unit,
+    onRemoveAllocation: (String) -> Unit,
     onRetryChoices: () -> Unit,
     onDate: (LotterySchedulePoint, LocalDate) -> Unit,
     onTime: (LotterySchedulePoint, LocalTime) -> Unit,
     onWinners: (String) -> Unit,
+    onCapacity: (String) -> Unit,
     onEdit: (LotteryStep) -> Unit,
     modifier: Modifier = Modifier,
     onSaveDraft: () -> Unit = {},
     onPublish: () -> Unit = {},
     onRetrySave: () -> Unit = {},
     onRetryLoad: () -> Unit = {},
-    onRemoveCampsite: (String) -> Unit = {},
-    onCapacity: (String) -> Unit = {},
 ) {
     val submitting = state.savePhase != LotterySavePhase.IDLE
     if (state.targetLoad != LotteryTargetLoad.READY || state.publicationPending) {
@@ -121,7 +118,7 @@ fun LotterySetupScreen(
         if (state.discardPrompt) LotteryDiscardDialog(onConfirmDiscard, onDismissDiscard)
         return
     }
-    StepTransition(state, { it.draft.step.ordinal }, modifier) { state ->
+    StepTransition(state, { it.draft.step.ordinal }, modifier, navigation = { it.stepNavigation }) { state ->
         val canEdit = !submitting && !state.discardPrompt
         val step = state.draft.step
         val review = step == LotteryStep.REVIEW
@@ -167,11 +164,21 @@ fun LotterySetupScreen(
                 )
             }
             if (state.publicationTooLate) Text(stringResource(R.string.lottery_publication_too_late))
-            if (review && state.choices == LotteryCampsiteChoices.Failure) {
+            if (step != LotteryStep.BASICS && step != LotteryStep.SITE &&
+                state.choices == LotteryCampsiteChoices.Failure
+            ) {
                 FailureContent(
                     stringResource(R.string.lottery_site_failure),
                     onRetryChoices,
                     !submitting,
+                )
+            }
+            if (step != LotteryStep.SITE && !review && state.errors.campsiteRequired &&
+                state.choices is LotteryCampsiteChoices.Content
+            ) {
+                Text(
+                    stringResource(R.string.lottery_selected_site_unavailable),
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
             when (step) {
@@ -185,12 +192,13 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.SITE -> {
-                    LotteryCampsiteStep(state, onChooseCampsite, onAllocate, onRetryChoices, onRemoveCampsite)
+                    LotteryCampsiteStep(state, onAllocate, onRemoveAllocation, onRetryChoices)
                 }
 
                 LotteryStep.REGISTRATION -> {
                     LotteryWindowStep(
-                        state,
+                        state.draft.schedule,
+                        state.errors.schedule,
                         LotterySchedulePoint.REGISTRATION_OPEN,
                         LotterySchedulePoint.REGISTRATION_CLOSE,
                         initialMonth,
@@ -201,7 +209,8 @@ fun LotterySetupScreen(
 
                 LotteryStep.BOOKING -> {
                     LotteryWindowStep(
-                        state,
+                        state.draft.schedule,
+                        state.errors.schedule,
                         LotterySchedulePoint.BOOKING_OPEN,
                         LotterySchedulePoint.BOOKING_CLOSE,
                         initialMonth,
@@ -211,7 +220,14 @@ fun LotterySetupScreen(
                 }
 
                 LotteryStep.WINNERS -> {
-                    LotteryWinnersStep(state, onWinners, onCapacity)
+                    LotteryWinnersStep(
+                        state.draft.maximumWinnersText,
+                        state.draft.waitlistCapacityText,
+                        state.errors.winnerCount,
+                        state.errors.capacity,
+                        onWinners,
+                        onCapacity,
+                    )
                 }
 
                 LotteryStep.REVIEW -> {
@@ -262,63 +278,46 @@ private fun lotteryStepTitle(step: LotteryStep): String =
 /** Supplies all six content states without constructing repositories or simulating a save. */
 class LotterySetupPreviewProvider : PreviewParameterProvider<LotterySetupUiState> {
     override val values: Sequence<LotterySetupUiState> =
-        LotteryStep.entries
-            .asSequence()
-            .map { step ->
-                val site = previewCampsite()
-                val coast =
-                    site.copy(
-                        id = "coastal-preview",
-                        details = site.details.copy(name = "Coastal family campsite", timeZone = "America/Vancouver"),
-                    )
-                LotterySetupUiState(
-                    draft =
-                        LotteryDraft(
-                            step = step,
-                            title = "May weekends 2027",
-                            description = "Quiet riverside camping for the May weekends.",
-                            campsiteId = site.id,
-                            allocations =
-                                listOf(
-                                    LotteryOffer(site.id, listOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15))),
-                                    LotteryOffer(coast.id, listOf(LocalDate.of(2027, 5, 16))),
-                                ),
-                            schedule =
-                                LotterySchedulePoint.entries
-                                    .mapIndexed { index, point ->
-                                        point to
-                                            LotteryLocalDateTime(
-                                                LocalDate.of(2027, 5, 5 + index),
-                                                LocalTime.of(9, 0),
-                                            )
-                                    }.toMap(),
-                            maximumWinnersText = "2",
-                        ),
-                    choices = LotteryCampsiteChoices.Content(listOf(site, coast)),
-                    errors =
-                        if (step == LotteryStep.REVIEW) {
-                            LotterySetupErrors(windowsPending = true)
-                        } else {
-                            LotterySetupErrors()
-                        },
+        LotteryStep.entries.asSequence().map { step ->
+            val site = previewCampsite()
+            val ridge =
+                site.copy(
+                    id = "ridge",
+                    details = site.details.copy(name = "Ridge lookout and riverside group campsite"),
                 )
-            }.flatMap { state ->
-                if (state.draft.step in setOf(LotteryStep.WINNERS, LotteryStep.REVIEW)) {
-                    sequenceOf(
-                        state,
-                        state.copy(draft = state.draft.copy(waitlistCapacityText = "40")),
-                        state.copy(
-                            draft = state.draft.copy(waitlistCapacityText = "0"),
-                            errors =
-                                state.errors.copy(
-                                    waitlistCapacity = PositiveCountInput.Error.INVALID_WHOLE_NUMBER,
-                                ),
-                        ),
-                    )
-                } else {
-                    sequenceOf(state)
-                }
-            }
+            LotterySetupUiState(
+                draft =
+                    LotteryDraft(
+                        step = step,
+                        title = "May weekends 2027",
+                        description = "Quiet riverside camping for the May weekends.",
+                        campsiteId = site.id,
+                        allocations =
+                            listOf(
+                                LotteryOffer(site.id, listOf(LocalDate.of(2027, 5, 14), LocalDate.of(2027, 5, 15))),
+                                LotteryOffer(ridge.id, listOf(LocalDate.of(2027, 5, 21), LocalDate.of(2027, 5, 22))),
+                            ),
+                        waitlistCapacityText = "8",
+                        schedule =
+                            LotterySchedulePoint.entries
+                                .mapIndexed { index, point ->
+                                    point to
+                                        LotteryLocalDateTime(
+                                            LocalDate.of(2027, 5, 5 + index),
+                                            LocalTime.of(9, 0),
+                                        )
+                                }.toMap(),
+                        maximumWinnersText = "2",
+                    ),
+                choices = LotteryCampsiteChoices.Content(listOf(site, ridge)),
+                errors =
+                    if (step == LotteryStep.REVIEW) {
+                        LotterySetupErrors(windowsPending = true)
+                    } else {
+                        LotterySetupErrors()
+                    },
+            )
+        }
 }
 
 /** Passive themed previews cover each step, including the explicit pending review state.
@@ -347,6 +346,7 @@ private fun LotterySetupPreview(
             {},
             { _, _ -> },
             { _, _ -> },
+            {},
             {},
             {},
         )
