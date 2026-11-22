@@ -138,6 +138,86 @@ class ReviewModerationControllerTest {
             assertTrue(f.writes.isEmpty())
         }
 
+    @Test fun duplicateClicksCannotRetargetAnInFlightRemoval() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.gate = CompletableDeferred()
+            f.request()
+            f.controller.confirm()
+            runCurrent()
+            f.controller.confirm()
+            f.controller.retry()
+            f.controller.request(f.original.copy(authorId = "other"), ReviewModerationComponent.TEXT, "Other", null)
+            f.controller.dismiss()
+            assertEquals(ReviewModerationPhase.REMOVING, f.controller.state.value.phase)
+            f.gate!!.complete(Unit)
+            runCurrent()
+            assertEquals(1, f.writes.size)
+        }
+
+    @Test fun committedButUnacknowledgedRemovalDoesNotReplayTheWrite() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.failAfterCommit = true
+            f.request()
+            f.controller.confirm()
+            runCurrent()
+            assertEquals(ReviewModerationPhase.COMPLETE, f.controller.state.value.phase)
+            f.controller.retry()
+            runCurrent()
+            assertEquals(1, f.writes.size)
+        }
+
+    @Test fun recreationRetainsTheConfirmedTargetWithoutAutomaticallyWriting() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.failure = IOException("offline")
+            f.request(ReviewModerationComponent.TEXT)
+            f.controller.confirm()
+            runCurrent()
+            f.controller.close()
+            f.controller = f.create()
+            runCurrent()
+            assertEquals(1, f.writes.size)
+            assertEquals(
+                "author",
+                f.controller.state.value.target
+                    ?.authorId,
+            )
+            f.failure = null
+            f.controller.retry()
+            runCurrent()
+            assertEquals(ReviewModerationPhase.COMPLETE, f.controller.state.value.phase)
+            assertEquals(
+                4L,
+                f.rows.value
+                    .single()
+                    .rating,
+            )
+        }
+
+    @Test fun failedReadsAreRetryableWithoutWritingAndClosingStopsLateResults() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.reviews.failure(f.site.id).value = IOException("read failed")
+            f.request()
+            f.controller.confirm()
+            runCurrent()
+            assertEquals(ReviewModerationPhase.UNKNOWN, f.controller.state.value.phase)
+            assertTrue(f.writes.isEmpty())
+            f.reviews.failure(f.site.id).value = null
+            f.gate = CompletableDeferred()
+            f.controller.retry()
+            runCurrent()
+            f.controller.close()
+            val state = f.controller.state.value
+            f.gate!!.complete(Unit)
+            runCurrent()
+            f.controller.retry()
+            assertEquals(state, f.controller.state.value)
+            assertEquals(0, f.refreshes)
+        }
+
     private class Fixture(
         private val scope: CoroutineScope,
     ) {
