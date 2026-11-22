@@ -37,6 +37,7 @@ fun LotteryDetailRoute(
     onCampsite: ((String) -> Unit)? = null,
     onEditDetails: (() -> Unit)? = null,
     onEditAllocations: (() -> Unit)? = null,
+    onAnnounce: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
@@ -65,6 +66,7 @@ fun LotteryDetailRoute(
                 onOpenSection = onOpenSection,
                 onEditDetails = onEditDetails,
                 onEditAllocations = onEditAllocations,
+                onAnnounce = onAnnounce,
             )
         }
 
