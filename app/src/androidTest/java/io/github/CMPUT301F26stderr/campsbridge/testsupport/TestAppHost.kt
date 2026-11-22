@@ -46,6 +46,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificatio
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.ui.administration.AdminRemovalViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.administration.MessageLogViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
@@ -342,6 +343,13 @@ class TestAppHost : AutoCloseable {
                 reservationListFactory(),
                 adminBrowseFactory(),
                 notificationLogFactory(),
+                {
+                    viewModelFactory {
+                        initializer {
+                            MessageLogViewModel(messages, bookings, campsites, adminAccounts, createSavedStateHandle())
+                        }
+                    }
+                },
                 notificationPermission,
                 notificationEntries,
                 accountRemoval = accountRemoval ?: removal,

@@ -45,6 +45,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param bookingFactory Factory for a winner wizard keyed by account, lottery and campsite IDs.
  * @param adminBrowseFactory Factory for the account-hosted read-only admin Browse graph.
  * @param notificationLogFactory Factory for the independent read-only notification-log graph.
+ * @param messageLogFactory Independent saved-message log dependencies.
  * @param notificationPermission Explicit host-owned Android inspection/settings dependency.
  * @param notificationEntries Activity/root tap owner, independent of the session navigation store.
  * @param requestedDestination Optional host-owned saved-record handoff.
@@ -73,6 +74,7 @@ fun AppRoot(
     reservationListFactory: (String, ReservationContext, String?) -> ViewModelProvider.Factory,
     adminBrowseFactory: () -> ViewModelProvider.Factory,
     notificationLogFactory: () -> ViewModelProvider.Factory,
+    messageLogFactory: () -> ViewModelProvider.Factory,
     notificationPermission: NotificationPermission,
     notificationEntries: NotificationEntryViewModel,
     requestedDestination: String? = null,
@@ -178,6 +180,7 @@ fun AppRoot(
                                 },
                                 adminBrowseFactory(),
                                 notificationLogFactory(),
+                                messageLogFactory(),
                                 notificationPermission,
                                 entry,
                                 notificationEntries::retry,
