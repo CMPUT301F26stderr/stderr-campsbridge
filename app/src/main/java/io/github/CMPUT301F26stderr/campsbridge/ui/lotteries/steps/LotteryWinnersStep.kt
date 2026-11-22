@@ -1,5 +1,5 @@
 /*
- * Positive maximum winners with fixed unlimited registration, without a cap switch.
+ * Edits maximum winners and optional waitlist capacity.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
@@ -13,14 +13,16 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupUiState
 
-/** Positive maximum winners with fixed unlimited registration, without a cap switch.
+/** Edits maximum winners and optional waitlist capacity.
  * @param state Current raw count and explicit feedback.
  * @param onCount Local positive-count text edit.
+ * @param onCapacity Local optional capacity text edit.
  */
 @Composable
 fun LotteryWinnersStep(
     state: LotterySetupUiState,
     onCount: (String) -> Unit,
+    onCapacity: (String) -> Unit = {},
 ) {
     AppTextField(
         state.draft.maximumWinnersText,
@@ -37,5 +39,19 @@ fun LotteryWinnersStep(
         revealError = state.errors.winnerCount != null,
     )
     Text(stringResource(R.string.lottery_winners_hint))
-    Text(stringResource(R.string.lottery_unlimited))
+    AppTextField(
+        state.draft.waitlistCapacityText,
+        onCapacity,
+        stringResource(R.string.lottery_capacity_optional),
+        errorMessage =
+            if (state.errors.waitlistCapacity != null) {
+                stringResource(R.string.lottery_capacity_invalid)
+            } else {
+                null
+            },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        reserveSupportingSpace = true,
+        revealError = state.errors.winnerCount == null && state.errors.waitlistCapacity != null,
+    )
+    Text(stringResource(R.string.lottery_capacity_hint))
 }

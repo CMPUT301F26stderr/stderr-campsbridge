@@ -30,7 +30,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Preferences
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
-import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
@@ -40,6 +39,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -352,7 +353,8 @@ private fun AdminProfileSectionFailuresPreview() {
  * @param onRetryPhoto Retries only attachment or display reads.
  * @param onRetryParent Retries only failed parent metadata.
  * @param onParent Opens the confirmed parent identity; never enabled for inferred facts.
- * @param removalAction Shared moderation action for saved metadata, independent of display success.
+ * @param onRemove Requests confirmation for the current saved attachment.
+ * @param backEnabled Whether the operation permits shared Back input.
  * @param modifier Caller layout.
  */
 @Composable
@@ -363,7 +365,8 @@ fun AdminImageScreen(
     onRetryParent: () -> Unit,
     onParent: () -> Unit,
     modifier: Modifier = Modifier,
-    removalAction: (@Composable (ImageAttachment) -> Unit)? = null,
+    onRemove: (() -> Unit)? = null,
+    backEnabled: Boolean = true,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val parent = (state.parent as? AdminRead.Content)?.value
@@ -383,12 +386,20 @@ fun AdminImageScreen(
                 false
             }
         }
-    AppScreen(stringResource(R.string.admin_image_inspection), modifier, onBack = onBack) {
+    AppScreen(stringResource(R.string.admin_image_inspection), modifier, onBack = onBack, backEnabled = backEnabled) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(vertical = Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.large),
         ) {
-            if (removalAction == null) Text(stringResource(R.string.admin_inspection_read_only))
+            if (onRemove == null) Text(stringResource(R.string.admin_inspection_read_only))
+            onRemove?.let {
+                AppActionButton(
+                    stringResource(R.string.admin_remove_image),
+                    it,
+                    Modifier.fillMaxWidth(),
+                    style = ActionStyle.DESTRUCTIVE_OUTLINED,
+                )
+            }
             InspectionField(stringResource(R.string.admin_image_slot), state.target.id)
             Text(
                 stringResource(
@@ -417,7 +428,6 @@ fun AdminImageScreen(
                     EmptyContent(stringResource(R.string.admin_image_no_attachment))
                 }
                 state.photo.attachment?.takeIf { it.target == state.target }?.let { attachment ->
-                    removalAction?.invoke(attachment)
                     InspectionField(
                         stringResource(R.string.admin_image_uploaded_at),
                         formatDateTime(attachment.uploadedAt, locale),
@@ -574,6 +584,28 @@ private fun AdminImageParentFailurePreview() {
             {},
             {},
             {},
+        )
+    }
+}
+
+/** Shows the saved image inspector with its destructive action above the image details. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 850)
+@Composable
+private fun AdminImageRemovalPreview() {
+    val site = previewCampsite()
+    val photo = previewCampsitePhoto()
+    CampsbridgeTheme {
+        AdminImageScreen(
+            AdminInspectionUiState.Image(
+                requireNotNull(photo.attachment).target,
+                AdminRead.Content(AdminImageParent.Site(site)),
+                photo,
+            ),
+            {},
+            {},
+            {},
+            {},
+            onRemove = {},
         )
     }
 }

@@ -50,18 +50,21 @@ internal fun NavGraphBuilder.discoveryGraph(
                 onSelectWorkspace,
                 title = stringResource(R.string.discovery_title),
             ) {
-                ExploreRoute(model, {
-                    controller.navigate(AppDestination.EXPLORE + "/filters") {
-                        launchSingleTop =
-                            true
-                    }
-                }, { id ->
-                    controller.navigate(
-                        AppDestination.campsiteGraph(Role.ENTRANT, id, CampsiteDetailContext.VIEW),
-                    ) {
-                        launchSingleTop = true
-                    }
-                })
+                ExploreRoute(
+                    model,
+                    onOpenFilters = {
+                        controller.navigate(AppDestination.EXPLORE + "/filters") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onOpenCampsite = { id ->
+                        controller.navigate(
+                            AppDestination.campsiteGraph(Role.ENTRANT, id, CampsiteDetailContext.VIEW),
+                        ) {
+                            launchSingleTop = true
+                        }
+                    },
+                )
             }
         }
         composable(AppDestination.EXPLORE + "/filters") { entry ->

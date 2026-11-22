@@ -134,29 +134,15 @@ class AdminRemovalViewModel(
         }
     }
 
-    /** Closes the dialog after work stops; unresolved requests remain available for retry. */
+    /** Closes settled feedback; committed cleanup stays queued in the repository. */
     fun dismiss() {
-        if (closed) return
-        when (state.value.phase) {
-            AdminRemovalPhase.FAILED, AdminRemovalPhase.UNKNOWN, AdminRemovalPhase.CLEANUP_PENDING -> {
-                mutableState.value = state.value.copy(dialogVisible = false)
-            }
-
-            AdminRemovalPhase.CONFIRMING, AdminRemovalPhase.UNAVAILABLE, AdminRemovalPhase.COMPLETE -> {
-                clearRetained()
-                mutableState.value = AdminRemovalUiState()
-            }
-
-            else -> {
-                return
-            }
+        if (closed || state.value.phase in
+            setOf(AdminRemovalPhase.REMOVING, AdminRemovalPhase.CHECKING)
+        ) {
+            return
         }
-    }
-
-    /** Reopens the original pending request without reading or writing its target. */
-    fun resume() {
-        if (closed || !isAdmin() || state.value.dialogVisible) return
-        mutableState.value = state.value.copy(dialogVisible = true)
+        clearRetained()
+        mutableState.value = AdminRemovalUiState()
     }
 
     private fun isAdmin(): Boolean {

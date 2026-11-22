@@ -23,7 +23,7 @@ bash ./gradlew :app:testDebugUnitTest --tests '*OnboardingViewModelTest'
 ANDROID_SERIAL=emulator-5554 bash scripts/check-android-ui.sh
 ```
 
-ViewModel tests cover branching, profile/completion boundaries, retry identity, optional preferences, restoration, duplicate actions and cancellation. Content tests exercise controlled fields, feedback, native actions and enlarged text. Route tests use the real root/ViewModels with explicit dependency fakes. Activity recreation verifies navigation-owned draft retention. Firebase onboarding tests verify owner activation/completion and entrant preferences through real account repositories.
+ViewModel tests cover branching, profile/completion boundaries, retry identity, optional preferences, restoration, duplicate actions and cancellation. Content tests exercise controlled fields, feedback and native actions. Route tests use the real root/ViewModels with explicit dependency fakes. Activity recreation verifies navigation-owned draft retention. Firebase onboarding tests verify owner activation/completion and entrant preferences through real account repositories.
 
 The themed `@Preview` functions are at the bottom of `OnboardingScreen.kt` in `src/main`; open that file in Android Studio's Split or Design view. They use sample state without repositories or Firebase. The debug-only `OnboardingPreviewActivity` reuses the same passive content for device inspection:
 

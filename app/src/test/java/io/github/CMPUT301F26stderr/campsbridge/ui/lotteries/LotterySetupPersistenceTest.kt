@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -502,29 +503,210 @@ class LotterySetupPersistenceTest {
             assertEquals(0, sites.activeObservers)
         }
 
-    /**
-     * A multiple-site draft needs an explicit site/allocation choice before one-site
-     * reconciliation.
-     */
-    @Test fun multipleSavedOffersDoNotChooseAndDeleteAnAllocationImplicitly() =
+    /** An unavailable saved allocation remains visible for correction and blocks saving. */
+    @Test fun missingSavedAllocationRemainsVisibleAndBlocksSaving() =
         runTest {
+            val offers =
+                listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer("another-site", listOf(night.plusDays(1))))
             lotteries.records.value = listOf(savedLottery())
-            lotteries.serverOffers["saved"] =
-                listOf(
-                    LotteryOffer(site.id, listOf(night)),
-                    LotteryOffer("another-site", listOf(night.plusDays(1))),
-                )
-            val model = model(id = "saved")
+            lotteries.serverOffers["saved"] = offers
+            val editor = model(id = "saved")
             runCurrent()
-            assertEquals(LotteryStep.SITE, model.state.value.draft.step)
-            assertNull(model.state.value.draft.campsiteId)
-            assertTrue(
-                model.state.value.draft.nights
-                    .isEmpty(),
-            )
-            model.saveDraft()
-            model.publishLottery()
+            assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+            assertEquals(offers, editor.state.value.draft.allocations)
+            assertTrue(editor.state.value.errors.campsiteRequired)
+            assertNull(editor.state.value.configuration)
+            editor.saveDraft()
+            editor.publishLottery()
             assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
+        }
+
+    /** Reopening several owned offers hydrates one usable review without changing saved data. */
+    @Test fun reopeningSeveralOwnedOffersShowsEveryAllocationInReview() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val offers = listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer(other.id, listOf(night.plusDays(1))))
+            lotteries.records.value = listOf(savedLottery())
+            lotteries.serverOffers["saved"] = offers
+            val editor = model(id = "saved")
+            runCurrent()
+            assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+            assertEquals(offers, editor.state.value.draft.allocations)
+            assertNotNull(editor.state.value.configuration)
+            assertEquals(listOf("get:saved", "offers:saved"), lotteries.events)
+        }
+
+    /** A failed multi-offer save retains both allocations and retries publication under the same identity. */
+    @Test fun failedMultiOfferPublicationRetriesTheSameCompleteAllocationSet() =
+        runTest {
+            configureWrites()
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val editor = model()
+            review(editor)
+            editor.editStep(LotteryStep.SITE)
+            editor.chooseCampsite(other.id)
+            sites.calendarNights.value = listOf(CalendarNight(night.plusDays(1), true))
+            assertTrue(editor.beginAllocation())
+            runCurrent()
+            editor.toggleAllocationDate(night.plusDays(1))
+            assertTrue(editor.applyAllocation())
+            editor.next()
+            val attempts = mutableListOf<Pair<String, List<LotteryOffer>>>()
+            var rejected = true
+            lotteries.replaceOwnerOffersHandler = { id, _, offers ->
+                attempts.add(id to offers.toList())
+                if (rejected) throw IOException("A requested night is no longer offered")
+                lotteries.serverOffers[id] = offers
+            }
+            editor.publishLottery()
+            runCurrent()
+            assertNotNull(editor.state.value.saveFailure)
+            assertNull(editor.completion.value)
+            assertEquals(2, editor.state.value.draft.allocations.size)
+            assertEquals(0, lotteries.events.count { it.startsWith("publish:") })
+            rejected = false
+            editor.retrySave()
+            runCurrent()
+            assertEquals("new-1", editor.completion.value)
+            assertEquals(1, allocatedIds)
+            assertEquals(2, attempts.size)
+            assertEquals(attempts.first(), attempts.last())
+            assertEquals(
+                setOf(site.id, other.id),
+                attempts
+                    .last()
+                    .second
+                    .map { it.campsiteId }
+                    .toSet(),
+            )
+            assertEquals(1, lotteries.events.count { it == "create:new-1" })
+            assertEquals(1, lotteries.events.count { it == "publish:new-1" })
+        }
+
+    /** Invalid review capacity preserves its spelling and cannot create or publish a lottery. */
+    @Test fun invalidWaitlistCapacityCannotAllocateALotteryId() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val editor = model()
+            reviewBothCampsites(editor, other.id)
+            editor.editWaitlistCapacity("2.5")
+            editor.saveDraft()
+            editor.publishLottery()
+            runCurrent()
+            assertEquals("2.5", editor.state.value.draft.waitlistCapacityText)
+            assertNotNull(editor.state.value.errors.waitlistCapacity)
+            assertNull(editor.state.value.configuration)
+            assertNull(editor.state.value.draft.id)
+            assertEquals(0, allocatedIds)
+            assertTrue(lotteries.events.isEmpty())
+        }
+
+    /** Extends the normal review journey through a separately applied second campsite.
+     * @param editor Actual creation controller.
+     * @param otherId Published owned campsite receiving its own allocated night.
+     */
+    private fun reviewBothCampsites(
+        editor: LotterySetupViewModel,
+        otherId: String,
+    ) {
+        review(editor)
+        editor.editStep(LotteryStep.SITE)
+        editor.chooseCampsite(otherId)
+        sites.calendarNights.value = listOf(CalendarNight(night.plusDays(1), true))
+        assertTrue(editor.beginAllocation())
+        main.dispatcher.scheduler.runCurrent()
+        editor.toggleAllocationDate(night.plusDays(1))
+        assertTrue(editor.applyAllocation())
+        editor.next()
+        assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
+    }
+
+    /** Saved limited and unlimited capacities reopen with every owned campsite allocation. */
+    @Test fun reopeningWaitlistCapacityKeepsAllOwnedAllocations() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            val offers = listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer(other.id, listOf(night.plusDays(1))))
+            for (capacity in listOf(null, 3L)) {
+                val saved =
+                    savedLottery().let { it.copy(configuration = it.configuration.copy(waitlistCapacity = capacity)) }
+                lotteries.records.value = listOf(saved)
+                lotteries.serverOffers[saved.id] = offers
+                val editor = model(id = saved.id)
+                runCurrent()
+                assertEquals(capacity?.toString().orEmpty(), editor.state.value.draft.waitlistCapacityText)
+                assertEquals(offers, editor.state.value.draft.allocations)
+                assertNotNull(editor.state.value.configuration)
+                assertEquals(
+                    capacity,
+                    editor.state.value.configuration
+                        ?.waitlistCapacity,
+                )
+                assertTrue(lotteries.detailsRequests.isEmpty())
+            }
+        }
+
+    /** Failed draft and publish attempts retain raw capacity and all offers across recreation. */
+    @Test fun failedCapacitySavesRecreateAndRetryTheSameMultiCampsiteLottery() =
+        runTest {
+            val other = site.copy(id = "B")
+            sites.records.value = listOf(site, other)
+            for (action in LotterySaveAction.entries) {
+                configureWrites()
+                val retained = SavedStateHandle()
+                val editor = model(retained)
+                reviewBothCampsites(editor, other.id)
+                editor.editWaitlistCapacity("0003")
+                val configuration = checkNotNull(editor.state.value.configuration)
+                val offers =
+                    editor.state.value.draft.allocations
+                        .toList()
+                var rejected = true
+                lotteries.replaceOwnerOffersHandler = { id, _, requested ->
+                    if (rejected) throw IOException("Allocation save failed")
+                    lotteries.serverOffers[id] = requested
+                }
+                when (action) {
+                    LotterySaveAction.DRAFT -> editor.saveDraft()
+                    LotterySaveAction.PUBLISH -> editor.publishLottery()
+                }
+                runCurrent()
+                val id = checkNotNull(editor.state.value.draft.id)
+                val idsBeforeRetry = allocatedIds
+                assertNotNull(editor.state.value.saveFailure)
+                assertNull(editor.completion.value)
+                assertEquals("0003", editor.state.value.draft.waitlistCapacityText)
+                assertEquals(3L, configuration.waitlistCapacity)
+                val restoredState = SavedStateHandle(retained.keys().associateWith { retained.get<Any?>(it) })
+                store.clear()
+                runCurrent()
+                val restored = model(restoredState)
+                runCurrent()
+                assertEquals("0003", restored.state.value.draft.waitlistCapacityText)
+                assertEquals(offers, restored.state.value.draft.allocations)
+                assertEquals(configuration, restored.state.value.configuration)
+                rejected = false
+                restored.retrySave()
+                runCurrent()
+                assertEquals(id, restored.completion.value)
+                assertEquals(idsBeforeRetry, allocatedIds)
+                assertEquals(offers, lotteries.serverOffers[id])
+                assertEquals(
+                    configuration,
+                    lotteries.records.value
+                        .single()
+                        .configuration,
+                )
+                assertTrue(lotteries.detailsRequests.filter { it.id == id }.all { it.configuration == configuration })
+                assertEquals(1, lotteries.events.count { it == "create:$id" })
+                assertEquals(
+                    if (action == LotterySaveAction.PUBLISH) 1 else 0,
+                    lotteries.events.count { it == "publish:$id" },
+                )
+            }
         }
 
     /**

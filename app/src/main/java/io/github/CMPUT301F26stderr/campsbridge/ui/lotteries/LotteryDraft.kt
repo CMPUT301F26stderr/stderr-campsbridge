@@ -28,17 +28,17 @@ data class LotteryLocalDateTime(
     val time: LocalTime? = null,
 )
 
-/** Local form edits one selected allocation while retaining the owner's other saved offers.
+/** Local form retains every applied allocation and a separate campsite editing focus.
  * @param id Stable saved target, allocated only when saving or supplied for reopening.
  * @param step Current position in the six-step flow.
  * @param title Exact editable title spelling.
  * @param description Optional multiline description.
- * @param campsiteId The single chosen saved campsite identity.
- * @param nights Applied allocation, separate from a child's working selection.
+ * @param campsiteId Focused published identity for the next calendar edit.
  * @param schedule Four explicit local date/time inputs.
- * @param maximumWinnersText Raw positive winner count; no registration cap exists here.
+ * @param maximumWinnersText Raw positive winner count.
+ * @param waitlistCapacityText Raw optional capacity; blank means unlimited.
  * @param returnToReview Whether a valid edit returns directly to the review.
- * @param allocations Complete restored owned offers, including ones not selected in this form.
+ * @param allocations Complete applied owned offers, with one entry per campsite.
  */
 data class LotteryDraft(
     val id: String? = null,
@@ -46,9 +46,18 @@ data class LotteryDraft(
     val title: String = "",
     val description: String = "",
     val campsiteId: String? = null,
-    val nights: Set<LocalDate> = emptySet(),
     val schedule: Map<LotterySchedulePoint, LotteryLocalDateTime> = emptyMap(),
     val maximumWinnersText: String = "",
+    val waitlistCapacityText: String = "",
     val returnToReview: Boolean = false,
     val allocations: List<LotteryOffer> = emptyList(),
-)
+) {
+    /** Applied nights for the focused campsite; working calendar edits remain in child state. */
+    val nights: Set<LocalDate>
+        get() =
+            allocations
+                .firstOrNull { it.campsiteId == campsiteId }
+                ?.nights
+                ?.toSet()
+                .orEmpty()
+}

@@ -1,5 +1,5 @@
 /*
- * Reviews the single allocation and its windows in Edmonton time.
+ * Reviews every campsite allocation and the shared windows in Edmonton time.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
@@ -18,18 +18,18 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocatedNights
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoices
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryLocalDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryScheduleError
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySchedulePoint
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryStep
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.AllocationSummary
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** Reviews the single allocation and its windows in Edmonton time.
+/** Reviews every campsite allocation and the shared windows in Edmonton time.
  * @param state Current raw input, derived configuration and validation outcomes.
  * @param onEdit Returns to a named step within this parent.
  * @param enabled Whether input may change while a save owns the parent.
@@ -41,10 +41,7 @@ fun LotteryReviewStep(
     enabled: Boolean = true,
 ) {
     val draft = state.draft
-    val site =
-        (state.choices as? LotteryCampsiteChoices.Content)
-            ?.campsites
-            ?.firstOrNull { it.id == draft.campsiteId }
+    val sites = (state.choices as? LotteryCampsiteChoices.Content)?.campsites.orEmpty().associateBy { it.id }
     SummarySection(
         stringResource(R.string.lottery_basics),
         action = { EditLotteryStep(LotteryStep.BASICS, R.string.lottery_basics, onEdit, enabled) },
@@ -62,8 +59,15 @@ fun LotteryReviewStep(
         stringResource(R.string.lottery_site_step),
         action = { EditLotteryStep(LotteryStep.SITE, R.string.lottery_site_step, onEdit, enabled) },
     ) {
-        Text(site?.details?.name ?: stringResource(R.string.lottery_site_required))
-        LotteryAllocatedNights(draft.nights)
+        if (draft.allocations.isEmpty()) Text(stringResource(R.string.lottery_site_required))
+        for (offer in draft.allocations) {
+            val site = sites[offer.campsiteId]
+            AllocationSummary(offer, site)
+            if (site != null) Text(site.details.timeZone, style = MaterialTheme.typography.bodySmall)
+        }
+        if (state.errors.campsiteRequired) {
+            Text(stringResource(R.string.lottery_selected_site_unavailable), color = MaterialTheme.colorScheme.error)
+        }
         if (state.errors.allocationRequired) {
             Text(
                 stringResource(R.string.lottery_allocation_required),
@@ -71,7 +75,7 @@ fun LotteryReviewStep(
             )
         }
     }
-    if (site != null) {
+    if (draft.allocations.isNotEmpty()) {
         Text(
             stringResource(R.string.lottery_schedule_zone),
             style = MaterialTheme.typography.bodySmall,
@@ -112,7 +116,18 @@ fun LotteryReviewStep(
                 color = MaterialTheme.colorScheme.error,
             )
         }
-        Text(stringResource(R.string.lottery_unlimited))
+        DetailRow(
+            stringResource(R.string.lottery_capacity),
+            state.configuration?.waitlistCapacity?.toString()
+                ?: draft.waitlistCapacityText.takeUnless { it.isBlank() }
+                ?: stringResource(R.string.lottery_unlimited),
+        )
+        if (state.errors.waitlistCapacity != null) {
+            Text(
+                stringResource(R.string.lottery_capacity_invalid),
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
     }
     if (state.errors.windowsPending) Text(stringResource(R.string.lottery_window_pending))
     val windowError =

@@ -4,6 +4,8 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -11,6 +13,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
@@ -31,6 +34,7 @@ fun AdminBrowseRoute(
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val photos by model.photos.collectAsStateWithLifecycle()
+    val maintenance by model.maintenance.collectAsStateWithLifecycle()
     val campsiteList = rememberLazyListState()
     val profileList = rememberLazyListState()
     val grid = rememberLazyGridState()
@@ -76,19 +80,23 @@ fun AdminBrowseRoute(
         }.distinctUntilChanged().collect(model::setVisibleTargets)
     }
     DisposableEffect(model) { onDispose { model.setVisibleTargets(emptySet()) } }
-    AdminBrowseScreen(
-        state,
-        photos,
-        campsiteList,
-        profileList,
-        grid,
-        onSelectTab = model::selectTab,
-        onQuery = model::editQuery,
-        onRole = model::selectRole,
-        onRetry = model::retry,
-        onRetryThumbnail = model::retryThumbnail,
-        onProfile = onProfile,
-        onImage = onImage,
-        onCampsite = onCampsite,
-    )
+    Column(Modifier.fillMaxSize()) {
+        maintenance?.let { AdminMaintenanceAction(it, model::resumePendingWork) }
+        AdminBrowseScreen(
+            state,
+            photos,
+            campsiteList,
+            profileList,
+            grid,
+            onSelectTab = model::selectTab,
+            onQuery = model::editQuery,
+            onRole = model::selectRole,
+            onRetry = model::retry,
+            onRetryThumbnail = model::retryThumbnail,
+            onProfile = onProfile,
+            onImage = onImage,
+            onCampsite = onCampsite,
+            modifier = Modifier.weight(1f),
+        )
+    }
 }

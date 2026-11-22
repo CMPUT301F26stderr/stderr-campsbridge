@@ -39,6 +39,7 @@ enum class LotteryScheduleError { DATE_REQUIRED, TIME_REQUIRED, AMBIGUOUS_TIME }
  * @param winnerCount Existing positive-count parser feedback.
  * @param windows Actual F13 failure, absent before successful conversion or when pending.
  * @param windowsPending No F13 dependency was supplied after all four values converted.
+ * @param waitlistCapacity Invalid optional positive-count feedback.
  */
 data class LotterySetupErrors(
     val titleRequired: Boolean = false,
@@ -48,6 +49,7 @@ data class LotterySetupErrors(
     val winnerCount: PositiveCountInput.Error? = null,
     val windows: LotteryWindowInput? = null,
     val windowsPending: Boolean = false,
+    val waitlistCapacity: PositiveCountInput.Error? = null,
 )
 
 /** Working allocation and one required range covering the month plus all selected nights.
@@ -83,7 +85,7 @@ enum class LotteryTargetLoad { READY, LOADING, FAILURE, UNAVAILABLE }
  * @param choices Independent current published/owned source outcome.
  * @param allocation Working child state when allocation is open.
  * @param errors Explicit validation feedback.
- * @param configuration Validated no-cap configuration, absent until every requirement is satisfied.
+ * @param configuration Validated windows, winner count and optional capacity, absent until every requirement is satisfied.
  * @param targetLoad Authoritative target restoration result.
  * @param savePhase Current save progress; non-idle blocks conflicting actions.
  * @param saveFailure Last explicit failure, retained separately from source reads.
