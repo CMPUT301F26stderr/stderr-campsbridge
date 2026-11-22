@@ -212,5 +212,61 @@ class ReviewModerationController(
             }
     }
 
+    private suspend fun reconcile(target: ReviewModerationTarget) {
+        try {
+            val current = read(target)
+            ensureCurrent()
+            when {
+                current == null -> phase(ReviewModerationPhase.UNAVAILABLE)
+                absent(current, target) -> complete()
+                matches(current, target) -> phase(ReviewModerationPhase.FAILED)
+                else -> phase(ReviewModerationPhase.UNAVAILABLE)
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            ensureCurrent()
+            phase(ReviewModerationPhase.UNKNOWN)
+        }
+    }
+
+    private suspend fun read(target: ReviewModerationTarget): Review? =
+        reviews.observeReviews(target.campsiteId).first().firstOrNull {
+            it.campsiteId == target.campsiteId && it.authorId == target.authorId
+        }
+
+    private fun absent(
+        review: Review,
+        target: ReviewModerationTarget,
+    ) =
+        if (target.component == ReviewModerationComponent.RATING) review.rating == null else review.body == null
+
+    private fun matches(
+        review: Review,
+        target: ReviewModerationTarget,
+    ) =
+        if (target.component ==
+            ReviewModerationComponent.RATING
+        ) {
+            review.rating == target.rating
+        } else {
+            review.body == target.text
+        }
+
+    private fun complete() {
+        phase(ReviewModerationPhase.COMPLETE)
+        clearRetained()
+        onRemoved()
+    }
+
+    private fun phase(phase: ReviewModerationPhase) {
+        mutableState.value = state.value.copy(phase = phase)
+    }
+
+    private suspend fun ensureCurrent() {
+        currentCoroutineContext().ensureActive()
+        if (closed) throw CancellationException("Feedback owner closed")
+    }
+
 
 }
