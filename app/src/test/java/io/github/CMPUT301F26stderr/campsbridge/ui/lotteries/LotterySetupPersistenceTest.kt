@@ -503,13 +503,14 @@ class LotterySetupPersistenceTest {
             assertEquals(0, sites.activeObservers)
         }
 
-    /** An unavailable saved allocation remains visible for correction and blocks saving. */
+    /** A known owned campsite that is no longer published remains visible for correction. */
     @Test fun missingSavedAllocationRemainsVisibleAndBlocksSaving() =
         runTest {
             val offers =
                 listOf(LotteryOffer(site.id, listOf(night)), LotteryOffer("another-site", listOf(night.plusDays(1))))
             lotteries.records.value = listOf(savedLottery())
             lotteries.serverOffers["saved"] = offers
+            sites.records.value += site.copy(id = "another-site", publishedAt = null)
             val editor = model(id = "saved")
             runCurrent()
             assertEquals(LotteryStep.REVIEW, editor.state.value.draft.step)
@@ -597,7 +598,7 @@ class LotterySetupPersistenceTest {
             editor.publishLottery()
             runCurrent()
             assertEquals("2.5", editor.state.value.draft.waitlistCapacityText)
-            assertNotNull(editor.state.value.errors.waitlistCapacity)
+            assertNotNull(editor.state.value.errors.capacity)
             assertNull(editor.state.value.configuration)
             assertNull(editor.state.value.draft.id)
             assertEquals(0, allocatedIds)

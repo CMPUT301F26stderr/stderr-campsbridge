@@ -61,7 +61,9 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactor
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryAllocationsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.messageLogViewModelFactory
@@ -283,6 +285,18 @@ class OfflineDemoActivity : ComponentActivity() {
                                         workspace,
                                         ->
                                         campsiteReviewsViewModelFactory(session.services, actorId, id, workspace)
+                                    },
+                                    lotteryDetailsEditFactory = {
+                                        ownerId,
+                                        id,
+                                        ->
+                                        lotteryDetailsEditViewModelFactory(session.services, ownerId, id)
+                                    },
+                                    lotteryAllocationsEditFactory = {
+                                        ownerId,
+                                        id,
+                                        ->
+                                        lotteryAllocationsEditViewModelFactory(session.services, ownerId, id)
                                     },
                                     campsiteEditFactory = { ownerId, id ->
                                         campsiteEditViewModelFactory(session.services, ownerId, id)

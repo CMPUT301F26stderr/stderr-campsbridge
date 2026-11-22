@@ -69,7 +69,7 @@ class LotteryCapacityRenderingTest {
                                         ),
                                     errors =
                                         LotterySetupErrors(
-                                            waitlistCapacity =
+                                            capacity =
                                                 if (invalid.value) {
                                                     PositiveCountInput.Error.INVALID_WHOLE_NUMBER
                                                 } else {
@@ -95,6 +95,7 @@ class LotteryCapacityRenderingTest {
                                 { _, _ -> },
                                 {},
                                 {},
+                                onEdit = {},
                             )
                         }
                     }
@@ -117,16 +118,16 @@ class LotteryCapacityRenderingTest {
                             if (page ==
                                 LotteryStep.WINNERS
                             ) {
-                                "Waitlist capacity (optional)"
+                                "Registration limit (optional)"
                             } else {
-                                "Waitlist capacity"
+                                "Registration limit"
                             },
                         ).performScrollTo()
                         .assertIsDisplayed()
                     compose
                         .onNodeWithText(
                             if (error) {
-                                "Enter a positive whole number, or leave blank for an unlimited waitlist."
+                                "Enter a positive whole number, or leave blank for unlimited registrations."
                             } else {
                                 Long.MAX_VALUE
                                     .toString()

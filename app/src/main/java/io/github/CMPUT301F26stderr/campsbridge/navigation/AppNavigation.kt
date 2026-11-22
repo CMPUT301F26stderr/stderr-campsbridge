@@ -75,6 +75,8 @@ import java.util.Locale
  * @param onDeleteProfile Requests root-owned confirmation for the current account.
  * @param reviewsFactory Saved feedback dependencies for each workspace.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
+ * @param lotteryDetailsEditFactory Saved organizer details dependencies.
+ * @param lotteryAllocationsEditFactory Saved owned-set editor dependencies.
  */
 @Composable
 fun AppNavigation(
@@ -108,6 +110,8 @@ fun AppNavigation(
     reviewsFactory: (String, Role) -> ViewModelProvider.Factory,
     campsiteEditFactory: (String) -> ViewModelProvider.Factory,
     adminRemovalFactory: ViewModelProvider.Factory? = null,
+    lotteryDetailsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    lotteryAllocationsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -275,6 +279,8 @@ fun AppNavigation(
                 messageLogFactory,
             )
             lotterySetupGraph(controller, lotterySetupFactory)
+            lotteryDetailsEditFactory?.let { lotteryDetailsEditGraph(controller, it) }
+            lotteryAllocationsEditFactory?.let { lotteryAllocationsEditGraph(controller, it) }
             inboxGraph(
                 controller,
                 state,

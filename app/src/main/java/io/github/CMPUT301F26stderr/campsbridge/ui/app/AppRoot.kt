@@ -51,6 +51,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
  * @param reviewsFactory Entry-scoped saved feedback dependencies.
+ * @param lotteryDetailsEditFactory Saved organizer details dependencies scoped to the ready account.
+ * @param lotteryAllocationsEditFactory Saved allocation dependencies scoped to the current participant.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  */
 @Composable
@@ -81,6 +83,8 @@ fun AppRoot(
     reviewsFactory: (String, String, Role) -> ViewModelProvider.Factory,
     adminRemovalFactory: ((String) -> ViewModelProvider.Factory)? = null,
     campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
+    lotteryDetailsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    lotteryAllocationsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
     val removal by accountRemoval.state.collectAsStateWithLifecycle()
@@ -193,6 +197,14 @@ fun AppRoot(
                                 reviewsFactory = { id, workspace -> reviewsFactory(session.account.id, id, workspace) },
                                 adminRemovalFactory = adminRemovalFactory?.invoke(session.account.id),
                                 campsiteEditFactory = { id -> campsiteEditFactory(session.account.id, id) },
+                                lotteryDetailsEditFactory =
+                                    lotteryDetailsEditFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
+                                lotteryAllocationsEditFactory =
+                                    lotteryAllocationsEditFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
                             )
                         }
                     }

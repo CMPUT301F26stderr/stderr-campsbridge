@@ -49,19 +49,18 @@ fun LotterySetupRoute(
         model::confirmDiscard,
         model::editTitle,
         model::editDescription,
-        model::chooseCampsite,
-        { if (model.beginAllocation()) onOpenAllocation() },
+        { id -> if (model.beginAllocation(id)) onOpenAllocation() },
+        model::removeAllocation,
         model::retryChoices,
         model::editScheduleDate,
         model::editScheduleTime,
         model::editWinnerCount,
+        model::editWaitlistCapacity,
         model::editStep,
         onSaveDraft = model::saveDraft,
         onPublish = model::publishLottery,
         onRetrySave = model::retrySave,
         onRetryLoad = model::retryLoad,
-        onRemoveCampsite = model::removeCampsite,
-        onCapacity = model::editWaitlistCapacity,
     )
 }
 
@@ -81,7 +80,9 @@ fun LotteryAllocationRoute(
         if (state.allocation == null && lifecycle == Lifecycle.State.RESUMED) onBack()
     }
     LotteryAllocationScreen(
-        state,
+        state.choices,
+        state.draft.campsiteId,
+        state.allocation,
         model::cancelAllocation,
         { model.applyAllocation() },
         model::changeAllocationMonth,
