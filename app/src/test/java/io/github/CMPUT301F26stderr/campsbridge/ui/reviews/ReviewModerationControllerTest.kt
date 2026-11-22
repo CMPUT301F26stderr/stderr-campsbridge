@@ -74,6 +74,70 @@ class ReviewModerationControllerTest {
             )
         }
 
+    @Test fun changedOtherComponentDoesNotBlockOrOverwriteIt() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.request()
+            f.rows.value = listOf(f.original.copy(body = "New written feedback"))
+            f.controller.confirm()
+            runCurrent()
+            assertEquals(
+                "New written feedback",
+                f.rows.value
+                    .single()
+                    .body,
+            )
+            assertEquals(ReviewModerationPhase.COMPLETE, f.controller.state.value.phase)
+        }
+
+    @Test fun changedSelectedRatingOrTextCannotRemoveAReplacement() =
+        runTest {
+            for (component in ReviewModerationComponent.entries) {
+                val f = Fixture(backgroundScope)
+                f.request(component)
+                f.rows.value = listOf(f.original.copy(rating = 5, body = "Replacement"))
+                f.controller.confirm()
+                runCurrent()
+                assertEquals(ReviewModerationPhase.UNAVAILABLE, f.controller.state.value.phase)
+                assertTrue(f.writes.isEmpty())
+            }
+        }
+
+    @Test fun missingAuthorRatingOrCampsiteDoesNotWrite() =
+        runTest {
+            for (missing in 0..2) {
+                val f = Fixture(backgroundScope)
+                f.request()
+                when (missing) {
+                    0 -> f.rows.value = emptyList()
+                    1 -> f.rows.value = listOf(f.original.copy(rating = null))
+                    2 -> f.sites.records.value = emptyList()
+                }
+                f.controller.confirm()
+                runCurrent()
+                assertEquals(ReviewModerationPhase.UNAVAILABLE, f.controller.state.value.phase)
+                assertTrue(f.writes.isEmpty())
+            }
+        }
+
+    @Test fun roleLossAndForeignCampsiteCannotSubmit() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.controller.request(
+                f.original.copy(campsiteId = "foreign"),
+                ReviewModerationComponent.RATING,
+                "Foreign",
+                null,
+            )
+            assertEquals(ReviewModerationPhase.IDLE, f.controller.state.value.phase)
+            f.request()
+            f.accounts.account.value = f.admin.copy(roles = setOf(Role.OWNER))
+            f.controller.confirm()
+            runCurrent()
+            assertEquals(ReviewModerationPhase.UNAVAILABLE, f.controller.state.value.phase)
+            assertTrue(f.writes.isEmpty())
+        }
+
     private class Fixture(
         private val scope: CoroutineScope,
     ) {
