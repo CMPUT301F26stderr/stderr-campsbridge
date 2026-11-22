@@ -63,7 +63,7 @@ fun AnnouncementComposeScreen(
                                 stringResource(R.string.announcement_send),
                                 onSend,
                                 Modifier.fillMaxWidth(),
-                                enabled = state.canSend && !state.sent,
+                                enabled = state.canSend && state.hasRecipients && !state.sent,
                             )
                         }
 
@@ -95,7 +95,7 @@ fun AnnouncementComposeScreen(
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
                                 TextButton(
                                     onRetrySend,
-                                    enabled = state.canSend,
+                                    enabled = state.canSend && state.hasRecipients,
                                 ) { Text(stringResource(R.string.announcement_retry)) }
                                 TextButton(onEditAttempt) { Text(stringResource(R.string.announcement_edit)) }
                             }
@@ -131,6 +131,9 @@ fun AnnouncementComposeScreen(
                 AnnouncementRead.READY -> {
                     Unit
                 }
+            }
+            if (state.read == AnnouncementRead.READY && !state.hasRecipients && !state.sent && !pending) {
+                Text(stringResource(R.string.announcement_empty_audience))
             }
             if (state.lottery != null || state.attempt != null) {
                 state.lottery?.let { Text(it.title, style = MaterialTheme.typography.titleMedium) }

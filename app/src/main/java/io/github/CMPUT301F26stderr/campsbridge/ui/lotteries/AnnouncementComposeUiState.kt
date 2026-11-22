@@ -26,7 +26,8 @@ data class AnnouncementAttempt(
 /** Saved context and independently retained local form/command state.
  * @param read Required source outcome.
  * @param lottery Actual saved context when available.
- * @param canSend Current active participant is permitted to start/retry a send.
+ * @param canSend Current active participant can compose and reconcile announcements.
+ * @param hasRecipients The current lottery has at least one nonwithdrawn entrant.
  * @param title Raw local or frozen title.
  * @param body Raw local or frozen multiline body.
  * @param titleInvalid An explicit Send found a blank title.
@@ -40,6 +41,7 @@ data class AnnouncementComposeUiState(
     val read: AnnouncementRead = AnnouncementRead.LOADING,
     val lottery: Lottery? = null,
     val canSend: Boolean = false,
+    val hasRecipients: Boolean = false,
     val title: String = "",
     val body: String = "",
     val titleInvalid: Boolean = false,
