@@ -23,6 +23,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * @param onCampsite Registered saved campsite calendar, absent in isolated examples.
  * @param onEditDetails Opens the organizer's saved details editor.
  * @param onEditAllocations Opens the current participant's owned allocation editor.
+ * @param onAnnounce Opens the saved lottery announcement form.
+ * @param announcementSent Whether the child confirmed announcement storage.
+ * @param onDismissAnnouncement Clears the local saved-result feedback.
  * @param onEditOwners Opens saved member context and the organizer's membership picker.
  */
 @Composable
@@ -38,6 +41,9 @@ fun LotteryDetailRoute(
     onCampsite: ((String) -> Unit)? = null,
     onEditDetails: (() -> Unit)? = null,
     onEditAllocations: (() -> Unit)? = null,
+    onAnnounce: (() -> Unit)? = null,
+    announcementSent: Boolean = false,
+    onDismissAnnouncement: () -> Unit = {},
     onEditOwners: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
@@ -67,6 +73,9 @@ fun LotteryDetailRoute(
                 onOpenSection = onOpenSection,
                 onEditDetails = onEditDetails,
                 onEditAllocations = onEditAllocations,
+                onAnnounce = onAnnounce,
+                announcementSent = announcementSent,
+                onDismissAnnouncement = onDismissAnnouncement,
                 onEditOwners = onEditOwners,
             )
         }

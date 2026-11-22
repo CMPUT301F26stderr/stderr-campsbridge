@@ -77,6 +77,7 @@ import java.util.Locale
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  * @param lotteryDetailsEditFactory Saved organizer details dependencies.
  * @param lotteryAllocationsEditFactory Saved owned-set editor dependencies.
+ * @param announcementComposeFactory Saved announcement composition dependencies.
  * @param collaboratingOwnersFactory Saved organizer membership-picker dependencies.
  */
 @Composable
@@ -113,6 +114,7 @@ fun AppNavigation(
     adminRemovalFactory: ViewModelProvider.Factory? = null,
     lotteryDetailsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
     lotteryAllocationsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    announcementComposeFactory: ((String) -> ViewModelProvider.Factory)? = null,
     collaboratingOwnersFactory: ((String) -> ViewModelProvider.Factory)? = null,
 ) {
     val controller = rememberNavController()
@@ -283,6 +285,7 @@ fun AppNavigation(
             lotterySetupGraph(controller, lotterySetupFactory)
             lotteryDetailsEditFactory?.let { lotteryDetailsEditGraph(controller, it) }
             lotteryAllocationsEditFactory?.let { lotteryAllocationsEditGraph(controller, it) }
+            announcementComposeFactory?.let { announcementGraph(controller, it) }
             collaboratingOwnersFactory?.let { collaboratingOwnersGraph(controller, it) }
             inboxGraph(
                 controller,
