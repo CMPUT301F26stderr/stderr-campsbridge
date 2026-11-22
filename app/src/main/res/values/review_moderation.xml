@@ -11,4 +11,16 @@
     <string name="moderation_text_done">Written review removed</string>
     <string name="moderation_confirmed">The selected component for %1$s was removed. Other feedback remains unchanged.</string>
     <string name="moderation_failed">Removal for %1$s did not finish. Retry the same component.</string>
+    <string name="review_moderation_site">Campsite: %1$s</string>
+    <string name="review_moderation_site_id">Campsite ID: %1$s</string>
+    <string name="review_moderation_author">Author ID: %1$s</string>
+    <string name="review_moderation_stars">Selected rating: %1$d out of 5</string>
+    <string name="review_moderation_failed">Removal did not finish. Retry the same selected feedback component.</string>
+    <string name="review_moderation_unknown">The result is not confirmed. Retry checks the original saved component before another removal.</string>
+    <string name="review_moderation_unavailable">The original component is missing, has changed, or is no longer available to this administrator. No replacement will be removed.</string>
+    <string name="review_moderation_done">Selected feedback component removed.</string>
+    <string name="review_moderation_confirm">Confirm removal</string>
+    <string name="review_moderation_retry">Retry removal</string>
+    <string name="review_moderation_close">Return to feedback</string>
+    <string name="review_moderation_resume">Resume feedback removal</string>
 </resources>

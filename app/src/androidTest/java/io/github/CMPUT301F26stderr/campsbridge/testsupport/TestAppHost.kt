@@ -378,6 +378,7 @@ class TestAppHost : AutoCloseable {
                                 reviews,
                                 accounts,
                                 createSavedStateHandle(),
+                                moderation,
                             )
                         }
                     }
