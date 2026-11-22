@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.collaboratingOwnersViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryAllocationsEditViewModelFactory
@@ -150,6 +151,12 @@ class MainActivity : ComponentActivity() {
                     id,
                     ->
                     lotteryAllocationsEditViewModelFactory(services, ownerId, id)
+                },
+                collaboratingOwnersFactory = {
+                    actorId,
+                    id,
+                    ->
+                    collaboratingOwnersViewModelFactory(services, actorId, id)
                 },
             )
         }
