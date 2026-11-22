@@ -17,11 +17,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+/** Independent saved feedback components available to an administrator. */
 enum class ReviewModerationComponent { RATING, TEXT }
 
+/** Confirmation, operation and recovery states for one retained target. */
 enum class ReviewModerationPhase { IDLE, CONFIRMING, REMOVING, FAILED, UNKNOWN, UNAVAILABLE, COMPLETE }
 
-/** Immutable identity and selected component; the other component is never submitted. */
+/** Immutable identity and selected component; the other component is never submitted.
+ * @param campsiteId Saved listing identity.
+ * @param campsiteName Listing label shown in confirmation.
+ * @param authorId Saved feedback author identity.
+ * @param authorName Optional descriptive author label.
+ * @param component Selected independent component.
+ * @param rating Original stars for rating removal, otherwise null.
+ * @param text Original body for text removal, otherwise null.
+ */
 data class ReviewModerationTarget(
     val campsiteId: String,
     val campsiteName: String,
@@ -32,13 +42,29 @@ data class ReviewModerationTarget(
     val text: String?,
 )
 
+/** Retained removal presentation, including dismissed recovery.
+ * @param phase Current operation outcome.
+ * @param target Original saved feedback selection.
+ * @param dialogVisible Whether confirmation or recovery is open.
+ */
 data class ReviewModerationState(
     val phase: ReviewModerationPhase = ReviewModerationPhase.IDLE,
     val target: ReviewModerationTarget? = null,
     val dialogVisible: Boolean = true,
 )
 
-/** One feedback-entry owner for independently confirmed rating and written-text moderation. */
+/** Owns independently confirmed rating and text removal with explicit recovery.
+ * @param actorId Signed-in administrator identity.
+ * @param campsiteId Feedback page's saved listing.
+ * @param accounts Current administrator capability reads.
+ * @param campsites Saved listing reads.
+ * @param reviews Original component reads for confirmation and recovery.
+ * @param moderation Independent persisted removal operations.
+ * @param saved Primitive original-target state retained through recreation.
+ * @param scope Feedback entry's coroutine lifetime.
+ * @param canModerate Current page permission and lifecycle gate.
+ * @param onRemoved Refreshes confirmed saved feedback.
+ */
 class ReviewModerationController(
     private val actorId: String,
     private val campsiteId: String,
@@ -73,7 +99,12 @@ class ReviewModerationController(
         )
     val state = mutableState.asStateFlow()
 
-    /** Freezes the actual row identity; later row selection cannot replace a pending request. */
+    /** Freezes the row identity until this request is settled.
+     * @param review Actual saved feedback.
+     * @param component Selected rating or written text.
+     * @param campsiteName Listing label for confirmation.
+     * @param authorName Optional author label for confirmation.
+     */
     fun request(
         review: Review,
         component: ReviewModerationComponent,
@@ -102,6 +133,7 @@ class ReviewModerationController(
         retain(target)
     }
 
+    /** Submits only the original explicitly confirmed component. */
     fun confirm() {
         if (closed || state.value.phase != ReviewModerationPhase.CONFIRMING || !canModerate()) return
         execute(retry = false)
@@ -117,6 +149,7 @@ class ReviewModerationController(
         execute(retry = true)
     }
 
+    /** Closes confirmation or retains a failed request for later recovery. */
     fun dismiss() {
         if (closed) return
         when (state.value.phase) {
@@ -136,10 +169,14 @@ class ReviewModerationController(
         }
     }
 
+    /** Reopens retained recovery without writing. */
     fun resume() {
         if (!closed && canModerate()) mutableState.value = state.value.copy(dialogVisible = true)
     }
 
+    /** Revalidates the original target before removing its selected component.
+     * @param retry Whether a previously submitted request is being recovered.
+     */
     private fun execute(retry: Boolean) {
         val target = state.value.target ?: return
         mutableState.value = state.value.copy(phase = ReviewModerationPhase.REMOVING, dialogVisible = true)
@@ -213,7 +250,9 @@ class ReviewModerationController(
             }
     }
 
-    /** Checks the saved component after an uncertain response without replaying removal. */
+    /** Checks an uncertain response without replaying removal.
+     * @param target Original selected feedback.
+     */
     private suspend fun reconcile(target: ReviewModerationTarget) {
         try {
             val current = read(target)
@@ -232,17 +271,28 @@ class ReviewModerationController(
         }
     }
 
+    /** Reads the original author under the selected listing.
+     * @param target Immutable feedback identity.
+     */
     private suspend fun read(target: ReviewModerationTarget): Review? =
         reviews.observeReviews(target.campsiteId).first().firstOrNull {
             it.campsiteId == target.campsiteId && it.authorId == target.authorId
         }
 
+    /** Checks whether the selected component is already absent.
+     * @param review Current saved feedback.
+     * @param target Original selected component.
+     */
     private fun absent(
         review: Review,
         target: ReviewModerationTarget,
     ) =
         if (target.component == ReviewModerationComponent.RATING) review.rating == null else review.body == null
 
+    /** Compares only the selected component with its confirmed value.
+     * @param review Current saved feedback.
+     * @param target Original confirmed value.
+     */
     private fun matches(
         review: Review,
         target: ReviewModerationTarget,
@@ -255,21 +305,29 @@ class ReviewModerationController(
             review.body == target.text
         }
 
+    /** Refreshes feedback after confirmed removal and clears retained input. */
     private fun complete() {
         phase(ReviewModerationPhase.COMPLETE)
         clearRetained()
         onRemoved()
     }
 
+    /** Publishes an outcome while preserving the original selection.
+     * @param phase New operation outcome.
+     */
     private fun phase(phase: ReviewModerationPhase) {
         mutableState.value = state.value.copy(phase = phase)
     }
 
+    /** Propagates cancellation and rejects late results after entry disposal. */
     private suspend fun ensureCurrent() {
         currentCoroutineContext().ensureActive()
         if (closed) throw CancellationException("Feedback owner closed")
     }
 
+    /** Saves the original target and submission status for explicit recovery.
+     * @param target Confirmed feedback selection.
+     */
     private fun retain(target: ReviewModerationTarget) {
         saved["moderationActor"] = actorId
         saved["moderationSite"] = target.campsiteId
@@ -282,7 +340,11 @@ class ReviewModerationController(
         saved["moderationSubmitted"] = submitted
     }
 
+    /** Restores only a valid target belonging to this actor and listing. */
     private fun restore(): ReviewModerationTarget? {
+        /** Reads a retained string without coercion.
+         * @param key Saved field name.
+         */
         fun string(key: String) =
             saved.get<Any?>(key) as? String
         if (string("moderationActor") != actorId || string("moderationSite") != campsiteId) return null
@@ -307,6 +369,7 @@ class ReviewModerationController(
         )
     }
 
+    /** Removes only this controller's saved request fields. */
     private fun clearRetained() {
         saved.keys().filter { it.startsWith("moderation") }.forEach { saved.remove<Any?>(it) }
         submitted = false

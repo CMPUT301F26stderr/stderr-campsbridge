@@ -89,7 +89,7 @@ class ReviewModerationFlowTest {
         openFeedback()
         click("Remove rating")
         compose.onNodeWithText("Selected rating: 4 out of 5").assertIsDisplayed()
-        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Remove").performClick()
         compose.onNodeWithText("Selected feedback component removed.").assertIsDisplayed()
         compose.onNodeWithText("Return to feedback").performClick()
         compose.onNodeWithText(original.body!!).performScrollTo().assertIsDisplayed()
@@ -103,7 +103,7 @@ class ReviewModerationFlowTest {
     @Test fun writtenRemovalKeepsTheSavedStarsAndCampsite() {
         openFeedback()
         click("Remove written review")
-        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Remove").performClick()
         compose.onNodeWithText("Selected feedback component removed.").assertIsDisplayed()
         compose.onNodeWithText("Return to feedback").performClick()
         compose.onNodeWithText(original.body!!).assertDoesNotExist()
@@ -124,7 +124,7 @@ class ReviewModerationFlowTest {
         fail = true
         openFeedback()
         click(if (rating) "Remove rating" else "Remove written review")
-        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Remove").performClick()
         compose
             .onNodeWithText(
                 "Removal did not finish. Retry the same selected feedback component.",
@@ -150,8 +150,8 @@ class ReviewModerationFlowTest {
         gate = CompletableDeferred()
         openFeedback()
         click("Remove rating")
-        compose.onNodeWithText("Confirm removal").performClick()
-        compose.onNodeWithText("Confirm removal").assertIsNotEnabled()
+        compose.onNodeWithText("Remove").performClick()
+        compose.onNodeWithText("Remove").assertIsNotEnabled()
         compose.onNodeWithText("Cancel").assertIsNotEnabled()
         compose.onNodeWithText("Selected feedback component removed.").assertDoesNotExist()
         compose.runOnIdle {
@@ -165,7 +165,7 @@ class ReviewModerationFlowTest {
         openFeedback()
         click("Remove rating")
         compose.runOnIdle { rows.value = listOf(original.copy(rating = 5)) }
-        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Remove").performClick()
         compose
             .onNodeWithText(
                 "The original component is missing, has changed, or is no longer available to this administrator. No replacement will be removed.",

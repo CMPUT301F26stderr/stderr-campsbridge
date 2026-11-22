@@ -16,6 +16,7 @@ fun CampsiteReviewsRoute(
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val moderation = model.reviewModeration
+    val moderationState = moderation?.state?.collectAsStateWithLifecycle()?.value
     CampsiteReviewsScreen(
         state,
         onBack = { if (model.requestBack()) onBack() },
@@ -34,17 +35,31 @@ fun CampsiteReviewsRoute(
             moderation?.let { controller ->
                 { review ->
                     ReviewModerationActions(
-                        controller,
-                        review,
-                        (state.listing as? CampsiteDetailUiState.Content)
-                            ?.campsite
-                            ?.details
-                            ?.name
-                            .orEmpty(),
-                        state.authorNames[review.authorId],
+                        review = review,
+                        enabled = moderationState?.phase == ReviewModerationPhase.IDLE,
+                        onRemove = { component ->
+                            controller.request(
+                                review,
+                                component,
+                                (state.listing as? CampsiteDetailUiState.Content)
+                                    ?.campsite
+                                    ?.details
+                                    ?.name
+                                    .orEmpty(),
+                                state.authorNames[review.authorId],
+                            )
+                        },
                     )
                 }
             },
     )
-    moderation?.let { ReviewModerationHost(it) }
+    if (moderation != null && moderationState != null) {
+        ReviewModerationHost(
+            moderationState,
+            moderation::confirm,
+            moderation::dismiss,
+            moderation::retry,
+            moderation::resume,
+        )
+    }
 }
