@@ -33,6 +33,7 @@ class AnnouncementComposePreviewProvider : PreviewParameterProvider<Announcement
                     read = AnnouncementRead.READY,
                     lottery = lottery,
                     canSend = true,
+                    hasRecipients = true,
                     title = "Trail access for the long weekend",
                     body =
                         "The riverside trail is open again.\n" +
@@ -41,6 +42,7 @@ class AnnouncementComposePreviewProvider : PreviewParameterProvider<Announcement
             val attempt = AnnouncementAttempt("event", lottery.id, lottery.ownerId, ready.title, ready.body)
             sequenceOf(
                 ready,
+                ready.copy(hasRecipients = false),
                 ready.copy(title = "", body = ""),
                 ready.copy(attempt = attempt, phase = AnnouncementPhase.SENDING),
                 ready.copy(attempt = attempt, phase = AnnouncementPhase.CHECKING),

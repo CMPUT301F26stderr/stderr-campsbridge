@@ -3,6 +3,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
@@ -35,7 +37,19 @@ class AnnouncementComposeTest {
             publishedAt = CampingFixtures.now,
             participantOwnerIds = setOf("owner", "co-owner"),
         )
-    private val lotteries = FakeLotteryRepository(listOf(savedLottery))
+    private val lotteries =
+        FakeLotteryRepository(listOf(savedLottery)).apply {
+            entries.value =
+                listOf(
+                    LotteryEntry(
+                        savedLottery.id,
+                        "entrant",
+                        EntryState.WAITING,
+                        CampingFixtures.now,
+                        CampingFixtures.now,
+                    ),
+                )
+        }
     private val accounts = FakeAccountRepository(CampingFixtures.account("owner").copy(roles = setOf(Role.OWNER)))
     private val notifications = FakeNotificationRepository()
     private val store = ViewModelStore()

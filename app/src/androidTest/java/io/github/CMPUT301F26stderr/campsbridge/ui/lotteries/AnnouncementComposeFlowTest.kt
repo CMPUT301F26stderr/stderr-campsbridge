@@ -9,8 +9,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
@@ -61,6 +63,7 @@ class AnnouncementComposeFlowTest {
             host.preferences.progress.value
                 .copy(workspace = Role.OWNER)
         host.lotteries.records.value = listOf(lottery)
+        host.lotteries.entries.value = listOf(LotteryEntry(lottery.id, "entrant", EntryState.WAITING, now, now))
         val attempts = mutableListOf<String>()
         host.notifications.announceHandler = { id, _, _, _ ->
             attempts += id

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationRepository
@@ -95,7 +96,7 @@ class AnnouncementComposeViewModel(
     /** Freezes one valid explicit request before submitting it. */
     fun send() {
         val current = state.value
-        if (!current.canSend || current.attempt != null || current.sent || leaving) return
+        if (!current.canSend || !current.hasRecipients || current.attempt != null || current.sent || leaving) return
         mutableState.value = current.copy(titleInvalid = current.title.isBlank(), bodyInvalid = current.body.isBlank())
         if (current.title.isBlank() || current.body.isBlank()) return
         val request = AnnouncementAttempt(newId(), lotteryId, ownerId, current.title, current.body)
@@ -176,7 +177,7 @@ class AnnouncementComposeViewModel(
         return true
     }
 
-    /** Observes only the fixed actor and saved lottery; lifecycle windows add no invented send ban. */
+    /** Observes the fixed actor, saved lottery and current nonwithdrawn announcement audience. */
     private fun observeContext() {
         source?.cancel()
         val version = ++sourceVersion
@@ -184,10 +185,13 @@ class AnnouncementComposeViewModel(
         source =
             viewModelScope.launch {
                 try {
-                    combine(lotteries.observe(lotteryId), accounts.observe(ownerId)) { lottery, account ->
-                        lottery to
-                            account
-                    }.collect { (lottery, account) ->
+                    combine(
+                        lotteries.observe(lotteryId),
+                        accounts.observe(ownerId),
+                        lotteries.observeEntries(lotteryId),
+                    ) { lottery, account, entries ->
+                        Triple(lottery, account, entries.any { it.state != EntryState.WITHDRAWN })
+                    }.collect { (lottery, account, hasRecipients) ->
                         currentCoroutineContext().ensureActive()
                         if (version != sourceVersion) return@collect
                         val allowed =
@@ -199,6 +203,7 @@ class AnnouncementComposeViewModel(
                                 read = if (allowed) AnnouncementRead.READY else AnnouncementRead.UNAVAILABLE,
                                 lottery = lottery?.takeIf { it.id == lotteryId },
                                 canSend = allowed,
+                                hasRecipients = hasRecipients,
                             )
                     }
                 } catch (cancelled: CancellationException) {
@@ -265,7 +270,7 @@ class AnnouncementComposeViewModel(
             when {
                 saved == null -> {
                     mutableState.value = state.value.copy(phase = AnnouncementPhase.ABSENT)
-                    if (resendWhenAbsent && state.value.canSend) submit(request)
+                    if (resendWhenAbsent && state.value.canSend && state.value.hasRecipients) submit(request)
                 }
 
                 saved.id == request.id && saved.type == NotificationType.OWNER_ANNOUNCEMENT &&
