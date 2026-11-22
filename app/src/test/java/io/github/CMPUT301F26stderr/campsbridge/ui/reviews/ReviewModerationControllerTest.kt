@@ -25,6 +25,55 @@ import java.time.Instant
 class ReviewModerationControllerTest {
     @get:Rule val main = MainDispatcherRule()
 
+    @Test fun cancellationDoesNotWrite() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.request()
+            assertEquals(ReviewModerationPhase.CONFIRMING, f.controller.state.value.phase)
+            f.controller.dismiss()
+            assertEquals(ReviewModerationPhase.IDLE, f.controller.state.value.phase)
+            assertTrue(f.writes.isEmpty())
+        }
+
+    @Test fun ratingAndTextRemovalPreserveTheIndependentComponentAndCreationTime() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            for (component in ReviewModerationComponent.entries) {
+                f.rows.value = listOf(f.original)
+                f.request(component)
+                f.controller.confirm()
+                runCurrent()
+                assertEquals(ReviewModerationPhase.COMPLETE, f.controller.state.value.phase)
+                val result = f.rows.value.single()
+                assertEquals(if (component == ReviewModerationComponent.RATING) null else 4L, result.rating)
+                assertEquals(if (component == ReviewModerationComponent.TEXT) null else f.original.body, result.body)
+                assertEquals(f.original.createdAt, result.createdAt)
+                f.controller.dismiss()
+            }
+            assertEquals(2, f.refreshes)
+        }
+
+    @Test fun failureAndRetryKeepTheSameAuthorCampsiteAndComponent() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.failure = IOException("offline")
+            f.request()
+            f.controller.confirm()
+            runCurrent()
+            assertEquals(ReviewModerationPhase.FAILED, f.controller.state.value.phase)
+            f.controller.request(f.original.copy(authorId = "other"), ReviewModerationComponent.TEXT, "Other", null)
+            f.failure = null
+            f.controller.retry()
+            runCurrent()
+            assertEquals(listOf("RATING:${f.site.id}:author", "RATING:${f.site.id}:author"), f.writes)
+            assertEquals(
+                f.original.body,
+                f.rows.value
+                    .single()
+                    .body,
+            )
+        }
+
     private class Fixture(
         private val scope: CoroutineScope,
     ) {
