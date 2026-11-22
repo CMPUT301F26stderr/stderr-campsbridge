@@ -118,3 +118,16 @@ fun ReviewModerationHost(controller: ReviewModerationController) {
         },
     )
 }
+
+@Composable
+private fun ReviewModerationIdentity(target: ReviewModerationTarget) {
+    Text(stringResource(R.string.review_moderation_site, target.campsiteName))
+    Text(stringResource(R.string.review_moderation_site_id, target.campsiteId))
+    target.authorName?.let { Text(it) }
+    Text(stringResource(R.string.review_moderation_author, target.authorId))
+    if (target.component == ReviewModerationComponent.RATING) {
+        Text(stringResource(R.string.review_moderation_stars, target.rating ?: 0))
+    } else {
+        target.text?.let { Text(it) }
+    }
+}
