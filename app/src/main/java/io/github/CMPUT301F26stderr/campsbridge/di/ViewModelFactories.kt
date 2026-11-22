@@ -22,6 +22,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.CollaboratingOwnersViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
@@ -306,6 +307,30 @@ fun availabilityViewModelFactory(
                 services.clock,
                 createSavedStateHandle(),
                 remainingAvailabilityEdits,
+            )
+        }
+    }
+
+/** Supplies the organizer picker with existing account, allocation and membership contracts.
+ * @param services Selected host's shared repositories and clock.
+ * @param actorId Actual account opening the saved picker.
+ * @param lotteryId Confirmed saved lottery identity.
+ */
+fun collaboratingOwnersViewModelFactory(
+    services: AppServices,
+    actorId: String,
+    lotteryId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            CollaboratingOwnersViewModel(
+                lotteryId,
+                actorId,
+                services.repositories.accounts,
+                services.repositories.campsites,
+                services.repositories.lotteries,
+                services.clock,
+                createSavedStateHandle(),
             )
         }
     }
