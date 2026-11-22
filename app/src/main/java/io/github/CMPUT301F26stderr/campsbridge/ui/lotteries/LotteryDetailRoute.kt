@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * @param onCampsite Registered saved campsite calendar, absent in isolated examples.
  * @param onEditDetails Opens the organizer's saved details editor.
  * @param onEditAllocations Opens the current participant's owned allocation editor.
+ * @param onEditOwners Opens saved member context and the organizer's membership picker.
  */
 @Composable
 fun LotteryDetailRoute(
@@ -37,6 +38,7 @@ fun LotteryDetailRoute(
     onCampsite: ((String) -> Unit)? = null,
     onEditDetails: (() -> Unit)? = null,
     onEditAllocations: (() -> Unit)? = null,
+    onEditOwners: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
@@ -65,6 +67,7 @@ fun LotteryDetailRoute(
                 onOpenSection = onOpenSection,
                 onEditDetails = onEditDetails,
                 onEditAllocations = onEditAllocations,
+                onEditOwners = onEditOwners,
             )
         }
 

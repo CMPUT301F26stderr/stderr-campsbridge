@@ -137,6 +137,14 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                         viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
                     LotteryDetailRoute(
                         model,
+                        onEditOwners =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(AppDestination.lotteryOwners(id)) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
                         onEditAllocations =
                             if (context == LotteryContext.OWNER) {
                                 {

@@ -59,6 +59,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.CollaboratingOwnersViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocationsEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailsEditViewModel
@@ -76,15 +77,24 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-/** Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime. */
-class TestAppHost : AutoCloseable {
+/** Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime.
+ * @param campsites Shared listing source when a journey opens more than one actor root.
+ * @param lotteries Shared saved lottery source for cross-owner discovery and editing.
+ * @param bookings Shared complete saved stays for participant journeys.
+ * @param messages Shared saved conversation content for participant journeys.
+ */
+class TestAppHost(
+    val campsites: FakeCampsiteRepository = FakeCampsiteRepository(),
+    val lotteries: FakeLotteryRepository = FakeLotteryRepository(),
+    val bookings: FakeBookingRepository = FakeBookingRepository(),
+    val messages: FakeMessageRepository = FakeMessageRepository(),
+) : AutoCloseable {
     var clock: Clock = Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC)
     val accounts = FakeAccountRepository(sampleAccount())
     var profileAccounts = accounts
     val identity = FakeIdentityProvider()
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
-    val campsites = FakeCampsiteRepository()
     var adminAccounts: AccountRepository = accounts
     var adminCampsites: CampsiteRepository = campsites
     var adminImages: ImageRepository = images
@@ -96,8 +106,7 @@ class TestAppHost : AutoCloseable {
         private set
     var participantFilter: ((List<LotteryEntry>, EntryState?) -> List<LotteryEntry>)? = null
     val lotteryAccounts = FakeAccountRepository()
-    val lotteries = FakeLotteryRepository()
-    val bookings = FakeBookingRepository()
+    var collaboratingOwnerAccounts: AccountRepository = lotteryAccounts
     var classifyReservation: ((Reservation, LocalDate) -> ReservationCategory)? = null
     var orderReservations: ((List<Reservation>) -> List<Reservation>)? = null
     val reservationAccounts = FakeAccountRepository()
@@ -107,7 +116,6 @@ class TestAppHost : AutoCloseable {
     val reservationDetailRequests = mutableListOf<Pair<String, ReservationContext>>()
     val moderation = FakeModerationRepository()
     val notifications = FakeNotificationRepository()
-    val messages = FakeMessageRepository()
     var logNotifications: NotificationRepository = notifications
     var notificationLogCreations = 0
     var inboxCreations = 0
@@ -389,6 +397,21 @@ class TestAppHost : AutoCloseable {
                             LotteryDetailsEditViewModel(
                                 id,
                                 ownerId,
+                                lotteries,
+                                clock,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
+                collaboratingOwnersFactory = { actorId, id ->
+                    viewModelFactory {
+                        initializer {
+                            CollaboratingOwnersViewModel(
+                                id,
+                                actorId,
+                                collaboratingOwnerAccounts,
+                                campsites,
                                 lotteries,
                                 clock,
                                 createSavedStateHandle(),

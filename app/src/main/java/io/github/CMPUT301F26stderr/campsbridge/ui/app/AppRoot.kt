@@ -53,6 +53,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param reviewsFactory Entry-scoped saved feedback dependencies.
  * @param lotteryDetailsEditFactory Saved organizer details dependencies scoped to the ready account.
  * @param lotteryAllocationsEditFactory Saved allocation dependencies scoped to the current participant.
+ * @param collaboratingOwnersFactory Saved membership dependencies scoped to the ready organizer.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  */
 @Composable
@@ -85,6 +86,7 @@ fun AppRoot(
     campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
     lotteryDetailsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
     lotteryAllocationsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    collaboratingOwnersFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
     val removal by accountRemoval.state.collectAsStateWithLifecycle()
@@ -203,6 +205,10 @@ fun AppRoot(
                                     },
                                 lotteryAllocationsEditFactory =
                                     lotteryAllocationsEditFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
+                                collaboratingOwnersFactory =
+                                    collaboratingOwnersFactory?.let { factory ->
                                         { id -> factory(session.account.id, id) }
                                     },
                             )
