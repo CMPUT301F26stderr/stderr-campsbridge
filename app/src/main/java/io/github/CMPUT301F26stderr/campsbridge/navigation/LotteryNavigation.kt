@@ -4,9 +4,11 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -135,8 +137,19 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                     val id = requireNotNull(parent.arguments?.getString("lotteryId"))
                     val model: LotteryDetailViewModel =
                         viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
+                    val announcementSent by entry.savedStateHandle
+                        .getStateFlow("announcementSent", false)
+                        .collectAsStateWithLifecycle()
                     LotteryDetailRoute(
                         model,
+                        onEditOwners =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(AppDestination.lotteryOwners(id)) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
                         onEditAllocations =
                             if (context == LotteryContext.OWNER) {
                                 {
@@ -190,6 +203,8 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                             } else {
                                 null
                             },
+                        announcementSent = announcementSent,
+                        onDismissAnnouncement = { entry.savedStateHandle["announcementSent"] = false },
                         onAnnounce =
                             if (context == LotteryContext.OWNER) {
                                 {

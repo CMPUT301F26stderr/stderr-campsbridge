@@ -1,56 +1,39 @@
-/*
- * Binds announcement composition UI to its ViewModel owner and handles single-shot exit.
- */
-
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-/** Binds announcement composition UI to its ViewModel owner and handles single-shot exit.
- * @param model Announcement composition view model.
- * @param onBack Single-shot pop back stack callback.
- * @param modifier Screen layout modifier.
+/** Connects the local form and consumes one confirmed result only while resumed.
+ * @param model Back-stack-owned original owner/lottery request.
+ * @param onBack Returns after local discard rules permit it.
+ * @param onSent Returns with confirmed immutable-event feedback.
  */
 @Composable
 fun AnnouncementComposeRoute(
     model: AnnouncementComposeViewModel,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier,
+    onSent: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(state.sent) {
-        if (model.consumeSent()) {
-            onBack()
-        }
+    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
+        .collectAsStateWithLifecycle()
+    LaunchedEffect(state.sent, lifecycle) {
+        if (lifecycle == Lifecycle.State.RESUMED && state.sent && model.consumeSent()) onSent()
     }
-
     AnnouncementComposeScreen(
-        state = state,
-        onBack = {
-            if (model.requestBack()) {
-                onBack()
-            }
-        },
-        onTitleChange = model::editTitle,
-        onBodyChange = model::editBody,
+        state,
+        onBack = { if (model.requestBack()) onBack() },
+        onTitle = model::editTitle,
+        onBody = model::editBody,
         onSend = model::send,
+        onRetry = model::retry,
         onRetrySend = model::retrySend,
         onEditAttempt = model::editAttempt,
-        onDismissDiscard = model::dismissDiscardConfirmation,
-        onConfirmDiscard = {
-            model.confirmDiscard()
-            onBack()
-        },
-        onDismissLeaveUnknown = model::dismissLeaveUnknownConfirmation,
-        onConfirmLeaveUnknown = {
-            model.confirmLeaveUnknown()
-            onBack()
-        },
-        modifier = modifier,
+        onDismissDiscard = model::dismissDiscard,
+        onConfirmDiscard = { if (model.confirmDiscard()) onBack() },
     )
 }
