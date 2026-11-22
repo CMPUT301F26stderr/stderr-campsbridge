@@ -71,4 +71,79 @@ class ReviewModerationFlowTest {
             }
     }
 
+    @Test fun cancellingEitherComponentDoesNotWrite() {
+        openFeedback()
+        for (label in listOf("Remove rating", "Remove written review")) {
+            click(label)
+            compose.onNodeWithText("Campsite ID: ${site.id}").assertIsDisplayed()
+            compose.onNodeWithText("Author ID: ${original.authorId}").assertIsDisplayed()
+            compose.onNodeWithText("Cancel").performClick()
+        }
+        compose.runOnIdle {
+            assertTrue(host.moderation.requests.isEmpty())
+            assertEquals(listOf(original), rows.value)
+        }
+    }
+
+    @Test fun ratingRemovalRefreshesTheSavedSummaryAndKeepsWrittenFeedback() {
+        openFeedback()
+        click("Remove rating")
+        compose.onNodeWithText("Selected rating: 4 out of 5").assertIsDisplayed()
+        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Selected feedback component removed.").assertIsDisplayed()
+        compose.onNodeWithText("Return to feedback").performClick()
+        compose.onNodeWithText(original.body!!).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("No ratings").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Remove rating").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(original.copy(rating = null), rows.value.single()) }
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("No ratings").assertIsDisplayed()
+    }
+
+    @Test fun writtenRemovalKeepsTheSavedStarsAndCampsite() {
+        openFeedback()
+        click("Remove written review")
+        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Selected feedback component removed.").assertIsDisplayed()
+        compose.onNodeWithText("Return to feedback").performClick()
+        compose.onNodeWithText(original.body!!).assertDoesNotExist()
+        compose.onNodeWithText("4.0 / 5 (1 rating)").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(original.copy(body = null), rows.value.single())
+            assertEquals(listOf(site), host.campsites.records.value)
+        }
+    }
+
+    @Test fun retryRetainsOriginalRatingAfterTheListChanges() =
+        failureRetry(rating = true)
+
+    @Test fun retryRetainsOriginalTextAfterTheListChanges() =
+        failureRetry(rating = false)
+
+    private fun failureRetry(rating: Boolean) {
+        fail = true
+        openFeedback()
+        click(if (rating) "Remove rating" else "Remove written review")
+        compose.onNodeWithText("Confirm removal").performClick()
+        compose
+            .onNodeWithText(
+                "Removal did not finish. Retry the same selected feedback component.",
+            ).assertIsDisplayed()
+        val other = original.copy(authorId = "new-author", rating = 5, body = "Other review")
+        compose.runOnIdle {
+            rows.value = listOf(other, original)
+            fail = false
+        }
+        compose.onNodeWithText("Author ID: ${original.authorId}").assertIsDisplayed()
+        compose.onNodeWithText("Retry removal").performClick()
+        compose.onNodeWithText("Selected feedback component removed.").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(other, rows.value.first())
+            assertEquals(if (rating) null else original.rating, rows.value.last().rating)
+            assertEquals(if (rating) original.body else null, rows.value.last().body)
+            val prefix = if (rating) "rating" else "review"
+            assertEquals(List(2) { "$prefix:${site.id}:${original.authorId}" }, host.moderation.requests)
+        }
+    }
+
 }
