@@ -268,5 +268,51 @@ class ReviewModerationController(
         if (closed) throw CancellationException("Feedback owner closed")
     }
 
+    private fun retain(target: ReviewModerationTarget) {
+        saved["moderationActor"] = actorId
+        saved["moderationSite"] = target.campsiteId
+        saved["moderationSiteName"] = target.campsiteName
+        saved["moderationAuthor"] = target.authorId
+        saved["moderationAuthorName"] = target.authorName
+        saved["moderationComponent"] = target.component.name
+        saved["moderationRating"] = target.rating
+        saved["moderationText"] = target.text
+        saved["moderationSubmitted"] = submitted
+    }
 
+    private fun restore(): ReviewModerationTarget? {
+        fun string(key: String) =
+            saved.get<Any?>(key) as? String
+        if (string("moderationActor") != actorId || string("moderationSite") != campsiteId) return null
+        val component =
+            ReviewModerationComponent.entries.firstOrNull { it.name == string("moderationComponent") } ?: return null
+        val author = string("moderationAuthor")?.takeIf { it.isNotBlank() } ?: return null
+        val rating = (saved.get<Any?>("moderationRating") as? Long)?.takeIf { it in 1..5 }
+        val text = string("moderationText")?.takeIf { it.isNotBlank() }
+        if ((component == ReviewModerationComponent.RATING && rating == null) ||
+            (component == ReviewModerationComponent.TEXT && text == null)
+        ) {
+            return null
+        }
+        return ReviewModerationTarget(
+            campsiteId,
+            string("moderationSiteName").orEmpty(),
+            author,
+            string("moderationAuthorName"),
+            component,
+            rating,
+            text,
+        )
+    }
+
+    private fun clearRetained() {
+        saved.keys().filter { it.startsWith("moderation") }.forEach { saved.remove<Any?>(it) }
+        submitted = false
+    }
+
+    /** Invalidates late reads/results before cancelling entry-owned work. */
+    fun close() {
+        closed = true
+        job?.cancel()
+    }
 }
