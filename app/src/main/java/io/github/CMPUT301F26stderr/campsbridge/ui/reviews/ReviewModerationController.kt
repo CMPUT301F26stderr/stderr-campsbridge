@@ -140,5 +140,77 @@ class ReviewModerationController(
         if (!closed && canModerate()) mutableState.value = state.value.copy(dialogVisible = true)
     }
 
+    private fun execute(retry: Boolean) {
+        val target = state.value.target ?: return
+        mutableState.value = state.value.copy(phase = ReviewModerationPhase.REMOVING, dialogVisible = true)
+        job =
+            scope.launch {
+                var attempted = false
+                try {
+                    val actor = accounts.get(actorId)
+                    val site = campsites.get(target.campsiteId)
+                    ensureCurrent()
+                    if (actor?.id != actorId || !actor.isActive || Role.ADMIN !in actor.roles ||
+                        site?.id != campsiteId ||
+                        site.removal != null ||
+                        !canModerate()
+                    ) {
+                        phase(ReviewModerationPhase.UNAVAILABLE)
+                        return@launch
+                    }
+                    val current = read(target)
+                    ensureCurrent()
+                    if (current == null) {
+                        phase(ReviewModerationPhase.UNAVAILABLE)
+                        return@launch
+                    }
+                    if (absent(current, target)) {
+                        if (retry && submitted) complete() else phase(ReviewModerationPhase.UNAVAILABLE)
+                        return@launch
+                    }
+                    if (!matches(current, target) || !canModerate()) {
+                        phase(ReviewModerationPhase.UNAVAILABLE)
+                        return@launch
+                    }
+                    // Recheck actual privileges after the potentially suspended feedback read.
+                    val latestActor = accounts.get(actorId)
+                    ensureCurrent()
+                    if (latestActor?.id != actorId || !latestActor.isActive || Role.ADMIN !in latestActor.roles ||
+                        !canModerate()
+                    ) {
+                        phase(ReviewModerationPhase.UNAVAILABLE)
+                        return@launch
+                    }
+                    attempted = true
+                    submitted = true
+                    retain(target)
+                    when (target.component) {
+                        ReviewModerationComponent.RATING -> {
+                            moderation.removeRating(
+                                target.campsiteId,
+                                target.authorId,
+                                actorId,
+                            )
+                        }
+
+                        ReviewModerationComponent.TEXT -> {
+                            moderation.removeReviewText(
+                                target.campsiteId,
+                                target.authorId,
+                                actorId,
+                            )
+                        }
+                    }
+                    ensureCurrent()
+                    complete()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    ensureCurrent()
+                    if (attempted) reconcile(target) else phase(ReviewModerationPhase.UNKNOWN)
+                }
+            }
+    }
+
 
 }
