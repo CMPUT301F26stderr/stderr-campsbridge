@@ -218,6 +218,34 @@ class ReviewModerationControllerTest {
             assertEquals(0, f.refreshes)
         }
 
+    @Test fun dismissedFailureResumesTheOriginalRequest() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.failure = IOException("offline")
+            f.request()
+            f.controller.confirm()
+            runCurrent()
+            val target = f.controller.state.value.target
+            f.controller.dismiss()
+            assertEquals(false, f.controller.state.value.dialogVisible)
+            f.request(ReviewModerationComponent.TEXT)
+            f.controller.resume()
+            assertEquals(target, f.controller.state.value.target)
+            assertEquals(true, f.controller.state.value.dialogVisible)
+            assertEquals(1, f.writes.size)
+        }
+
+    @Test fun nonAdminPresentationCannotRequestOrConfirmModeration() =
+        runTest {
+            val f = Fixture(backgroundScope)
+            f.allowed = false
+            f.request()
+            f.controller.confirm()
+            runCurrent()
+            assertEquals(ReviewModerationPhase.IDLE, f.controller.state.value.phase)
+            assertTrue(f.writes.isEmpty())
+        }
+
     private class Fixture(
         private val scope: CoroutineScope,
     ) {
