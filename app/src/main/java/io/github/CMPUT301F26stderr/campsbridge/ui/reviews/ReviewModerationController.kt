@@ -194,6 +194,7 @@ class ReviewModerationController(
                         }
 
                         ReviewModerationComponent.TEXT -> {
+                            // Clear only written feedback; the shared operation preserves saved stars.
                             moderation.removeReviewText(
                                 target.campsiteId,
                                 target.authorId,
