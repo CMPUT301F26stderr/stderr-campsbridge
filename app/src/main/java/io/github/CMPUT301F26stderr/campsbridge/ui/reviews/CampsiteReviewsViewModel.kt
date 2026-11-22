@@ -7,6 +7,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.Account
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepository
+import io.github.CMPUT301F26stderr.campsbridge.domain.moderation.ModerationRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReviewRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailUiState
@@ -36,6 +37,7 @@ class CampsiteReviewsViewModel(
     private val reviews: ReviewRepository,
     private val accounts: AccountRepository,
     private val savedState: SavedStateHandle,
+    moderation: ModerationRepository? = null,
 ) : ViewModel() {
     private var closed = false
     private var acknowledgedRating: Long? = null
@@ -72,6 +74,23 @@ class CampsiteReviewsViewModel(
     private val names = mutableMapOf<String, String?>()
     private val failedNames = mutableSetOf<String>()
     private val loadingNames = mutableSetOf<String>()
+
+    /** Shared controller for rating and text actions on this saved feedback page. */
+    val reviewModeration =
+        moderation?.let {
+            ReviewModerationController(
+                accountId,
+                campsiteId,
+                accounts,
+                campsites,
+                reviews,
+                it,
+                savedState,
+                viewModelScope,
+                { !closed && !leaving && state.value.canModerate },
+                { if (!closed && !leaving) observeFeedback() },
+            )
+        }
 
     init {
         observeListing()
@@ -438,11 +457,13 @@ class CampsiteReviewsViewModel(
 
     /** Keeps Back input in the shared frame while either independent operation is pending. */
     private fun isSubmitting(): Boolean =
-        state.value.textSaving || state.value.rating.status == RatingSaveStatus.SAVING
+        state.value.textSaving || state.value.rating.status == RatingSaveStatus.SAVING ||
+            reviewModeration?.state?.value?.phase == ReviewModerationPhase.REMOVING
 
     /** Invalidates labels before cancellation so late completions cannot publish into a closed entry. */
     override fun onCleared() {
         closed = true
+        reviewModeration?.close()
         leaving = true
         // 先让回调失效，再取消任务，避免 finally 发布过期状态。
         nameTokens.clear()

@@ -29,6 +29,7 @@ fun campsiteReviewsViewModelFactory(
                 services.repositories.reviews,
                 services.repositories.accounts,
                 createSavedStateHandle(),
+                services.repositories.moderation,
             )
         }
     }
