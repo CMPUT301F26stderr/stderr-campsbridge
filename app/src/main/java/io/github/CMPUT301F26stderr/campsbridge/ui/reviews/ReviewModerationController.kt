@@ -213,6 +213,7 @@ class ReviewModerationController(
             }
     }
 
+    /** Checks the saved component after an uncertain response without replaying removal. */
     private suspend fun reconcile(target: ReviewModerationTarget) {
         try {
             val current = read(target)
