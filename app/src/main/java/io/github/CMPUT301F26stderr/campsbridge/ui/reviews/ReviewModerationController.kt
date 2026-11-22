@@ -73,4 +73,72 @@ class ReviewModerationController(
         )
     val state = mutableState.asStateFlow()
 
+    /** Freezes the actual row identity; later row selection cannot replace a pending request. */
+    fun request(
+        review: Review,
+        component: ReviewModerationComponent,
+        campsiteName: String,
+        authorName: String?,
+    ) {
+        if (closed || !canModerate() || state.value.phase != ReviewModerationPhase.IDLE ||
+            review.campsiteId != campsiteId || review.authorId.isBlank() ||
+            (component == ReviewModerationComponent.RATING && review.rating == null) ||
+            (component == ReviewModerationComponent.TEXT && review.body == null)
+        ) {
+            return
+        }
+        submitted = false
+        val target =
+            ReviewModerationTarget(
+                campsiteId,
+                campsiteName,
+                review.authorId,
+                authorName,
+                component,
+                if (component == ReviewModerationComponent.RATING) review.rating else null,
+                if (component == ReviewModerationComponent.TEXT) review.body else null,
+            )
+        mutableState.value = ReviewModerationState(ReviewModerationPhase.CONFIRMING, target)
+        retain(target)
+    }
+
+    fun confirm() {
+        if (closed || state.value.phase != ReviewModerationPhase.CONFIRMING || !canModerate()) return
+        execute(retry = false)
+    }
+
+    /** Every retry reads the original component before considering another write. */
+    fun retry() {
+        if (closed || !canModerate() ||
+            state.value.phase !in setOf(ReviewModerationPhase.FAILED, ReviewModerationPhase.UNKNOWN)
+        ) {
+            return
+        }
+        execute(retry = true)
+    }
+
+    fun dismiss() {
+        if (closed) return
+        when (state.value.phase) {
+            ReviewModerationPhase.FAILED, ReviewModerationPhase.UNKNOWN -> {
+                mutableState.value =
+                    state.value.copy(dialogVisible = false)
+            }
+
+            ReviewModerationPhase.CONFIRMING, ReviewModerationPhase.COMPLETE, ReviewModerationPhase.UNAVAILABLE -> {
+                clearRetained()
+                mutableState.value = ReviewModerationState()
+            }
+
+            else -> {
+                Unit
+            }
+        }
+    }
+
+    fun resume() {
+        if (!closed && canModerate()) mutableState.value = state.value.copy(dialogVisible = true)
+    }
+
+
 }
