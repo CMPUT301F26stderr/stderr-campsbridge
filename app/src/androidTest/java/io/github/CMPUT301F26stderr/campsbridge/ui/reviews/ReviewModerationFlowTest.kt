@@ -146,4 +146,42 @@ class ReviewModerationFlowTest {
         }
     }
 
+    @Test fun heldRemovalCannotBeRepeatedOrReportedAsComplete() {
+        gate = CompletableDeferred()
+        openFeedback()
+        click("Remove rating")
+        compose.onNodeWithText("Confirm removal").performClick()
+        compose.onNodeWithText("Confirm removal").assertIsNotEnabled()
+        compose.onNodeWithText("Cancel").assertIsNotEnabled()
+        compose.onNodeWithText("Selected feedback component removed.").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(1, host.moderation.requests.size)
+            gate!!.complete(Unit)
+        }
+        compose.onNodeWithText("Selected feedback component removed.").assertIsDisplayed()
+    }
+
+    @Test fun changedSelectedRatingIsExplainedWithoutRemovingItsReplacement() {
+        openFeedback()
+        click("Remove rating")
+        compose.runOnIdle { rows.value = listOf(original.copy(rating = 5)) }
+        compose.onNodeWithText("Confirm removal").performClick()
+        compose
+            .onNodeWithText(
+                "The original component is missing, has changed, or is no longer available to this administrator. No replacement will be removed.",
+            ).assertIsDisplayed()
+        compose.runOnIdle { assertTrue(host.moderation.requests.isEmpty()) }
+    }
+
+    @Test fun entrantFeedbackDoesNotExposeModeration() {
+        openFeedback(Role.ENTRANT)
+        compose.onNodeWithText(original.body!!).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Remove rating").assertDoesNotExist()
+        compose.onNodeWithText("Remove written review").assertDoesNotExist()
+        compose.runOnIdle { assertTrue(host.moderation.requests.isEmpty()) }
+    }
+
+    private fun click(label: String) {
+        compose.onNodeWithText(label).performScrollTo().performClick()
+    }
 }
