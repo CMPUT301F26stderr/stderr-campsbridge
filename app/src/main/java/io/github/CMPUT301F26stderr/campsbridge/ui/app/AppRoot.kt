@@ -85,6 +85,7 @@ fun AppRoot(
     campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
     lotteryDetailsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
     lotteryAllocationsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    announcementComposeFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
     val removal by accountRemoval.state.collectAsStateWithLifecycle()
@@ -203,6 +204,10 @@ fun AppRoot(
                                     },
                                 lotteryAllocationsEditFactory =
                                     lotteryAllocationsEditFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
+                                announcementComposeFactory =
+                                    announcementComposeFactory?.let { factory ->
                                         { id -> factory(session.account.id, id) }
                                     },
                             )

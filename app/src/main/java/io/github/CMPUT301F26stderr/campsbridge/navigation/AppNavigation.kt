@@ -112,6 +112,7 @@ fun AppNavigation(
     adminRemovalFactory: ViewModelProvider.Factory? = null,
     lotteryDetailsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
     lotteryAllocationsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    announcementComposeFactory: ((String) -> ViewModelProvider.Factory)? = null,
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -281,6 +282,7 @@ fun AppNavigation(
             lotterySetupGraph(controller, lotterySetupFactory)
             lotteryDetailsEditFactory?.let { lotteryDetailsEditGraph(controller, it) }
             lotteryAllocationsEditFactory?.let { lotteryAllocationsEditGraph(controller, it) }
+            announcementComposeFactory?.let { announcementComposeGraph(controller, it) }
             inboxGraph(
                 controller,
                 state,

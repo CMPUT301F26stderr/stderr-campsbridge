@@ -52,6 +52,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminRemovalViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.announcementComposeViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
@@ -300,6 +301,9 @@ class OfflineDemoActivity : ComponentActivity() {
                                     },
                                     campsiteEditFactory = { ownerId, id ->
                                         campsiteEditViewModelFactory(session.services, ownerId, id)
+                                    },
+                                    announcementComposeFactory = { ownerId, id ->
+                                        announcementComposeViewModelFactory(session.services, ownerId, id)
                                     },
                                 )
                             }

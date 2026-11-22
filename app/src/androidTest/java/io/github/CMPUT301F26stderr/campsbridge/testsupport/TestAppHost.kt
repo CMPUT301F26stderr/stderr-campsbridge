@@ -59,6 +59,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.AnnouncementComposeViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocationsEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailsEditViewModel
@@ -413,6 +414,20 @@ class TestAppHost : AutoCloseable {
                 campsiteEditFactory = { ownerId, id ->
                     viewModelFactory {
                         initializer { CampsiteEditViewModel(id, ownerId, campsites, images, createSavedStateHandle()) }
+                    }
+                },
+                announcementComposeFactory = { ownerId, id ->
+                    viewModelFactory {
+                        initializer {
+                            AnnouncementComposeViewModel(
+                                ownerId,
+                                id,
+                                lotteries,
+                                accounts,
+                                notifications,
+                                createSavedStateHandle(),
+                            )
+                        }
                     }
                 },
             )

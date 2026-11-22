@@ -190,6 +190,16 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                             } else {
                                 null
                             },
+                        onAnnounce =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(AppDestination.announcement(id)) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            } else {
+                                null
+                            },
                         section = section,
                         onOpenSection = { selected ->
                             controller.navigate(

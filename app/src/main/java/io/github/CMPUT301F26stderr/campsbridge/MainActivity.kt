@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminRemovalViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.announcementComposeViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
@@ -150,6 +151,12 @@ class MainActivity : ComponentActivity() {
                     id,
                     ->
                     lotteryAllocationsEditViewModelFactory(services, ownerId, id)
+                },
+                announcementComposeFactory = {
+                    ownerId,
+                    id,
+                    ->
+                    announcementComposeViewModelFactory(services, ownerId, id)
                 },
             )
         }
