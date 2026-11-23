@@ -61,6 +61,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.collaboratingOwnersViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryAllocationsEditViewModelFactory
@@ -280,6 +281,12 @@ class OfflineDemoActivity : ComponentActivity() {
                                     requestedDestination,
                                     host::consumeDestination,
                                     accountRemoval = removal,
+                                    conversationFactory = {
+                                        actorId,
+                                        id,
+                                        ->
+                                        conversationViewModelFactory(session.services, actorId, id)
+                                    },
                                     adminRemovalFactory = { id -> adminRemovalViewModelFactory(session.services, id) },
                                     reviewsFactory = {
                                         actorId,

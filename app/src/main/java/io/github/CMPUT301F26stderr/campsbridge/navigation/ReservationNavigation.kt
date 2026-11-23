@@ -28,9 +28,11 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationListVi
 /** Registers saved overview/payment/terms beneath one aggregate owner per actual ID/context.
  * @param controller Current account's navigation host.
  * @param factory Explicit saved target dependencies; child entry never creates a second owner.
+ * @param onConversation Registered participant conversation, absent in isolated saved-reader hosts.
  */
 internal fun NavGraphBuilder.reservationGraph(
     controller: NavHostController,
+    onConversation: ((String, ReservationContext) -> Unit)? = null,
     factory: (String, ReservationContext) -> ViewModelProvider.Factory,
 ) {
     for (context in ReservationContext.entries) {
@@ -50,6 +52,7 @@ internal fun NavGraphBuilder.reservationGraph(
                     ReservationDetailRoute(
                         model,
                         page,
+                        onMessages = onConversation?.let { open -> { open(id, context) } },
                         onBack = {
                             if (page == ReservationDetailPage.OVERVIEW) {
                                 controller.popBackStack(pattern, inclusive = true)

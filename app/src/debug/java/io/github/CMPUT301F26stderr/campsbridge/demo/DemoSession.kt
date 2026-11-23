@@ -39,6 +39,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -104,6 +105,7 @@ class DemoSession(
                             services.repositories.messages,
                         ),
                         SavedStateHandle(),
+                        ConversationContextResolver(services.repositories.campsites),
                     )
                 }
             }

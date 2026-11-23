@@ -7,6 +7,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.app
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
@@ -14,11 +15,13 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationEntry
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +37,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 
-/** Eighteen fixed root-tap contracts with real shared content loading and primitive restoration. */
+/** Root taps use shared content loading, actual capabilities and primitive restoration. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class NotificationEntryViewModelTest {
     @get:Rule val main = MainDispatcherRule()
@@ -162,12 +165,62 @@ class NotificationEntryViewModelTest {
             }
         }
 
-    /** Missing, transport-failed and mismatched saved facts retain their honest recovery state. */
+    /** NE-03: message taps retain original IDs and resolve only actual saved participants. */
+    @Test fun messageTargetsKeepTheEnvelopeAndResolveTheActualReservation() =
+        runTest {
+            for (actor in listOf("entrant", "owner-B", "owner-A")) {
+                val f = EntryFixture()
+                try {
+                    val stay = CampingFixtures.reservation().copy(id = "stay/B ?1", campsiteId = "site-B")
+                    val message = Message("message/B ?1", stay.id, "owner-B", "Use the east gate", CampingFixtures.now)
+                    val event =
+                        f.won.copy(
+                            id = "event/B ?1",
+                            type = NotificationType.NEW_MESSAGE,
+                            subject = NotificationSubject(SubjectType.MESSAGE, message.id),
+                        )
+                    val entry = NotificationEntry(actor, event.id, event.subject)
+                    f.bookings.records.value = listOf(stay)
+                    f.campsites.records.value =
+                        listOf(CampingFixtures.campsite().copy(id = stay.campsiteId, ownerId = "owner-B"))
+                    f.messages.records.value = listOf(message)
+                    f.notifications.records.value = listOf(event)
+                    val role = if (actor == "entrant") Role.ENTRANT else Role.OWNER
+                    f.ready(role, setOf(role), actor)
+                    f.model.accept(entry)
+                    runCurrent()
+                    val expected =
+                        if (actor == "owner-A") {
+                            NotificationEntryUiState.Unavailable(entry)
+                        } else {
+                            NotificationEntryUiState.Ready(entry, role, stay.id)
+                        }
+                    assertEquals(expected, f.model.state.value)
+                    assertTrue(f.notifications.readRequests.isEmpty())
+                    assertTrue(f.messages.readRequests.isEmpty())
+                } finally {
+                    f.store.clear()
+                }
+            }
+        }
+
+    /** NE-03: message relationship absence/failure keeps recovery and explicit same-target Retry. */
     @Test fun readOutcomesRemainExplicitAndVerifyEnvelopeSubject() =
         runTest {
             for (kind in 0..4) {
                 val f = EntryFixture()
                 try {
+                    val stay = CampingFixtures.reservation()
+                    val message = Message("message", stay.id, "owner", "Use the east gate", CampingFixtures.now)
+                    val event =
+                        f.won.copy(
+                            type = NotificationType.NEW_MESSAGE,
+                            subject = NotificationSubject(SubjectType.MESSAGE, message.id),
+                        )
+                    val entry = f.entry.copy(subject = event.subject)
+                    f.messages.records.value = listOf(message)
+                    f.campsites.records.value = listOf(CampingFixtures.campsite())
+                    f.notifications.records.value = listOf(event)
                     when (kind) {
                         0 -> {
                             f.notifications.records.value = emptyList()
@@ -178,31 +231,37 @@ class NotificationEntryViewModelTest {
                         }
 
                         2 -> {
-                            f.lotteries.records.value = emptyList()
+                            f.campsites.records.value = emptyList()
                         }
 
                         3 -> {
-                            f.lotteries.getHandler = { throw IOException("context offline") }
+                            f.campsites.readFailure = IOException("relationship offline")
                         }
 
                         4 -> {
                             f.notifications.records.value =
-                                listOf(f.won.copy(subject = f.lost.subject))
+                                listOf(event.copy(subject = NotificationSubject(SubjectType.MESSAGE, "other-message")))
                         }
                     }
                     f.ready()
-                    f.model.accept(f.entry)
+                    f.model.accept(entry)
                     runCurrent()
                     val expected =
-                        if (kind == 1 ||
-                            kind == 3
-                        ) {
-                            NotificationEntryUiState.Failure(f.entry)
+                        if (kind == 1 || kind == 3) {
+                            NotificationEntryUiState.Failure(entry)
                         } else {
-                            NotificationEntryUiState.Unavailable(f.entry)
+                            NotificationEntryUiState.Unavailable(entry)
                         }
                     assertEquals(expected, f.model.state.value)
                     assertTrue(f.notifications.readRequests.isEmpty())
+                    if (kind == 3) {
+                        f.campsites.readFailure = null
+                        f.model.retry()
+                        runCurrent()
+                        assertEquals(NotificationEntryUiState.Ready(entry, Role.ENTRANT, stay.id), f.model.state.value)
+                        assertTrue(f.notifications.readRequests.isEmpty())
+                        assertTrue(f.messages.readRequests.isEmpty())
+                    }
                 } finally {
                     f.store.clear()
                 }
@@ -456,7 +515,6 @@ class NotificationEntryViewModelTest {
             for (bad in listOf(
                 valid - "notificationEntryEvent",
                 valid + ("notificationEntryAccount" to 42),
-                valid + ("notificationEntrySubjectType" to "MESSAGE"),
                 valid + ("notificationEntrySubjectType" to "UNKNOWN"),
                 valid + ("notificationEntrySubjectId" to " "),
             )) {
@@ -531,6 +589,8 @@ private class EntryFixture(
     val notifications = FakeNotificationRepository(listOf(won, lost))
     val lotteries = FakeLotteryRepository(listOf(lottery, otherLottery))
     val bookings = FakeBookingRepository(listOf(CampingFixtures.reservation()))
+    val campsites = FakeCampsiteRepository()
+    val messages = FakeMessageRepository()
     val store = ViewModelStore()
     var model = createModel()
 
@@ -565,8 +625,9 @@ private class EntryFixture(
     /** Supplies real loader behavior and places the root model in its owned lifetime. */
     private fun createModel(): NotificationEntryViewModel =
         NotificationEntryViewModel(
-            NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository()),
+            NotificationContentLoader(notifications, lotteries, bookings, messages),
             saved,
+            ConversationContextResolver(campsites),
         ).also {
             store.put("entry", it)
         }

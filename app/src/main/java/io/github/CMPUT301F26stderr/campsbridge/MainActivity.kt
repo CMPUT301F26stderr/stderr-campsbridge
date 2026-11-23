@@ -26,6 +26,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.collaboratingOwnersViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryAllocationsEditViewModelFactory
@@ -131,6 +132,12 @@ class MainActivity : ComponentActivity() {
                 { messageLogViewModelFactory(services) },
                 AndroidNotificationPermission(this@MainActivity),
                 entries,
+                conversationFactory = {
+                    actorId,
+                    id,
+                    ->
+                    conversationViewModelFactory(services, actorId, id)
+                },
                 accountRemoval = removal,
                 reviewsFactory = {
                     actorId,

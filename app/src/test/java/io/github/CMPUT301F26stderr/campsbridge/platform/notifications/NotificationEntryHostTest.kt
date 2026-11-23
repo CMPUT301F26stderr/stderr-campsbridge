@@ -25,10 +25,10 @@ class NotificationEntryHostTest {
         NotificationEntry(
             "account/α",
             "event/one",
-            NotificationSubject(SubjectType.LOTTERY, "draw/日本語"),
+            NotificationSubject(SubjectType.MESSAGE, "message/日本語"),
         )
 
-    /** Cold/warm validated envelopes preserve identity and malformed launches have no callback. */
+    /** NE-04: cold/warm message envelopes retain identity; malformed launches have no callback. */
     @Test fun coldAndWarmDeliveryUseValidatedCurrentIntent() {
         val controller =
             Robolectric

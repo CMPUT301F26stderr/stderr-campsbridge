@@ -32,9 +32,9 @@ class NotificationEntryTest {
             NotificationSubject(SubjectType.LOTTERY, "draw/one"),
         )
 
-    /** Both supported target categories preserve original encoded account/event/subject strings. */
+    /** NE-02: supported targets retain encoded original account/event/subject identities. */
     @Test fun supportedTargetsRoundTripWithEncodedIdentity() {
-        for (type in listOf(SubjectType.LOTTERY, SubjectType.RESERVATION)) {
+        for (type in SubjectType.entries) {
             val value = entry.copy(subject = NotificationSubject(type, "target/日本語"))
             val intent = value.intent(context)
             assertEquals(value, NotificationEntry.fromIntent(intent))
@@ -57,7 +57,7 @@ class NotificationEntryTest {
             assertNull(NotificationEntry.fromIntent(entry.intent(context).putExtra(key, " ")))
             assertNull(NotificationEntry.fromIntent(entry.intent(context).putExtra(key, 42)))
         }
-        for (type in listOf("UNKNOWN", SubjectType.MESSAGE.name)) {
+        for (type in listOf("UNKNOWN")) {
             assertNull(
                 NotificationEntry.fromIntent(
                     entry.intent(context).putExtra(NotificationEntry.EXTRA_SUBJECT_TYPE, type),
@@ -94,7 +94,6 @@ class NotificationEntryTest {
             entry.copy(accountId = ""),
             entry.copy(eventId = " "),
             entry.copy(subject = NotificationSubject(SubjectType.LOTTERY, "")),
-            entry.copy(subject = NotificationSubject(SubjectType.MESSAGE, "message")),
         )) {
             assertTrue(
                 runCatching {
