@@ -1,3 +1,7 @@
+/*
+ * Slides between form steps while keeping ordinary input updates in place.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.compose.animation.AnimatedContent
@@ -18,7 +22,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.semantics
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.navigation.StepNavigation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
 
 /** Slides between form steps while keeping ordinary input updates in place.
  * Only the current step accepts input.

@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.navigation.AppNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.OnboardingNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.SessionNavigationOwner
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.platform.qr.createCampsiteQrBitmap
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
@@ -58,6 +60,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param announcementComposeFactory Saved announcement dependencies scoped to the participating owner.
  * @param collaboratingOwnersFactory Saved membership dependencies scoped to the ready organizer.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
+ * @param conversationListFactory Participant conversation list keyed by account and workspace.
+ * @param createQrBitmap Native QR generation, invoked by its child route on a worker dispatcher.
  */
 @Composable
 fun AppRoot(
@@ -93,6 +97,8 @@ fun AppRoot(
     announcementComposeFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
     collaboratingOwnersFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
     sentFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    conversationListFactory: ((String, ReservationContext) -> ViewModelProvider.Factory)? = null,
+    createQrBitmap: (String) -> Bitmap = ::createCampsiteQrBitmap,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
     val removal by accountRemoval.state.collectAsStateWithLifecycle()
@@ -226,6 +232,11 @@ fun AppRoot(
                                 collaboratingOwnersFactory =
                                     collaboratingOwnersFactory?.let { factory ->
                                         { id -> factory(session.account.id, id) }
+                                    },
+                                createQrBitmap = createQrBitmap,
+                                conversationListFactory =
+                                    conversationListFactory?.let { factory ->
+                                        { context -> factory(session.account.id, context) }
                                     },
                                 sentFactory =
                                     sentFactory?.let { factory ->

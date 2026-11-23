@@ -26,8 +26,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingStepError
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow

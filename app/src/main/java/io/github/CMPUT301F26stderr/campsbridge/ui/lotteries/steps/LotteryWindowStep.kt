@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers.DateInputDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers.PickerField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers.TimeInputDialog

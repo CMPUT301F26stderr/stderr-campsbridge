@@ -31,7 +31,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationA
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceDelivery
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceMember
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationAudienceUnavailable
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent

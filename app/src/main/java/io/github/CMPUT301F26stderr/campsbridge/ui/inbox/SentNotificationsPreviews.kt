@@ -1,3 +1,7 @@
+/*
+ * Checks long saved event content and read-only recovery at both font/control scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.runtime.Composable

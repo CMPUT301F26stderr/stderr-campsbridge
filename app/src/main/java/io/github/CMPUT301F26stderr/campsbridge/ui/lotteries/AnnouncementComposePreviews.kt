@@ -1,3 +1,7 @@
+/*
+ * Checks long announcement content and reachable form/recovery controls at both scale settings.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

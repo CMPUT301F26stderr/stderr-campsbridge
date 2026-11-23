@@ -1,3 +1,7 @@
+/*
+ * Adds standard hover and long-press help without replacing the action's accessible label.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.actions
 
 import androidx.compose.material3.ExperimentalMaterial3Api

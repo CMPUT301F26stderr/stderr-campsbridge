@@ -1,3 +1,7 @@
+/*
+ * ST-03 opens both actual target kinds from one retained owner Sent tab without recipient writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -21,7 +25,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import kotlinx.coroutines.flow.map
 import org.junit.After
 import org.junit.Assert.assertTrue

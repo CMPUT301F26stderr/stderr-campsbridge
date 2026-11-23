@@ -1,3 +1,7 @@
+/*
+ * Connects the local form and consumes one confirmed result only while resumed.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

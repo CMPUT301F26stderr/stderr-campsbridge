@@ -1,3 +1,7 @@
+/*
+ * MS-05 uses two actual account roots over shared saved reservation/message repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,9 +53,14 @@ class ConversationFlowTest {
     private val campsites = FakeCampsiteRepository(listOf(site))
     private val bookings = FakeBookingRepository(listOf(saved))
     private val messages = FakeMessageRepository()
+
+    // 两个 TestAppHost 分别代表露营者和营地主人的手机，它们共享同一组假 repository，
+    // 就像连到同一个 Firestore。showingOwner 控制当前显示哪一个人的界面。
     private val entrantRoot = TestAppHost(campsites = campsites, bookings = bookings, messages = messages)
     private val ownerRoot = TestAppHost(campsites = campsites, bookings = bookings, messages = messages)
     private val showingOwner = mutableStateOf(false)
+
+    // 测试结束后关闭两个 app，释放监听。
 
     /** Releases both roots and their actual route/controller observations. */
     @After fun close() {
@@ -60,6 +69,9 @@ class ConversationFlowTest {
             ownerRoot.close()
         }
     }
+
+    // MS-05：露营者和营地主人通过真实界面互发消息，对方能看到；之后发送被拒绝（INACTIVE），
+    // 界面显示不能发送、输入框禁用，但历史消息仍然显示。
 
     /** MS-05: both participants exchange observed text, then unavailable Send preserves history. */
     @Test fun reservationParticipantsExchangeSavedMessagesAndKeepHistoryAfterSendingBecomesUnavailable() {
@@ -76,6 +88,7 @@ class ConversationFlowTest {
                 override fun observe(id: String): Flow<Account?> =
                     profiles.getValue(id)
             }
+        // 准备：两边用同一份账户资料，主人账户登录并切换到 OWNER 工作区。
         for (root in listOf(entrantRoot, ownerRoot)) {
             root.classifyReservation = { _, _ -> ReservationCategory.UPCOMING }
             root.orderReservations = { it }
@@ -85,6 +98,7 @@ class ConversationFlowTest {
         ownerRoot.identity.pending = CompletableDeferred(owner.id)
         runBlocking { ownerRoot.preferences.setWorkspace(owner.id, Role.OWNER) }
         bookings.ownerHandler = { bookings.records.map { it } }
+        // 假的发送：把消息写进共享记录，模拟保存成功，两边的监听都会收到。
         messages.sendHandler = { id, stay, sender, body ->
             messages.records.value =
                 messages.records.value +
@@ -106,6 +120,7 @@ class ConversationFlowTest {
                 if (showingOwner.value) ownerRoot.Content() else entrantRoot.Content()
             }
         }
+        // 露营者打开对话并输入；去预订详情再返回，草稿还在；发送后显示 Sent。
         openConversation()
         compose.onNodeWithTag("message-input").performScrollTo().performTextReplacement("Is the riverside path open?")
         compose.onNodeWithTag("conversation-reservation").performClick()
@@ -115,6 +130,7 @@ class ConversationFlowTest {
         compose.onNodeWithText("Send message").performScrollTo().performClick()
         compose.onNodeWithText("Is the riverside path open?").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Sent").assertIsDisplayed()
+        // 切换到营地主人：看到露营者的消息（Received），然后回复。
         compose.runOnIdle { showingOwner.value = true }
         openConversation()
         compose.onNodeWithText("Is the riverside path open?").performScrollTo().assertIsDisplayed()
@@ -122,8 +138,10 @@ class ConversationFlowTest {
         compose.onNodeWithTag("message-input").performScrollTo().performTextReplacement("Yes, the path is open.")
         compose.onNodeWithText("Send message").performScrollTo().performClick()
         compose.onNodeWithText("Yes, the path is open.").performScrollTo().assertIsDisplayed()
+        // 切回露营者：能看到主人的回复。
         compose.runOnIdle { showingOwner.value = false }
         compose.onNodeWithText("Yes, the path is open.").performScrollTo().assertIsDisplayed()
+        // 让发送失败（对方账户被停用）：显示不能发送、输入框禁用，历史还在。
         compose.runOnIdle {
             messages.sendHandler =
                 { _, _, _, _ -> throw PersistenceFailure(PersistenceFailure.Reason.INACTIVE, "Recipient removed") }
@@ -133,6 +151,7 @@ class ConversationFlowTest {
         compose.onNodeWithText("Sending is unavailable for this conversation.").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("message-input").performScrollTo().assertIsNotEnabled()
         compose.onNodeWithText("Is the riverside path open?").performScrollTo().assertIsDisplayed()
+        // 最后检查：双方都发过消息，都属于这个预订，并且没有误改通知的已读状态。
         compose.runOnIdle {
             assertEquals(
                 setOf(entrant.id, owner.id),
@@ -145,6 +164,8 @@ class ConversationFlowTest {
             assertTrue(ownerRoot.notifications.readRequests.isEmpty())
         }
     }
+
+    // 辅助函数：从 Reservations 列表进入预订详情，再点 Messages 打开对话。
 
     /** Opens Messages from the actual saved reservation list/detail, never a simulated host. */
     private fun openConversation() {

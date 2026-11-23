@@ -1,3 +1,7 @@
+/*
+ * Distinguishes participant message direction from read-only administrative inspection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +19,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Distinguishes participant message direction from read-only administrative inspection. */

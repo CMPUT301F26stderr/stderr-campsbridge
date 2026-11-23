@@ -1,3 +1,7 @@
+/*
+ * Reads one sender's immutable events and target context without acknowledging recipients.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.lifecycle.SavedStateHandle

@@ -1,3 +1,7 @@
+/*
+ * Consecutive nights, including both endpoints.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import java.time.LocalDate

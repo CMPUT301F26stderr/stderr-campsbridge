@@ -1,3 +1,7 @@
+/*
+ * Binds root cleanup to the original device identity and existing moderation operation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

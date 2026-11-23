@@ -15,7 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationS
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 
 /** Supplies readable win/loss/saved history and independent source/context failure variants. */
 class InboxPreviewProvider : PreviewParameterProvider<InboxUiState> {

@@ -1,3 +1,7 @@
+/*
+ * Offers independent destructive actions for the components present in a saved row.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.compose.foundation.layout.Arrangement

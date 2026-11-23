@@ -1,3 +1,7 @@
+/*
+ * Owns organizer details while keeping shared allocations outside the form.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle
@@ -5,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.AppDisplayTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.AppDisplayTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext

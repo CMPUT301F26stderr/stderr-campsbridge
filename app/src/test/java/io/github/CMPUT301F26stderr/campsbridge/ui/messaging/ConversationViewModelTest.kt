@@ -1,3 +1,7 @@
+/*
+ * Fixed MS-01 through MS-04 contracts for participant reads and retained send attempts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import androidx.lifecycle.SavedStateHandle
@@ -38,6 +42,9 @@ class ConversationViewModelTest {
     private val sites = FakeCampsiteRepository(listOf(site))
     private val bookings = FakeBookingRepository(listOf(reservation))
     private val messages = FakeMessageRepository()
+
+    // 共享测试数据：一个预订、一个营地和假的 repository。两个参与者的资料可以单独修改，
+    // 用来模拟对方账户被删除或恢复。
     private val profiles =
         mapOf(
             "entrant" to MutableStateFlow<Account?>(CampingFixtures.account()),
@@ -51,8 +58,13 @@ class ConversationViewModelTest {
             override fun observe(id: String): Flow<Account?> =
                 profiles.getValue(id)
         }
+
+    // sends 记录每次真正调用发送的请求；ids 让新消息 ID 固定为 message-1、message-2…
     private val sends = mutableListOf<MessageAttempt>()
     private var ids = 0
+
+    // 证明：消息读取失败时，已显示的历史和草稿都保留，并显示失败；用户点 Retry 且网络恢复后，
+    // 失败标志清除，历史和草稿仍然不变。
 
     /** A failed refresh keeps confirmed history and the draft until an explicit retry succeeds. */
     @Test fun messageReadFailureKeepsHistoryAndDraftDuringRetry() =
@@ -99,6 +111,9 @@ class ConversationViewModelTest {
             assertEquals("My retained draft", model.state.value.input)
         }
 
+    // MS-01：参与者能看到按时间排序的历史；对方资料缺失时名字为空但历史还在，不能发送；
+    // 资料恢复后可以发送，预订取消后仍可发送；不相关的账户看到 UNAVAILABLE，不能发送。
+
     /** MS-01: actual participants read ordered history, including cancelled/past context. */
     @Test fun actualParticipantsKeepHistoryAndMissingLabelsWithoutAnActiveStayRestriction() =
         test {
@@ -136,6 +151,9 @@ class ConversationViewModelTest {
             assertFalse(unrelated.state.value.canSend)
         }
 
+    // MS-01：预订或营地不存在→UNAVAILABLE，读取失败→FAILURE；四种情况都不能发送，
+    // 也不会被当成一个空的对话。
+
     /** MS-01: missing/failed stay or campsite sources never become empty editable history. */
     @Test fun missingAndFailedRequiredContextRemainDistinct() =
         test {
@@ -154,6 +172,9 @@ class ConversationViewModelTest {
                 assertFalse(model.state.value.canSend)
             }
         }
+
+    // MS-02：空白内容不发送；连点两次 Send 只发一次；发送中修改输入无效，正文原样冻结（含空格换行）。
+    // 发送成功后输入清空，但消息要等 repository 推送过来才出现在列表里。
 
     /** MS-02: blank/overlapping sends do nothing and one request freezes the exact tuple/body. */
     @Test fun sendFreezesOneExactRequestAndOnlyObservedRowsBecomeHistory() =
@@ -205,6 +226,9 @@ class ConversationViewModelTest {
                 gate.complete("message-1")
             }
         }
+
+    // MS-03：发送确认丢失后按同一 ID 查询，四种结果：内容相同→完成；不存在→ABSENT，
+    // 重试用同一个请求且连点只重发一次；查询失败→RETRY；内容不同→CONFLICT。期间输入框被锁定。
 
     /** MS-03: fixed reconciliation outcomes preserve IDs/body and never overwrite conflicting content. */
     @Test fun uncertainSendReconcilesIdenticalAbsentFailedAndConflictingRecords() =
@@ -268,6 +292,9 @@ class ConversationViewModelTest {
             }
         }
 
+    // MS-03：ViewModel 重建后恢复同一个请求，但不会自动发送；用户点重试才用同一个请求重发；
+    // 用户点 Edit 放弃后再发送，会得到新的消息 ID。
+
     /** MS-03: confirmed absence permits explicit Edit/new ID and restoration never auto-sends. */
     @Test fun absentAttemptCanBeExplicitlyEditedAndRestoredAttemptWaitsForRetry() =
         test {
@@ -305,6 +332,9 @@ class ConversationViewModelTest {
             assertTrue(sends.last().id != sends.first().id)
         }
 
+    // MS-04：页面不可见时不标记已读；可见后只标记对方发来的未读消息（A、B），跳过已读和自己发的。
+    // B 失败后列表刷新也不会自动重试，只有 retryReads 才重试 B，A 不会重复标记。
+
     /** MS-04: only visible/resumed incoming unread rows are acknowledged; failures require Retry. */
     @Test fun visibleRecipientAcknowledgementsDoNotReplayConfirmedReads() =
         test {
@@ -338,6 +368,9 @@ class ConversationViewModelTest {
             )
         }
 
+    // 证明：ViewModel 销毁后所有操作都被忽略：状态不变，不发送、不查询、不标记已读，
+    // 预订监听也已释放。
+
     /** Closed entries release readers and reject stale input, retry and visibility callbacks. */
     @Test fun clearedEntryCannotChangeDraftOrRestartOperations() =
         test {
@@ -367,6 +400,8 @@ class ConversationViewModelTest {
             assertEquals(0, bookings.activeRecordObservers)
         }
 
+    // 辅助函数：用假 repository 创建 ViewModel，默认是露营者 entrant，消息 ID 可预测。
+
     /** Constructs the actual participant owner with controlled IDs and no automatic lifecycle visibility.
      * @param actor Fixed current account.
      * @param key Distinct model owner.
@@ -392,6 +427,8 @@ class ConversationViewModelTest {
             },
         ).also { store.put(key, it) }
 
+    // 辅助函数：创建一条已保存的消息，用 seconds 控制时间顺序。
+
     /** Supplies ordered saved text without inventing recipients or receipt writes.
      * @param id Original message identity.
      * @param sender Actual participant.
@@ -403,6 +440,8 @@ class ConversationViewModelTest {
         seconds: Long,
     ): Message =
         Message(id, reservation.id, sender, id, CampingFixtures.now.plusSeconds(seconds))
+
+    // 每个测试结束时清空 ViewModelStore，确保所有监听和协程都停止。
 
     /** Bounds all readers and held actions to the test's actual ViewModel store.
      * @param block Fixed public contract assertions.

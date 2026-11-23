@@ -1,3 +1,7 @@
+/*
+ * Keeps required saved context separate from local owned-offer editing.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite

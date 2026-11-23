@@ -1,3 +1,7 @@
+/*
+ * Reproduces a persisted seed's winner order across Android and the scheduled worker.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import java.security.MessageDigest

@@ -1,3 +1,7 @@
+/*
+ * Supplies real-shaped local sets, required-source outcomes and explicit operation feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable
@@ -9,7 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import java.time.LocalDate
 import java.time.YearMonth

@@ -1,3 +1,7 @@
+/*
+ * Saved organizer editing through actual management, navigation and lifecycle boundaries.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.CompositionLocalProvider

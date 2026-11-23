@@ -17,9 +17,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.BookingReviewSte
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.GuestsStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.StayDatesStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.steps.TermsStep
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent

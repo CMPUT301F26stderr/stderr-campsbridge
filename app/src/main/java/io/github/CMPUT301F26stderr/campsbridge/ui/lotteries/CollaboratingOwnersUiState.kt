@@ -1,3 +1,7 @@
+/*
+ * A current or eligible new owner, with explicit identity and membership restrictions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery

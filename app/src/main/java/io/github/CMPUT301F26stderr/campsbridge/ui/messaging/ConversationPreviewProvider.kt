@@ -1,8 +1,12 @@
+/*
+ * Supplies actual-shaped participant history and explicit command recovery, without repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import java.time.Instant
 
 /** Supplies actual-shaped participant history and explicit command recovery, without repositories. */

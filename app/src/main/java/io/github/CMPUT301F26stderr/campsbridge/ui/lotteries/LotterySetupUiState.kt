@@ -6,9 +6,9 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.navigation.StepNavigation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import java.time.LocalDate
 import java.time.YearMonth

@@ -30,7 +30,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.onCalendarDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule

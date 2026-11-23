@@ -1,3 +1,7 @@
+/*
+ * Root operation/recovery state, independent of whether the profile graph still exists.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 /** Root operation/recovery state, independent of whether the profile graph still exists. */

@@ -1,3 +1,7 @@
+/*
+ * Presents explicit decline/recovery controls independently of the saved entry source.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.fillMaxWidth

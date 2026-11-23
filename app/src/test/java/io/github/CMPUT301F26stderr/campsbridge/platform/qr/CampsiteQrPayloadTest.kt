@@ -1,3 +1,7 @@
+/*
+ * Promotional links preserve saved identities and reject unrelated QR content.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import org.junit.Assert.assertEquals

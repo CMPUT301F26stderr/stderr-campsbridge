@@ -1,3 +1,7 @@
+/*
+ * Shows the saved initiator and campsite-local cancellation time on historical rows.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.material3.Text

@@ -1,3 +1,7 @@
+/*
+ * Fixed owned-set editing contracts; Firebase tests own transaction and permission invariants.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

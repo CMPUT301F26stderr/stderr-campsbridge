@@ -1,3 +1,7 @@
+/*
+ * Generates a campsite QR image on a worker thread; the caller owns the returned bitmap.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import android.graphics.Bitmap

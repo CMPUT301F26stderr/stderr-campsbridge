@@ -13,7 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.bookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth

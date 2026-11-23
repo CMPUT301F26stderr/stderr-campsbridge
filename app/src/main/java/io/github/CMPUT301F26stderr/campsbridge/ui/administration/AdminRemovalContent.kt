@@ -1,3 +1,7 @@
+/*
+ * Presents the original target's confirmation, progress and settled feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.rememberScrollState

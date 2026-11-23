@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
@@ -35,7 +36,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.CountStepper
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AccountAvatar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepProgress
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.StepScaffold
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.CheckboxRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceRow

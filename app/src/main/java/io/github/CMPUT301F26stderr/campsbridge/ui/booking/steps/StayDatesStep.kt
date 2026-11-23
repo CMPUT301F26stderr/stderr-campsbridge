@@ -23,10 +23,10 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.bookingCalendarState
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.StayDateRangeCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent

@@ -1,3 +1,7 @@
+/*
+ * Owns one participating owner's desired offer set without editing shared details.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

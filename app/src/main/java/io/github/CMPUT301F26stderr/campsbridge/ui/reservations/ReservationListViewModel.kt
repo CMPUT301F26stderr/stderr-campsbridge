@@ -14,8 +14,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategor
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.awaitDeadline
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.VisibleImageSlots
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -86,6 +86,26 @@ class ReservationListViewModel(
         selectedCategory.value = category
         savedState[CATEGORY_KEY] = category.name
         publish()
+    }
+
+    /** Whether this presentation offers the reservation map (WOW 1 is an entrant feature). */
+    val canShowMap = context == ReservationContext.ENTRANT
+    private val selectedView =
+        MutableStateFlow(
+            savedState
+                .get<String>(VIEW_KEY)
+                ?.let { value -> ReservationListView.entries.firstOrNull { it.name == value } }
+                ?.takeIf { canShowMap } ?: ReservationListView.LIST,
+        )
+    val view = selectedView.asStateFlow()
+
+    /** Switches between the list and the map over the same rows, without reading or writing records.
+     * @param view Requested presentation; ignored where the map isn't offered.
+     */
+    fun selectView(view: ReservationListView) {
+        if (closed || !canShowMap || view == selectedView.value) return
+        selectedView.value = view
+        savedState[VIEW_KEY] = view.name
     }
 
     private val selectedCampsite =
@@ -425,5 +445,6 @@ class ReservationListViewModel(
     private companion object {
         const val FILTER_KEY = "reservationCampsite"
         const val CATEGORY_KEY = "reservationCategory"
+        const val VIEW_KEY = "reservationView"
     }
 }

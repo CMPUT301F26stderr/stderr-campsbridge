@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.LocalNavigationShapes
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.LocalNavigationShapes
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** One visible option; stable identity is independent of its localized label.

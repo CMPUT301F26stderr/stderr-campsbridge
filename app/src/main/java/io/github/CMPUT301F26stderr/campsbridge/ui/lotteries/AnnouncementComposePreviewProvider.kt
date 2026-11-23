@@ -1,3 +1,7 @@
+/*
+ * Supplies passive original-owner announcement and recovery states without repository writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

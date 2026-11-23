@@ -1,3 +1,7 @@
+/*
+ * Keeps root confirmation/cleanup feedback mounted when profile navigation disappears.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.material3.AlertDialog

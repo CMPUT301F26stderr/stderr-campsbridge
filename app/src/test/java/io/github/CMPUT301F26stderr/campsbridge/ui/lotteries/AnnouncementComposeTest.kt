@@ -1,3 +1,7 @@
+/*
+ * AN-01 through AN-03 establish local composition, complete attempts and explicit recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

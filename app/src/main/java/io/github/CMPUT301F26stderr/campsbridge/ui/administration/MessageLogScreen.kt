@@ -1,3 +1,7 @@
+/*
+ * Lists actual saved messages and keeps local filtering separate from linked-read recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Arrangement

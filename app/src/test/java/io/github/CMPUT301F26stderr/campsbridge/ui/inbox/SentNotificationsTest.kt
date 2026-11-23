@@ -1,3 +1,7 @@
+/*
+ * ST-01 and ST-02 preserve immutable sender facts and keep recipient writes outside history.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.lifecycle.SavedStateHandle

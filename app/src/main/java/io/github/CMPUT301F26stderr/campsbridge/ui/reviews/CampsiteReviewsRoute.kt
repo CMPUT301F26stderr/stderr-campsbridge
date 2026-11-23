@@ -1,3 +1,7 @@
+/*
+ * Connects the saved feedback owner to explicit actions and the shared Back callback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.compose.runtime.Composable

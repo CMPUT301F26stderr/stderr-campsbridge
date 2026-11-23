@@ -1,3 +1,7 @@
+/*
+ * Displays sender facts and independent linked-content recovery without recipient read state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.foundation.clickable
@@ -25,7 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.notificationTitleResource
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent

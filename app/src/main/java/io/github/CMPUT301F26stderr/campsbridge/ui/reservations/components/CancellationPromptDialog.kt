@@ -18,8 +18,8 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.CancellationPhase

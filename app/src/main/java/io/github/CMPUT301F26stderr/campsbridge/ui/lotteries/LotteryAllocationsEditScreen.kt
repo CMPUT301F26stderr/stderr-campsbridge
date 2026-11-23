@@ -1,3 +1,7 @@
+/*
+ * Displays this owner's complete local set, with one explicit saved-lottery replacement.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationGroup
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
@@ -23,8 +29,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNoti
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.AllocationSummary
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 

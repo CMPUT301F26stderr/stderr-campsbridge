@@ -1,3 +1,7 @@
+/*
+ * The actual Browse route and production factory reach only the explicit recovery boundary.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.runtime.remember

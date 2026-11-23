@@ -1,3 +1,7 @@
+/*
+ * Checks list outcomes and long saved text at ordinary and enlarged configured scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.runtime.Composable

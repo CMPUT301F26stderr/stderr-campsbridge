@@ -1,3 +1,7 @@
+/*
+ * Gives Google's fixed-size calendar room on narrow screens and scales its controls together.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import androidx.compose.foundation.horizontalScroll

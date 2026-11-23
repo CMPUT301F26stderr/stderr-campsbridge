@@ -1,3 +1,7 @@
+/*
+ * Checks shared Back gesture behavior provided by [AppScreen].
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import androidx.compose.foundation.layout.Box

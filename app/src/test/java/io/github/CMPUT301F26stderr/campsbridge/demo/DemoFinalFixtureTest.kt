@@ -1,3 +1,7 @@
+/*
+ * Exercises linked Final scenarios through the same local store used by every demo person.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo
 
 import io.github.CMPUT301F26stderr.campsbridge.data.account.AccountDocument

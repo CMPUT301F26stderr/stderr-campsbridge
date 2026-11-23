@@ -1,3 +1,7 @@
+/*
+ * Preserves exclusive view choices and reachable navigation through the component port.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import android.view.WindowManager
@@ -38,7 +42,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigationItem
-import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.components.DiscoveryToolbar
+import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.DiscoveryToolbar
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

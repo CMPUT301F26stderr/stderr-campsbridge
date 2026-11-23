@@ -1,3 +1,7 @@
+/*
+ * Connects explicit saved-details actions and resumed navigation outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

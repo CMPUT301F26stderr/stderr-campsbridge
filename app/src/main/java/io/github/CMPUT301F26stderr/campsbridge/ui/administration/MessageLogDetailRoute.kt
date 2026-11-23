@@ -1,3 +1,7 @@
+/*
+ * Reads an actual saved message independently of the list's local query.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.runtime.Composable

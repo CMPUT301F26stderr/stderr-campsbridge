@@ -1,3 +1,7 @@
+/*
+ * Supplies read-only sender history and actual relationship resolution from the host's repositories.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

@@ -1,3 +1,7 @@
+/*
+ * Checks saved feedback, retained author input and reachable recovery at both supported preview scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.compose.runtime.Composable

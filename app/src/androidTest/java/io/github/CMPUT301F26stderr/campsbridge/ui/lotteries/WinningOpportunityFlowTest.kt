@@ -1,3 +1,7 @@
+/*
+ * Winning actions use real saved readers, registered booking and the shared account root.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.ui.test.assertIsDisplayed

@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.icons.QrCode
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -38,13 +37,14 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.components.CampsiteFacts
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationGroup
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.QrCode
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.StatusLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 

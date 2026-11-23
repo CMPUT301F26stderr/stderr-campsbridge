@@ -1,3 +1,7 @@
+/*
+ * Displays the grouped saved editor at normal and enlarged type.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.material3.SnackbarHostState

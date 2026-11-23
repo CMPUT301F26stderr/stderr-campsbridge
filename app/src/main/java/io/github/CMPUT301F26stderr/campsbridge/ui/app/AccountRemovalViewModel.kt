@@ -1,3 +1,7 @@
+/*
+ * Owns one root removal beyond profile/session navigation disposal.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.lifecycle.SavedStateHandle

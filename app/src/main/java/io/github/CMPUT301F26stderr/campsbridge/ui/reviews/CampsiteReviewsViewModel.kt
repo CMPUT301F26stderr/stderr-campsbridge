@@ -1,3 +1,7 @@
+/*
+ * Owns one saved campsite's observed feedback and explicit independent author actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.lifecycle.SavedStateHandle

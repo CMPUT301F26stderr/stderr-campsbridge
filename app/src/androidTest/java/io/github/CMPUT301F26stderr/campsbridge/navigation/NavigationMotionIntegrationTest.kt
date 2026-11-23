@@ -1,3 +1,7 @@
+/*
+ * Exercises Back motion through production destinations and a persistent Material navigation bar.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.DisposableEffect
@@ -30,7 +34,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationS
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule

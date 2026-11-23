@@ -1,3 +1,7 @@
+/*
+ * Confirmed owner membership across two real hosting roots sharing one saved source.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.key
@@ -34,6 +38,9 @@ import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate
 
+// Compose UI 测试: 两个真实的 app 界面 (组织者和新加的营地主) 共用同一个假的抽签数据,
+// 检查从界面上保存成员后, 两个营地主都能看到同一个抽签。
+
 /** Confirmed owner membership across two real hosting roots sharing one saved source. */
 class CollaboratingOwnersFlowTest {
     @get:Rule val compose = createComposeRule()
@@ -65,10 +72,16 @@ class CollaboratingOwnersFlowTest {
             participantOwnerIds = setOf(organizer.id, contributor.id),
         )
     private val lotteries = FakeLotteryRepository(listOf(lottery))
+
+    // 两个 app 根界面共用 lotteries; showingCoowner 决定显示组织者的还是 Sam Rivera 的界面。
     private val organizerRoot = TestAppHost(campsites, lotteries)
     private val coownerRoot = TestAppHost(campsites, lotteries)
     private val showingCoowner = mutableStateOf(false)
+
+    // 记录每次保存的成员集合, 用来检查只保存了一次以及保存的内容。
     private val memberWrites = mutableListOf<Set<String>>()
+
+    // 测试结束后关闭两个根界面, 释放所有数据监听。
 
     /** Closes both actual roots and every shared saved-record observer. */
     @After fun close() {
@@ -78,8 +91,13 @@ class CollaboratingOwnersFlowTest {
         }
     }
 
+    // 证明: 组织者打开"Collaborating owners"页面, 自己和有营地的 Taylor 不能取消;
+    // 勾选 Sam 后按返回并放弃, 不会保存; 再次勾选 Sam 并点 Save owners, 只保存一次;
+    // 切换到 Sam 的界面后, 他的抽签列表里能看到同一个抽签。
+
     /** CO-04: cancel and Save use the real picker; both owners discover the same saved ID. */
     @Test fun savedMembershipIsSharedAcrossBothHostingLists() {
+        // 准备: 两个界面分别以组织者和 Sam 登录; 假的保存操作检查请求来自组织者并更新成员。
         compose.runOnIdle {
             val profiles = MutableStateFlow(listOf(organizer, addition, contributor))
             val accountTable =
@@ -110,6 +128,7 @@ class CollaboratingOwnersFlowTest {
         compose.setContent {
             key(showingCoowner.value) { if (showingCoowner.value) coownerRoot.Content() else organizerRoot.Content() }
         }
+        // 组织者进入抽签详情, 打开合作营地主页面, 检查不能修改的行。
         compose.onNodeWithText("Lotteries").performClick()
         compose.onNodeWithText(lottery.title).performClick()
         compose.onNodeWithText("Collaborating owners").performScrollTo().performClick()
@@ -117,15 +136,18 @@ class CollaboratingOwnersFlowTest {
         compose.onNodeWithText("Organizer").assertIsDisplayed()
         compose.onNodeWithText(contributor.name).assertIsNotEnabled()
         compose.onNodeWithText("Ask this owner to clear their campsites first.").assertIsDisplayed()
+        // 勾选 Sam 后按返回并选择放弃: 不应该有任何保存。
         compose.onNodeWithText(addition.name).performScrollTo().performClick()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Discard changes").performClick()
         compose.runOnIdle { assertTrue(memberWrites.isEmpty()) }
+        // 重新打开: 之前的勾选已被放弃 (Sam 是未勾选); 这次勾选 Sam 并点 Save owners。
         compose.onNodeWithText("Collaborating owners").performScrollTo().performClick()
         compose.onNodeWithText(addition.name).assertIsOff().performClick()
         compose.onNodeWithText("Save owners").performClick()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText(lottery.title).assertIsDisplayed()
+        // 切换到 Sam 的界面: 他现在是成员, 能在抽签列表里打开同一个抽签。
         compose.runOnIdle { showingCoowner.value = true }
         compose.onNodeWithText("Lotteries").performClick()
         compose.onNodeWithText(lottery.title).assertIsDisplayed().performClick()

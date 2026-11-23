@@ -1,3 +1,7 @@
+/*
+ * Supplies owner identities, lock reasons and retained form feedback without repository access.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

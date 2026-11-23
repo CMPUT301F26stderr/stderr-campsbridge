@@ -1,3 +1,7 @@
+/*
+ * Checks conversation positioning and composer access through the real route and controller.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import androidx.compose.runtime.CompositionLocalProvider
@@ -24,7 +28,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After

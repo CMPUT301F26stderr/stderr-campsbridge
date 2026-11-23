@@ -1,3 +1,7 @@
+/*
+ * Delivers explicit saved-target selection only from the resumed Sent page.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.runtime.Composable

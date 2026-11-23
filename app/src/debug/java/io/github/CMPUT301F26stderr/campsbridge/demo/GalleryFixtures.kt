@@ -14,7 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
-import io.github.CMPUT301F26stderr.campsbridge.platform.assets.SceneryPhoto
+import io.github.CMPUT301F26stderr.campsbridge.platform.SceneryPhoto
 import java.time.Instant
 import java.time.LocalDate
 

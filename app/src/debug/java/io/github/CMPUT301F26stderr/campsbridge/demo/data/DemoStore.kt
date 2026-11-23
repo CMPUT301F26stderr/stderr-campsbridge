@@ -29,7 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_ALLOWED
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.NOT_FOUND
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.requireOperation
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.ObservableClock
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.ObservableClock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext

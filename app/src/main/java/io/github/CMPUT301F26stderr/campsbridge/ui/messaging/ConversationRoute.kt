@@ -1,3 +1,7 @@
+/*
+ * Connects actual visibility to recipient reads and keeps navigation in the shared Back owner.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import androidx.compose.runtime.Composable

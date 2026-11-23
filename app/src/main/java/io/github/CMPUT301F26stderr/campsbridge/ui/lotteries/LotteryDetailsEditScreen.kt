@@ -1,3 +1,7 @@
+/*
+ * Shared details groups, separate from each owner's campsite allocation editor.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.annotation.StringRes
@@ -15,8 +19,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationGroup
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
@@ -24,8 +30,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.NoticeTone
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.ActionFooter
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing

@@ -22,12 +22,12 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.bookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.validateStaySelection
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.navigation.StepNavigation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.parsePositiveCount
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

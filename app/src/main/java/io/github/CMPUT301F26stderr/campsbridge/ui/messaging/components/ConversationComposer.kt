@@ -1,3 +1,7 @@
+/*
+ * Arranges retained input and explicit send recovery without owning a submission.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging.components
 
 import androidx.compose.foundation.layout.Arrangement

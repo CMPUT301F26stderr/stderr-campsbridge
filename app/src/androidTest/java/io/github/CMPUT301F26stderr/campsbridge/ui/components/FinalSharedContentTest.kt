@@ -1,3 +1,7 @@
+/*
+ * Fixed content and callback contracts for the Final shared components.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import androidx.compose.foundation.layout.Column
@@ -19,7 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.NightRange
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.formatNightRange
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.AllocationSummary

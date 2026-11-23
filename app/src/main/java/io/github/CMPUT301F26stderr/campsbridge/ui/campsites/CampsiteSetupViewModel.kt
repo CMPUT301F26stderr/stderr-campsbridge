@@ -17,6 +17,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.SelectedPhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.validateCampsiteDetails
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageOperation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
@@ -45,7 +46,7 @@ private const val SETUP_KEY = "campsiteSetup."
  * @param clock Deterministic initial calendar month.
  * @param savedState Small editable restoration state.
  * @param newId Allocates one stable identity only after the first valid save action.
- * @param remainingAvailabilityEdits Reserved F08 comparison; null blocks requested inventory saves.
+ * @param remainingAvailabilityEdits F08 comparison helper; null blocks requested inventory saves.
  */
 class CampsiteSetupViewModel(
     private val ownerId: String,
@@ -468,7 +469,7 @@ class CampsiteSetupViewModel(
             } else {
                 CampsiteStep.entries[current.draft.step.ordinal + 1]
             }
-        edit { it.copy(step = step, returnToReview = false) }
+        edit(StepNavigation.FORWARD) { it.copy(step = step, returnToReview = false) }
     }
 
     /** Returns within the draft, requesting explicit abandonment from its first step. */
@@ -477,7 +478,7 @@ class CampsiteSetupViewModel(
         if (current.draft.step == CampsiteStep.BASICS && !current.draft.returnToReview) {
             requestExit()
         } else {
-            edit {
+            edit(StepNavigation.BACK) {
                 it.copy(
                     step =
                         if (it.returnToReview) {
@@ -498,7 +499,7 @@ class CampsiteSetupViewModel(
         if (step == CampsiteStep.REVIEW) return
         val current = editable() ?: return
         if (current.draft.step != CampsiteStep.REVIEW) return
-        edit { it.copy(step = step, returnToReview = true) }
+        edit(StepNavigation.FORWARD) { it.copy(step = step, returnToReview = true) }
     }
 
     /** Requests exit, asking before abandoning changed input or staged photo intent. */
@@ -690,11 +691,21 @@ class CampsiteSetupViewModel(
         }
 
     /** Replaces only local draft values and resets obsolete step feedback.
+     * @param navigation Action entering a different step; field edits retain the last action.
      * @param transform Field/step edit to apply to current input.
      */
-    private fun edit(transform: (CampsiteDraft) -> CampsiteDraft) {
+    private fun edit(
+        navigation: StepNavigation? = null,
+        transform: (CampsiteDraft) -> CampsiteDraft,
+    ) {
         editable()?.let {
-            publish(it.copy(draft = transform(it.draft), errors = CampsiteDetailsInput.Errors()))
+            publish(
+                it.copy(
+                    draft = transform(it.draft),
+                    errors = CampsiteDetailsInput.Errors(),
+                    stepNavigation = navigation ?: it.stepNavigation,
+                ),
+            )
         }
     }
 

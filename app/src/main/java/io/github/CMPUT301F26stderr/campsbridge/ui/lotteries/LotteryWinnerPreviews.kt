@@ -1,3 +1,7 @@
+/*
+ * Supplies saved multiple-offer facts with long names, gaps and independent recovery states.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

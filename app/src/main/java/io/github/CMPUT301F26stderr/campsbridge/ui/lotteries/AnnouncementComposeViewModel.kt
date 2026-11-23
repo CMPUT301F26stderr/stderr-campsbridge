@@ -1,3 +1,7 @@
+/*
+ * Owns one participating owner's local announcement and retained explicit send request.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle

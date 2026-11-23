@@ -1,3 +1,7 @@
+/*
+ * AR-01 through AR-03 keep confirmed cleanup alive and bind restored recovery to its original actor.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.lifecycle.SavedStateHandle

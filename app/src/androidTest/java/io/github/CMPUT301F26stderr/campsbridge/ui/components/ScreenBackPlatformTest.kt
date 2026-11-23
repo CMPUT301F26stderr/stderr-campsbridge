@@ -1,3 +1,7 @@
+/*
+ * Keeps keyboard and modal Back handling ahead of page navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi

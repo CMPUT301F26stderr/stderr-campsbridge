@@ -1,3 +1,7 @@
+/*
+ * Saved-target reads stay separate from a retained raw details form.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput

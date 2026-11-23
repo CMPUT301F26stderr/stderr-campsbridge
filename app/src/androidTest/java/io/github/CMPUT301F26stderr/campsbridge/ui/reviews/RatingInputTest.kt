@@ -1,3 +1,7 @@
+/*
+ * Numeric single-choice semantics and explicit callbacks for a caller-owned rating.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.compose.runtime.mutableStateOf

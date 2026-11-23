@@ -1,3 +1,7 @@
+/*
+ * Binds one saved participant conversation to the host's existing repository contracts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

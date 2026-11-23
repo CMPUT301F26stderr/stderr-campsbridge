@@ -35,7 +35,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits as pendingAvailabilityEdits
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits as findRemainingAvailabilityEdits
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -272,7 +272,7 @@ fun campsiteSetupViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String?,
-    remainingAvailabilityEdits: AvailabilityDifference? = ::pendingAvailabilityEdits,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::findRemainingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
@@ -298,7 +298,7 @@ fun availabilityViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String,
-    remainingAvailabilityEdits: AvailabilityDifference? = ::pendingAvailabilityEdits,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::findRemainingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {

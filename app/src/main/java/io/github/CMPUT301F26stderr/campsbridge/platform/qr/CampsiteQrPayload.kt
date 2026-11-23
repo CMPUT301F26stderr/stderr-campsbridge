@@ -1,3 +1,7 @@
+/*
+ * Stable promotional links identify a campsite without embedding its editable details.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import java.net.URI

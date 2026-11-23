@@ -13,7 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
-import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
+import io.github.CMPUT301F26stderr.campsbridge.platform.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationAlert
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermissionState

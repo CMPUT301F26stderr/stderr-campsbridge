@@ -15,7 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.AppDisplayTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.AppDisplayTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import kotlinx.coroutines.CompletableDeferred

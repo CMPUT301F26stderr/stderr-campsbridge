@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
 
 /** Separate winner count and optional waitlist capacity inputs.

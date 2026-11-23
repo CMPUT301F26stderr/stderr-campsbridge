@@ -1,3 +1,7 @@
+/*
+ * Registers the saved audience child without copying a recipient list into arguments.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.lifecycle.ViewModelProvider

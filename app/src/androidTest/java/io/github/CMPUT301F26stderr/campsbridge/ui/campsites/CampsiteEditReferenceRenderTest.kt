@@ -1,3 +1,7 @@
+/*
+ * Captures the reference screens with the same font and control scaling as their previews.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import android.graphics.Bitmap

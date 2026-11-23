@@ -1,3 +1,7 @@
+/*
+ * Fixed saved-listing contracts for retained input and explicit update operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

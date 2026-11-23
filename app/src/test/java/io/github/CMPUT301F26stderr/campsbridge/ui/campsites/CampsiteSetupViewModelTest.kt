@@ -18,10 +18,10 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PriceInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PriceInput
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent

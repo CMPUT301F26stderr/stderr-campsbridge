@@ -1,3 +1,7 @@
+/*
+ * Supplies passive author/reader states with separate component and action outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

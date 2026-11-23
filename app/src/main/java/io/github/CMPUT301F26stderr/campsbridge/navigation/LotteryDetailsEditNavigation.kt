@@ -1,3 +1,7 @@
+/*
+ * Registers one saved organizer editor shared by its menu and field children.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

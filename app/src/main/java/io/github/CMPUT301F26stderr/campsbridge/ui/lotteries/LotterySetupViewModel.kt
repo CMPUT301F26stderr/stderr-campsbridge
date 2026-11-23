@@ -12,11 +12,11 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteRepositor
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.AppDisplayTime
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.navigation.StepNavigation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.AppDisplayTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.parsePositiveCount
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job

@@ -1,3 +1,7 @@
+/*
+ * Keeps the reader's position while displaying confirmed history and explicit read recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -34,8 +38,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationAvailability
 import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.MessageSendPhase
-import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.components.MessagePresentation
-import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.components.MessageRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import kotlinx.coroutines.launch
 

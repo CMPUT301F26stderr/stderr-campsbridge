@@ -1,3 +1,7 @@
+/*
+ * Global recovery available only through an explicit administrator request.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.domain.maintenance
 
 /** Global recovery available only through an explicit administrator request. */

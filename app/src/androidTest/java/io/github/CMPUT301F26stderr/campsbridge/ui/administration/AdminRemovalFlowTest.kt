@@ -1,3 +1,7 @@
+/*
+ * Shared confirmation contracts and real gallery-to-inspection image removal navigation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Column
