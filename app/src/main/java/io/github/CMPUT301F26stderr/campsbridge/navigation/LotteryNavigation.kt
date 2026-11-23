@@ -21,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoiceRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
@@ -192,6 +193,16 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                                 null
                             },
                         onBooking = if (context == LotteryContext.ENTRANT) onBooking else null,
+                        onChooseCampsite =
+                            if (context == LotteryContext.ENTRANT && onBooking != null) {
+                                {
+                                    controller.navigate(
+                                        AppDestination.lotteryCampsiteChoice(id),
+                                    ) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
                         onParticipants =
                             if (context == LotteryContext.OWNER) {
                                 {
@@ -237,6 +248,15 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                                 }
                             },
                     )
+                }
+            }
+            if (context == LotteryContext.ENTRANT && onBooking != null) {
+                composable("$pattern/choose-campsite") { entry ->
+                    val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                    val id = requireNotNull(parent.arguments?.getString("lotteryId"))
+                    val model: LotteryDetailViewModel =
+                        viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
+                    LotteryCampsiteChoiceRoute(model, { controller.popBackStack() }, onBooking)
                 }
             }
             if (context == LotteryContext.OWNER) {

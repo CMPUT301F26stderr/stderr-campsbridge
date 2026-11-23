@@ -339,7 +339,7 @@ internal class BookingSources(
         }
         val site = campsite
         if (site == null || site.id != campsiteId || !site.isPublished ||
-            site.ownerId != draw.ownerId
+            site.ownerId !in draw.participantOwnerIds
         ) {
             return BookingUiState.Unavailable(BookingUnavailableReason.CAMPSITE_UNAVAILABLE)
         }

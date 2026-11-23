@@ -41,6 +41,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param reservationDetailFactory Factory for a saved aggregate, keyed by account/ID/context.
  * @param reservationListFactory Active-list dependencies keyed by account/context/filter.
  * @param inboxFactory Factory for the ready account receipt owner, independent of workspace.
+ * @param sentFactory Independent sender history for that same ready account.
  * @param accountRemoval Activity-owned operation that outlives the profile graph.
  * @param bookingFactory Factory for a winner wizard keyed by account, lottery and campsite IDs.
  * @param adminBrowseFactory Factory for the account-hosted read-only admin Browse graph.
@@ -91,6 +92,7 @@ fun AppRoot(
     lotteryAllocationsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
     announcementComposeFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
     collaboratingOwnersFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    sentFactory: ((String) -> ViewModelProvider.Factory)? = null,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
     val removal by accountRemoval.state.collectAsStateWithLifecycle()
@@ -224,6 +226,10 @@ fun AppRoot(
                                 collaboratingOwnersFactory =
                                     collaboratingOwnersFactory?.let { factory ->
                                         { id -> factory(session.account.id, id) }
+                                    },
+                                sentFactory =
+                                    sentFactory?.let { factory ->
+                                        remember(session.account.id) { factory(session.account.id) }
                                     },
                             )
                         }

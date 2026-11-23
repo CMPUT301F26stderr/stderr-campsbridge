@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * @param announcementSent Whether the child confirmed announcement storage.
  * @param onDismissAnnouncement Clears the local saved-result feedback.
  * @param onEditOwners Opens saved member context and the organizer's membership picker.
+ * @param onChooseCampsite Opens the saved multiple-offer child.
  */
 @Composable
 fun LotteryDetailRoute(
@@ -45,8 +46,10 @@ fun LotteryDetailRoute(
     announcementSent: Boolean = false,
     onDismissAnnouncement: () -> Unit = {},
     onEditOwners: (() -> Unit)? = null,
+    onChooseCampsite: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
+    val decline by model.decline.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
         .collectAsStateWithLifecycle()
     LaunchedEffect(lifecycle) {
@@ -77,6 +80,12 @@ fun LotteryDetailRoute(
                 announcementSent = announcementSent,
                 onDismissAnnouncement = onDismissAnnouncement,
                 onEditOwners = onEditOwners,
+                onChooseCampsite = onChooseCampsite,
+                decline = decline,
+                onRequestDecline = model::requestDecline,
+                onDismissDecline = model::dismissDecline,
+                onConfirmDecline = model::confirmDecline,
+                onRetryDecline = model::retryDecline,
             )
         }
 

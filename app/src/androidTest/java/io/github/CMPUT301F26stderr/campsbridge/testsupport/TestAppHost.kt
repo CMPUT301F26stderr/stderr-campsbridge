@@ -59,6 +59,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.SentNotificationsViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.AnnouncementComposeViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.CollaboratingOwnersViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocationsEditViewModel
@@ -366,6 +367,19 @@ class TestAppHost(
                 notificationPermission,
                 notificationEntries,
                 accountRemoval = accountRemoval ?: removal,
+                sentFactory = { actorId ->
+                    viewModelFactory {
+                        initializer {
+                            SentNotificationsViewModel(
+                                actorId,
+                                notifications,
+                                NotificationContentLoader(notifications, lotteries, bookings, messages),
+                                ConversationContextResolver(campsites),
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
                 adminRemovalFactory = { adminId ->
                     viewModelFactory {
                         initializer {
