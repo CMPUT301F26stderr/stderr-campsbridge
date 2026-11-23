@@ -11,6 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.sortInboxItems
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.unreadInboxCount
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 
 /** Creates an InboxViewModel for the given account.
  * @param services Current host's repository interfaces.
@@ -25,6 +26,7 @@ fun inboxViewModelFactory(
             InboxViewModel(
                 accountId = accountId,
                 notifications = services.repositories.notifications,
+                conversationResolver = ConversationContextResolver(services.repositories.campsites),
                 sorter = ::sortInboxItems,
                 countUnread = ::unreadInboxCount,
                 content =

@@ -7,6 +7,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
+import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Announcement
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.InboxReceipt
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
@@ -140,7 +141,21 @@ class InboxPreviewProvider : PreviewParameterProvider<InboxUiState> {
                                     subject = NotificationSubject(SubjectType.MESSAGE, "thread"),
                                 ),
                                 null,
-                                NotificationSubjectContent.Unsupported,
+                                NotificationSubjectContent.MessageContent(
+                                    Message(
+                                        "thread",
+                                        reservation.id,
+                                        "owner",
+                                        "The riverside trail is open again.\nPlease use the east gate when you arrive.",
+                                        at,
+                                    ),
+                                    reservation.copy(
+                                        bookedCampsite =
+                                            reservation.bookedCampsite.copy(
+                                                name = "River Camp beside the northern meadow and lakeshore",
+                                            ),
+                                    ),
+                                ),
                             ),
                         ),
                 ),

@@ -13,6 +13,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.sortInboxItems
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.logic.unreadInboxCount
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -26,13 +27,15 @@ import kotlinx.coroutines.launch
  * @param accountId Fixed active account; workspace changes do not change receipt ownership.
  * @param notifications Receipt observation and explicit first-read acknowledgements.
  * @param content Shared immutable event/context assembler.
- * @param sorter Reserved loaded-event ordering; null keeps its dependency explicit.
- * @param countUnread Reserved count over all original receipts; null is never a fabricated zero.
+ * @param conversationResolver Confirms the actual campsite owner before a message row can open.
+ * @param sorter Loaded-event ordering; null exposes a missing dependency in isolated hosts.
+ * @param countUnread Count over all original receipts; null exposes missing support rather than a fabricated zero.
  */
 class InboxViewModel(
     val accountId: String,
     private val notifications: NotificationRepository,
     private val content: NotificationContentLoader,
+    private val conversationResolver: ConversationContextResolver,
     private val sorter: ((List<InboxItem>) -> List<InboxItem>)? = ::sortInboxItems,
     private val countUnread: ((List<InboxReceipt>) -> Int)? = ::unreadInboxCount,
 ) : ViewModel() {
@@ -107,7 +110,8 @@ class InboxViewModel(
         val receipt = receipt(notificationId) ?: return
         val loaded = results[notificationId] as? NotificationContent.Loaded ?: return
         if (loaded.subject !is NotificationSubjectContent.LotteryContent &&
-            loaded.subject !is NotificationSubjectContent.ReservationContent
+            loaded.subject !is NotificationSubjectContent.ReservationContent &&
+            loaded.subject !is NotificationSubjectContent.MessageContent
         ) {
             return
         }
@@ -195,17 +199,7 @@ class InboxViewModel(
         loading.add(id)
         val pending =
             viewModelScope.launch(start = CoroutineStart.LAZY) {
-                val result =
-                    content.load(id).let { loaded ->
-                        if (loaded is NotificationContent.Loaded &&
-                            loaded.subject is NotificationSubjectContent.MessageContent
-                        ) {
-                            // Keep message history read-only until conversation navigation is connected.
-                            loaded.copy(subject = NotificationSubjectContent.Unsupported)
-                        } else {
-                            loaded
-                        }
-                    }
+                val result = resolveMessage(content.load(id))
                 currentCoroutineContext().ensureActive()
                 if (closed || contentVersions[id] != version) return@launch
                 results[id] = result
@@ -214,6 +208,28 @@ class InboxViewModel(
             }
         contentJobs[id] = pending
         return pending
+    }
+
+    /** Retains event facts while separating unavailable or failed conversation relationships.
+     * @param loaded Immutable event and independently read saved subject.
+     */
+    private suspend fun resolveMessage(loaded: NotificationContent): NotificationContent {
+        if (loaded !is NotificationContent.Loaded) return loaded
+        val subject = loaded.subject as? NotificationSubjectContent.MessageContent ?: return loaded
+        val resolved =
+            try {
+                val context = conversationResolver.resolve(subject.reservation, accountId)
+                if (context != null && subject.message.senderId in context.participantIds) {
+                    subject
+                } else {
+                    NotificationSubjectContent.Unavailable
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                NotificationSubjectContent.Failure
+            }
+        return loaded.copy(subject = resolved)
     }
 
     /** Claims only the account/receipt acknowledgement; navigation has an independent lifetime.

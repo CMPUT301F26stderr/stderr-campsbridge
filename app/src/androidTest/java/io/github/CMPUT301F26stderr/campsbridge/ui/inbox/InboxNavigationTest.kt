@@ -29,6 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import kotlinx.coroutines.CompletableDeferred
@@ -243,29 +244,29 @@ class InboxNavigationTest {
         }
     }
 
-    /**
-     * Unsupported subjects remain readable without a dead link or implicit read
-     * acknowledgement.
-     */
-    @Test fun unsupportedMessageHistoryHasNoClickableTarget() {
+    /** NE-04: a received message opens its saved participant conversation and separate reads. */
+    @Test fun messageHistoryOpensItsSavedConversation() {
         val reservation = previewReservation().copy(id = "message-stay", entrantId = "account-1")
         host.bookings.records.value = listOf(reservation)
+        host.campsites.records.value = listOf(sampleCampsite(reservation.campsiteId, "owner"))
         host.messages.records.value = listOf(Message("thread", reservation.id, "owner", "Use the east gate", now))
         val event =
             winner.copy(
                 id = "message",
+                senderId = "owner",
                 type = NotificationType.NEW_MESSAGE,
                 subject = NotificationSubject(SubjectType.MESSAGE, "thread"),
             )
         history(event)
+        host.notifications.markReadHandler = { _, _ -> Unit }
         start()
-        compose.onNodeWithTag("inbox-event-message").assertHasNoClickAction()
-        compose
-            .onNodeWithText(
-                "This notification has no supported destination in this build.",
-            ).assertIsDisplayed()
-        compose.onNodeWithText("Messages").assertDoesNotExist()
-        compose.runOnIdle { assertTrue(host.notifications.readRequests.isEmpty()) }
+        compose.onNodeWithTag("inbox-event-message").performClick()
+        compose.onNodeWithText("Messages").assertIsDisplayed()
+        compose.onNodeWithText("Use the east gate").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf("account-1" to event.id), host.notifications.readRequests)
+            assertEquals(listOf("thread" to "account-1"), host.messages.readRequests)
+        }
     }
 
     /** An unknown-time receipt is a readable non-target and retries only its missing event. */
