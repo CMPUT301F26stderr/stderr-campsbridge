@@ -49,6 +49,7 @@ fun LotteryDetailRoute(
     onChooseCampsite: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
+    val decline by model.decline.collectAsStateWithLifecycle()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow
         .collectAsStateWithLifecycle()
     LaunchedEffect(lifecycle) {
@@ -80,6 +81,11 @@ fun LotteryDetailRoute(
                 onDismissAnnouncement = onDismissAnnouncement,
                 onEditOwners = onEditOwners,
                 onChooseCampsite = onChooseCampsite,
+                decline = decline,
+                onRequestDecline = model::requestDecline,
+                onDismissDecline = model::dismissDecline,
+                onConfirmDecline = model::confirmDecline,
+                onRetryDecline = model::retryDecline,
             )
         }
 
