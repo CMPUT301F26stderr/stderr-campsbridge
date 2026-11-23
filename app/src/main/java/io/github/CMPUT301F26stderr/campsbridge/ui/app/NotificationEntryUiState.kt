@@ -50,9 +50,11 @@ sealed interface NotificationEntryUiState {
     /** The exact target can be opened after the actual workspace/navigation host is ready.
      * @param entry Original envelope whose subject was checked against the saved event.
      * @param workspace Presentation chosen from saved relationship and current capabilities.
+     * @param reservationId Distinct resolved conversation target; the envelope keeps its message ID.
      */
     data class Ready(
         val entry: NotificationEntry,
         val workspace: Role,
+        val reservationId: String? = null,
     ) : NotificationEntryUiState
 }

@@ -11,11 +11,13 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
@@ -51,7 +53,13 @@ class InboxViewModelTest {
             val bookings = FakeBookingRepository()
             val loader = NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository())
 
-            val viewModel = InboxViewModel("account-1", notifications, loader)
+            val viewModel =
+                InboxViewModel(
+                    "account-1",
+                    notifications,
+                    loader,
+                    ConversationContextResolver(FakeCampsiteRepository()),
+                )
             runCurrent()
 
             val state = viewModel.state.value
@@ -72,7 +80,13 @@ class InboxViewModelTest {
             val bookings = FakeBookingRepository()
             val loader = NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository())
 
-            val viewModel = InboxViewModel("account-1", notifications, loader)
+            val viewModel =
+                InboxViewModel(
+                    "account-1",
+                    notifications,
+                    loader,
+                    ConversationContextResolver(FakeCampsiteRepository()),
+                )
             runCurrent()
 
             assertEquals(InboxSourceState.FAILURE, viewModel.state.value.source)
@@ -172,5 +186,6 @@ class InboxViewModelTest {
                 FakeBookingRepository(),
                 FakeMessageRepository(),
             ),
+            ConversationContextResolver(FakeCampsiteRepository()),
         )
 }

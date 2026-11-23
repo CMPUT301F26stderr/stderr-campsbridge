@@ -1,5 +1,5 @@
 /*
- * Connects the inbox ViewModel to the screen and handles navigation to saved lottery/reservation targets.
+ * Delivers saved-target navigation only from the resumed Inbox owner.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
@@ -14,16 +14,18 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 
-/** Connects the inbox ViewModel to the screen and handles navigation to saved lottery/reservation targets.
+/** Delivers saved-target navigation only from the resumed Inbox owner.
  * @param model Account inbox state and actions.
  * @param onOpenLottery Opens a lottery with the viewer's role on that lottery.
  * @param onOpenReservation Opens a reservation with the viewer's role on that stay.
+ * @param onOpenConversation Opens the resolved saved conversation when the host supplies this path.
  */
 @Composable
 fun InboxRoute(
     model: InboxViewModel,
     onOpenLottery: (String, LotteryContext) -> Unit,
     onOpenReservation: (String, ReservationContext) -> Unit,
+    onOpenConversation: (String, ReservationContext) -> Unit = { _, _ -> },
 ) {
     val state by model.state.collectAsStateWithLifecycle()
 
@@ -61,7 +63,16 @@ fun InboxRoute(
                 onOpenReservation(subject.reservation.id, resContext)
             }
 
-            is NotificationSubjectContent.MessageContent,
+            is NotificationSubjectContent.MessageContent -> {
+                val context =
+                    if (subject.reservation.entrantId == model.accountId) {
+                        ReservationContext.ENTRANT
+                    } else {
+                        ReservationContext.OWNER
+                    }
+                onOpenConversation(subject.reservation.id, context)
+            }
+
             NotificationSubjectContent.Failure,
             NotificationSubjectContent.Unavailable,
             NotificationSubjectContent.Unsupported,

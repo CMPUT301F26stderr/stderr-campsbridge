@@ -49,6 +49,9 @@ internal fun NavGraphBuilder.inboxGraph(
                     onOpenReservation = { resId, ctx ->
                         controller.navigate(AppDestination.reservationDetail(resId, ctx))
                     },
+                    onOpenConversation = { id, context ->
+                        controller.navigate(AppDestination.conversation(id, context)) { launchSingleTop = true }
+                    },
                 )
             }
         }

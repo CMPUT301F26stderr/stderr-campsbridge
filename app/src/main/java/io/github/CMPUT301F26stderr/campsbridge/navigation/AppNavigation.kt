@@ -73,6 +73,7 @@ import java.util.Locale
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
  * @param onDeleteProfile Requests root-owned confirmation for the current account.
+ * @param conversationFactory Saved participant conversation dependencies.
  * @param reviewsFactory Saved feedback dependencies for each workspace.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
  * @param lotteryDetailsEditFactory Saved organizer details dependencies.
@@ -109,6 +110,7 @@ fun AppNavigation(
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
     onDeleteProfile: () -> Unit,
+    conversationFactory: (String) -> ViewModelProvider.Factory,
     reviewsFactory: (String, Role) -> ViewModelProvider.Factory,
     campsiteEditFactory: (String) -> ViewModelProvider.Factory,
     adminRemovalFactory: ViewModelProvider.Factory? = null,
@@ -293,7 +295,10 @@ fun AppNavigation(
                 onSelectWorkspace,
                 inboxFactory,
             )
-            reservationGraph(controller, reservationDetailFactory)
+            conversationGraph(controller, conversationFactory)
+            reservationGraph(controller, onConversation = { id, context ->
+                controller.navigate(AppDestination.conversation(id, context)) { launchSingleTop = true }
+            }, factory = reservationDetailFactory)
             reservationListGraph(
                 controller,
                 state,

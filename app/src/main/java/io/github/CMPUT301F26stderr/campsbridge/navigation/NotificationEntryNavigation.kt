@@ -15,6 +15,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationEntry
@@ -48,12 +49,19 @@ internal fun NotificationEntryNavigation(
     val lifecycleOwner = LocalLifecycleOwner.current
     val lifecycle by lifecycleOwner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
     val target = state as? NotificationEntryUiState.Ready
+    val currentEntry by controller.currentBackStackEntryAsState()
+    val destinationLifecycle =
+        currentEntry
+            ?.lifecycle
+            ?.currentStateFlow
+            ?.collectAsStateWithLifecycle()
+            ?.value
     var attemptedEvent by rememberSaveable { mutableStateOf<String?>(null) }
     val selectionFailed =
         target != null && attemptedEvent == target.entry.eventId &&
             !session.isSelectingWorkspace && session.workspace != target.workspace
 
-    LaunchedEffect(target, session, lifecycle, attemptedEvent) {
+    LaunchedEffect(target, session, lifecycle, attemptedEvent, currentEntry, destinationLifecycle) {
         if (target == null || lifecycleOwner.lifecycle.currentState != Lifecycle.State.RESUMED ||
             session.account.id != target.entry.accountId ||
             target.workspace !in session.account.roles || session.isSelectingWorkspace
@@ -71,7 +79,11 @@ internal fun NotificationEntryNavigation(
             onOpenInbox(target.workspace)
             controller.navigate(notificationTargetRoute(target)) { launchSingleTop = true }
         }
-        if (controller.isNotificationTarget(target)) onConsume(target.entry)
+        if (controller.isNotificationTarget(target) &&
+            controller.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED
+        ) {
+            onConsume(target.entry)
+        }
     }
     NotificationEntryFeedback(
         state,
@@ -113,7 +125,10 @@ private fun notificationTargetRoute(target: NotificationEntryUiState.Ready): Str
         }
 
         SubjectType.MESSAGE -> {
-            error("Unsupported notification target cannot become Ready")
+            AppDestination.conversation(
+                checkNotNull(target.reservationId),
+                if (target.workspace == Role.OWNER) ReservationContext.OWNER else ReservationContext.ENTRANT,
+            )
         }
     }
 
@@ -121,6 +136,11 @@ private fun notificationTargetRoute(target: NotificationEntryUiState.Ready): Str
  * @param target Original pending target; an unrelated older parent cannot satisfy it.
  */
 private fun NavHostController.isNotificationTarget(target: NotificationEntryUiState.Ready): Boolean {
+    if (target.entry.subject.type == SubjectType.MESSAGE) {
+        val context = if (target.workspace == Role.OWNER) ReservationContext.OWNER else ReservationContext.ENTRANT
+        return currentDestination?.route == AppDestination.conversationPattern(context) &&
+            currentBackStackEntry?.arguments?.getString("reservationId") == target.reservationId
+    }
     val lottery = target.entry.subject.type == SubjectType.LOTTERY
     val pattern =
         if (lottery) {

@@ -67,6 +67,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailsEditVi
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
@@ -93,6 +95,7 @@ class TestAppHost(
     var clock: Clock = Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC)
     val accounts = FakeAccountRepository(sampleAccount())
     var profileAccounts = accounts
+    var conversationAccounts: AccountRepository = accounts
     val identity = FakeIdentityProvider()
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
@@ -164,6 +167,7 @@ class TestAppHost(
         NotificationEntryViewModel(
             NotificationContentLoader(notifications, lotteries, bookings, messages),
             SavedStateHandle(),
+            ConversationContextResolver(campsites),
         ).also { store.put("notification-entry", it) }
     }
     private val removal by lazy {
@@ -371,6 +375,21 @@ class TestAppHost(
                                 adminCampsites,
                                 adminImages,
                                 moderation,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
+                conversationFactory = { actorId, id ->
+                    viewModelFactory {
+                        initializer {
+                            ConversationViewModel(
+                                actorId,
+                                id,
+                                bookings,
+                                ConversationContextResolver(campsites),
+                                messages,
+                                conversationAccounts,
                                 createSavedStateHandle(),
                             )
                         }

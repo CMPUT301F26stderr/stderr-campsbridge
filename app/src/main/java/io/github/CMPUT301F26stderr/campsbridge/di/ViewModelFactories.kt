@@ -29,6 +29,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
@@ -164,6 +165,7 @@ fun notificationEntryViewModelFactory(services: AppServices): ViewModelProvider.
                     repositories.messages,
                 ),
                 createSavedStateHandle(),
+                ConversationContextResolver(repositories.campsites),
             )
         }
     }

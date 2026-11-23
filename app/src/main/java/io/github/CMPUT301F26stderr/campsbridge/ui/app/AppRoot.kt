@@ -50,6 +50,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param notificationEntries Activity/root tap owner, independent of the session navigation store.
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
+ * @param conversationFactory Saved participant conversation dependencies.
  * @param reviewsFactory Entry-scoped saved feedback dependencies.
  * @param lotteryDetailsEditFactory Saved organizer details dependencies scoped to the ready account.
  * @param lotteryAllocationsEditFactory Saved allocation dependencies scoped to the current participant.
@@ -82,6 +83,7 @@ fun AppRoot(
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
     accountRemoval: AccountRemovalViewModel,
+    conversationFactory: (String, String) -> ViewModelProvider.Factory,
     reviewsFactory: (String, String, Role) -> ViewModelProvider.Factory,
     adminRemovalFactory: ((String) -> ViewModelProvider.Factory)? = null,
     campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
@@ -192,6 +194,12 @@ fun AppRoot(
                                 notificationEntries::consume,
                                 requestedDestination = requestedDestination,
                                 onDestinationOpened = onDestinationOpened,
+                                conversationFactory = { id ->
+                                    conversationFactory(
+                                        session.account.id,
+                                        id,
+                                    )
+                                },
                                 onDeleteProfile = {
                                     accountRemoval
                                         .request(
