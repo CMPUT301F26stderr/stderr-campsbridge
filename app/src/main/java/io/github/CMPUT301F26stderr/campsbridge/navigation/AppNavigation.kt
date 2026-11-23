@@ -59,6 +59,7 @@ import java.util.Locale
  * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
  * @param reservationDetailFactory Saved aggregate dependencies keyed by ID/context.
  * @param inboxFactory One account receipt owner shared by both workspace primaries.
+ * @param sentFactory Independent read-only sender history for the same account.
  * @param bookingFactory One actual winner wizard keyed by saved lottery and campsite IDs.
  * @param reservationListFactory Active-list dependencies keyed by actor context and filter.
  * @param adminBrowseFactory All-record read dependencies with explicitly pending predicates.
@@ -118,6 +119,7 @@ fun AppNavigation(
     lotteryAllocationsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
     announcementComposeFactory: ((String) -> ViewModelProvider.Factory)? = null,
     collaboratingOwnersFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    sentFactory: ViewModelProvider.Factory? = null,
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -294,6 +296,7 @@ fun AppNavigation(
                 state,
                 onSelectWorkspace,
                 inboxFactory,
+                sentFactory,
             )
             conversationGraph(controller, conversationFactory)
             reservationGraph(controller, onConversation = { id, context ->

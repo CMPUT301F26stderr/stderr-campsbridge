@@ -75,6 +75,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.sentNotificationsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocalDemoMap
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
@@ -288,6 +289,9 @@ class OfflineDemoActivity : ComponentActivity() {
                                         conversationViewModelFactory(session.services, actorId, id)
                                     },
                                     adminRemovalFactory = { id -> adminRemovalViewModelFactory(session.services, id) },
+                                    sentFactory = { actorId ->
+                                        sentNotificationsViewModelFactory(session.services, actorId)
+                                    },
                                     reviewsFactory = {
                                         actorId,
                                         id,

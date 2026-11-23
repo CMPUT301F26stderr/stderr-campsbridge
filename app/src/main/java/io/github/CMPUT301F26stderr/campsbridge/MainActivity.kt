@@ -41,6 +41,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.sentNotificationsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.bindNotificationEntries
@@ -139,6 +140,7 @@ class MainActivity : ComponentActivity() {
                     conversationViewModelFactory(services, actorId, id)
                 },
                 accountRemoval = removal,
+                sentFactory = { actorId -> sentNotificationsViewModelFactory(services, actorId) },
                 reviewsFactory = {
                     actorId,
                     id,

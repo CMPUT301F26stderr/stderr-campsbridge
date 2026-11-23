@@ -24,6 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationS
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure.Reason.CONFLICT
+import io.github.CMPUT301F26stderr.campsbridge.integration.firebase.booking.bookingFixture
 import io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery.drawFixture
 import io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery.registrationFixture
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.firebase.FirebaseEmulatorRule
@@ -487,6 +488,57 @@ class NotificationRepositoryTest {
                     it.id
                 },
             )
+        }
+
+    /** RP-01: sender history includes both event kinds in order and excludes another sender. */
+    @Test(timeout = 60000)
+    fun sentHistoryIncludesAnnouncementsAndMessageEventsForTheSameOwner() =
+        runBlocking {
+            val f = firebase.bookingFixture()
+            val reservation =
+                f.entrant.container.bookings
+                    .reserve(f.request)
+            val anchor = firebase.clock.instant()
+            firebase.clock.current = anchor.plusSeconds(60)
+            val announcementId =
+                f.owner.container.notifications.announce(
+                    "mixed-announcement",
+                    f.lottery.id,
+                    f.owner.id,
+                    Announcement("Directions", "Use the east gate"),
+                )
+            firebase.clock.current = anchor.plusSeconds(120)
+            val messageId =
+                f.owner.container.messages.send(
+                    "mixed-message",
+                    reservation,
+                    f.owner.id,
+                    "We will meet you there",
+                )
+            val messageEventId = DocumentKeys.compound("NEW_MESSAGE", messageId)
+            val other = firebase.registeredActor(Role.OWNER)
+            firebase.seed(
+                "lotteries/${f.lottery.id}",
+                LotteryDocument.encode(f.lottery.copy(participantOwnerIds = f.lottery.participantOwnerIds + other.id)) +
+                    mapOf("_revision" to 0L),
+            )
+            firebase.clock.current = anchor.plusSeconds(180)
+            other.container.notifications.announce(
+                "other-announcement",
+                f.lottery.id,
+                other.id,
+                Announcement("Another sender", "A separate announcement"),
+            )
+            val sent =
+                f.owner.container.notifications
+                    .observeSent(f.owner.id)
+                    .first()
+            assertEquals(listOf(messageEventId, announcementId), sent.map { it.id })
+            assertEquals(
+                listOf(NotificationType.NEW_MESSAGE, NotificationType.OWNER_ANNOUNCEMENT),
+                sent.map { it.type },
+            )
+            assertTrue(sent.all { it.senderId == f.owner.id })
         }
 
     /** An existing account with no receipts has a confirmed empty server history. */
