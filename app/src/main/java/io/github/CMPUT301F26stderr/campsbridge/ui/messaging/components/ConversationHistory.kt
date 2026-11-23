@@ -1,14 +1,17 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -91,30 +94,39 @@ internal fun ConversationHistory(
         if (!state.messagesLoading && !state.messagesFailed && state.messages.isEmpty()) {
             EmptyContent(stringResource(R.string.conversation_empty))
         }
-        LazyColumn(
-            Modifier.weight(1f).fillMaxWidth().testTag("conversation-history"),
-            state = list,
-            reverseLayout = true,
-            contentPadding = PaddingValues(vertical = Spacing.small),
-            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-        ) {
-            items(state.messages.asReversed(), key = { it.id }) { message ->
-                MessageRow(
-                    message,
-                    state.labels[message.senderId] ?: message.senderId,
-                    if (message.senderId == context.actorId) MessagePresentation.SENT else MessagePresentation.RECEIVED,
-                )
+        // 提示覆盖在列表上，不改变视口高度，避免挤走正在阅读的旧消息。
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            LazyColumn(
+                Modifier.fillMaxSize().testTag("conversation-history"),
+                state = list,
+                reverseLayout = true,
+                contentPadding = PaddingValues(vertical = Spacing.small),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            ) {
+                items(state.messages.asReversed(), key = { it.id }) { message ->
+                    MessageRow(
+                        message,
+                        state.labels[message.senderId] ?: message.senderId,
+                        if (message.senderId ==
+                            context.actorId
+                        ) {
+                            MessagePresentation.SENT
+                        } else {
+                            MessagePresentation.RECEIVED
+                        },
+                    )
+                }
             }
-        }
-        if (newMessages) {
-            TextButton(
-                onClick = {
-                    following = true
-                    newMessages = false
-                    scope.launch { list.scrollToItem(0) }
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            ) { Text(stringResource(R.string.conversation_new_messages)) }
+            if (newMessages) {
+                FilledTonalButton(
+                    onClick = {
+                        following = true
+                        newMessages = false
+                        scope.launch { list.scrollToItem(0) }
+                    },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.small),
+                ) { Text(stringResource(R.string.conversation_new_messages)) }
+            }
         }
     }
 }
