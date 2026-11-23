@@ -1,3 +1,7 @@
+/*
+ * Registers the same saved conversation for direct and resolved notification entry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.lifecycle.ViewModelProvider

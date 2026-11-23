@@ -1,3 +1,7 @@
+/*
+ * Shows saved offers; choosing one navigates without claiming nights or saving a reservation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.fillMaxWidth

@@ -1,3 +1,7 @@
+/*
+ * Supplies existing message and descriptive context sources without participant operations.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

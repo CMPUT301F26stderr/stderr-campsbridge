@@ -69,6 +69,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
@@ -246,7 +247,6 @@ class TestAppHost(
                                 createSavedStateHandle(),
                                 clock,
                                 lotteries,
-                                createQrBitmap = createQrBitmap,
                             )
                         }
                     }
@@ -367,6 +367,21 @@ class TestAppHost(
                 notificationPermission,
                 notificationEntries,
                 accountRemoval = accountRemoval ?: removal,
+                createQrBitmap = createQrBitmap,
+                conversationListFactory = { actorId, context ->
+                    viewModelFactory {
+                        initializer {
+                            ConversationListViewModel(
+                                actorId,
+                                context,
+                                bookings,
+                                messages,
+                                ConversationContextResolver(campsites),
+                                conversationAccounts,
+                            )
+                        }
+                    }
+                },
                 sentFactory = { actorId ->
                     viewModelFactory {
                         initializer {

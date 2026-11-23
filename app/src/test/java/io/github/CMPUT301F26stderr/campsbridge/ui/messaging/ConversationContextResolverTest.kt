@@ -1,3 +1,7 @@
+/*
+ * NE-01 actual booked-site participants, reused by direct and immutable-event entry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository

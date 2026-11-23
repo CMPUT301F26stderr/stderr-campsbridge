@@ -1,3 +1,7 @@
+/*
+ * Uses the same expected vectors as Node, without deriving expectations from either implementation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.data.lottery
 
 import org.json.JSONArray

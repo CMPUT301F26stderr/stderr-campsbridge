@@ -1,3 +1,7 @@
+/*
+ * Connects retained owned offers to explicit actions and one return to the saved reader.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

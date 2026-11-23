@@ -35,10 +35,11 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsitePhoto
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
@@ -46,7 +47,6 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureCon
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
@@ -188,7 +188,9 @@ fun AdminProfileScreen(
     }
 }
 
-/** Actual saved identity, capabilities and optional contact/removal facts. */
+/** Shows saved identity, capabilities and optional contact/removal facts.
+ * @param account Actual inspected account, including retained removal facts.
+ */
 @Composable
 private fun AdminAccountFacts(account: Account) {
     InspectionField(stringResource(R.string.admin_display_name), account.name)
@@ -214,7 +216,10 @@ private fun AdminAccountFacts(account: Account) {
     }
 }
 
-/** Missing values stay visible instead of disappearing from a retained profile. */
+/** Keeps missing values visible in a retained profile.
+ * @param label Localized field name.
+ * @param value Saved value, or null when not provided.
+ */
 @Composable
 private fun InspectionField(
     label: String,
@@ -233,7 +238,10 @@ private fun InspectionField(
     }
 }
 
-/** Draft and retained rows remain navigable, with no owner edit or participation actions. */
+/** Keeps draft and retained rows navigable without owner editing or participation actions.
+ * @param site Actual related campsite.
+ * @param onCampsite Opens the selected saved identity.
+ */
 @Composable
 private fun AdminOwnedCampsite(
     site: Campsite,

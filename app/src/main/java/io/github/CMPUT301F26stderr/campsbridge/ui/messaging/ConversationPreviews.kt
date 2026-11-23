@@ -1,3 +1,7 @@
+/*
+ * Checks independent history/composer overflow and explicit recovery at normal and doubled scale.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import androidx.compose.runtime.Composable

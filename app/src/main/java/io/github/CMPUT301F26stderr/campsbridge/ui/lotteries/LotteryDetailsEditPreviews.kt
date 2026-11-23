@@ -1,3 +1,7 @@
+/*
+ * Shows grouped details, deadline locks and recovery at normal and doubled scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

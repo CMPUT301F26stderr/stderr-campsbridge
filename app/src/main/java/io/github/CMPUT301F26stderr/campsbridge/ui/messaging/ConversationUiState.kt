@@ -1,3 +1,7 @@
+/*
+ * Required saved relationship outcome, separate from empty message history.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message

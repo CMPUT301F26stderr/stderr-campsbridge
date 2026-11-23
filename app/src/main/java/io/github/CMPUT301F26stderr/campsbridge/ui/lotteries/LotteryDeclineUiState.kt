@@ -1,3 +1,7 @@
+/*
+ * Independent command feedback while the saved reader continues observing the entry.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 /** Independent command feedback while the saved reader continues observing the entry.

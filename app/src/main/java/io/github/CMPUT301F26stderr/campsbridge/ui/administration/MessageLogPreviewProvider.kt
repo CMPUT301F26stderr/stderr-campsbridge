@@ -1,8 +1,12 @@
+/*
+ * Passive real-message layouts, including missing/failed context and primary source outcomes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.domain.messaging.Message
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import java.time.Instant
 
 /** Passive real-message layouts, including missing/failed context and primary source outcomes. */

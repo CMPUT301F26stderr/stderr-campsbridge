@@ -1,3 +1,7 @@
+/*
+ * Constructs a focused saved organizer editor using the same clock and repository.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

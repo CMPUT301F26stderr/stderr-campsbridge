@@ -1,3 +1,7 @@
+/*
+ * Connects the retained operation to confirmation and cleanup feedback.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.fillMaxWidth

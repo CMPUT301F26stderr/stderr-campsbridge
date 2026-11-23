@@ -1,3 +1,7 @@
+/*
+ * Owns one original confirmed admin request through uncertainty and explicit cleanup retries.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

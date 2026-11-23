@@ -1,3 +1,7 @@
+/*
+ * Displays the actual published campsite's code without exporting it or changing any saved data.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.BorderStroke

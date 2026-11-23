@@ -1,3 +1,7 @@
+/*
+ * Supplies distinct scan recovery feedback without launching native activities.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

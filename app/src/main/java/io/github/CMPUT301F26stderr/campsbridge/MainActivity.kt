@@ -26,6 +26,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.collaboratingOwnersViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.conversationViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
@@ -42,7 +43,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.sentNotificationsViewModelFactory
-import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
+import io.github.CMPUT301F26stderr.campsbridge.platform.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.bindNotificationEntries
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
@@ -141,6 +142,9 @@ class MainActivity : ComponentActivity() {
                 },
                 accountRemoval = removal,
                 sentFactory = { actorId -> sentNotificationsViewModelFactory(services, actorId) },
+                conversationListFactory = { actorId, context ->
+                    conversationListViewModelFactory(services, actorId, context)
+                },
                 reviewsFactory = {
                     actorId,
                     id,

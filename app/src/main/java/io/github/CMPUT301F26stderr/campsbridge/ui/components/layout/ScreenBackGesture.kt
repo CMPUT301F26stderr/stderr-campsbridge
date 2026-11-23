@@ -1,3 +1,7 @@
+/*
+ * Prevents a retiring form step from competing with the currently displayed step for Back.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.activity.compose.PredictiveBackHandler

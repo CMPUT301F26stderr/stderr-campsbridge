@@ -23,7 +23,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsitePhotoStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteReviewStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps.CampsiteRulesStep
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
@@ -153,7 +153,7 @@ fun CampsiteSetupScreen(
         }
         return
     }
-    StepTransition(state, { it.draft.step.ordinal }, modifier) { state ->
+    StepTransition(state, { it.draft.step.ordinal }, modifier, navigation = { it.stepNavigation }) { state ->
         val draft = state.draft
         val review = draft.step == CampsiteStep.REVIEW
         val submitting = state.savePhase != CampsiteSavePhase.IDLE

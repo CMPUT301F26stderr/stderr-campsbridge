@@ -1,3 +1,7 @@
+/*
+ * Registers one saved owner picker without creating a second lottery-authoring graph.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.lifecycle.ViewModelProvider

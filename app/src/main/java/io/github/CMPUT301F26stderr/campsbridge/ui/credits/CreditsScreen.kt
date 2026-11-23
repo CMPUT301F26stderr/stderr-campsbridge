@@ -24,10 +24,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.platform.assets.PhotoCredits
-import io.github.CMPUT301F26stderr.campsbridge.platform.assets.photoCredits
+import io.github.CMPUT301F26stderr.campsbridge.platform.PhotoCredits
+import io.github.CMPUT301F26stderr.campsbridge.platform.photoCredits
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 

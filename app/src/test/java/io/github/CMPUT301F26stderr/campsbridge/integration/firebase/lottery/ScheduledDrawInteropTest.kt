@@ -1,3 +1,7 @@
+/*
+ * Proves that Node and the authenticated Android repository share one resumable draw protocol.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.integration.firebase.lottery
 
 import io.github.CMPUT301F26stderr.campsbridge.data.firestore.DocumentKeys

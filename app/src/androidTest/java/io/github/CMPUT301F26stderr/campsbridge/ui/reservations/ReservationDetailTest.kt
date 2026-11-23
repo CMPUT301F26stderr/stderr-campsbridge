@@ -30,7 +30,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancell
 import io.github.CMPUT301F26stderr.campsbridge.navigation.AppDestination
 import io.github.CMPUT301F26stderr.campsbridge.navigation.reservationGraph
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.After
 import org.junit.Assert.assertEquals

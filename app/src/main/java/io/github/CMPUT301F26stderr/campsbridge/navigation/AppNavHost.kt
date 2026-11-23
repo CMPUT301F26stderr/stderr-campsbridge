@@ -1,3 +1,7 @@
+/*
+ * Hosts app pages with the shared motion policy.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection

@@ -1,3 +1,7 @@
+/*
+ * Exercises the packaged native encoder and offline detector with real generated images.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import android.graphics.Color

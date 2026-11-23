@@ -1,3 +1,7 @@
+/*
+ * Real saved target of a sent event, with no recipient receipt state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification

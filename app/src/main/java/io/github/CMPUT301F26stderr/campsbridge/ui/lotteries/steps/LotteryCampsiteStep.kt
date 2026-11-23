@@ -1,3 +1,7 @@
+/*
+ * Applied owned allocations with a separate published-campsite picker and working calendar.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
 
 import androidx.compose.foundation.layout.Arrangement

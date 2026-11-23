@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -20,17 +21,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategory
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceOption
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ConnectedChoices
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationCampsiteFilter
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationCancellationSummary
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationCard
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationEntrantLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationHistoryTabs
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationMapContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.reservationCategoryLabel
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Displays saved stays in the selected history category; the caller owns navigation, source reads and selected filter.
@@ -48,6 +52,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
  * @param category Selected local category.
  * @param categories Categories supported by this presentation.
  * @param onCategory Reports an explicit tab selection.
+ * @param view Entrant List/Map presentation.
+ * @param onView Reports a List/Map choice; null hides the choice.
+ * @param onShowReservations Reports the stays shown under the map, for their photos.
  */
 @Composable
 fun ReservationListScreen(
@@ -72,9 +79,37 @@ fun ReservationListScreen(
             listOf(ReservationListCategory.ACTIVE, ReservationListCategory.PAST)
         },
     onCategory: (ReservationListCategory) -> Unit = {},
+    view: ReservationListView = ReservationListView.LIST,
+    onView: ((ReservationListView) -> Unit)? = null,
+    onShowReservations: (Set<String>) -> Unit = {},
 ) {
     Column(modifier.fillMaxSize()) {
         ReservationHistoryTabs(category, categories, onCategory)
+        if (onView != null) {
+            ConnectedChoices(
+                listOf(
+                    ChoiceOption(ReservationListView.LIST.name, stringResource(R.string.reservation_view_as_list)),
+                    ChoiceOption(ReservationListView.MAP.name, stringResource(R.string.reservation_view_as_map)),
+                ),
+                view.name,
+                { id -> onView(ReservationListView.valueOf(id)) },
+                Modifier.fillMaxWidth().padding(top = Spacing.medium),
+            )
+        }
+        // The map needs saved rows; loading, failure and empty states keep the list's messages.
+        if (onView != null && view == ReservationListView.MAP && state is ReservationListUiState.Content &&
+            !state.classificationPending && state.items.isNotEmpty()
+        ) {
+            ReservationMapContent(
+                state.items,
+                onOpen,
+                onShowReservations,
+                Modifier.weight(1f).fillMaxWidth(),
+                photos,
+                onRetryPhoto,
+            )
+            return@Column
+        }
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth(),
             state = listState,
@@ -170,14 +205,7 @@ fun ReservationListScreen(
                         val record = row.reservation
                         ReservationCard(
                             record,
-                            stringResource(
-                                when (row.category) {
-                                    ReservationCategory.UPCOMING -> R.string.reservation_upcoming
-                                    ReservationCategory.IN_PROGRESS -> R.string.reservation_in_progress
-                                    ReservationCategory.PAST -> R.string.reservation_completed
-                                    ReservationCategory.CANCELLED -> R.string.reservation_cancelled
-                                },
-                            ),
+                            reservationCategoryLabel(row.category),
                             { onOpen(record.id) },
                             Modifier.testTag("reservation:${record.id}"),
                             photo = photos[record.campsiteId] ?: ImageSlotState(),

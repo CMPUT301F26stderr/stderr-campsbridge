@@ -7,8 +7,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDraft
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PriceInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PriceInput
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

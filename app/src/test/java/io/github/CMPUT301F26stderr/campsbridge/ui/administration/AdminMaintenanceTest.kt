@@ -1,3 +1,7 @@
+/*
+ * Explicit actions own recovery; browse reads and failed passes cannot imply completion.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

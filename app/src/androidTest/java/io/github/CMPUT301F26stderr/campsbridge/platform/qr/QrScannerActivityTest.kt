@@ -1,3 +1,7 @@
+/*
+ * Exercises permission delivery and a real initialized scanner on a fresh disposable app.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import android.Manifest

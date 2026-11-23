@@ -1,3 +1,7 @@
+/*
+ * Offers an explicit recovery pass while keeping failure separate from completion.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Column
@@ -57,9 +61,10 @@ private class MaintenancePreviews : PreviewParameterProvider<AdminMaintenanceSta
     override val values = AdminMaintenanceState.entries.asSequence()
 }
 
-/** Shows each recovery outcome with the shared theme.
+/** Shows every outcome with the shared theme and enlarged text.
  * @param state Passive recovery outcome.
  */
+@Preview(showBackground = true, widthDp = 360, fontScale = 2f)
 @Preview(showBackground = true, widthDp = 390)
 @Composable
 private fun AdminMaintenancePreview(

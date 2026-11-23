@@ -1,3 +1,7 @@
+/*
+ * Binds feedback to the same application repositories in Firebase and the local demo.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

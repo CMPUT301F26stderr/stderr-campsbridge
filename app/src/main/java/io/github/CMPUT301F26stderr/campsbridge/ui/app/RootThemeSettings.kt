@@ -1,3 +1,7 @@
+/*
+ * Retains only display preferences while account marking disposes the signed-in profile.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.runtime.Composable

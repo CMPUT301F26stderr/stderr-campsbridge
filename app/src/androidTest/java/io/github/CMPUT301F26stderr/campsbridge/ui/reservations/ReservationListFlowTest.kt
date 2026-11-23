@@ -32,7 +32,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategor
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -127,7 +127,8 @@ class ReservationListFlowTest {
         compose.onNodeWithText(record.bookedCampsite.name).assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, host.reservationListCreations)
-            assertEquals(listOf("account-1"), host.bookings.ownerRequests)
+            // One read for this list and one for the Inbox Messages badge opened on the way.
+            assertEquals(listOf("account-1", "account-1"), host.bookings.ownerRequests)
             assertEquals(2, host.reservationAccounts.readIds.size)
         }
     }

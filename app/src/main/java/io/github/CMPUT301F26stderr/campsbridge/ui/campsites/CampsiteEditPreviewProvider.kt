@@ -1,3 +1,7 @@
+/*
+ * Supplies actual saved-target states without network access or simulated writes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

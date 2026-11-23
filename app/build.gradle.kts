@@ -330,8 +330,8 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 ).asFile.isFile,
         ) { "The measured image action rules are missing" }
         listOf(
-            "ui/common/input/PositiveCountInputKt.class",
-            "ui/common/input/PriceInputKt.class",
+            "ui/common/PositiveCountInputKt.class",
+            "ui/common/PriceInputKt.class",
             "ui/components/calendar/MonthCellsKt.class",
             "ui/profile/logic/DisplayNameInputKt.class",
             "ui/profile/logic/OptionalContactInputKt.class",
@@ -391,8 +391,8 @@ tasks.register<JacocoCoverageVerification>("pureLogicCoverage") {
                 "**/domain/shared/TypesKt.class",
                 "**/ui/app/WorkspaceSelectionKt.class",
                 "**/ui/common/images/ImageSlotState.class",
-                "**/ui/common/input/PositiveCountInputKt.class",
-                "**/ui/common/input/PriceInputKt.class",
+                "**/ui/common/PositiveCountInputKt.class",
+                "**/ui/common/PriceInputKt.class",
                 "**/ui/components/calendar/MonthCellsKt.class",
                 "**/ui/profile/logic/DisplayNameInputKt*.class",
                 "**/ui/profile/logic/OptionalContactInputKt*.class",

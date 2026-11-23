@@ -6,7 +6,8 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import io.github.CMPUT301F26stderr.campsbridge.platform.images.SelectedPhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import java.time.YearMonth
 
@@ -91,6 +92,7 @@ sealed interface CampsiteSetupUiState {
      * @param availabilityComparisonPending Whether requested date differences await F08 integration.
      * @param saveAction Frozen requested outcome, retained for an explicit retry.
      * @param publicationPending Whether server confirmation is required before editing or leaving.
+     * @param stepNavigation Action that entered the current form step.
      */
     data class Content(
         val draft: CampsiteDraft,
@@ -108,6 +110,7 @@ sealed interface CampsiteSetupUiState {
         val availabilityComparisonPending: Boolean = true,
         val saveAction: CampsiteSaveAction = CampsiteSaveAction.DRAFT,
         val publicationPending: Boolean = false,
+        val stepNavigation: StepNavigation = StepNavigation.FORWARD,
     ) : CampsiteSetupUiState {
         /** An unresolved attachment mutation must be retried before changing input or leaving. */
         val photoNeedsRecovery: Boolean

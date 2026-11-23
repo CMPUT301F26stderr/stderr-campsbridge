@@ -44,43 +44,4 @@ internal object NotificationWrites {
             mapOf("recipientIds" to recipients.distinct()),
         )
     }
-
-    /**
-     * Queues a deterministic confirmation/cancellation event for the reservation entrant.
-     *
-     * @param db Firestore client used for queries and coordinated writes.
-     * @param tx Caller-owned Firestore transaction; reads must precede writes.
-     * @param reservation Stored stay whose inventory, payment, or event is addressed.
-     * @param cancelled Whether to emit cancellation rather than reservation confirmation.
-     * @param at Time the removal, cancellation, or event occurred.
-     */
-    fun reservation(
-        db: FirebaseFirestore,
-        tx: com.google.firebase.firestore.Transaction,
-        reservation: Reservation,
-        cancelled: Boolean,
-        at: java.time.Instant,
-    ) {
-        val type =
-            if (cancelled) {
-                NotificationType.RESERVATION_CANCELLED
-            } else {
-                NotificationType.RESERVATION_CONFIRMED
-            }
-        val id = DocumentKeys.compound(type.name, reservation.id)
-        enqueue(
-            db,
-            tx,
-            Notification(
-                id,
-                null,
-                type,
-                NotificationSubject(SubjectType.RESERVATION, reservation.id),
-                null,
-                at,
-            ),
-            listOf(reservation.entrantId),
-            scope = DeliveryScope.Reservation(reservation.id),
-        )
-    }
 }

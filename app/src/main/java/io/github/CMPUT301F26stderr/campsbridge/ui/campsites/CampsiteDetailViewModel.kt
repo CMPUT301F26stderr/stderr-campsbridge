@@ -4,8 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
-import android.graphics.Bitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,17 +15,14 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.ReviewRepository
-import io.github.CMPUT301F26stderr.campsbridge.platform.qr.createCampsiteQrBitmap
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotController
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.Clock
 import java.time.DateTimeException
 import java.time.YearMonth
@@ -56,7 +51,6 @@ class CampsiteDetailViewModel(
     private val savedState: SavedStateHandle,
     private val clock: Clock,
     private val lotteries: LotteryRepository,
-    private val createQrBitmap: (String) -> Bitmap = { createCampsiteQrBitmap(it) },
 ) : ViewModel() {
     private val mutableState =
         MutableStateFlow<CampsiteDetailUiState>(CampsiteDetailUiState.Loading)
@@ -72,8 +66,6 @@ class CampsiteDetailViewModel(
     private val mutableInventory =
         MutableStateFlow<CalendarInventoryRead>(CalendarInventoryRead.Loading)
     val inventory = mutableInventory.asStateFlow()
-    private val mutableQrImage = MutableStateFlow<CampsiteQrImage>(CampsiteQrImage.Loading)
-    val qrImageState = mutableQrImage.asStateFlow()
     private val campsiteLotteries =
         CampsiteLotteriesController(
             accountId,
@@ -90,7 +82,6 @@ class CampsiteDetailViewModel(
     private var ownerJob: Job? = null
     private var ratingJob: Job? = null
     private var calendarJob: Job? = null
-    private var qrJob: Job? = null
     private var ownerId: String? = null
     private var calendarMonth: YearMonth? = null
     private var section = CampsiteDetailSection.OVERVIEW
@@ -159,31 +150,6 @@ class CampsiteDetailViewModel(
     /** Retries an attachment or URL read without changing the listing. */
     fun retryPhoto() {
         photo?.retry()
-    }
-
-    /** Starts or restarts QR image generation for this campsite identity. */
-    fun startQr() {
-        if (qrJob?.isActive == true && mutableQrImage.value !is CampsiteQrImage.Failure) return
-        qrJob?.cancel()
-        mutableQrImage.value = CampsiteQrImage.Loading
-        qrJob =
-            viewModelScope.launch {
-                try {
-                    val bitmap = withContext(Dispatchers.IO) { createQrBitmap(campsiteId) }
-                    mutableQrImage.value = CampsiteQrImage.Ready(bitmap.asImageBitmap())
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    mutableQrImage.value = CampsiteQrImage.Failure
-                }
-            }
-    }
-
-    /** Retries failed QR image generation. */
-    fun retryQr() {
-        if (mutableQrImage.value == CampsiteQrImage.Failure) {
-            startQr()
-        }
     }
 
     /** Selects the actual registered child without changing persisted facts.
@@ -449,7 +415,6 @@ class CampsiteDetailViewModel(
         ratingJob?.cancel()
         calendarJob?.cancel()
         photoJob?.cancel()
-        qrJob?.cancel()
         photo?.close()
         super.onCleared()
     }

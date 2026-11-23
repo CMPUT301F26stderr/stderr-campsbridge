@@ -1,3 +1,7 @@
+/*
+ * Supplies saved event facts and independent context/source outcomes without recipient state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.inbox
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -8,7 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationS
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 
 /** Supplies saved event facts and independent context/source outcomes without recipient state. */

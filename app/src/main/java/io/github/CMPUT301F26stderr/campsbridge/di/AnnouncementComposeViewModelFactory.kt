@@ -1,3 +1,7 @@
+/*
+ * Binds explicit owner composition to the host's existing persistence contracts.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.di
 
 import androidx.lifecycle.ViewModelProvider

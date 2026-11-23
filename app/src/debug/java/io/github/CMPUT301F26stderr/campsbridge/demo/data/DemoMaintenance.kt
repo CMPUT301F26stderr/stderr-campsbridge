@@ -1,3 +1,7 @@
+/*
+ * Resumes the offline store's removal jobs and detached photo files.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.demo.data
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role

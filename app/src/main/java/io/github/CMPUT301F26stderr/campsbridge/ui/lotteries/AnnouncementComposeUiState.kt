@@ -1,3 +1,7 @@
+/*
+ * Required saved lottery/actor outcome, separate from local composition and send recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery

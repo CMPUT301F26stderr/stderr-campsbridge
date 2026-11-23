@@ -1,3 +1,7 @@
+/*
+ * Adapts the library-owned camera preview to the application's scan result contract.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import android.util.Log

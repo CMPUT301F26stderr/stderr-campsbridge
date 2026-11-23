@@ -1,3 +1,7 @@
+/*
+ * Fixed saved-lottery contracts for configuration boundaries, raw input and context review.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.SavedStateHandle
@@ -7,7 +11,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfigurati
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MutableClock
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.AppDisplayTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.AppDisplayTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest

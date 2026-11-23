@@ -1,3 +1,7 @@
+/*
+ * Uses standard Material indicators and scrolling when owner categories need more room.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components
 
 import androidx.compose.material3.ExperimentalMaterial3Api

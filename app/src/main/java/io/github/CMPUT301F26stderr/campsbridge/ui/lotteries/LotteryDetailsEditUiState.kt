@@ -1,3 +1,7 @@
+/*
+ * Separates the required lottery source from local details and save recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery

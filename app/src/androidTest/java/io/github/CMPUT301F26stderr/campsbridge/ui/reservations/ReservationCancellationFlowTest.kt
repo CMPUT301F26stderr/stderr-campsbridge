@@ -34,7 +34,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategor
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.PersistenceFailure
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.map
 import org.junit.After

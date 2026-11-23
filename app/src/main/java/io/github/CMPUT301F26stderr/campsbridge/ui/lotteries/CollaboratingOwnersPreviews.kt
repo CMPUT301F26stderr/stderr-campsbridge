@@ -1,3 +1,7 @@
+/*
+ * Shows full-page owner selection and operation/source feedback at both agreed scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

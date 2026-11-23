@@ -1,3 +1,7 @@
+/*
+ * WN-02 contracts for current win eligibility and one explicitly confirmed command.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.lifecycle.ViewModelStore

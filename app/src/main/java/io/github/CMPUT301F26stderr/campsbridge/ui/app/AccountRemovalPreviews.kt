@@ -1,3 +1,7 @@
+/*
+ * Checks root feedback and reachable actions with ordinary and enlarged text/controls.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.runtime.Composable

@@ -1,3 +1,7 @@
+/*
+ * Selects inclusive ranges to add to caller-owned individual nights.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import androidx.compose.foundation.layout.Arrangement

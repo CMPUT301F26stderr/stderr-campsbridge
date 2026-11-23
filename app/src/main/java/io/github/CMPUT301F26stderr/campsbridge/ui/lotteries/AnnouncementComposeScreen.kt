@@ -1,3 +1,7 @@
+/*
+ * Displays one local announcement and its explicit immutable-event recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.foundation.layout.Arrangement

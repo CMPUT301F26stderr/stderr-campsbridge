@@ -1,3 +1,7 @@
+/*
+ * Connects one saved picker to explicit actions, deadline checks and a consumed return.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.runtime.Composable

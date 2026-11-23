@@ -1,3 +1,7 @@
+/*
+ * AN-04 opens the actual saved owner context and confirms event storage without claiming delivery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import androidx.compose.ui.test.assertIsDisplayed

@@ -1,3 +1,7 @@
+/*
+ * Opens the page's creation flow from the scaffold's floating-action slot.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.actions
 
 import androidx.compose.foundation.layout.Spacer

@@ -48,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.BuildConfig
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
@@ -61,6 +62,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.collaboratingOwnersViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.conversationViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
@@ -77,6 +79,7 @@ import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFact
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.sentNotificationsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocalDemoMap
+import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocalDemoPinsMap
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -178,6 +181,15 @@ class OfflineDemoActivity : ComponentActivity() {
                                 LocalViewModelStoreOwner provides session,
                                 LocalDemoMap provides
                                     { pin, select, modifier -> DemoLocationMap(pin, select, modifier) },
+                                // With a Maps key the demo shows the real reservation map; without one, the offline list.
+                                LocalDemoPinsMap provides
+                                    if (BuildConfig.MAPS_CONFIGURED) {
+                                        null
+                                    } else {
+                                        { pins, selected, select, modifier ->
+                                            DemoPinsMap(pins, selected, select, modifier)
+                                        }
+                                    },
                             ) {
                                 AppRoot(
                                     session.model,
@@ -291,6 +303,9 @@ class OfflineDemoActivity : ComponentActivity() {
                                     adminRemovalFactory = { id -> adminRemovalViewModelFactory(session.services, id) },
                                     sentFactory = { actorId ->
                                         sentNotificationsViewModelFactory(session.services, actorId)
+                                    },
+                                    conversationListFactory = { actorId, context ->
+                                        conversationListViewModelFactory(session.services, actorId, context)
                                     },
                                     reviewsFactory = {
                                         actorId,

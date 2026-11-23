@@ -1,3 +1,7 @@
+/*
+ * Registers one saved owned-set editor and its temporary picker/calendar children.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

@@ -1,3 +1,7 @@
+/*
+ * Displays offered campsite facts without checking free inventory or changing the allocation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components
 
 import androidx.compose.foundation.layout.Arrangement

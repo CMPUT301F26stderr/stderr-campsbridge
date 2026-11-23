@@ -31,6 +31,8 @@ bash ./gradlew :app:assembleFirebaseDebug -PfirebaseEmulatorHost=10.0.2.2
 
 Use a host reachable from the device. `AppContainerFactory` configures Auth, Firestore, Storage, and Functions together before use. Omitting the property selects cloud configuration in Firebase-enabled variants; use the same property for subsequent Firebase builds until returning to cloud. The property does not change the offline `debug` launcher. Startup establishes identity and reads a profile; it does not create sample accounts. Seed development accounts deliberately through emulator tooling when testing existing-user flows. Keep cloud deployment procedures in the team Wiki.
 
+The app can't grant the admin role; security rules only let accounts add the owner role themselves. To make someone an admin, have them open the Firebase build once so their account exists, then add `ADMIN` to `roles` in `accounts/{accountId}` in the Firebase console. The account ID is their anonymous Auth user ID. The Halfway seed already includes one admin, Taylor Brooks.
+
 ## Testing and pending work
 
 Local domain, document-contract, and listener tests run through `bash scripts/check.sh`.

@@ -1,3 +1,7 @@
+/*
+ * Owns raw saved-listing details and independent photo actions within the edit graph.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

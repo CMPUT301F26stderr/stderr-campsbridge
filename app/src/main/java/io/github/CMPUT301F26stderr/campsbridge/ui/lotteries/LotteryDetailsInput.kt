@@ -1,11 +1,15 @@
+/*
+ * Validated shared details or the existing field feedback for raw input.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.AppDisplayTime
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.resolveDateTime
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.AppDisplayTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.parsePositiveCount
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.resolveDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows

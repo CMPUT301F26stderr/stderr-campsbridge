@@ -11,10 +11,11 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCategory
+import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsitePhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.components.ReservationCard
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -78,6 +79,45 @@ private fun ReservationListPreview(
                         previewReservation().campsiteId to
                             previewCampsitePhoto(previewReservation().campsiteId),
                     ),
+            )
+        }
+    }
+}
+
+/** Shows the entrant map view over two campsites, with a long campsite name, at both scales. */
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(name = "Large map", showBackground = true, widthDp = 360, heightDp = 800, fontScale = 2f)
+@Composable
+private fun ReservationMapPreview() {
+    val river = previewReservation()
+    val lake =
+        river.copy(
+            id = "reservation-lake",
+            campsiteId = "lake-site",
+            bookedCampsite =
+                river.bookedCampsite.copy(
+                    name = "Lake Louise walk-in sites beside the long portage trail",
+                    locationLabel = "Banff",
+                    location = Coordinates(51.4254, -116.1773),
+                ),
+        )
+    CampsbridgeTheme {
+        AppScreen(stringResource(R.string.my_reservations)) {
+            ReservationListScreen(
+                ReservationListUiState.Content(
+                    listOf(
+                        ReservationListItem(river, ReservationCategory.UPCOMING),
+                        ReservationListItem(lake, ReservationCategory.UPCOMING),
+                    ),
+                ),
+                ReservationContext.ENTRANT,
+                null,
+                {},
+                {},
+                {},
+                {},
+                view = ReservationListView.MAP,
+                onView = {},
             )
         }
     }

@@ -1,3 +1,7 @@
+/*
+ * Checks reachable allocation summaries and exports the production screens at enlarged scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import android.graphics.Bitmap

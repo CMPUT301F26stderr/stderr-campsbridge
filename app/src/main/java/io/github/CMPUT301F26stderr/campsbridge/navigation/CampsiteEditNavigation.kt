@@ -1,3 +1,7 @@
+/*
+ * Registers one saved edit owner with retained fields, photo, map and policy children.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.runtime.Composable

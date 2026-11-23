@@ -1,3 +1,7 @@
+/*
+ * AR-04 uses actual Activity recreation and its root operation owner beyond profile disposal.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.activity.ComponentActivity

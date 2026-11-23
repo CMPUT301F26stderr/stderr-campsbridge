@@ -6,10 +6,10 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CampsiteDetails
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDraft
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PriceInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePriceCents
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PriceInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.parsePositiveCount
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.parsePriceCents
 import java.time.ZoneId
 
 /** Complete validated details or user-correctable feedback; no repository receives a raw draft. */
