@@ -5,7 +5,7 @@ gradlew text eol=lf
 *.jar binary
 
 # Keep the prototype tracked, but exclude it from GitHub language statistics.
-/prototype/** linguist-vendored=true
+/doc/prototype/** linguist-vendored=true
 
 # Keep conversation exports out of source statistics and numeric diff counts.
-/citations/** linguist-generated=true -diff
+/doc/citations/** linguist-generated=true -diff

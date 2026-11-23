@@ -1,10 +1,10 @@
 # Persistence tooling
 
-The completed Halfway demo’s [walkthrough](../../pages/archive/halfway-demo/index.html) and [reset notes](../../doc/archive/halfway-firebase-reset.md) are archived. Its scripts and fixtures are preserved in the [Halfway archive](https://github.com/CMPUT301F26stderr/stderr-campsbridge/tree/halfway-demo-archive); the setup below targets Final.
+The completed Halfway demo’s [walkthrough](../../doc/pages/archive/halfway-demo/index.html) and [reset notes](../../doc/archive/halfway-firebase-reset.md) are archived. Its scripts and fixtures are preserved in the [Halfway archive](https://github.com/CMPUT301F26stderr/stderr-campsbridge/tree/halfway-demo-archive); the setup below targets Final.
 
 The Final development declarations are in `../fixtures/halfway.json`. The filename is historical: the fixture now includes shared lotteries and nullable ratings that the published Halfway Firebase APK doesn't fully support. Keep that demo on its existing Firebase project. Use a separate project for Final and build its Firebase APK with the matching `app/google-services.json`.
 
-The fixture retains the earlier journey and adds a lottery shared by two owners, a reservation at the second owner's campsite, messages in both directions, and rating-only/text-only/combined feedback. Lottery declarations name an organizer, participants and offers; reservations name their selected campsite. Dates use one supplied anchor and the declared campsite timezone. Photos reuse the credited files under `assets/photos/`.
+The fixture retains the earlier journey and adds a lottery shared by two owners, a reservation at the second owner's campsite, messages in both directions, and rating-only/text-only/combined feedback. Lottery declarations name an organizer, participants and offers; reservations name their selected campsite. Dates use one supplied anchor and the declared campsite timezone. Photos reuse the credited files under `app/assets/photos/`.
 
 Install the pinned setup dependencies with `npm --prefix firebase/functions ci`. Run setup with an application-default Firebase administrator credential (`GOOGLE_APPLICATION_CREDENTIALS` or `gcloud auth application-default login`). Despite its historical filename, this command deploys the current Final rules, indexes, booking/cancellation and scheduled worker, then applies the declared Auth, function service roles and callable HTTP access. It doesn't seed demo records:
 

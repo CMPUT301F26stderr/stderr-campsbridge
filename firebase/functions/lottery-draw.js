@@ -1,3 +1,7 @@
+/*
+ * Runs one lottery draw as resumable Firestore transactions: picks winners, records outcomes and queues win/loss notifications.
+ */
+
 const { selectWinners } = require('./draw-order');
 
 const pair = (...ids) => ids.map(id => `${id.length}:${id}`).join('');

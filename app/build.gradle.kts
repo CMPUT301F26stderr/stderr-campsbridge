@@ -70,7 +70,7 @@ android {
     sourceSets
         .getByName("main")
         .assets.directories
-        .add(rootProject.file("assets").path)
+        .add(file("assets").path)
 }
 
 /** Writes the current runtime graph for license extraction in every build variant. */
