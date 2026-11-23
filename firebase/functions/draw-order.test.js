@@ -1,3 +1,7 @@
+/*
+ * Checks the server winner ranking against the vectors shared with the Kotlin draw.
+ */
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { selectWinners } = require('./draw-order');

@@ -2,7 +2,7 @@
 
 [Open the published storyboard](https://cmput301f26stderr.github.io/stderr-campsbridge/storyboard/). Successful CI runs on `main` publish the viewer alongside API documentation; CI can also be run manually. Deployment includes the viewer and screen assets, excluding this README and the generated ZIP.
 
-Run `python3 -m http.server 8080` at the repository root and open http://localhost:8080/prototype/. The shared scenery assets are served from `/assets/`.
+To preview locally, lay the files out the way Pages does: copy `doc/prototype` to `storyboard/` and `app/assets` to `assets/` in an empty folder, run `python3 -m http.server 8080` there, and open http://localhost:8080/storyboard/.
 
 - `screens/` contains the exported screen designs with scenery references replaced by the shared, credited Unsplash photos.
 - `wiring.json` defines destinations, role/onboarding branches, Back destinations, existing progress-to-result screen transitions, and screen-level requirement references. Its `requirements` catalog owns each requirement's description and any design limitation; each screen's `requirements` array lists the relevant IDs.

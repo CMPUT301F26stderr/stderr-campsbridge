@@ -262,7 +262,7 @@ async function main(argv) {
       const { randomUUID } = require('node:crypto');
       const blobId = randomUUID();
       // A fresh blob reloads running clients after reset; Firebase download URLs need a token.
-      await bucket.upload(path.resolve(__dirname, '../../assets', photo.source), {
+      await bucket.upload(path.resolve(__dirname, '../../app/assets', photo.source), {
         destination: `images/${blobId}/original`,
         metadata: { contentType: 'image/jpeg', metadata: { attachmentId: photo.attachmentId, firebaseStorageDownloadTokens: randomUUID() } },
       });

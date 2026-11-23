@@ -17,6 +17,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
@@ -226,6 +227,34 @@ class InboxNavigationTest {
         }
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNode(hasText("Inbox") and hasClickAction()).assertIsSelected()
+    }
+
+    /** US 01.07.02: a cancellation notice reaches the entrant's Inbox and opens that reservation. */
+    @Test fun cancellationNoticeAppearsAndOpensItsReservation() {
+        val cancelled =
+            previewReservation().copy(
+                id = "cancelled/C",
+                entrantId = "account-1",
+                cancellation =
+                    ReservationCancellation(now.minusSeconds(600), "owner", Role.OWNER, "Flooded site"),
+            )
+        host.bookings.records.value = listOf(cancelled)
+        val event =
+            winner.copy(
+                id = "cancellation",
+                senderId = "owner",
+                type = NotificationType.RESERVATION_CANCELLED,
+                subject = NotificationSubject(SubjectType.RESERVATION, cancelled.id),
+            )
+        history(event)
+        host.notifications.markReadHandler = { _, _ -> Unit }
+        start()
+        compose.onNodeWithText("Reservation cancelled").assertIsDisplayed()
+        compose.onNodeWithTag("inbox-event-${event.id}").performClick()
+        compose.onNodeWithText(cancelled.id).assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf(cancelled.id to ReservationContext.ENTRANT), host.reservationDetailRequests)
+        }
     }
 
     /** Both workspace entries share account receipt ownership rather than duplicate observers. */

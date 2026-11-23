@@ -4,7 +4,7 @@ Keep the disclosure short and accurate. For this project, AI assistance includes
 
 The [course outline](https://ualberta-cmput301.github.io/general/outline.html) requires the company, AI tool, subject and date, plus a README statement estimating how extensively AI was used. Add the recorded model/version when available. Don't invent a model, prompt, date or review outcome.
 
-Store relevant conversation turns under `citations/<member>/`. Keep the prompt and its replies together, with their dates and recorded models. These exports are selected project conversations, not complete session archives. Remove credentials, unrelated personal chats and private material. Keep enough information to disclose substantive AI assistance and preserve contribution credit.
+Store relevant conversation turns under `doc/citations/<member>/`. Keep the prompt and its replies together, with their dates and recorded models. These exports are selected project conversations, not complete session archives. Remove credentials, unrelated personal chats and private material. Keep enough information to disclose substantive AI assistance and preserve contribution credit.
 
 Omit complete turns about Wiki edits, UML diagrams and CRC cards, including the prompt, replies and delegated reviews, from both repository citations and the combined Wiki page. Regenerate the Wiki page from the filtered files; keep the overall AI-use disclosure accurate.
 

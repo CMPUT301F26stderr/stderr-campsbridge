@@ -1,3 +1,7 @@
+/*
+ * Ranks lottery entrants by a seeded UTF-8 digest so the server picks the same winners as the Kotlin draw.
+ */
+
 const { createHash } = require('node:crypto');
 
 /** Select from unique account IDs using the same UTF-8 digest and ordering as Kotlin. */

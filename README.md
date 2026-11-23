@@ -24,4 +24,4 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing. This project uses t
 
 ## AI usage
 
-We used OpenAI Codex and other AI tools extensively for implementation, tests, debugging, UI work, documentation and build configuration. Selected conversations, recorded tools/models and dates are in [citations](citations/), grouped by team member. The [AI usage Wiki page](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/AI-Usage) combines those records.
+We used OpenAI Codex and other AI tools extensively for implementation, tests, debugging, UI work, documentation and build configuration. Selected conversations, recorded tools/models and dates are in [doc/citations](doc/citations/), grouped by team member. The [AI usage Wiki page](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/AI-Usage) combines those records.

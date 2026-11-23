@@ -50,14 +50,14 @@ jobs:
         run: |
           test -f "$SITE_DIR/docs/index.html"
           mkdir -p "$SITE_DIR/storyboard"
-          cp pages/index.html "$SITE_DIR/index.html"
-          cp -R pages/archive "$SITE_DIR/archive"
-          cp -R pages/halfway-demo "$SITE_DIR/halfway-demo"
-          cp prototype/index.html prototype/prototype.css prototype/prototype.js \
-            prototype/hotspots.css prototype/wiring.json "$SITE_DIR/storyboard/"
-          cp -R prototype/screens "$SITE_DIR/storyboard/screens"
-          cp prototype/credits.html "$SITE_DIR/storyboard/credits.html"
-          cp -R assets "$SITE_DIR/assets"
+          cp doc/pages/index.html "$SITE_DIR/index.html"
+          cp -R doc/pages/archive "$SITE_DIR/archive"
+          cp -R doc/pages/halfway-demo "$SITE_DIR/halfway-demo"
+          cp doc/prototype/index.html doc/prototype/prototype.css doc/prototype/prototype.js \
+            doc/prototype/hotspots.css doc/prototype/wiring.json "$SITE_DIR/storyboard/"
+          cp -R doc/prototype/screens "$SITE_DIR/storyboard/screens"
+          cp doc/prototype/credits.html "$SITE_DIR/storyboard/credits.html"
+          cp -R app/assets "$SITE_DIR/assets"
       - name: Upload Pages site
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
