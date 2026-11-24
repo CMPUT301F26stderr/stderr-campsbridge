@@ -17,14 +17,6 @@ enum class Role {
 }
 
 /**
- * Shared color-palette preference for standard and color-blind presentation.
- */
-enum class ColorMode {
-    STANDARD,
-    COLOR_BLIND,
-}
-
-/**
  * Camping characteristics used to personalize discovery and recommendations.
  *
  * @param tags Unique campsite characteristics or preferred characteristics.
@@ -39,13 +31,11 @@ data class Preferences(
  * Persisted alert and accessibility preferences with usable quarter-to-fourfold size scales.
  *
  * @param notificationsEnabled Whether alerts are enabled; inbox history is still retained.
- * @param colorMode Shared standard or color-blind palette preference.
  * @param fontScale Application text scale from 0.25 to 4.0, applied alongside system scaling.
  * @param controlScale Application control scale from 0.25 to 4.0; minimum touch targets remain enforced.
  */
 data class AccountSettings(
     val notificationsEnabled: Boolean = true,
-    val colorMode: ColorMode = ColorMode.STANDARD,
     val fontScale: Double = 1.0,
     val controlScale: Double = 1.0,
 ) {

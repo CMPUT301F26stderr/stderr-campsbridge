@@ -23,10 +23,11 @@ import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Ember
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**
- * Loading feedback distinct from an empty result.
+ * Loading feedback distinct from an empty result, with the indicator in the ember accent.
  * @param message Localized status text.
  */
 @Composable
@@ -36,7 +37,7 @@ fun LoadingContent(message: String = stringResource(R.string.loading)) {
         Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
-        LoadingIndicator()
+        LoadingIndicator(color = Ember)
         Text(message)
     }
 }

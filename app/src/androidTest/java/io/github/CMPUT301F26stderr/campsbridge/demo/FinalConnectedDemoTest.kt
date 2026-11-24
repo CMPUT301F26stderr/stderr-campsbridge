@@ -83,7 +83,7 @@ class FinalConnectedDemoTest {
             assertTrue(
                 draft.publishedAt == null && draft.participantOwnerIds.containsAll(setOf("demo-host", "demo-cohost")),
             )
-            person("Collaborating owner")
+            person(scenario, "Collaborating owner", DemoScenario.CO_OWNER)
             open("Lotteries")
             open("Drafts")
             open(draft.title)
@@ -177,7 +177,7 @@ class FinalConnectedDemoTest {
                 .performTextInput("Final journey arrival: is the east path open?")
             open("Send message")
             waitFor("Final journey arrival: is the east path open?")
-            person("Collaborating owner")
+            person(scenario, "Collaborating owner", DemoScenario.CO_OWNER)
             compose.onNodeWithContentDescription("Back").performClick()
             open("Reservations")
             compose.onNodeWithTag("reservation:${reservation.id}").performScrollTo().performClick()
@@ -209,7 +209,7 @@ class FinalConnectedDemoTest {
                     it.senderId == "demo-cohost" && it.body == "Yes, we will meet you at the east entrance."
                 },
             )
-            person("Administrator")
+            person(scenario, "Administrator", DemoScenario.ADMIN)
             open("Logs")
             open("Messages")
             compose.onNodeWithText("Search").performTextInput("Final journey arrival")
@@ -245,12 +245,20 @@ class FinalConnectedDemoTest {
         }
     }
 
-    /** Uses the actual demo person switch while preserving the shared document store.
+    /** Uses the actual demo person switch while preserving the shared document store. The switch finishes in a
+     * ViewModel coroutine that Compose idling doesn't track, so this waits until the host exposes that person.
+     * @param scenario This test's owned launcher Activity.
      * @param label Existing person menu label.
+     * @param target Demo person the label selects.
      */
-    private fun person(label: String) {
+    private fun person(
+        scenario: ActivityScenario<OfflineDemoActivity>,
+        label: String,
+        target: DemoScenario,
+    ) {
         open("Demo tools")
         open(label)
+        compose.waitUntil(15000) { runCatching { session(scenario).scenario == target }.getOrDefault(false) }
     }
 
     /** Selects one May schedule date and the dialog's explicit default wall time.

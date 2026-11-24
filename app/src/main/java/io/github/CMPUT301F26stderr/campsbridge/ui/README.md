@@ -2,7 +2,7 @@
 
 Use these conventions when implementing UI features. Keep screen designs and storyboards in the team Wiki. Add the preferred dependencies below as their features are implemented.
 
-The visual intent, interaction patterns, and approved prototypes are recorded in the [team Wiki](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki). The shared theme now supplies white surfaces, green accents, bundled Inter, spacing, and account font/control scaling. Wallpaper colors and automatic dark mode do not replace the approved palette.
+The visual intent, interaction patterns, and approved prototypes are recorded in the [team Wiki](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki). The shared theme now supplies white surfaces, green accents, bundled Inter, spacing, and account font/control scaling. Headings use JetBrains Mono, and the ember accent marks the blinking title cursor, loading, the current step and lottery wins; the motifs live in `components/brand` and stay still when system animations are off. Wallpaper colors and automatic dark mode do not replace the approved palette.
 
 ## Dependency policy
 
@@ -90,7 +90,7 @@ The profile currently connects this path to its existing account's image slot. T
 
 - Use shared colors, typography, spacing, and shapes; put user-visible text in string resources.
 - Preserve system font scaling and apply the account's font/control scaling consistently. Use flexible layouts.
-- Provide meaningful semantics and labels. Communicate availability and errors with more than color alone; color-blind mode uses a shared palette.
+- Provide meaningful semantics and labels. Communicate availability and errors with more than color alone.
 - Put themed `@Preview` functions at the bottom of the screen or component file in `src/main`, so Android Studio shows them while editing that content. Use small sample values without repositories or Firebase. Cover realistic content and feedback.
 - Keep interactive demo activities, galleries, fake repositories and shared test fixtures in `src/debug`. Production screens must not fake successful saves or contain throwing placeholders in preview paths.
 

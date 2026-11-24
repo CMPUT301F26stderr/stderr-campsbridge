@@ -13,7 +13,6 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.ColorMode
 
 val LocalControlScale = compositionLocalOf { 1f }
 
@@ -34,14 +33,7 @@ fun CampsbridgeTheme(
             (48.dp * settings.controlScale.toFloat().coerceAtLeast(1f)),
     ) {
         MaterialExpressiveTheme(
-            colorScheme =
-                if (settings.colorMode ==
-                    ColorMode.COLOR_BLIND
-                ) {
-                    ColorBlindColors
-                } else {
-                    StandardColors
-                },
+            colorScheme = StandardColors,
             typography = typography,
             shapes = CampsbridgeShapes,
             motionScheme = MotionScheme.expressive(),
