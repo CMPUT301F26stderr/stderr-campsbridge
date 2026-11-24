@@ -2,7 +2,7 @@
 
 Use these conventions when implementing UI features. Keep screen designs and storyboards in the team Wiki. Add the preferred dependencies below as their features are implemented.
 
-The visual intent, interaction patterns, and approved prototypes are recorded in the [team Wiki](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki). The shared theme now supplies white surfaces, green accents, bundled Inter, spacing, and account font/control scaling. Wallpaper colors and automatic dark mode do not replace the approved palette.
+The visual intent, interaction patterns, and approved prototypes are recorded in the [team Wiki](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki). The shared theme now supplies white surfaces, green accents, bundled Inter, spacing, and account font/control scaling. Headings use JetBrains Mono, and the ember accent marks the blinking title cursor, loading, the current step and lottery wins; the motifs live in `components/brand` and stay still when system animations are off. Wallpaper colors and automatic dark mode do not replace the approved palette.
 
 ## Dependency policy
 

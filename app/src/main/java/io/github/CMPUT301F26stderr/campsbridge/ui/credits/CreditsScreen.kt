@@ -132,6 +132,15 @@ fun CreditsScreen(
             TextButton({ onOpenLink("https://rsms.me/inter/") }) {
                 Text(stringResource(R.string.credits_font_source))
             }
+            Text(stringResource(R.string.credits_mono_font), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.credits_mono_font_body))
+            NavigationRow(
+                stringResource(R.string.credits_mono_font_license),
+                { onLicense(BundledLicense.JETBRAINS_MONO) },
+            )
+            TextButton({ onOpenLink("https://github.com/JetBrains/JetBrainsMono") }) {
+                Text(stringResource(R.string.credits_mono_font_source))
+            }
             HorizontalDivider()
             Text(stringResource(R.string.credits_java), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.credits_java_body))
@@ -172,6 +181,7 @@ enum class BundledLicense(
     val assetPath: String,
 ) {
     INTER("inter", R.string.credits_font_license, "licenses/Inter-OFL.txt"),
+    JETBRAINS_MONO("jetbrains-mono", R.string.credits_mono_font_license, "licenses/JetBrainsMono-OFL.txt"),
     DESUGAR("desugar", R.string.credits_java_license, "licenses/desugar-jdk-libs-LICENSE.txt"),
     MATERIAL_ICONS("material-icons", R.string.credits_material_icons, "licenses/material-icons-LICENSE.txt"),
     WECHAT_QR_MODELS("wechat-qr-models", R.string.credits_qr_models, "licenses/wechat-qrcode-models-LICENSE.txt"),

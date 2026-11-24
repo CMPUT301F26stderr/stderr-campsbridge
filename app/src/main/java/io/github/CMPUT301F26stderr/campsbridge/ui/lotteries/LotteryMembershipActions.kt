@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.brand.EmberBurst
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.ConfirmationDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.InlineNotice
@@ -82,7 +84,7 @@ internal fun LotteryMembershipActions(
     }
 }
 
-/** Displays own-entry knowledge independently from shared command feedback.
+/** Displays own-entry knowledge independently from shared command feedback. A win also plays the ember burst.
  * @param membership Current display-safe own-entry outcome.
  * @param onRetry Explicit source retry, never a command replay.
  */
@@ -108,19 +110,19 @@ internal fun LotteryMembershipReadContent(
         }
 
         is LotteryMembershipRead.Content -> {
-            Text(
-                lotteryMembershipLabel(membership.status),
-                style =
-                    when (membership.status) {
-                        LotteryMembershipStatus.WON, LotteryMembershipStatus.LOST, LotteryMembershipStatus.DECLINED -> {
-                            MaterialTheme.typography.titleMediumEmphasized
-                        }
-
-                        else -> {
-                            MaterialTheme.typography.bodyLarge
-                        }
-                    },
-            )
+            val settled =
+                membership.status in
+                    setOf(LotteryMembershipStatus.WON, LotteryMembershipStatus.LOST, LotteryMembershipStatus.DECLINED)
+            val typography = MaterialTheme.typography
+            Box(Modifier.fillMaxWidth()) {
+                Text(
+                    lotteryMembershipLabel(membership.status),
+                    style = if (settled) typography.titleMediumEmphasized else typography.bodyLarge,
+                )
+                if (membership.status == LotteryMembershipStatus.WON) {
+                    EmberBurst(Modifier.matchParentSize())
+                }
+            }
         }
     }
 }

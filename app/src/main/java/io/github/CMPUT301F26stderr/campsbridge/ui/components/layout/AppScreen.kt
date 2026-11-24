@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
@@ -41,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.brand.BlinkingCursor
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Measured clearance that lets lists scroll their final row above the floating action. */
@@ -48,6 +51,7 @@ internal val LocalFloatingActionPadding = staticCompositionLocalOf { 0.dp }
 
 /**
  * Owns the shared app bar, Back input, system insets, gutters, and optional bottom actions.
+ * The title ends in the team's blinking ember cursor.
  * @param title Localized page title, or null to omit the app bar.
  * @param modifier Caller layout.
  * @param onBack Optional return action; absent on root destinations.
@@ -93,12 +97,16 @@ fun AppScreen(
                         scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     )
                 val heading: @Composable () -> Unit = {
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.titleLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            title,
+                            Modifier.weight(1f, fill = false),
+                            style = MaterialTheme.typography.titleLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        BlinkingCursor(MaterialTheme.typography.titleLarge)
+                    }
                 }
                 if (onBack != null) {
                     TopAppBar(

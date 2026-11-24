@@ -1,5 +1,5 @@
 /*
- * Defines the shared Material color palettes for standard and color-blind presentation.
+ * Defines the shared Material color palettes for standard and color-blind presentation, plus the ember accent.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
@@ -9,6 +9,12 @@ import androidx.compose.ui.graphics.Color
 
 val ForestGreen = Color(0xFF00874A)
 val Ink = Color(0xFF18231D)
+
+/** Campfire accent for the cursor, the current step and wins; 4.3:1 on white, never the only signal of state. */
+val Ember = Color(0xFFD9480F)
+
+/** Hot centre of a flame or spark, used only beside [Ember] in decoration. */
+val EmberGlow = Color(0xFFFFB703)
 
 val StandardColors =
     expressiveLightColorScheme().copy(

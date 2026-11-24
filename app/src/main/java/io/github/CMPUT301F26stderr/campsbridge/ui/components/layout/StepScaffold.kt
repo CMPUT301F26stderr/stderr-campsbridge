@@ -41,6 +41,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.LocalValidationAttempt
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
+import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Ember
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /**
@@ -211,6 +212,7 @@ data class StepProgress(
 }
 
 /** Segments composed from Material surfaces with one accessibility progress value.
+ * Finished steps use the primary colour and the current step uses the ember accent.
  * @param progress Current and total step counts.
  */
 @Composable
@@ -227,10 +229,10 @@ private fun StepIndicator(progress: StepProgress) {
                 Modifier.weight(1f).height(4.dp),
                 shape = MaterialTheme.shapes.small,
                 color =
-                    if (index < progress.current) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    when {
+                        index < progress.current - 1 -> MaterialTheme.colorScheme.primary
+                        index == progress.current - 1 -> Ember
+                        else -> MaterialTheme.colorScheme.surfaceContainerHighest
                     },
             ) {}
         }

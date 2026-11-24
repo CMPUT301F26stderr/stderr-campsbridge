@@ -20,4 +20,8 @@
     <path android:pathData="M100,88L72,160L100,160Z" android:fillColor="#00874a" />
     <path android:pathData="M100,108L86,160L100,160Z" android:fillColor="#00210e" />
     <path android:pathData="M100,108L100,160L108,160Z" android:fillColor="#8cf9af" android:fillAlpha="0.3" />
+    <path android:pathData="M88 186L112 179" android:fillColor="#00000000" android:strokeColor="#6b4f3a" android:strokeWidth="3.5" android:strokeLineCap="round" />
+    <path android:pathData="M88 179L112 186" android:fillColor="#00000000" android:strokeColor="#556158" android:strokeWidth="3.5" android:strokeLineCap="round" />
+    <path android:pathData="M100 163C105 169 110 174 107 179C105 183 95 183 93 179C90 174 95 169 100 163Z" android:fillColor="#d9480f" />
+    <path android:pathData="M100 170C103 174 105 177 103 180C102 182 98 182 97 180C95 177 97 174 100 170Z" android:fillColor="#ffb703" />
 </vector>
