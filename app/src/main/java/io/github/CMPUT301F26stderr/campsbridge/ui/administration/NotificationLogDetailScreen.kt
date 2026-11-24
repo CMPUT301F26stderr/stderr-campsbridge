@@ -57,9 +57,6 @@ fun NotificationLogDetailScreen(
             state.event?.let { NotificationEventFacts(it) }
             state.id?.let { DetailRow(stringResource(R.string.log_event_id), it) }
         }
-        if (state.event != null) {
-            NavigationRow(stringResource(R.string.log_recipients), onAudience)
-        }
         SummarySection(stringResource(R.string.log_message_content)) {
             when (val result = state.content) {
                 null -> {
@@ -107,6 +104,9 @@ fun NotificationLogDetailScreen(
                 }
             }
         }
+        if (state.event != null) {
+            NavigationRow(stringResource(R.string.log_recipients), onAudience)
+        }
     }
 }
 
@@ -126,7 +126,7 @@ private fun NotificationEventFacts(event: Notification) {
         stringResource(R.string.log_sender),
         event.senderId ?: stringResource(R.string.log_system_sender),
     )
-    DetailRow(stringResource(R.string.log_linked_type), event.subject.type.name)
+    DetailRow(stringResource(R.string.log_linked_type), subjectTypeLabel(event.subject.type))
     DetailRow(stringResource(R.string.log_linked_id), event.subject.id)
 }
 

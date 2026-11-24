@@ -57,7 +57,10 @@ fun NotificationLogScreen(
     onRetry: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
 ) {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+    Column(
+        Modifier.fillMaxSize().padding(top = Spacing.small),
+        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+    ) {
         AppSearchField(
             state.query,
             onQuery,
@@ -135,26 +138,17 @@ private fun NotificationLogRow(
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
             }
             Text(
-                formatDateTime(
-                    event.createdAt,
-                    LocalConfiguration.current.locales[0],
-                ),
+                listOf(
+                    formatDateTime(event.createdAt, LocalConfiguration.current.locales[0]),
+                    stringResource(
+                        R.string.log_sender_summary,
+                        event.senderId ?: stringResource(R.string.log_system_sender),
+                    ),
+                ).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
-                stringResource(
-                    R.string.log_sender_summary,
-                    event.senderId ?: stringResource(R.string.log_system_sender),
-                ),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(event.subject.id, style = MaterialTheme.typography.bodySmall)
-            Text(
-                event.id,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            RecordId("${subjectTypeLabel(event.subject.type)} · ${event.subject.id}")
         }
     }
 }

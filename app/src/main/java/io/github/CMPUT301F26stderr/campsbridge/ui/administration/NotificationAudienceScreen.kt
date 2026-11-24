@@ -7,6 +7,7 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
@@ -154,19 +156,27 @@ private fun NotificationLogRecipientRow(member: NotificationAudienceMember) {
         Modifier.fillMaxWidth().testTag("admin-audience-recipient:${member.accountId}"),
         verticalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
-        Column(
+        Row(
             Modifier.padding(vertical = Spacing.small),
-            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(member.accountId, style = MaterialTheme.typography.titleSmall)
+            Text(
+                member.accountId,
+                Modifier.weight(1f),
+                style =
+                    MaterialTheme.typography.titleSmall.copy(
+                        fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
+                    ),
+            )
             val readAt = member.readAt
             when {
                 member.delivery == NotificationAudienceDelivery.PENDING -> {
-                    Text(stringResource(R.string.log_delivery_pending))
+                    StatusLabel(stringResource(R.string.log_delivery_pending))
                 }
 
                 readAt == null -> {
-                    Text(stringResource(R.string.log_delivery_confirmed))
+                    StatusLabel(stringResource(R.string.log_delivery_confirmed))
                 }
 
                 else -> {
@@ -178,6 +188,8 @@ private fun NotificationLogRecipientRow(member: NotificationAudienceMember) {
                                 LocalConfiguration.current.locales[0],
                             ),
                         ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

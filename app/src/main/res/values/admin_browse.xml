@@ -48,4 +48,7 @@
     <string name="admin_image_parent_unavailable">The parent record is missing or unavailable.</string>
     <string name="admin_open_profile">Open profile</string>
     <string name="admin_open_campsite">Inspect campsite</string>
+    <string name="admin_image_details">Image</string>
+    <string name="admin_image_attached_to">Attached to</string>
+    <string name="admin_profile_unnamed">No display name</string>
 </resources>

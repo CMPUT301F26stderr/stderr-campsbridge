@@ -6,7 +6,7 @@ package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -71,7 +71,7 @@ internal fun NavGraphBuilder.notificationLogGraph(
                 var messages by rememberSaveable { mutableStateOf(false) }
                 val pages = rememberSaveableStateHolder()
                 Column {
-                    PrimaryTabRow(if (messages) 1 else 0) {
+                    SecondaryTabRow(if (messages) 1 else 0) {
                         Tab(
                             !messages,
                             { messages = false },
