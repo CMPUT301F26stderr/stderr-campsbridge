@@ -35,9 +35,9 @@ service cloud.firestore {
       return value is list && (value.size() == 0 || value == value.join('\u0000').split('\u0000'));
     }
     function validSettings(value) {
-      return value is map && value.keys().hasAll(['notificationsEnabled', 'colorMode', 'fontScale', 'controlScale'])
-        && value.keys().hasOnly(['notificationsEnabled', 'colorMode', 'fontScale', 'controlScale'])
-        && value.notificationsEnabled is bool && value.colorMode in ['STANDARD', 'COLOR_BLIND']
+      return value is map && value.keys().hasAll(['notificationsEnabled', 'fontScale', 'controlScale'])
+        && value.keys().hasOnly(['notificationsEnabled', 'fontScale', 'controlScale'])
+        && value.notificationsEnabled is bool
         && value.fontScale is number && value.fontScale >= 0.25 && value.fontScale <= 4.0
         && value.controlScale is number && value.controlScale >= 0.25 && value.controlScale <= 4.0;
     }

@@ -25,7 +25,7 @@ const db = uid => context(uid).firestore();
 const store = uid => context(uid).storage();
 const account = roles => ({ name: 'Camper', email: null, phone: null, roles,
   preferences: { tags: [], amenities: [] },
-  settings: { notificationsEnabled: true, colorMode: 'STANDARD', fontScale: 1, controlScale: 1 },
+  settings: { notificationsEnabled: true, fontScale: 1, controlScale: 1 },
   createdAt: now(), removal: null });
 const campsite = (ownerId = 'owner', published = true) => ({ ownerId, name: 'Camp', description: 'Quiet',
   location: new GeoPoint(53, -118), locationLabel: 'Jasper', timeZone: 'America/Edmonton', maxGuests: 8,
@@ -339,7 +339,7 @@ test('missing message and event lookups allow absence checks without opening exi
 test('removed account cannot write or recreate itself; admin removal scrubs profile', async () => {
   await assertSucceeds(updateDoc(doc(db('admin'), 'accounts/other'), {
     name: '', email: null, phone: null, roles: [], preferences: { tags: [], amenities: [] },
-    settings: { notificationsEnabled: false, colorMode: 'STANDARD', fontScale: 1, controlScale: 1 },
+    settings: { notificationsEnabled: false, fontScale: 1, controlScale: 1 },
     removal: { at: now(), actorId: 'admin', reason: 'Moderation' },
   }));
   await assertFails(updateDoc(doc(db('other'), 'accounts/other'), { name: 'Back', removal: null, roles: ['ENTRANT'] }));
@@ -440,7 +440,7 @@ test('self-removal records cleanup authority without granting access to unrelate
   const b = writeBatch(database);
   b.update(doc(database, 'accounts/owner'), { name: '', email: null, phone: null, roles: [],
     preferences: { tags: [], amenities: [] },
-    settings: { notificationsEnabled: false, colorMode: 'STANDARD', fontScale: 1, controlScale: 1 }, removal });
+    settings: { notificationsEnabled: false, fontScale: 1, controlScale: 1 }, removal });
   b.set(doc(database, '_removals/account_owner'), removal);
   await assertSucceeds(b.commit());
   await assertSucceeds(getDocs(query(collection(database, '_removals'), where('actorId', '==', 'owner'))));

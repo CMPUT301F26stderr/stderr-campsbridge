@@ -31,7 +31,7 @@ function compileFixture(fixture, actors, anchor) {
   for (const [name, actor] of Object.entries(fixture.actors)) {
     assert.ok(actor.roles.length && actor.roles.every(role => ['ENTRANT', 'OWNER', 'ADMIN'].includes(role)), `Invalid roles for ${name}`);
     put(`accounts/${actors[name]}`, { name: actor.name, email: null, phone: null, roles: actor.roles,
-      preferences: { tags: [], amenities: [] }, settings: { notificationsEnabled: true, colorMode: 'STANDARD', fontScale: 1, controlScale: 1 },
+      preferences: { tags: [], amenities: [] }, settings: { notificationsEnabled: true, fontScale: 1, controlScale: 1 },
       createdAt: at(-7776000), removal: null });
   }
   for (const site of fixture.campsites) {

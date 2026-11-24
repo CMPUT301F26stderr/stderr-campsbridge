@@ -35,7 +35,6 @@ accounts/{accountId}
   preferences: { tags: List<String>, amenities: List<String> }
   settings: {
     notificationsEnabled: Boolean,
-    colorMode: STANDARD | COLOR_BLIND,
     fontScale: Double,
     controlScale: Double
   }

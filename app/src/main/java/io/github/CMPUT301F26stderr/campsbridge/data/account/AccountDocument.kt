@@ -37,7 +37,6 @@ object AccountDocument : DocumentCodec<Account>() {
             "settings" to
                 mapOf(
                     "notificationsEnabled" to value.settings.notificationsEnabled,
-                    "colorMode" to value.settings.colorMode.name,
                     "fontScale" to value.settings.fontScale,
                     "controlScale" to value.settings.controlScale,
                 ),
@@ -63,7 +62,6 @@ object AccountDocument : DocumentCodec<Account>() {
             fields.nested("settings").let {
                 AccountSettings(
                     it.boolean("notificationsEnabled"),
-                    it.enum("colorMode"),
                     it.double("fontScale"),
                     it.double("controlScale"),
                 )

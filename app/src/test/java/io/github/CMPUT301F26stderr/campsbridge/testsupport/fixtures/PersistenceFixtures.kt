@@ -85,7 +85,6 @@ object PersistenceFixtures {
             "settings" to
                 mapOf(
                     "notificationsEnabled" to true,
-                    "colorMode" to "STANDARD",
                     "fontScale" to 1.0,
                     "controlScale" to 1.0,
                 ),
@@ -186,7 +185,6 @@ object PersistenceFixtures {
                         "settings" to
                             mapOf(
                                 "notificationsEnabled" to false,
-                                "colorMode" to "STANDARD",
                                 "fontScale" to 1.0,
                                 "controlScale" to 1.0,
                             ),

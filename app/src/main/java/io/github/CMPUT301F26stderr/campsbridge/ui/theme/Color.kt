@@ -1,5 +1,5 @@
 /*
- * Defines the shared Material color palettes for standard and color-blind presentation, plus the ember accent.
+ * Defines the shared Material color palette and the ember accent.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.theme
@@ -44,18 +44,4 @@ val StandardColors =
         outlineVariant = Color(0xFFDCE3DE),
         error = Color(0xFFA83836),
         onError = Color.White,
-    )
-val ColorBlindColors =
-    StandardColors.copy(
-        primary = Color(0xFF00677E),
-        onPrimary = Color.White,
-        primaryContainer = Color(0xFFD3EDF5),
-        onPrimaryContainer = Color(0xFF003542),
-        secondary = Color(0xFF00677E),
-        secondaryContainer = Color(0xFFD3EDF5),
-        onSecondaryContainer = Color(0xFF003542),
-        tertiary = Color(0xFF00677E),
-        tertiaryContainer = Color(0xFFD3EDF5),
-        onTertiaryContainer = Color(0xFF003542),
-        error = Color(0xFF9B3B00),
     )
