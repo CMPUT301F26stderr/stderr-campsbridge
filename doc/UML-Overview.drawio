@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram id="uml-overview" name="UML Overview">
-    <mxGraphModel dx="1744" dy="883" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="2762" pageHeight="2049" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="1948" dy="1016" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="2762" pageHeight="2049" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -555,6 +555,9 @@
         </mxCell>
         <mxCell id="explore-operations-text-1" parent="explore-operations" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;whiteSpace=nowrap;overflow=visible;fontStyle=0;" value="+ applyFilters(): Boolean" vertex="1">
           <mxGeometry height="17" width="230" x="11" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-61" edge="1" parent="1" source="lottery-detail" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;labelPadding=0 4;endArrow=none;endFill=0;" target="Idi78s4ywEzsDMg0YMdt-57">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="lottery-detail" parent="1" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;swimlane;startSize=34;horizontal=1;fillColor=#ffffff;swimlaneFillColor=#ffffff;strokeColor=#000000;collapsible=0;container=1;recursiveResize=0;" value="" vertex="1">
           <mxGeometry height="138" width="260" x="2190" y="1030" as="geometry" />
@@ -1376,10 +1379,13 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="ref-lottery-detail-lottery-repo-l0" parent="1" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;group;strokeColor=none;fillColor=none;container=1;collapsible=0;recursiveResize=0;" value="" vertex="1">
-          <mxGeometry height="20" width="40" x="2140" y="1113" as="geometry" />
+          <mxGeometry height="20" width="616" x="2140" y="1113" as="geometry" />
         </mxCell>
         <mxCell id="ref-lottery-detail-lottery-repo-l0-text-0" parent="ref-lottery-detail-lottery-repo-l0" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;text;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;whiteSpace=nowrap;overflow=visible;fontStyle=0;" value="0..*" vertex="1">
           <mxGeometry height="17" width="600" x="-280" y="-2" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-66" parent="ref-lottery-detail-lottery-repo-l0" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;text;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;whiteSpace=nowrap;overflow=visible;fontStyle=0;" value="1" vertex="1">
+          <mxGeometry height="17" width="600" x="16" y="-17" as="geometry" />
         </mxCell>
         <mxCell id="ref-lottery-detail-lottery-repo-l1" parent="1" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;group;strokeColor=none;fillColor=none;container=1;collapsible=0;recursiveResize=0;" value="" vertex="1">
           <mxGeometry height="20" width="16" x="1280" y="1114" as="geometry" />
@@ -1738,6 +1744,27 @@
         </mxCell>
         <mxCell id="Idi78s4ywEzsDMg0YMdt-55" parent="Idi78s4ywEzsDMg0YMdt-52" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;shape=text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=nowrap;overflow=visible;spacingLeft=9;spacingTop=6;spacingRight=9;fontStyle=0;connectable=0;" value="+ FirestoreReviewRepository(db: FirebaseFirestore,&#xa;    clock: Clock)&#xa;+ observeReviews(campsiteId: String):&#xa;    Flow&lt;List&lt;Review&gt;&gt;&#xa;+ setRating(campsiteId: String, authorId: String,&#xa;    rating: Long): Unit&#xa;+ setReviewText(campsiteId: String, authorId: String,&#xa;    body: String?): Unit" vertex="1">
           <mxGeometry height="168" width="430" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-57" parent="1" style="swimlane;horizontal=1;collapsible=0;rounded=0;fillColor=#ffffff;swimlaneFillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontStyle=1;align=center;verticalAlign=top;spacingTop=7;html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;startSize=34;" value="LotteryDetailsEditScreen()" vertex="1">
+          <mxGeometry height="176" width="380" x="2455" y="1217" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-58" parent="Idi78s4ywEzsDMg0YMdt-57" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;shape=text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=nowrap;overflow=visible;spacingLeft=9;spacingTop=6;spacingRight=9;fontStyle=0;connectable=0;" value="- lotteries: LotteryRepository&#xa;+ state: StateFlow&lt;LotteryDetailsEditUiState&gt;" vertex="1">
+          <mxGeometry height="51" width="380" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-59" parent="Idi78s4ywEzsDMg0YMdt-57" style="shape=line;strokeColor=#000000;strokeWidth=1;fillColor=none;html=1;connectable=0;" value="" vertex="1">
+          <mxGeometry height="1" width="380" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-60" parent="Idi78s4ywEzsDMg0YMdt-57" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;shape=text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=nowrap;overflow=visible;spacingLeft=9;spacingTop=6;spacingRight=9;fontStyle=0;connectable=0;" value="+ editTitle(value: String): Unit&#xa;+ editScheduleDate(point: LotterySchedulePoint,&#xa;    value: LocalDate): Unit&#xa;+ save(): Unit" vertex="1">
+          <mxGeometry height="90" width="380" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-63" parent="1" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;text;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;whiteSpace=nowrap;overflow=visible;fontStyle=0;" value="1" vertex="1">
+          <mxGeometry height="17" width="600" x="2357" y="1194" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-68" parent="1" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;group;strokeColor=none;fillColor=none;container=1;collapsible=0;recursiveResize=0;" value="" vertex="1">
+          <mxGeometry height="20" width="48" x="2587" y="1078" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-69" parent="Idi78s4ywEzsDMg0YMdt-68" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;text;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;whiteSpace=nowrap;overflow=visible;fontStyle=0;" value="opens" vertex="1">
+          <mxGeometry height="17" width="600" x="-276" y="-2" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
