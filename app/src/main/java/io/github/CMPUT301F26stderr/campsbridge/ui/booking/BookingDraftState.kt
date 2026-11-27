@@ -10,8 +10,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.bookingQuote
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.parsePositiveCount
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.parsePositiveCount
 import java.time.LocalDate
 import java.time.YearMonth
 

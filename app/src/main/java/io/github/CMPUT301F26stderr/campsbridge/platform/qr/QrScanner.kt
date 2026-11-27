@@ -1,3 +1,7 @@
+/*
+ * Outcome of one user-launched camera scan, before interpreting application links.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import android.app.Activity

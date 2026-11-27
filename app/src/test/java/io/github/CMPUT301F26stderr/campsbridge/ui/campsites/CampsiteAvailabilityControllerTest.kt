@@ -8,7 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -25,7 +25,6 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.components.DiscoveryToolbar
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.After
 import org.junit.Assert.assertEquals

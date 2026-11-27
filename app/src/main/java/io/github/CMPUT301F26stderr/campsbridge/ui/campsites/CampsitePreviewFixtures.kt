@@ -10,7 +10,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageAttachment
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
-import io.github.CMPUT301F26stderr.campsbridge.platform.assets.SceneryPhoto
+import io.github.CMPUT301F26stderr.campsbridge.platform.SceneryPhoto
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import java.time.Instant

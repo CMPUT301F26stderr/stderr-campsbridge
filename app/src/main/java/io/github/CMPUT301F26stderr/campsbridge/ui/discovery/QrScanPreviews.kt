@@ -1,3 +1,7 @@
+/*
+ * Keeps scan recovery beside the actual Explore toolbar and retained results at both scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.discovery
 
 import androidx.compose.runtime.Composable

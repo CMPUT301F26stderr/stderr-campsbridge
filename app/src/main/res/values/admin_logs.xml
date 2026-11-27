@@ -40,4 +40,7 @@
     <string name="log_metadata">Event details</string>
     <string name="log_audience_refresh">Refresh recipients</string>
     <string name="log_recipients_title">Recipients</string>
+    <string name="log_subject_lottery">Lottery</string>
+    <string name="log_subject_reservation">Reservation</string>
+    <string name="log_subject_message">Message</string>
 </resources>

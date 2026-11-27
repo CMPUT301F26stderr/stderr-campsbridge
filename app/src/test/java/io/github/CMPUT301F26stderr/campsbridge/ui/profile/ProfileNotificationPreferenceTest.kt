@@ -5,7 +5,6 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.profile
 
 import androidx.lifecycle.ViewModelStore
-import io.github.CMPUT301F26stderr.campsbridge.domain.account.ColorMode
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeAccountRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
@@ -53,7 +52,6 @@ class ProfileNotificationPreferenceTest {
         preferenceTest {
             val latest =
                 account.settings.copy(
-                    colorMode = ColorMode.COLOR_BLIND,
                     fontScale = 1.25,
                     controlScale = 1.1,
                 )

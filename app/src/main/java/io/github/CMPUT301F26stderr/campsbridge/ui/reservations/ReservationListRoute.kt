@@ -30,6 +30,7 @@ fun ReservationListRoute(
     val campsite by model.campsiteId.collectAsStateWithLifecycle()
     val category by model.category.collectAsStateWithLifecycle()
     val photos by model.photos.collectAsStateWithLifecycle()
+    val view by model.view.collectAsStateWithLifecycle()
     // 每个分类保留自己的滚动位置，返回详情或恢复页面时不串位。
     val positions = model.categories.associateWith { item -> key(item) { rememberLazyListState() } }
     val listState = positions.getValue(category)
@@ -41,7 +42,9 @@ fun ReservationListRoute(
             .map {
                 it.reservation.id
             }.toSet()
-    LaunchedEffect(model, listState, rowIds, category) {
+    LaunchedEffect(model, listState, rowIds, category, view) {
+        // On the map, the cards under the selected pin report their own photos instead.
+        if (view == ReservationListView.MAP) return@LaunchedEffect
         snapshotFlow {
             listState.layoutInfo.visibleItemsInfo
                 .mapNotNull { item ->
@@ -84,5 +87,8 @@ fun ReservationListRoute(
         category = category,
         categories = model.categories,
         onCategory = model::selectCategory,
+        view = view,
+        onView = if (model.canShowMap) model::selectView else null,
+        onShowReservations = model::showVisibleReservations,
     )
 }

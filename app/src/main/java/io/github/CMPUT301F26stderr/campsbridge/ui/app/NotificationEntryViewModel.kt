@@ -15,6 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.Notificati
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
@@ -26,10 +27,12 @@ import kotlinx.coroutines.launch
 /** Retains one root tap and resolves its saved target only for a matching ready session.
  * @param content Shared immutable event/context reader; it never acknowledges receipts.
  * @param savedState Primitive pending/consumed identity values across root recreation.
+ * @param conversationResolver Actual saved participant check for message targets.
  */
 class NotificationEntryViewModel(
     private val content: NotificationContentLoader,
     private val savedState: SavedStateHandle,
+    private val conversationResolver: ConversationContextResolver,
 ) : ViewModel() {
     private var pending = restorePending()
     private val mutableState =
@@ -135,7 +138,9 @@ class NotificationEntryViewModel(
                     val loaded = content.load(entry.eventId)
                     currentCoroutineContext().ensureActive()
                     if (!isCurrent(version, entry, account)) return@launch
-                    mutableState.value = project(entry, account, loaded)
+                    val projected = project(entry, account, loaded)
+                    currentCoroutineContext().ensureActive()
+                    if (isCurrent(version, entry, account)) mutableState.value = projected
                 } catch (cancelled: CancellationException) {
                     if (isCurrent(version, entry, account)) {
                         mutableState.value = NotificationEntryUiState.Waiting(entry)
@@ -150,7 +155,7 @@ class NotificationEntryViewModel(
      * @param account Actual matching account/capabilities.
      * @param loaded Independent event and subject read outcome.
      */
-    private fun project(
+    private suspend fun project(
         entry: NotificationEntry,
         account: Account,
         loaded: NotificationContent,
@@ -159,6 +164,7 @@ class NotificationEntryViewModel(
         if (loaded !is NotificationContent.Loaded || loaded.notification.subject != entry.subject) {
             return NotificationEntryUiState.Unavailable(entry)
         }
+        var reservationId: String? = null
         val workspace =
             when (val subject = loaded.subject) {
                 NotificationSubjectContent.Failure -> {
@@ -199,13 +205,32 @@ class NotificationEntryViewModel(
                     }
                 }
 
-                is NotificationSubjectContent.MessageContent,
+                is NotificationSubjectContent.MessageContent -> {
+                    val context =
+                        try {
+                            conversationResolver.resolve(subject.reservation, account.id)
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (_: Exception) {
+                            return NotificationEntryUiState.Failure(entry)
+                        } ?: return NotificationEntryUiState.Unavailable(entry)
+                    if (subject.message.senderId !in context.participantIds) {
+                        return NotificationEntryUiState.Unavailable(entry)
+                    }
+                    reservationId = context.reservation.id
+                    when {
+                        account.id == context.reservation.entrantId && Role.ENTRANT in account.roles -> Role.ENTRANT
+                        account.id == context.ownerId && Role.OWNER in account.roles -> Role.OWNER
+                        else -> null
+                    }
+                }
+
                 NotificationSubjectContent.Unavailable, NotificationSubjectContent.Unsupported,
                 -> {
                     null
                 }
             }
-        return workspace?.let { NotificationEntryUiState.Ready(entry, it) }
+        return workspace?.let { NotificationEntryUiState.Ready(entry, it, reservationId) }
             ?: NotificationEntryUiState.Unavailable(entry)
     }
 

@@ -24,7 +24,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent

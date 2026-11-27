@@ -1,3 +1,7 @@
+/*
+ * Scheduled worker that runs due lottery draws and queued Inbox deliveries one record at a time.
+ */
+
 const { drawLottery } = require('./lottery-draw');
 const { deliverNotification } = require('./notification-delivery');
 

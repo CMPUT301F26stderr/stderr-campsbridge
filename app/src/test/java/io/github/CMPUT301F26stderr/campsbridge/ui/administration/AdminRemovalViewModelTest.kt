@@ -1,3 +1,7 @@
+/*
+ * AD4/AD5 contracts: frozen targets, sectional cleanup and root-owned self-removal.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.lifecycle.SavedStateHandle

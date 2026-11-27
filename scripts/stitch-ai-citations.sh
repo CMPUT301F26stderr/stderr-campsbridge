@@ -6,7 +6,7 @@ repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 wiki_root="${1:?Usage: bash scripts/stitch-ai-citations.sh WIKI_CHECKOUT}"
 page="$wiki_root/AI-Usage.md"
 
-python3 - "$repo_root/citations" "$page" <<'PY'
+python3 - "$repo_root/doc/citations" "$page" <<'PY'
 from pathlib import Path
 import re
 import sys

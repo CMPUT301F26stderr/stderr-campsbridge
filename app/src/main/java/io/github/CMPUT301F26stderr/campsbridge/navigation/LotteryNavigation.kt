@@ -4,9 +4,11 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -19,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceScaffold
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.CreateAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoiceRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailRoute
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailSection
@@ -135,16 +138,47 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                     val id = requireNotNull(parent.arguments?.getString("lotteryId"))
                     val model: LotteryDetailViewModel =
                         viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
+                    val announcementSent by entry.savedStateHandle
+                        .getStateFlow("announcementSent", false)
+                        .collectAsStateWithLifecycle()
                     LotteryDetailRoute(
                         model,
-                        {
+                        onEditOwners =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(AppDestination.lotteryOwners(id)) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
+                        onEditAllocations =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(
+                                        AppDestination.lotteryAllocationsEdit(id),
+                                    ) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
+                        onEditDetails =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(
+                                        AppDestination.lotteryDetailsEdit(id),
+                                    ) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
+                        onBack = {
                             if (section == LotteryDetailSection.OVERVIEW) {
                                 controller.popBackStack(pattern, inclusive = true)
                             } else {
                                 controller.popBackStack()
                             }
                         },
-                        {
+                        onContinue = {
                             controller.navigate(AppDestination.lotterySetupGraph(id)) {
                                 launchSingleTop =
                                     true
@@ -159,12 +193,34 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                                 null
                             },
                         onBooking = if (context == LotteryContext.ENTRANT) onBooking else null,
+                        onChooseCampsite =
+                            if (context == LotteryContext.ENTRANT && onBooking != null) {
+                                {
+                                    controller.navigate(
+                                        AppDestination.lotteryCampsiteChoice(id),
+                                    ) { launchSingleTop = true }
+                                }
+                            } else {
+                                null
+                            },
                         onParticipants =
                             if (context == LotteryContext.OWNER) {
                                 {
                                     controller.navigate(AppDestination.lotteryParticipants(id)) {
                                         launchSingleTop =
                                             true
+                                    }
+                                }
+                            } else {
+                                null
+                            },
+                        announcementSent = announcementSent,
+                        onDismissAnnouncement = { entry.savedStateHandle["announcementSent"] = false },
+                        onAnnounce =
+                            if (context == LotteryContext.OWNER) {
+                                {
+                                    controller.navigate(AppDestination.announcement(id)) {
+                                        launchSingleTop = true
                                     }
                                 }
                             } else {
@@ -192,6 +248,15 @@ internal fun NavGraphBuilder.lotteryDetailGraph(
                                 }
                             },
                     )
+                }
+            }
+            if (context == LotteryContext.ENTRANT && onBooking != null) {
+                composable("$pattern/choose-campsite") { entry ->
+                    val parent = remember(entry) { controller.getBackStackEntry(pattern) }
+                    val id = requireNotNull(parent.arguments?.getString("lotteryId"))
+                    val model: LotteryDetailViewModel =
+                        viewModel(viewModelStoreOwner = parent, factory = factory(id, context))
+                    LotteryCampsiteChoiceRoute(model, { controller.popBackStack() }, onBooking)
                 }
             }
             if (context == LotteryContext.OWNER) {

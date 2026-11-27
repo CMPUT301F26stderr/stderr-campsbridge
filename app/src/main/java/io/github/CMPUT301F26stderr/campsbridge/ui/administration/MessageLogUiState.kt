@@ -1,3 +1,7 @@
+/*
+ * Primary log read; supplemental failures never replace saved messages with this state.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation

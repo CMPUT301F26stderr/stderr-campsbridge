@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inbox_notifications">Notifications</string>
+    <string name="inbox_messages">Messages</string>
+    <plurals name="inbox_messages_unread">
+        <item quantity="one">Messages, %1$d unread</item>
+        <item quantity="other">Messages, %1$d unread</item>
+    </plurals>
+    <string name="conversation_list_row_title">%1$s · %2$s</string>
+    <string name="conversation_list_loading">Loading your conversations…</string>
+    <string name="conversation_list_failed">Could not load your reservations.</string>
+    <string name="conversation_list_empty">No messages yet. You can start a conversation from a reservation.</string>
+    <string name="conversation_list_partial_title">Some conversations didn\'t load</string>
+    <string name="conversation_list_partial_body">The others are shown below.</string>
+    <string name="conversation_list_retry">Retry</string>
+    <string name="conversation_list_you">You: %1$s</string>
+    <plurals name="conversation_list_unread">
+        <item quantity="one">%1$d unread</item>
+        <item quantity="other">%1$d unread</item>
+    </plurals>
+</resources>

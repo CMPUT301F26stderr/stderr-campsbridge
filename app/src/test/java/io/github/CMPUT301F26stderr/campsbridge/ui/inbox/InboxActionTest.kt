@@ -14,12 +14,14 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -369,6 +371,7 @@ class InboxActionTest {
                     "entrant",
                     notifications,
                     NotificationContentLoader(notifications, lotteries, bookings, FakeMessageRepository()),
+                    ConversationContextResolver(FakeCampsiteRepository()),
                     sort,
                     count,
                 )

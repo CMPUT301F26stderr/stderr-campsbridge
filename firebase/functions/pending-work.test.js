@@ -1,3 +1,7 @@
+/*
+ * Firestore emulator tests for scheduled draws and Inbox delivery: resuming, overlapping workers and failure isolation.
+ */
+
 const { test, beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { initializeApp, deleteApp, getApps } = require('firebase-admin/app');

@@ -17,6 +17,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
+import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
@@ -29,7 +30,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleAccount
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
 import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
@@ -227,6 +229,34 @@ class InboxNavigationTest {
         compose.onNode(hasText("Inbox") and hasClickAction()).assertIsSelected()
     }
 
+    /** US 01.07.02: a cancellation notice reaches the entrant's Inbox and opens that reservation. */
+    @Test fun cancellationNoticeAppearsAndOpensItsReservation() {
+        val cancelled =
+            previewReservation().copy(
+                id = "cancelled/C",
+                entrantId = "account-1",
+                cancellation =
+                    ReservationCancellation(now.minusSeconds(600), "owner", Role.OWNER, "Flooded site"),
+            )
+        host.bookings.records.value = listOf(cancelled)
+        val event =
+            winner.copy(
+                id = "cancellation",
+                senderId = "owner",
+                type = NotificationType.RESERVATION_CANCELLED,
+                subject = NotificationSubject(SubjectType.RESERVATION, cancelled.id),
+            )
+        history(event)
+        host.notifications.markReadHandler = { _, _ -> Unit }
+        start()
+        compose.onNodeWithText("Reservation cancelled").assertIsDisplayed()
+        compose.onNodeWithTag("inbox-event-${event.id}").performClick()
+        compose.onNodeWithText(cancelled.id).assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf(cancelled.id to ReservationContext.ENTRANT), host.reservationDetailRequests)
+        }
+    }
+
     /** Both workspace entries share account receipt ownership rather than duplicate observers. */
     @Test fun switchingWorkspacesReusesTheSameAccountInboxModel() {
         ownerWorkspace()
@@ -243,29 +273,29 @@ class InboxNavigationTest {
         }
     }
 
-    /**
-     * Unsupported subjects remain readable without a dead link or implicit read
-     * acknowledgement.
-     */
-    @Test fun unsupportedMessageHistoryHasNoClickableTarget() {
+    /** NE-04: a received message opens its saved participant conversation and separate reads. */
+    @Test fun messageHistoryOpensItsSavedConversation() {
         val reservation = previewReservation().copy(id = "message-stay", entrantId = "account-1")
         host.bookings.records.value = listOf(reservation)
+        host.campsites.records.value = listOf(sampleCampsite(reservation.campsiteId, "owner"))
         host.messages.records.value = listOf(Message("thread", reservation.id, "owner", "Use the east gate", now))
         val event =
             winner.copy(
                 id = "message",
+                senderId = "owner",
                 type = NotificationType.NEW_MESSAGE,
                 subject = NotificationSubject(SubjectType.MESSAGE, "thread"),
             )
         history(event)
+        host.notifications.markReadHandler = { _, _ -> Unit }
         start()
-        compose.onNodeWithTag("inbox-event-message").assertHasNoClickAction()
-        compose
-            .onNodeWithText(
-                "This notification has no supported destination in this build.",
-            ).assertIsDisplayed()
-        compose.onNodeWithText("Messages").assertDoesNotExist()
-        compose.runOnIdle { assertTrue(host.notifications.readRequests.isEmpty()) }
+        compose.onNodeWithTag("inbox-event-message").performClick()
+        compose.onNodeWithText("Messages").assertIsDisplayed()
+        compose.onNodeWithText("Use the east gate").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf("account-1" to event.id), host.notifications.readRequests)
+            assertEquals(listOf("thread" to "account-1"), host.messages.readRequests)
+        }
     }
 
     /** An unknown-time receipt is a readable non-target and retries only its missing event. */

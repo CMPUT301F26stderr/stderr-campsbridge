@@ -1,3 +1,7 @@
+/*
+ * Keeps large capacity values and correction feedback reachable at supported text scales.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import android.graphics.Bitmap
@@ -24,7 +28,7 @@ import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.AccountSettings
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -69,7 +73,7 @@ class LotteryCapacityRenderingTest {
                                         ),
                                     errors =
                                         LotterySetupErrors(
-                                            waitlistCapacity =
+                                            capacity =
                                                 if (invalid.value) {
                                                     PositiveCountInput.Error.INVALID_WHOLE_NUMBER
                                                 } else {
@@ -95,6 +99,7 @@ class LotteryCapacityRenderingTest {
                                 { _, _ -> },
                                 {},
                                 {},
+                                onEdit = {},
                             )
                         }
                     }
@@ -117,16 +122,16 @@ class LotteryCapacityRenderingTest {
                             if (page ==
                                 LotteryStep.WINNERS
                             ) {
-                                "Waitlist capacity (optional)"
+                                "Registration limit (optional)"
                             } else {
-                                "Waitlist capacity"
+                                "Registration limit"
                             },
                         ).performScrollTo()
                         .assertIsDisplayed()
                     compose
                         .onNodeWithText(
                             if (error) {
-                                "Enter a positive whole number, or leave blank for an unlimited waitlist."
+                                "Enter a positive whole number, or leave blank for unlimited registrations."
                             } else {
                                 Long.MAX_VALUE
                                     .toString()

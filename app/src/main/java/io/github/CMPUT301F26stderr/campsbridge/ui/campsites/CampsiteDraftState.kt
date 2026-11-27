@@ -1,3 +1,7 @@
+/*
+ * Projects saved listing facts into editable spelling while retaining exact cents.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.lifecycle.SavedStateHandle

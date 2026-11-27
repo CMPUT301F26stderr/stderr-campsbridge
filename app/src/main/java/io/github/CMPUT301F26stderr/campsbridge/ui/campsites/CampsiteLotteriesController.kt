@@ -8,7 +8,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.awaitDeadline
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryMembershipController
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryMembershipRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryMembershipUiState

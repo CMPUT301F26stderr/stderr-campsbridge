@@ -16,7 +16,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
-import io.github.CMPUT301F26stderr.campsbridge.platform.assets.photoCredits
+import io.github.CMPUT301F26stderr.campsbridge.platform.photoCredits
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.TestAppHost
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.After

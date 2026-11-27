@@ -7,7 +7,7 @@ package io.github.CMPUT301F26stderr.campsbridge.demo.tasks
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.AvailabilityUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListUiState
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest

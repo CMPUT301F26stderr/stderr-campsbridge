@@ -2,7 +2,7 @@
 
 Use these conventions when implementing UI features. Keep screen designs and storyboards in the team Wiki. Add the preferred dependencies below as their features are implemented.
 
-The visual intent, interaction patterns, and approved prototypes are recorded in the [team Wiki](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki). The shared theme now supplies white surfaces, green accents, bundled Inter, spacing, and account font/control scaling. Wallpaper colors and automatic dark mode do not replace the approved palette.
+The visual intent, interaction patterns, and approved prototypes are recorded in the [team Wiki](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki). The shared theme now supplies white surfaces, green accents, bundled Inter, spacing, and account font/control scaling. Headings use JetBrains Mono, and the ember accent marks the blinking title cursor, loading, the current step and lottery wins; the motifs live in `components/brand` and stay still when system animations are off. Wallpaper colors and automatic dark mode do not replace the approved palette.
 
 ## Dependency policy
 
@@ -52,16 +52,16 @@ adb shell am start -S -n io.github.CMPUT301F26stderr.campsbridge/.demo.DemoActiv
 | `components/actions` | `AppActionButton`, `ActionStyle`: shared submission blocking and Material action hierarchy. |
 | `components/forms` | `AppTextField`, `CountInput`, `CountStepper`: controlled fields, bounds, helper/error precedence, units and keyboard behavior. |
 | `components/selection` | `ChoiceRow`, `SwitchRow`, `CheckboxRow`, `PreferenceChips`, `DropdownField`: caller-owned selection and one action per row. |
-| `components/rows`, `components/summaries` | `NavigationRow`, `DetailRow`, `StaySummary`: repeated menu and fact layouts. |
+| `components`, `components/summaries` | `NavigationRow` and app icons sit directly in `components`; `DetailRow` and `StaySummary` cover repeated fact layouts. |
 | `components/pickers` | `PickerField` and date/range/time dialogs: temporary selection applied only on Confirm. |
 | `components/feedback` | Loading/empty/retry content, `InlineNotice`, `ConfirmationDialog`, `StatusLabel`. |
 | `components/images`, `components/calendar` | Shared photo presentation/controller integration, `AccountAvatar`, and availability grid. |
-| `common/format` | Exact CAD formatting, local-date/explicit-zone instant display and unambiguous local-time resolution. |
-| Feature `components` folders | `CampsiteCard`, `CampsiteRow`, `LotteryCard`, `ReservationCard`, `DiscoveryToolbar`: reusable feature presentation, without persistence or navigation ownership. |
+| `common` | `DisplayFormats`: exact CAD formatting, local-date/explicit-zone instant display and unambiguous local-time resolution. |
+| Feature `components` folders | `CampsiteCard`, `CampsiteRow`, `LotteryCard`, `ReservationCard`: reusable feature presentation, without persistence or navigation ownership. |
 
-Routes connect controllers, lifecycle collection, navigation and Android launchers. Screens arrange supplied state and callbacks; feature components compose shared controls; shared controls compose Material. Callbacks report explicit user intent. Selection components do not implement preference mutation, filtering or eligibility rules. Keep those decisions in their existing owner, including reserved teammate functions.
+Routes connect controllers, lifecycle collection, navigation and Android launchers. Screens arrange supplied state and callbacks; feature components compose shared controls; shared controls compose Material. Callbacks report explicit user intent. Selection components do not implement preference mutation, filtering or eligibility rules. Keep those decisions in their existing owner, including injected feature helpers.
 
-`WorkspaceScaffold` accepts the current title and registered peer destinations from its caller; `WorkspaceNavigation` renders those items and reports IDs. The workspace graph registers discovery, campsite and lottery flows, plus pending entry points for reservations, Inbox and admin inspection. Unfinished setup enters its own single-entry onboarding graph. See [onboarding](onboarding/README.md) for the reserved validation boundary. Do not present gallery destinations as implemented production routes. Primary workspace content uses the workspace frame; details and wizard flows own their appropriate frame. Apply system insets once and avoid stacking app bars.
+`WorkspaceScaffold` accepts the current title and registered peer destinations from its caller; `WorkspaceNavigation` renders those items and reports IDs. The workspace graph registers discovery, campsite, lottery, reservation and Inbox flows, plus admin inspection and logs. Unfinished setup enters its own single-entry onboarding graph. See [onboarding](onboarding/README.md) for its validation and completion boundaries. Do not present gallery destinations as implemented production routes. Primary workspace content uses the workspace frame; details and wizard flows own their appropriate frame. Apply system insets once and avoid stacking app bars.
 
 Published campsite editing has its own `CampsiteEditNavigation` parent. Its summary, details, photo and map children share one `CampsiteEditViewModel`. Setup and editing use `CampsiteDraftState` for exact saved prices and primitive raw-input retention, and share `validateCampsiteDetails`. Details Save calls `campsites.update`; the separate photo route owns explicit image Save/Remove actions. Availability opens its existing editor. A confirmed details save returns to management, or stays in the editor when a photo selection is still unsaved.
 
@@ -90,7 +90,7 @@ The profile currently connects this path to its existing account's image slot. T
 
 - Use shared colors, typography, spacing, and shapes; put user-visible text in string resources.
 - Preserve system font scaling and apply the account's font/control scaling consistently. Use flexible layouts.
-- Provide meaningful semantics and labels. Communicate availability and errors with more than color alone; color-blind mode uses a shared palette.
+- Provide meaningful semantics and labels. Communicate availability and errors with more than color alone.
 - Put themed `@Preview` functions at the bottom of the screen or component file in `src/main`, so Android Studio shows them while editing that content. Use small sample values without repositories or Firebase. Cover realistic content and feedback.
 - Keep interactive demo activities, galleries, fake repositories and shared test fixtures in `src/debug`. Production screens must not fake successful saves or contain throwing placeholders in preview paths.
 

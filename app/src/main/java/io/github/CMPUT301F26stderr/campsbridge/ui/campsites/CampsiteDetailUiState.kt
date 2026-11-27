@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
-import androidx.compose.ui.graphics.ImageBitmap
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 
 /** Selects presentation and graph identity; the caller supplies actual account capabilities.
@@ -69,20 +68,4 @@ sealed interface CampsiteDetailUiState {
 
     /** Listing source failed and can be retried. */
     data object Failure : CampsiteDetailUiState
-}
-
-/** Transient QR image generation state for a saved identity. */
-sealed interface CampsiteQrImage {
-    /** QR image generation has not completed. */
-    data object Loading : CampsiteQrImage
-
-    /** QR image generation failed. */
-    data object Failure : CampsiteQrImage
-
-    /** Generated QR image bitmap ready for display.
-     * @param bitmap Rendered image bitmap.
-     */
-    data class Ready(
-        val bitmap: ImageBitmap,
-    ) : CampsiteQrImage
 }

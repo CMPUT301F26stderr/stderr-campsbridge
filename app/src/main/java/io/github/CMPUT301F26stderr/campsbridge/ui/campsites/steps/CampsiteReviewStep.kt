@@ -26,8 +26,8 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsitePhotoIntent
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteStep
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.CampsiteDetailsInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.validateCampsiteDetails
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.options.CampingOptions
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CampingOptions
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppIconAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing

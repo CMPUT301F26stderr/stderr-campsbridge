@@ -1,3 +1,7 @@
+/*
+ * Selection contracts for Material range picking over loaded inventory.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import org.junit.Assert.assertEquals

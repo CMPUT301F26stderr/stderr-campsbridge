@@ -15,7 +15,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageUpload
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.DrawResult
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.MainDispatcherRule
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.awaitDeadline
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first

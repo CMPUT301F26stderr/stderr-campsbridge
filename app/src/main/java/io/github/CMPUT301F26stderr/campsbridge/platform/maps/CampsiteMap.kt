@@ -86,24 +86,7 @@ internal fun CampsiteMapSurface(
         MapPreview(modifier)
         return
     }
-    if (!configured) {
-        Box(modifier, contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.campsite_map_configuration_missing))
-        }
-        return
-    }
-    val context = LocalContext.current
-    val servicesAvailable =
-        remember(context) {
-            GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) ==
-                ConnectionResult.SUCCESS
-        }
-    if (!servicesAvailable) {
-        Box(modifier, contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.campsite_map_services_unavailable))
-        }
-        return
-    }
+    if (!mapAvailable(configured, stringResource(R.string.campsite_map_configuration_missing), modifier)) return
     val camera =
         rememberCameraPositionState {
             position =
@@ -171,6 +154,36 @@ private fun WorkingPin(
     )
 }
 
+/** Shows why the SDK map can't load, or returns true when it can.
+ * @param configured Whether this build supplied a Maps key.
+ * @param missingKeyText Caller-specific text for a build without a Maps key.
+ * @param modifier Area used for the explanation.
+ * @return Whether the caller may compose the SDK map.
+ */
+@Composable
+internal fun mapAvailable(
+    configured: Boolean,
+    missingKeyText: String,
+    modifier: Modifier,
+): Boolean {
+    if (!configured) {
+        Box(modifier, contentAlignment = Alignment.Center) { Text(missingKeyText) }
+        return false
+    }
+    val context = LocalContext.current
+    val servicesAvailable =
+        remember(context) {
+            GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) ==
+                ConnectionResult.SUCCESS
+        }
+    if (!servicesAvailable) {
+        Box(modifier, contentAlignment = Alignment.Center) {
+            Text(stringResource(R.string.campsite_map_services_unavailable))
+        }
+    }
+    return servicesAvailable
+}
+
 /** Neutral tooling surface; never substitutes a successful runtime map.
  * @param modifier Preview layout.
  */
@@ -182,7 +195,7 @@ internal fun MapPreview(modifier: Modifier) {
 }
 
 /** Converts an already validated application coordinate only at the SDK boundary. */
-private fun Coordinates.toLatLng(): LatLng =
+internal fun Coordinates.toLatLng(): LatLng =
     LatLng(latitude, longitude)
 
 /** Converts SDK tap/drag coordinates through the application's existing validity checks. */

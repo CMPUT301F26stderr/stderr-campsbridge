@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingRepository
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job

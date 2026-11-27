@@ -17,7 +17,7 @@ import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRep
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeImageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.CampingFixtures
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent

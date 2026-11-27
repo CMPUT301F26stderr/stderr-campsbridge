@@ -6,6 +6,7 @@
     <string name="announcement_body_label">Message</string>
     <string name="announcement_title_required">Enter a title.</string>
     <string name="announcement_body_required">Enter a message.</string>
+    <string name="announcement_empty_audience">No entrants to notify yet. You can send when someone joins and hasn’t withdrawn.</string>
     <string name="announcement_send">Send announcement</string>
     <string name="announcement_sending">Sending announcement…</string>
     <string name="announcement_checking">Checking whether your announcement was saved…</string>
@@ -15,7 +16,7 @@
     <string name="announcement_retry">Retry announcement</string>
     <string name="announcement_edit">Edit announcement</string>
     <string name="announcement_new">Edit as a new announcement</string>
-    <string name="announcement_load_failed">Could not load this lottery and your owner profile.</string>
+    <string name="announcement_load_failed">Could not load this lottery, your owner profile or its entrants.</string>
     <string name="announcement_unavailable">Sending is unavailable. An active participating owner can send announcements for a published lottery.</string>
     <string name="announcement_discard_title">Discard announcement draft?</string>
     <string name="announcement_discard_body">Your unsent title and message will be discarded.</string>

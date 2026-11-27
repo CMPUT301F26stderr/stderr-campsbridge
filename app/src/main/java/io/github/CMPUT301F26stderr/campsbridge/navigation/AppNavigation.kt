@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.imePadding
@@ -14,6 +15,11 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +41,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationEntry
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.platform.qr.createCampsiteQrBitmap
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.NotificationEntryUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.SessionState
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.WorkspaceNavigation
@@ -59,6 +66,7 @@ import java.util.Locale
  * @param lotteryListFactory Owner inventory dependencies keyed by optional campsite filter.
  * @param reservationDetailFactory Saved aggregate dependencies keyed by ID/context.
  * @param inboxFactory One account receipt owner shared by both workspace primaries.
+ * @param sentFactory Independent read-only sender history for the same account.
  * @param bookingFactory One actual winner wizard keyed by saved lottery and campsite IDs.
  * @param reservationListFactory Active-list dependencies keyed by actor context and filter.
  * @param adminBrowseFactory All-record read dependencies with explicitly pending predicates.
@@ -73,8 +81,15 @@ import java.util.Locale
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
  * @param onDeleteProfile Requests root-owned confirmation for the current account.
+ * @param conversationFactory Saved participant conversation dependencies.
  * @param reviewsFactory Saved feedback dependencies for each workspace.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
+ * @param lotteryDetailsEditFactory Saved organizer details dependencies.
+ * @param lotteryAllocationsEditFactory Saved owned-set editor dependencies.
+ * @param announcementComposeFactory Saved announcement composition dependencies.
+ * @param collaboratingOwnersFactory Saved organizer membership-picker dependencies.
+ * @param conversationListFactory Participant conversation list per workspace.
+ * @param createQrBitmap Native QR generation for the saved child route.
  */
 @Composable
 fun AppNavigation(
@@ -105,9 +120,17 @@ fun AppNavigation(
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
     onDeleteProfile: () -> Unit,
+    conversationFactory: (String) -> ViewModelProvider.Factory,
     reviewsFactory: (String, Role) -> ViewModelProvider.Factory,
     campsiteEditFactory: (String) -> ViewModelProvider.Factory,
     adminRemovalFactory: ViewModelProvider.Factory? = null,
+    lotteryDetailsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    lotteryAllocationsEditFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    announcementComposeFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    collaboratingOwnersFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    sentFactory: ViewModelProvider.Factory? = null,
+    conversationListFactory: ((ReservationContext) -> ViewModelProvider.Factory)? = null,
+    createQrBitmap: (String) -> Bitmap = ::createCampsiteQrBitmap,
 ) {
     val controller = rememberNavController()
     val initialWorkspace = remember { state.workspace }
@@ -118,26 +141,31 @@ fun AppNavigation(
                 AppDestination.ownerCampsites(),
                 stringResource(R.string.campsites),
                 Icons.Default.Home,
+                unselectedIcon = Icons.Outlined.Home,
             ),
             WorkspaceNavigationItem(
                 AppDestination.OWNER_LOTTERIES,
                 stringResource(R.string.lotteries),
                 Icons.Default.DateRange,
+                unselectedIcon = Icons.Outlined.DateRange,
             ),
             WorkspaceNavigationItem(
                 AppDestination.reservations(ReservationContext.OWNER),
                 stringResource(R.string.reservations_title),
                 Icons.Default.CheckCircle,
+                unselectedIcon = Icons.Outlined.CheckCircle,
             ),
             WorkspaceNavigationItem(
                 AppDestination.inbox(Role.OWNER),
                 stringResource(R.string.inbox_title),
                 Icons.Default.Notifications,
+                unselectedIcon = Icons.Outlined.Notifications,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.OWNER),
                 stringResource(R.string.profile_title),
                 Icons.Default.Person,
+                unselectedIcon = Icons.Outlined.Person,
             ),
         )
     val entrantItems =
@@ -146,26 +174,31 @@ fun AppNavigation(
                 AppDestination.EXPLORE,
                 stringResource(R.string.discovery_title),
                 Icons.Default.Home,
+                unselectedIcon = Icons.Outlined.Home,
             ),
             WorkspaceNavigationItem(
                 AppDestination.ENTRANT_LOTTERIES,
                 stringResource(R.string.lotteries),
                 Icons.Default.DateRange,
+                unselectedIcon = Icons.Outlined.DateRange,
             ),
             WorkspaceNavigationItem(
                 AppDestination.reservations(ReservationContext.ENTRANT),
                 stringResource(R.string.reservations_title),
                 Icons.Default.CheckCircle,
+                unselectedIcon = Icons.Outlined.CheckCircle,
             ),
             WorkspaceNavigationItem(
                 AppDestination.inbox(Role.ENTRANT),
                 stringResource(R.string.inbox_title),
                 Icons.Default.Notifications,
+                unselectedIcon = Icons.Outlined.Notifications,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.ENTRANT),
                 stringResource(R.string.profile_title),
                 Icons.Default.Person,
+                unselectedIcon = Icons.Outlined.Person,
             ),
         )
     val adminItems =
@@ -174,16 +207,19 @@ fun AppNavigation(
                 AppDestination.ADMIN_BROWSE,
                 stringResource(R.string.admin_browse),
                 Icons.Default.Home,
+                unselectedIcon = Icons.Outlined.Home,
             ),
             WorkspaceNavigationItem(
                 AppDestination.ADMIN_LOGS,
                 stringResource(R.string.admin_logs),
                 Icons.Default.Notifications,
+                unselectedIcon = Icons.Outlined.Notifications,
             ),
             WorkspaceNavigationItem(
                 AppDestination.profileGraph(Role.ADMIN),
                 stringResource(R.string.profile_title),
                 Icons.Default.Person,
+                unselectedIcon = Icons.Outlined.Person,
             ),
         )
     val selectedItems =
@@ -275,13 +311,22 @@ fun AppNavigation(
                 messageLogFactory,
             )
             lotterySetupGraph(controller, lotterySetupFactory)
+            lotteryDetailsEditFactory?.let { lotteryDetailsEditGraph(controller, it) }
+            lotteryAllocationsEditFactory?.let { lotteryAllocationsEditGraph(controller, it) }
+            announcementComposeFactory?.let { announcementGraph(controller, it) }
+            collaboratingOwnersFactory?.let { collaboratingOwnersGraph(controller, it) }
             inboxGraph(
                 controller,
                 state,
                 onSelectWorkspace,
                 inboxFactory,
+                sentFactory,
+                conversationListFactory,
             )
-            reservationGraph(controller, reservationDetailFactory)
+            conversationGraph(controller, conversationFactory)
+            reservationGraph(controller, onConversation = { id, context ->
+                controller.navigate(AppDestination.conversation(id, context)) { launchSingleTop = true }
+            }, factory = reservationDetailFactory)
             reservationListGraph(
                 controller,
                 state,
@@ -358,6 +403,7 @@ fun AppNavigation(
                 campsiteSetupFactory,
                 availabilityFactory,
                 campsiteEditFactory,
+                createQrBitmap,
                 reviewsFactory,
             )
         }

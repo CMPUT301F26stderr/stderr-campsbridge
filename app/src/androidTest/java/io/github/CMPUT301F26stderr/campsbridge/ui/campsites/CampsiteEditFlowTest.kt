@@ -1,3 +1,7 @@
+/*
+ * Saved editing journeys through the real management graph and shared child routes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner

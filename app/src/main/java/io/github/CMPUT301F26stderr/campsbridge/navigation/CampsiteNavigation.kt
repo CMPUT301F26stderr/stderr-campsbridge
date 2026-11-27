@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
@@ -55,6 +56,7 @@ internal fun NavGraphBuilder.campsiteGraph(
     setupFactory: (String?) -> ViewModelProvider.Factory,
     availabilityFactory: (String) -> ViewModelProvider.Factory,
     editFactory: (String) -> ViewModelProvider.Factory,
+    createQrBitmap: (String) -> Bitmap,
     reviewsFactory: ((String, Role) -> ViewModelProvider.Factory)? = null,
 ) {
     composable(AppDestination.ownerCampsites()) {
@@ -135,7 +137,7 @@ internal fun NavGraphBuilder.campsiteGraph(
                     viewModelStoreOwner = parent,
                     factory = detailFactory(id, context),
                 )
-            CampsiteQrRoute(model) { controller.popBackStack() }
+            CampsiteQrRoute(model, createQrBitmap) { controller.popBackStack() }
         }
     }
     campsiteReadGraph(controller, Role.OWNER, CampsiteDetailContext.PREVIEW, detailFactory, reviewsFactory)

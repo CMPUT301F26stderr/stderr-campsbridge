@@ -57,6 +57,7 @@ class TaskExamplesFlowTest {
             compose.onNodeWithTag("H01").performClick()
             compose.onNodeWithText("Name").performTextReplacement("changed")
             scenario.recreate()
+            awaitText("changed")
             compose.onNodeWithText("changed").assertIsDisplayed()
             compose.onNodeWithText("Reset example").performClick()
             compose.onNodeWithText("Alex Chen").assertIsDisplayed()
@@ -74,7 +75,7 @@ class TaskExamplesFlowTest {
         }
     }
 
-    /** Waits for an Android Activity transition before asserting its visible target.
+    /** Waits for an Android Activity transition or recreation before asserting its visible target.
      * @param text Unique visible destination label.
      */
     private fun awaitText(text: String) {

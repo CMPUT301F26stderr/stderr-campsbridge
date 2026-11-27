@@ -1,3 +1,7 @@
+/*
+ * QR entry/display through the actual root, native result contracts and registered saved graph.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import android.app.Activity

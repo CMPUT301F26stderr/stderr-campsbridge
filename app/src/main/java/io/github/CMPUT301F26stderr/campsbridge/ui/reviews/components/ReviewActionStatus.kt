@@ -1,3 +1,7 @@
+/*
+ * Announces action feedback without claiming it is an observed saved list row.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews.components
 
 import androidx.compose.material3.MaterialTheme

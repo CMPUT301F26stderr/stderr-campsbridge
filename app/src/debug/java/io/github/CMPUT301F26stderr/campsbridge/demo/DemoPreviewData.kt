@@ -32,7 +32,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationT
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Coordinates
-import io.github.CMPUT301F26stderr.campsbridge.platform.assets.SceneryPhoto
+import io.github.CMPUT301F26stderr.campsbridge.platform.SceneryPhoto
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fixtures.sampleCampsite
 import java.time.Clock
 import java.time.Instant
@@ -74,6 +74,7 @@ class DemoPreviewData(
                             description =
                                 "A quiet riverside clearing beneath the pines, with " +
                                     "walking trails along the Athabasca River.",
+                            location = Coordinates(52.8734, -118.0814),
                             amenities = setOf("water", "flush-toilets", "picnic-table"),
                             rules =
                                 "Quiet hours begin at 10 pm. Keep food secured and " +
@@ -118,6 +119,7 @@ class DemoPreviewData(
                     details =
                         it.details.copy(
                             name = "Cedar Ridge",
+                            location = Coordinates(52.9300, -118.0960),
                             nightlyPriceCents = 9000,
                             description = "A sheltered forest pitch near Jasper's walking trails.",
                         ),
@@ -151,7 +153,8 @@ class DemoPreviewData(
                 } else {
                     listOf(
                         LotteryOffer(
-                            "demo-river",
+                            // The past stay is at a second campsite so the reservation map has two pins.
+                            if (draw.id == "demo-past") "demo-alpine" else "demo-river",
                             if (draw.id == "demo-past") {
                                 (5..6).map(::date)
                             } else if (draw.id ==
@@ -194,7 +197,7 @@ class DemoPreviewData(
     val reservations: List<Reservation> =
         listOf(
             stay(bookedReservationId, "demo-booked", 15),
-            stay(pastReservationId, "demo-past", 5),
+            stay(pastReservationId, "demo-past", 5, "demo-alpine"),
             stay(sharedReservationId, "demo-shared", 20, "demo-cedar"),
         )
     val calendars: Map<String, List<CalendarNight>> =
@@ -250,6 +253,14 @@ class DemoPreviewData(
                 coOwnerId,
                 "Yes, I'll meet you by the gate.",
                 now.minusSeconds(1800),
+            ),
+            // A second conversation, so Jordan's Messages tab has an unread message from Alex.
+            Message(
+                "demo-firewood-question",
+                bookedReservationId,
+                entrantId,
+                "Is firewood sold at River Camp, or should we bring our own?",
+                now.minusSeconds(7200),
             ),
         )
     val events: List<Notification> =
@@ -312,9 +323,13 @@ class DemoPreviewData(
                         },
                     )
                 },
-            ownerId to listOf(InboxReceipt("demo-notice-stay", null)),
+            ownerId to
+                listOf(InboxReceipt("demo-notice-stay", null)) +
+                messages.filter { it.senderId == entrantId && it.reservationId == bookedReservationId }.map {
+                    InboxReceipt(DocumentKeys.compound(NotificationType.NEW_MESSAGE.name, it.id), it.readAt)
+                },
             coOwnerId to
-                messages.filter { it.senderId == entrantId }.map {
+                messages.filter { it.senderId == entrantId && it.reservationId == sharedReservationId }.map {
                     InboxReceipt(DocumentKeys.compound(NotificationType.NEW_MESSAGE.name, it.id), it.readAt)
                 },
             "demo-other" to

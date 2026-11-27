@@ -1,3 +1,7 @@
+/*
+ * Presents the independently saved stars and text with optional caller-owned actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +17,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Presents the independently saved stars and text with optional caller-owned actions.

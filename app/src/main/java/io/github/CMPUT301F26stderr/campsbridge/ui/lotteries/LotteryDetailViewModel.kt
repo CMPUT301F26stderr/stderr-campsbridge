@@ -14,7 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.EntryState
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -35,7 +35,7 @@ import java.time.Clock
  * @param context Explicit owner management or entrant presentation.
  * @param accounts Referenced participant profile labels.
  * @param savedState Small restorable participant filter.
- * @param filterParticipants Reserved participant selector; null keeps requested filtering pending.
+ * @param filterParticipants Exact-state selector; null keeps requested filtering explicitly pending.
  */
 class LotteryDetailViewModel(
     private val accountId: String,
@@ -51,6 +51,75 @@ class LotteryDetailViewModel(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<LotteryDetailUiState>(LotteryDetailUiState.Loading)
     val state = mutableState.asStateFlow()
+    private val mutableDecline = MutableStateFlow(LotteryDeclineUiState())
+    val decline = mutableDecline.asStateFlow()
+    private var declineAcknowledged = false
+
+    /** Opens confirmation for an unused winning opportunity. */
+    fun requestDecline() {
+        refreshDecline()
+        if (decline.value.canDecline) {
+            mutableDecline.value = decline.value.copy(isConfirming = true, failed = false)
+        }
+    }
+
+    /** Dismisses an unsubmitted decline without writing. */
+    fun dismissDecline() {
+        if (!decline.value.isSubmitting) mutableDecline.value = decline.value.copy(isConfirming = false)
+    }
+
+    /** Submits one explicitly confirmed decline. */
+    fun confirmDecline() {
+        refreshDecline()
+        if (decline.value.isConfirming && decline.value.canDecline) submitDecline()
+    }
+
+    /** Retries only an explicitly failed decline. */
+    fun retryDecline() {
+        refreshDecline()
+        if (decline.value.failed && decline.value.canDecline) submitDecline()
+    }
+
+    /** Keeps command progress independent of parent or membership read failures. */
+    private fun refreshDecline() {
+        val observedDeclined = membershipLoaded && !membershipFailed && ownEntry?.state == EntryState.DECLINED
+        if (observedDeclined) declineAcknowledged = false
+        val current = state.value as? LotteryDetailUiState.Content
+        val eligible =
+            context == LotteryContext.ENTRANT && membershipLoaded && !membershipFailed &&
+                ownEntry?.state == EntryState.OFFERED && current?.lottery?.drawnAt != null &&
+                current.lottery.bookingIsOpen(clock.instant()) && opportunity == LotteryOpportunityRead.Unused
+        val prior = decline.value
+        mutableDecline.value =
+            prior.copy(
+                canDecline = eligible && !prior.isSubmitting && !declineAcknowledged,
+                isConfirming = prior.isConfirming && eligible && !prior.isSubmitting && !declineAcknowledged,
+                isAwaitingEntry = declineAcknowledged,
+                failed = prior.failed && !observedDeclined,
+            )
+    }
+
+    /** Claims one explicit request before suspension; saved entry observations own the outcome. */
+    private fun submitDecline() {
+        mutableDecline.value =
+            decline.value.copy(canDecline = false, isConfirming = false, isSubmitting = true, failed = false)
+        viewModelScope.launch {
+            try {
+                lotteries.decline(lotteryId, accountId)
+                currentCoroutineContext().ensureActive()
+                declineAcknowledged = ownEntry?.state != EntryState.DECLINED
+                mutableDecline.value = decline.value.copy(isSubmitting = false)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                currentCoroutineContext().ensureActive()
+                mutableDecline.value = decline.value.copy(isSubmitting = false, failed = true)
+                // A concurrent booking can consume this win before the decline reaches the server.
+                loadOpportunity()
+            }
+            refreshDecline()
+        }
+    }
 
     private val participantReader =
         LotteryParticipantsController(
@@ -239,6 +308,7 @@ class LotteryDetailViewModel(
         membershipCommands.updateFacts(null, null, false)
         stopDraw()
         mutableState.value = LotteryDetailUiState.Loading
+        refreshDecline()
         recordJob =
             viewModelScope.launch {
                 try {
@@ -258,6 +328,7 @@ class LotteryDetailViewModel(
                             stopDraw()
                             participantReader.updateParent(null)
                             mutableState.value = LotteryDetailUiState.Unavailable
+                            refreshDecline()
                         } else {
                             checkNotNull(record)
                             if (record.cancellation != null) stopDraw()
@@ -272,6 +343,9 @@ class LotteryDetailViewModel(
                                             record.publishedAt == null &&
                                             record.cancellation == null,
                                     lifecycle = lotteryLifecycle(record, clock.instant()),
+                                    canEditDetails =
+                                        context == LotteryContext.OWNER && record.ownerId == accountId &&
+                                            record.cancellation == null,
                                 )
                             if (prior == null) {
                                 observeOffers()
@@ -293,6 +367,7 @@ class LotteryDetailViewModel(
                         stopDraw()
                         participantReader.updateParent(null)
                         mutableState.value = LotteryDetailUiState.Failure
+                        refreshDecline()
                     }
                 }
             }
@@ -464,6 +539,7 @@ class LotteryDetailViewModel(
                 isDrawing = drawing,
                 drawFailed = drawFailed,
             )
+        refreshDecline()
         scheduleTime()
     }
 

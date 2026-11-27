@@ -1,3 +1,7 @@
+/*
+ * Google date-range selection adapts to stays and explicit collections of nights.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar
 
 import androidx.compose.runtime.getValue

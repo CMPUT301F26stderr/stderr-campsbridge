@@ -1,3 +1,7 @@
+/*
+ * Verifies the scanner's Android launch and one-result boundary without opening a camera.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.platform.qr
 
 import android.app.Activity

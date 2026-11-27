@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -20,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.CalendarNight
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.calendar.NightRangeCalendar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
@@ -33,38 +32,42 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 /** A working allocation child; its actions never save offered inventory or create a lottery.
- * @param state Actual parent input and current working selection/range.
+ * @param choices Current campsite-source outcome shared by creation and saved editing.
+ * @param campsiteId Focused saved campsite identity.
+ * @param allocation Temporary selection and required inventory range.
  * @param onBack Discards only unapplied child edits.
  * @param onApply Applies known eligible working nights to the parent.
  * @param onMonth Changes the required visible-month range.
  * @param onSelectionChange Replaces the working nights after adding or removing a range.
  * @param onRetryInventory Retries the required inventory range.
  * @param onRetryChoices Retries the selected campsite source.
+ * @param enabled Whether the parent context still permits allocation changes.
  */
 @Composable
 fun LotteryAllocationScreen(
-    state: LotterySetupUiState,
+    choices: LotteryCampsiteChoices,
+    campsiteId: String?,
+    allocation: LotteryAllocationUiState?,
     onBack: () -> Unit,
     onApply: () -> Unit,
     onMonth: (YearMonth) -> Unit,
     onSelectionChange: (Set<LocalDate>) -> Unit,
     onRetryInventory: () -> Unit,
     onRetryChoices: () -> Unit,
+    enabled: Boolean = true,
 ) {
-    val allocation = state.allocation
     val site =
-        (state.choices as? LotteryCampsiteChoices.Content)
+        (choices as? LotteryCampsiteChoices.Content)
             ?.campsites
-            ?.firstOrNull { it.id == state.draft.campsiteId }
+            ?.firstOrNull { it.id == campsiteId }
     AppScreen(stringResource(R.string.lottery_allocate), onBack = onBack, bottomContent = {
         ActionFooter {
             AppActionButton(
                 stringResource(R.string.lottery_apply_nights),
                 onApply,
                 Modifier.fillMaxWidth(),
-                enabled = site != null && allocation?.canApply == true,
+                enabled = enabled && site != null && allocation?.canApply == true,
             )
-            TextButton(onBack, Modifier.fillMaxWidth()) { Text(stringResource(R.string.cancel)) }
         }
     }) {
         Column(
@@ -72,11 +75,11 @@ fun LotteryAllocationScreen(
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             when {
-                state.choices == LotteryCampsiteChoices.Loading -> {
+                choices == LotteryCampsiteChoices.Loading -> {
                     LoadingContent()
                 }
 
-                state.choices == LotteryCampsiteChoices.Failure -> {
+                choices == LotteryCampsiteChoices.Failure -> {
                     FailureContent(stringResource(R.string.lottery_site_failure), onRetryChoices)
                 }
 
@@ -90,6 +93,7 @@ fun LotteryAllocationScreen(
 
                 else -> {
                     Text(site.details.name, style = MaterialTheme.typography.titleLarge)
+                    if (!enabled) AllocationLockedNotice()
                     Text(
                         site.details.timeZone,
                         style = MaterialTheme.typography.bodySmall,
@@ -112,6 +116,7 @@ fun LotteryAllocationScreen(
                                 lotteryAllocationCalendarState(allocation),
                                 onMonth,
                                 onSelectionChange,
+                                enabled = enabled,
                             )
                         }
                     }
@@ -148,20 +153,17 @@ private fun LotteryAllocationPreview() {
     val day = LocalDate.of(2027, 5, 14)
     CampsbridgeTheme {
         LotteryAllocationScreen(
-            LotterySetupUiState(
-                draft = LotteryDraft(step = LotteryStep.SITE, campsiteId = site.id),
-                choices = LotteryCampsiteChoices.Content(listOf(site)),
-                allocation =
-                    LotteryAllocationUiState(
-                        YearMonth.from(day),
-                        setOf(day),
-                        CalendarInventoryRead.Content(
-                            listOf(
-                                CalendarNight(day, true),
-                                CalendarNight(day.plusDays(1), true, "preview-booking"),
-                            ),
-                        ),
+            LotteryCampsiteChoices.Content(listOf(site)),
+            site.id,
+            LotteryAllocationUiState(
+                YearMonth.from(day),
+                setOf(day),
+                CalendarInventoryRead.Content(
+                    listOf(
+                        CalendarNight(day, true),
+                        CalendarNight(day.plusDays(1), true, "preview-booking"),
                     ),
+                ),
             ),
             {},
             {},

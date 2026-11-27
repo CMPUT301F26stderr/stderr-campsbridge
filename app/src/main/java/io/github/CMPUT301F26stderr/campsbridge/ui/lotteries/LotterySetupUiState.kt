@@ -6,8 +6,9 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryConfiguration
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.calendar.CalendarInventoryRead
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CalendarInventoryRead
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import java.time.LocalDate
 import java.time.YearMonth
@@ -28,18 +29,18 @@ sealed interface LotteryCampsiteChoices {
     ) : LotteryCampsiteChoices
 }
 
-/** User-correctable local date/time feedback without implementing the reserved window order. */
+/** Local date/time feedback; the injected validator owns window ordering. */
 enum class LotteryScheduleError { DATE_REQUIRED, TIME_REQUIRED, AMBIGUOUS_TIME }
 
 /** Explicit field/dependency feedback from Next or review validation.
  * @param titleRequired Title is blank.
- * @param campsiteRequired Current selected identity is not an eligible observed choice.
+ * @param campsiteRequired At least one applied campsite is unavailable, or none has been chosen.
  * @param allocationRequired At least one allocated night is required.
  * @param schedule Incomplete or DST-invalid local inputs, keyed by their actual field.
  * @param winnerCount Existing positive-count parser feedback.
  * @param windows Actual F13 failure, absent before successful conversion or when pending.
  * @param windowsPending No F13 dependency was supplied after all four values converted.
- * @param waitlistCapacity Invalid optional positive-count feedback.
+ * @param capacity Optional registration-limit field feedback.
  */
 data class LotterySetupErrors(
     val titleRequired: Boolean = false,
@@ -49,7 +50,7 @@ data class LotterySetupErrors(
     val winnerCount: PositiveCountInput.Error? = null,
     val windows: LotteryWindowInput? = null,
     val windowsPending: Boolean = false,
-    val waitlistCapacity: PositiveCountInput.Error? = null,
+    val capacity: PositiveCountInput.Error? = null,
 )
 
 /** Working allocation and one required range covering the month plus all selected nights.
@@ -85,7 +86,7 @@ enum class LotteryTargetLoad { READY, LOADING, FAILURE, UNAVAILABLE }
  * @param choices Independent current published/owned source outcome.
  * @param allocation Working child state when allocation is open.
  * @param errors Explicit validation feedback.
- * @param configuration Validated windows, winner count and optional capacity, absent until every requirement is satisfied.
+ * @param configuration Validated windows and limits, absent until all prerequisites are satisfied.
  * @param targetLoad Authoritative target restoration result.
  * @param savePhase Current save progress; non-idle blocks conflicting actions.
  * @param saveFailure Last explicit failure, retained separately from source reads.
@@ -93,6 +94,7 @@ enum class LotteryTargetLoad { READY, LOADING, FAILURE, UNAVAILABLE }
  * @param publicationPending Publication must be reconciled before editing or leaving.
  * @param publicationTooLate Registration opening is no longer strictly in the future.
  * @param discardPrompt Whether an explicit exit needs abandonment confirmation.
+ * @param stepNavigation Action that entered the current form step.
  */
 data class LotterySetupUiState(
     val draft: LotteryDraft = LotteryDraft(),
@@ -107,4 +109,5 @@ data class LotterySetupUiState(
     val saveAction: LotterySaveAction? = null,
     val publicationPending: Boolean = false,
     val publicationTooLate: Boolean = false,
+    val stepNavigation: StepNavigation = StepNavigation.FORWARD,
 )

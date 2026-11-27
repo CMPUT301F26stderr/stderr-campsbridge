@@ -1,3 +1,7 @@
+/*
+ * Lists actual saved messages and keeps local filtering separate from linked-read recovery.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.layout.Arrangement
@@ -17,9 +21,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
@@ -46,7 +52,10 @@ fun MessageLogScreen(
     onOpen: (String) -> Unit,
     listState: LazyListState = rememberLazyListState(),
 ) {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
+    Column(
+        Modifier.fillMaxSize().padding(top = Spacing.small),
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+    ) {
         AppSearchField(state.query, onQuery, stringResource(R.string.message_log_search))
         when (state.read) {
             MessageLogRead.LOADING -> {
@@ -96,26 +105,34 @@ fun MessageLogContent(
             recipientLabel =
                 row.recipientLabel ?: row.recipientId ?: stringResource(R.string.message_log_recipient_unavailable),
         )
-        Text(
-            stringResource(
-                when (row.direction) {
-                    MessageLogDirection.OWNER_TO_ENTRANT -> R.string.message_log_owner_direction
-                    MessageLogDirection.ENTRANT_TO_OWNER -> R.string.message_log_entrant_direction
-                    MessageLogDirection.UNAVAILABLE -> R.string.message_log_direction_unavailable
-                },
-            ),
-            style = MaterialTheme.typography.labelMedium,
-        )
-        Text(
-            stringResource(R.string.message_log_reservation, row.message.reservationId),
-            style = MaterialTheme.typography.bodySmall,
-        )
-        row.reservation?.let { stay ->
-            Text(stay.bookedCampsite.name, style = MaterialTheme.typography.titleSmall)
+        // Context sits under the message, quieter than the conversation itself.
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.small / 2)) {
+            row.reservation?.let { stay ->
+                val locale = LocalConfiguration.current.locales[0]
+                Text(
+                    listOf(
+                        stay.bookedCampsite.name,
+                        stringResource(
+                            R.string.message_log_dates,
+                            formatDate(stay.checkInDate, locale),
+                            formatDate(stay.checkOutDate, locale),
+                        ),
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
             Text(
-                stringResource(R.string.message_log_dates, stay.checkInDate.toString(), stay.checkOutDate.toString()),
-                style = MaterialTheme.typography.bodySmall,
+                stringResource(
+                    when (row.direction) {
+                        MessageLogDirection.OWNER_TO_ENTRANT -> R.string.message_log_owner_direction
+                        MessageLogDirection.ENTRANT_TO_OWNER -> R.string.message_log_entrant_direction
+                        MessageLogDirection.UNAVAILABLE -> R.string.message_log_direction_unavailable
+                    },
+                ),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            RecordId(stringResource(R.string.message_log_reservation, row.message.reservationId))
         }
         if (row.isLoading) {
             LoadingContent(stringResource(R.string.message_log_context_loading))
@@ -151,7 +168,7 @@ fun MessageLogDetailScreen(
         ) {
             when {
                 row != null -> {
-                    Text(stringResource(R.string.message_log_identity, id))
+                    RecordId(stringResource(R.string.message_log_identity, id))
                     Text(
                         stringResource(R.string.message_log_history),
                         style = MaterialTheme.typography.titleMedium,

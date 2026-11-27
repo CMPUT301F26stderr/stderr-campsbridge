@@ -21,16 +21,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers.DateInputDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers.PickerField
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.pickers.TimeInputDialog
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoices
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryLocalDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryScheduleError
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySchedulePoint
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.LocalDate
 import java.time.LocalTime
@@ -39,7 +37,8 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 /** Reuses one local date/time composition for the two distinct schedule steps.
- * @param state Current form and per-input feedback.
+ * @param schedule Raw local date/time fields.
+ * @param errors Explicit feedback keyed by schedule field.
  * @param opening Actual registration or booking opening point.
  * @param closing Corresponding closing point.
  * @param initialMonth Shared display-zone month when no date is selected.
@@ -48,20 +47,14 @@ import java.time.format.FormatStyle
  */
 @Composable
 fun LotteryWindowStep(
-    state: LotterySetupUiState,
+    schedule: Map<LotterySchedulePoint, LotteryLocalDateTime>,
+    errors: Map<LotterySchedulePoint, LotteryScheduleError>,
     opening: LotterySchedulePoint,
     closing: LotterySchedulePoint,
     initialMonth: YearMonth?,
     onDate: (LotterySchedulePoint, LocalDate) -> Unit,
     onTime: (LotterySchedulePoint, LocalTime) -> Unit,
 ) {
-    val ids =
-        (state.choices as? LotteryCampsiteChoices.Content)
-            ?.campsites
-            .orEmpty()
-            .map { it.id }
-            .toSet()
-    val available = state.draft.allocations.isNotEmpty() && state.draft.allocations.all { it.campsiteId in ids }
     Text(
         stringResource(
             if (opening == LotterySchedulePoint.REGISTRATION_OPEN) {
@@ -73,15 +66,11 @@ fun LotteryWindowStep(
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    if (!available) {
-        Text(stringResource(R.string.lottery_selected_site_unavailable))
-    } else {
-        Text(
-            stringResource(R.string.lottery_schedule_zone),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+    Text(
+        stringResource(R.string.lottery_schedule_zone),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
     for (point in listOf(opening, closing)) {
         SummarySection(
             stringResource(
@@ -96,10 +85,10 @@ fun LotteryWindowStep(
         ) {
             LotteryScheduleField(
                 point,
-                state.draft.schedule[point] ?: LotteryLocalDateTime(),
-                state.errors.schedule[point],
+                schedule[point] ?: LotteryLocalDateTime(),
+                errors[point],
                 initialMonth,
-                available,
+                true,
                 { onDate(point, it) },
                 { onTime(point, it) },
             )
@@ -112,7 +101,7 @@ fun LotteryWindowStep(
  * @param value Current raw date/time pair.
  * @param error Explicit field feedback.
  * @param initialMonth Shared display-zone month.
- * @param enabled Whether the selected campsite is available.
+ * @param enabled Whether field actions are available.
  * @param onDate Confirms a local date.
  * @param onTime Confirms a local time.
  */

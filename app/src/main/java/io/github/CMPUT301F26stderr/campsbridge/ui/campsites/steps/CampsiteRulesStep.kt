@@ -7,9 +7,9 @@ package io.github.CMPUT301F26stderr.campsbridge.ui.campsites.steps
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationGroup
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 
 /** Optional owner rules and the same packaged refund policy used by booking.
  * @param rules Raw multiline rule input.

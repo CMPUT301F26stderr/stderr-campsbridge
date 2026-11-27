@@ -14,7 +14,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 /** Typed notification-tap envelope; root readiness and navigation consumption have separate owners.
  * @param accountId Intended ready recipient.
  * @param eventId Original immutable event.
- * @param subject Original saved lottery/reservation reference.
+ * @param subject Original saved lottery, reservation or message reference.
  */
 data class NotificationEntry(
     val accountId: String,
@@ -33,10 +33,10 @@ data class NotificationEntry(
 
     /** Creates an explicit cold/warm Activity intent for a valid supported entry.
      * @param context Actual application package/component context.
-     * @throws IllegalArgumentException When an identifier is blank or its target unsupported.
+     * @throws IllegalArgumentException When an original identifier is blank.
      */
     fun intent(context: Context): Intent {
-        require(isValid()) { "Invalid or unsupported notification entry" }
+        require(isValid()) { "Invalid notification entry" }
         return Intent(context, MainActivity::class.java)
             .setAction(ACTION)
             .setData(identityUri())
@@ -47,10 +47,9 @@ data class NotificationEntry(
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
     }
 
-    /** Requires complete original IDs and a target registered by this build. */
+    /** Requires complete original IDs for the typed saved target. */
     internal fun isValid(): Boolean =
-        accountId.isNotBlank() && eventId.isNotBlank() && subject.id.isNotBlank() &&
-            (subject.type == SubjectType.LOTTERY || subject.type == SubjectType.RESERVATION)
+        accountId.isNotBlank() && eventId.isNotBlank() && subject.id.isNotBlank()
 
     /** Decodes only this app's valid supported notification envelope. */
     companion object {

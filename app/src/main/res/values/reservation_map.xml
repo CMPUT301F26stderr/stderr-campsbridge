@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reservation_view_as_list">List</string>
+    <string name="reservation_view_as_map">Map</string>
+    <string name="reservation_map_description">Map of your reservations</string>
+    <string name="reservation_map_hint">Select a pin to see its stays.</string>
+    <string name="reservation_map_unavailable">Maps is not configured in this build. Switch to List to see your stays.</string>
+    <string name="reservation_map_empty">No stays to show on the map.</string>
+</resources>

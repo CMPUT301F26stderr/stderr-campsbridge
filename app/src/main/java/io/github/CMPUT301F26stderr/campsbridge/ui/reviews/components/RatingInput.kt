@@ -1,3 +1,7 @@
+/*
+ * Reports explicit numeric star choices without owning or saving the selection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews.components
 
 import androidx.compose.foundation.layout.Box

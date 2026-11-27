@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.InboxViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 
 /** Creates an InboxViewModel using TestAppHost repositories and tracks creations. */
 internal fun TestAppHost.inboxFactory(): (String) -> ViewModelProvider.Factory =
@@ -19,6 +20,7 @@ internal fun TestAppHost.inboxFactory(): (String) -> ViewModelProvider.Factory =
                 InboxViewModel(
                     accountId = accountId,
                     notifications = notifications,
+                    conversationResolver = ConversationContextResolver(campsites),
                     content =
                         NotificationContentLoader(
                             notifications = notifications,

@@ -12,7 +12,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryEntry
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryRepository
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.time.awaitDeadline
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.awaitDeadline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -339,7 +339,7 @@ internal class BookingSources(
         }
         val site = campsite
         if (site == null || site.id != campsiteId || !site.isPublished ||
-            site.ownerId != draw.ownerId
+            site.ownerId !in draw.participantOwnerIds
         ) {
             return BookingUiState.Unavailable(BookingUnavailableReason.CAMPSITE_UNAVAILABLE)
         }

@@ -1,5 +1,5 @@
 /*
- * Edits maximum winners and optional waitlist capacity.
+ * Separate winner count and optional waitlist capacity inputs.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
@@ -10,48 +10,50 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import io.github.CMPUT301F26stderr.campsbridge.R
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppTextField
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupUiState
 
-/** Edits maximum winners and optional waitlist capacity.
- * @param state Current raw count and explicit feedback.
- * @param onCount Local positive-count text edit.
- * @param onCapacity Local optional capacity text edit.
+/** Separate winner count and optional waitlist capacity inputs.
+ * @param winnerCount Raw winner-count input.
+ * @param waitlistCapacity Raw optional waiting-list capacity.
+ * @param winnerError Existing count-parser feedback.
+ * @param capacityError Existing optional-capacity feedback.
+ * @param onCount Local positive winner-count edit.
+ * @param onCapacity Optional registration-limit edit.
  */
 @Composable
 fun LotteryWinnersStep(
-    state: LotterySetupUiState,
+    winnerCount: String,
+    waitlistCapacity: String,
+    winnerError: PositiveCountInput.Error?,
+    capacityError: PositiveCountInput.Error?,
     onCount: (String) -> Unit,
-    onCapacity: (String) -> Unit = {},
+    onCapacity: (String) -> Unit,
 ) {
     AppTextField(
-        state.draft.maximumWinnersText,
+        winnerCount,
         onCount,
         stringResource(R.string.lottery_winners_step),
         errorMessage =
-            if (state.errors.winnerCount != null) {
+            if (winnerError != null) {
                 stringResource(R.string.lottery_winners_invalid)
             } else {
                 null
             },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         reserveSupportingSpace = true,
-        revealError = state.errors.winnerCount != null,
+        revealError = winnerError != null,
     )
     Text(stringResource(R.string.lottery_winners_hint))
     AppTextField(
-        state.draft.waitlistCapacityText,
+        waitlistCapacity,
         onCapacity,
         stringResource(R.string.lottery_capacity_optional),
-        errorMessage =
-            if (state.errors.waitlistCapacity != null) {
-                stringResource(R.string.lottery_capacity_invalid)
-            } else {
-                null
-            },
+        errorMessage = if (capacityError != null) stringResource(R.string.lottery_capacity_invalid) else null,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         reserveSupportingSpace = true,
-        revealError = state.errors.winnerCount == null && state.errors.waitlistCapacity != null,
+        revealError = winnerError == null && capacityError != null,
     )
     Text(stringResource(R.string.lottery_capacity_hint))
+    if (waitlistCapacity.isBlank()) Text(stringResource(R.string.lottery_unlimited))
 }

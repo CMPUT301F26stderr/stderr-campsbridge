@@ -1,3 +1,7 @@
+/*
+ * Connects native photo selection to the existing independent image controller.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.foundation.layout.Arrangement

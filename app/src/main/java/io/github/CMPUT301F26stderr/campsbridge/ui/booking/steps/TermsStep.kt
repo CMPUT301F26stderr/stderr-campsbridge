@@ -19,7 +19,7 @@ import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.BookingPolicy
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingAgreement
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.BookingUiState
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.CheckboxRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 

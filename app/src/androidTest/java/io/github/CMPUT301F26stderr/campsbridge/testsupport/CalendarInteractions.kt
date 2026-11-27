@@ -1,3 +1,7 @@
+/*
+ * Finds Google's accessible date cell without depending on its internal layout.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.testsupport
 
 import androidx.compose.ui.test.SemanticsNodeInteraction

@@ -4,6 +4,7 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +21,7 @@ import io.github.CMPUT301F26stderr.campsbridge.navigation.AppNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.OnboardingNavigation
 import io.github.CMPUT301F26stderr.campsbridge.navigation.SessionNavigationOwner
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.NotificationPermission
+import io.github.CMPUT301F26stderr.campsbridge.platform.qr.createCampsiteQrBitmap
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteDetailContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.reservations.ReservationContext
@@ -41,6 +43,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param reservationDetailFactory Factory for a saved aggregate, keyed by account/ID/context.
  * @param reservationListFactory Active-list dependencies keyed by account/context/filter.
  * @param inboxFactory Factory for the ready account receipt owner, independent of workspace.
+ * @param sentFactory Independent sender history for that same ready account.
  * @param accountRemoval Activity-owned operation that outlives the profile graph.
  * @param bookingFactory Factory for a winner wizard keyed by account, lottery and campsite IDs.
  * @param adminBrowseFactory Factory for the account-hosted read-only admin Browse graph.
@@ -50,8 +53,15 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
  * @param notificationEntries Activity/root tap owner, independent of the session navigation store.
  * @param requestedDestination Optional host-owned saved-record handoff.
  * @param onDestinationOpened Acknowledges the opened handoff.
+ * @param conversationFactory Saved participant conversation dependencies.
  * @param reviewsFactory Entry-scoped saved feedback dependencies.
+ * @param lotteryDetailsEditFactory Saved organizer details dependencies scoped to the ready account.
+ * @param lotteryAllocationsEditFactory Saved allocation dependencies scoped to the current participant.
+ * @param announcementComposeFactory Saved announcement dependencies scoped to the participating owner.
+ * @param collaboratingOwnersFactory Saved membership dependencies scoped to the ready organizer.
  * @param campsiteEditFactory Dependencies for saved listing details and independent photos.
+ * @param conversationListFactory Participant conversation list keyed by account and workspace.
+ * @param createQrBitmap Native QR generation, invoked by its child route on a worker dispatcher.
  */
 @Composable
 fun AppRoot(
@@ -78,9 +88,17 @@ fun AppRoot(
     requestedDestination: String? = null,
     onDestinationOpened: () -> Unit = {},
     accountRemoval: AccountRemovalViewModel,
+    conversationFactory: (String, String) -> ViewModelProvider.Factory,
     reviewsFactory: (String, String, Role) -> ViewModelProvider.Factory,
     adminRemovalFactory: ((String) -> ViewModelProvider.Factory)? = null,
     campsiteEditFactory: (String, String) -> ViewModelProvider.Factory,
+    lotteryDetailsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    lotteryAllocationsEditFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    announcementComposeFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    collaboratingOwnersFactory: ((String, String) -> ViewModelProvider.Factory)? = null,
+    sentFactory: ((String) -> ViewModelProvider.Factory)? = null,
+    conversationListFactory: ((String, ReservationContext) -> ViewModelProvider.Factory)? = null,
+    createQrBitmap: (String) -> Bitmap = ::createCampsiteQrBitmap,
 ) {
     val actualSession by model.state.collectAsStateWithLifecycle()
     val removal by accountRemoval.state.collectAsStateWithLifecycle()
@@ -184,6 +202,12 @@ fun AppRoot(
                                 notificationEntries::consume,
                                 requestedDestination = requestedDestination,
                                 onDestinationOpened = onDestinationOpened,
+                                conversationFactory = { id ->
+                                    conversationFactory(
+                                        session.account.id,
+                                        id,
+                                    )
+                                },
                                 onDeleteProfile = {
                                     accountRemoval
                                         .request(
@@ -193,6 +217,31 @@ fun AppRoot(
                                 reviewsFactory = { id, workspace -> reviewsFactory(session.account.id, id, workspace) },
                                 adminRemovalFactory = adminRemovalFactory?.invoke(session.account.id),
                                 campsiteEditFactory = { id -> campsiteEditFactory(session.account.id, id) },
+                                lotteryDetailsEditFactory =
+                                    lotteryDetailsEditFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
+                                lotteryAllocationsEditFactory =
+                                    lotteryAllocationsEditFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
+                                announcementComposeFactory =
+                                    announcementComposeFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
+                                collaboratingOwnersFactory =
+                                    collaboratingOwnersFactory?.let { factory ->
+                                        { id -> factory(session.account.id, id) }
+                                    },
+                                createQrBitmap = createQrBitmap,
+                                conversationListFactory =
+                                    conversationListFactory?.let { factory ->
+                                        { context -> factory(session.account.id, context) }
+                                    },
+                                sentFactory =
+                                    sentFactory?.let { factory ->
+                                        remember(session.account.id) { factory(session.account.id) }
+                                    },
                             )
                         }
                     }

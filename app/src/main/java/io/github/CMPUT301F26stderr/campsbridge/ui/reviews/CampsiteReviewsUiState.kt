@@ -1,3 +1,7 @@
+/*
+ * Required feedback source; an empty emission differs from a failed observation.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.review.Review

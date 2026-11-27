@@ -1,3 +1,7 @@
+/*
+ * Presents a small exclusive choice without owning the applied selection.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.selection
 
 import androidx.compose.foundation.layout.Arrangement

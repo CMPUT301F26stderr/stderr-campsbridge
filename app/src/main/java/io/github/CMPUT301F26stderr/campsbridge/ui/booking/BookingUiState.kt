@@ -9,8 +9,8 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.Lottery
 import io.github.CMPUT301F26stderr.campsbridge.domain.lottery.LotteryOffer
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.BookingQuote
 import io.github.CMPUT301F26stderr.campsbridge.ui.booking.logic.StaySelectionInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.input.PositiveCountInput
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.navigation.StepNavigation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.PositiveCountInput
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.StepNavigation
 import java.time.LocalDate
 import java.time.YearMonth
 

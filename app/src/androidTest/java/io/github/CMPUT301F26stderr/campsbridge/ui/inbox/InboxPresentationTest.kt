@@ -20,7 +20,7 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.Notification
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationSubject
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationSubjectContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.Assert.assertEquals

@@ -15,7 +15,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 
 /** Compact saved capacity and nightly price, wrapping together at enlarged text sizes.

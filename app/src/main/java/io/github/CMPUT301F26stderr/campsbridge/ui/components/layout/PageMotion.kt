@@ -1,3 +1,7 @@
+/*
+ * Brings a full page in without fading or resizing it.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.layout
 
 import androidx.compose.animation.AnimatedContentTransitionScope

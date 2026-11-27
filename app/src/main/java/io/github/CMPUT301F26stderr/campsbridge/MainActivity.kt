@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminRemovalViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.announcementComposeViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.appViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
@@ -24,9 +25,14 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.collaboratingOwnersViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryAllocationsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.messageLogViewModelFactory
@@ -36,7 +42,8 @@ import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
-import io.github.CMPUT301F26stderr.campsbridge.platform.lifecycle.ForegroundWorkRunner
+import io.github.CMPUT301F26stderr.campsbridge.di.sentNotificationsViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.platform.ForegroundWorkRunner
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.bindNotificationEntries
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
@@ -127,7 +134,17 @@ class MainActivity : ComponentActivity() {
                 { messageLogViewModelFactory(services) },
                 AndroidNotificationPermission(this@MainActivity),
                 entries,
+                conversationFactory = {
+                    actorId,
+                    id,
+                    ->
+                    conversationViewModelFactory(services, actorId, id)
+                },
                 accountRemoval = removal,
+                sentFactory = { actorId -> sentNotificationsViewModelFactory(services, actorId) },
+                conversationListFactory = { actorId, context ->
+                    conversationListViewModelFactory(services, actorId, context)
+                },
                 reviewsFactory = {
                     actorId,
                     id,
@@ -137,6 +154,30 @@ class MainActivity : ComponentActivity() {
                 },
                 adminRemovalFactory = { id -> adminRemovalViewModelFactory(services, id) },
                 campsiteEditFactory = { ownerId, id -> campsiteEditViewModelFactory(services, ownerId, id) },
+                lotteryDetailsEditFactory = {
+                    ownerId,
+                    id,
+                    ->
+                    lotteryDetailsEditViewModelFactory(services, ownerId, id)
+                },
+                lotteryAllocationsEditFactory = {
+                    ownerId,
+                    id,
+                    ->
+                    lotteryAllocationsEditViewModelFactory(services, ownerId, id)
+                },
+                announcementComposeFactory = {
+                    ownerId,
+                    id,
+                    ->
+                    announcementComposeViewModelFactory(services, ownerId, id)
+                },
+                collaboratingOwnersFactory = {
+                    actorId,
+                    id,
+                    ->
+                    collaboratingOwnersViewModelFactory(services, actorId, id)
+                },
             )
         }
     }

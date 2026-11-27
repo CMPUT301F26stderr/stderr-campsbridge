@@ -21,11 +21,13 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationS
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.NotificationType
 import io.github.CMPUT301F26stderr.campsbridge.domain.notification.SubjectType
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeBookingRepository
+import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeCampsiteRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeLotteryRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeMessageRepository
 import io.github.CMPUT301F26stderr.campsbridge.testsupport.fakes.FakeNotificationRepository
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -109,6 +111,7 @@ class InboxRouteLifecycleTest {
                         FakeBookingRepository(listOf(reservation)),
                         FakeMessageRepository(),
                     ),
+                    ConversationContextResolver(FakeCampsiteRepository()),
                 )
             store.put("inbox", model)
             destinations.forEach { (_, state) ->

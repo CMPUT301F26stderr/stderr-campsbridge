@@ -48,10 +48,12 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.BuildConfig
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.di.accountRemovalViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminBrowseViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.adminRemovalViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.announcementComposeViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.availabilityViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.bookingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteDetailViewModelFactory
@@ -59,9 +61,14 @@ import io.github.CMPUT301F26stderr.campsbridge.di.campsiteEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteReviewsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.campsiteSetupViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.collaboratingOwnersViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.conversationViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.exploreViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.inboxViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryAllocationsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.lotteryDetailsEditViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotteryListViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.lotterySetupViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.messageLogViewModelFactory
@@ -70,7 +77,9 @@ import io.github.CMPUT301F26stderr.campsbridge.di.onboardingViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.profileViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationDetailViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.di.reservationListViewModelFactory
+import io.github.CMPUT301F26stderr.campsbridge.di.sentNotificationsViewModelFactory
 import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocalDemoMap
+import io.github.CMPUT301F26stderr.campsbridge.platform.maps.LocalDemoPinsMap
 import io.github.CMPUT301F26stderr.campsbridge.platform.notifications.AndroidNotificationPermission
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AccountRemovalViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.app.AppRoot
@@ -172,6 +181,15 @@ class OfflineDemoActivity : ComponentActivity() {
                                 LocalViewModelStoreOwner provides session,
                                 LocalDemoMap provides
                                     { pin, select, modifier -> DemoLocationMap(pin, select, modifier) },
+                                // With a Maps key the demo shows the real reservation map; without one, the offline list.
+                                LocalDemoPinsMap provides
+                                    if (BuildConfig.MAPS_CONFIGURED) {
+                                        null
+                                    } else {
+                                        { pins, selected, select, modifier ->
+                                            DemoPinsMap(pins, selected, select, modifier)
+                                        }
+                                    },
                             ) {
                                 AppRoot(
                                     session.model,
@@ -276,7 +294,19 @@ class OfflineDemoActivity : ComponentActivity() {
                                     requestedDestination,
                                     host::consumeDestination,
                                     accountRemoval = removal,
+                                    conversationFactory = {
+                                        actorId,
+                                        id,
+                                        ->
+                                        conversationViewModelFactory(session.services, actorId, id)
+                                    },
                                     adminRemovalFactory = { id -> adminRemovalViewModelFactory(session.services, id) },
+                                    sentFactory = { actorId ->
+                                        sentNotificationsViewModelFactory(session.services, actorId)
+                                    },
+                                    conversationListFactory = { actorId, context ->
+                                        conversationListViewModelFactory(session.services, actorId, context)
+                                    },
                                     reviewsFactory = {
                                         actorId,
                                         id,
@@ -284,8 +314,29 @@ class OfflineDemoActivity : ComponentActivity() {
                                         ->
                                         campsiteReviewsViewModelFactory(session.services, actorId, id, workspace)
                                     },
+                                    lotteryDetailsEditFactory = {
+                                        ownerId,
+                                        id,
+                                        ->
+                                        lotteryDetailsEditViewModelFactory(session.services, ownerId, id)
+                                    },
+                                    lotteryAllocationsEditFactory = {
+                                        ownerId,
+                                        id,
+                                        ->
+                                        lotteryAllocationsEditViewModelFactory(session.services, ownerId, id)
+                                    },
+                                    collaboratingOwnersFactory = {
+                                        actorId,
+                                        id,
+                                        ->
+                                        collaboratingOwnersViewModelFactory(session.services, actorId, id)
+                                    },
                                     campsiteEditFactory = { ownerId, id ->
                                         campsiteEditViewModelFactory(session.services, ownerId, id)
+                                    },
+                                    announcementComposeFactory = { ownerId, id ->
+                                        announcementComposeViewModelFactory(session.services, ownerId, id)
                                     },
                                 )
                             }

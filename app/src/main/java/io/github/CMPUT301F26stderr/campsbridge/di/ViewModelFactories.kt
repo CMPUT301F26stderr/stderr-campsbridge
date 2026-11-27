@@ -22,18 +22,20 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.Notificat
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesCampsiteText
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.logic.matchesGuestCapacity
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.CollaboratingOwnersViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryContext
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.filterParticipantsByState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.validateLotteryWindows
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseDisplayName
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalEmail
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.parseOptionalPhone
-import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits as pendingAvailabilityEdits
+import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.logic.remainingAvailabilityEdits as findRemainingAvailabilityEdits
 
 /** Constructs an explicitly scoped list and optional owner-management allocation filter.
  * @param services Current host's scoped sources and clock.
@@ -163,6 +165,7 @@ fun notificationEntryViewModelFactory(services: AppServices): ViewModelProvider.
                     repositories.messages,
                 ),
                 createSavedStateHandle(),
+                ConversationContextResolver(repositories.campsites),
             )
         }
     }
@@ -269,7 +272,7 @@ fun campsiteSetupViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String?,
-    remainingAvailabilityEdits: AvailabilityDifference? = ::pendingAvailabilityEdits,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::findRemainingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
@@ -295,7 +298,7 @@ fun availabilityViewModelFactory(
     services: AppServices,
     ownerId: String,
     campsiteId: String,
-    remainingAvailabilityEdits: AvailabilityDifference? = ::pendingAvailabilityEdits,
+    remainingAvailabilityEdits: AvailabilityDifference? = ::findRemainingAvailabilityEdits,
 ): ViewModelProvider.Factory =
     viewModelFactory {
         initializer {
@@ -306,6 +309,30 @@ fun availabilityViewModelFactory(
                 services.clock,
                 createSavedStateHandle(),
                 remainingAvailabilityEdits,
+            )
+        }
+    }
+
+/** Supplies the organizer picker with existing account, allocation and membership contracts.
+ * @param services Selected host's shared repositories and clock.
+ * @param actorId Actual account opening the saved picker.
+ * @param lotteryId Confirmed saved lottery identity.
+ */
+fun collaboratingOwnersViewModelFactory(
+    services: AppServices,
+    actorId: String,
+    lotteryId: String,
+): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer {
+            CollaboratingOwnersViewModel(
+                lotteryId,
+                actorId,
+                services.repositories.accounts,
+                services.repositories.campsites,
+                services.repositories.lotteries,
+                services.clock,
+                createSavedStateHandle(),
             )
         }
     }

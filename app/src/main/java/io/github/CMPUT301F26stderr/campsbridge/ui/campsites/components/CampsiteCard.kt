@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.campsite.Campsite
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatCad
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatCad
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.RemoteImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 

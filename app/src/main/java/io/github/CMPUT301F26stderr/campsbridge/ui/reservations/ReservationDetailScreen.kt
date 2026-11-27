@@ -15,11 +15,11 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.domain.account.Role
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.ReservationCancellation
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.preview.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.previewReservation
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationGroup
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationGroup
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.StaySummary
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection

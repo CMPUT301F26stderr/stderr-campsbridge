@@ -1,5 +1,5 @@
 /*
- * Reviews every campsite allocation and the shared windows in Edmonton time.
+ * Reviews all applied owned offers, limits and windows in Edmonton time.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.steps
@@ -8,28 +8,28 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppIconAction
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocatedNights
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryCampsiteChoices
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryLocalDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryScheduleError
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySchedulePoint
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupUiState
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryStep
-import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.components.AllocationSummary
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowInput
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** Reviews every campsite allocation and the shared windows in Edmonton time.
+/** Reviews all applied owned offers, limits and windows in Edmonton time.
  * @param state Current raw input, derived configuration and validation outcomes.
  * @param onEdit Returns to a named step within this parent.
  * @param enabled Whether input may change while a save owns the parent.
@@ -59,15 +59,14 @@ fun LotteryReviewStep(
         stringResource(R.string.lottery_site_step),
         action = { EditLotteryStep(LotteryStep.SITE, R.string.lottery_site_step, onEdit, enabled) },
     ) {
-        if (draft.allocations.isEmpty()) Text(stringResource(R.string.lottery_site_required))
         for (offer in draft.allocations) {
-            val site = sites[offer.campsiteId]
-            AllocationSummary(offer, site)
-            if (site != null) Text(site.details.timeZone, style = MaterialTheme.typography.bodySmall)
+            Text(
+                sites[offer.campsiteId]?.details?.name
+                    ?: stringResource(R.string.lottery_missing_campsite, offer.campsiteId),
+            )
+            LotteryAllocatedNights(offer.nights.toSet())
         }
-        if (state.errors.campsiteRequired) {
-            Text(stringResource(R.string.lottery_selected_site_unavailable), color = MaterialTheme.colorScheme.error)
-        }
+        if (state.errors.campsiteRequired) Text(stringResource(R.string.lottery_site_required))
         if (state.errors.allocationRequired) {
             Text(
                 stringResource(R.string.lottery_allocation_required),
@@ -75,13 +74,11 @@ fun LotteryReviewStep(
             )
         }
     }
-    if (draft.allocations.isNotEmpty()) {
-        Text(
-            stringResource(R.string.lottery_schedule_zone),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+    Text(
+        stringResource(R.string.lottery_schedule_zone),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
     LotteryReviewWindow(
         R.string.lottery_registration_step,
         LotteryStep.REGISTRATION,
@@ -103,7 +100,7 @@ fun LotteryReviewStep(
         action = {
             EditLotteryStep(
                 LotteryStep.WINNERS,
-                R.string.lottery_winners_step,
+                R.string.lottery_winners_title,
                 onEdit,
                 enabled,
             )
@@ -117,16 +114,13 @@ fun LotteryReviewStep(
             )
         }
         DetailRow(
-            stringResource(R.string.lottery_capacity),
-            state.configuration?.waitlistCapacity?.toString()
-                ?: draft.waitlistCapacityText.takeUnless { it.isBlank() }
-                ?: stringResource(R.string.lottery_unlimited),
+            stringResource(R.string.lottery_registration_limit),
+            draft.waitlistCapacityText.ifBlank { stringResource(R.string.lottery_unlimited) },
         )
-        if (state.errors.waitlistCapacity != null) {
-            Text(
-                stringResource(R.string.lottery_capacity_invalid),
-                color = MaterialTheme.colorScheme.error,
-            )
+        if (state.errors.capacity !=
+            null
+        ) {
+            Text(stringResource(R.string.lottery_capacity_invalid), color = MaterialTheme.colorScheme.error)
         }
     }
     if (state.errors.windowsPending) Text(stringResource(R.string.lottery_window_pending))
@@ -199,21 +193,10 @@ private fun EditLotteryStep(
     onEdit: (LotteryStep) -> Unit,
     enabled: Boolean,
 ) {
-    IconButton({ onEdit(step) }, enabled = enabled) {
-        Icon(
-            Icons.Outlined.Edit,
-            contentDescription =
-                stringResource(
-                    R.string.lottery_edit_section,
-                    stringResource(title),
-                ),
-            tint =
-                if (enabled) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                },
-        )
+    AppIconAction(stringResource(R.string.lottery_edit_section, stringResource(title)), {
+        onEdit(step)
+    }, enabled = enabled) {
+        Icon(Icons.Outlined.Edit, contentDescription = null)
     }
 }
 

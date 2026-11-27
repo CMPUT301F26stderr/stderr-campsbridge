@@ -35,18 +35,21 @@ import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTargetType
 import io.github.CMPUT301F26stderr.campsbridge.domain.shared.Removal
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsite
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.previewCampsitePhoto
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDateTime
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDateTime
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageLoadState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.images.ImageSlotState
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.roleLabel
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.NavigationRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.ActionStyle
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.actions.AppActionButton
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AccountAvatar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
-import io.github.CMPUT301F26stderr.campsbridge.ui.components.rows.NavigationRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.DetailRow
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.summaries.SummarySection
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
@@ -77,21 +80,54 @@ fun AdminProfileScreen(
     backEnabled: Boolean = true,
 ) {
     AppScreen(stringResource(R.string.admin_profile_inspection), modifier, onBack = onBack, backEnabled = backEnabled) {
+        val loaded = (state.account as? AdminRead.Content)?.value
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(vertical = Spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(Spacing.large),
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
-            if (removalAction == null) Text(stringResource(R.string.admin_inspection_read_only))
-            removalAction?.invoke()
-            InspectionField(stringResource(R.string.admin_account_id), state.id)
-            Column(
-                Modifier.fillMaxWidth().testTag("admin_profile_account"),
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
-            ) {
+            AdminRecordHeader(
+                title =
+                    when {
+                        loaded == null -> stringResource(R.string.admin_profile_inspection)
+                        loaded.name.isBlank() -> stringResource(R.string.admin_profile_unnamed)
+                        else -> loaded.name
+                    },
+                id = state.id,
+                leading = {
+                    AccountAvatar(
+                        state.photo.displayUrl.takeIf { loaded != null },
+                        loaded?.name ?: state.id,
+                        size = 56.dp,
+                    )
+                },
+                status =
+                    loaded?.let { account ->
+                        {
+                            StatusLabel(
+                                stringResource(
+                                    if (account.isActive) {
+                                        R.string.admin_account_active
+                                    } else {
+                                        R.string.admin_account_removed
+                                    },
+                                ),
+                                alert = !account.isActive,
+                            )
+                        }
+                    },
+            )
+            if (removalAction == null) {
                 Text(
-                    stringResource(R.string.personal_details),
-                    style = MaterialTheme.typography.titleLarge,
+                    stringResource(R.string.admin_inspection_read_only),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            removalAction?.invoke()
+            SummarySection(
+                stringResource(R.string.personal_details),
+                Modifier.testTag("admin_profile_account"),
+            ) {
                 when (val account = state.account) {
                     AdminRead.Loading -> {
                         LoadingContent(stringResource(R.string.profile_loading))
@@ -115,26 +151,21 @@ fun AdminProfileScreen(
                     }
                 }
             }
-            HorizontalDivider()
-            Column(
-                Modifier.fillMaxWidth().testTag("admin_profile_photo"),
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            SummarySection(
+                stringResource(R.string.profile_photo),
+                Modifier.testTag("admin_profile_photo"),
             ) {
-                Text(
-                    stringResource(R.string.profile_photo),
-                    style = MaterialTheme.typography.titleLarge,
-                )
                 if (state.account is AdminRead.Content) {
-                    AttachmentImage(
-                        state.photo,
-                        stringResource(R.string.profile_photo),
-                        onRetryPhoto,
-                        Modifier.size(128.dp).clip(CircleShape),
-                    )
-                    if (state.photo.loadState == ImageLoadState.READY &&
-                        state.photo.attachment == null
-                    ) {
+                    val missing = state.photo.loadState == ImageLoadState.READY && state.photo.attachment == null
+                    if (missing) {
                         EmptyContent(stringResource(R.string.admin_no_profile_photo))
+                    } else {
+                        AttachmentImage(
+                            state.photo,
+                            stringResource(R.string.profile_photo),
+                            onRetryPhoto,
+                            Modifier.size(128.dp).clip(CircleShape),
+                        )
                     }
                     if (state.photo.loadState == ImageLoadState.READY &&
                         state.photo.attachment != null
@@ -145,15 +176,10 @@ fun AdminProfileScreen(
                     Text(stringResource(R.string.admin_profile_dependents_unavailable))
                 }
             }
-            HorizontalDivider()
-            Column(
-                Modifier.fillMaxWidth().testTag("admin_profile_campsites"),
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+            SummarySection(
+                stringResource(R.string.admin_owned_campsites),
+                Modifier.testTag("admin_profile_campsites"),
             ) {
-                Text(
-                    stringResource(R.string.admin_owned_campsites),
-                    style = MaterialTheme.typography.titleLarge,
-                )
                 if (state.account !is AdminRead.Content) {
                     Text(stringResource(R.string.admin_profile_dependents_unavailable))
                 } else {
@@ -188,52 +214,37 @@ fun AdminProfileScreen(
     }
 }
 
-/** Actual saved identity, capabilities and optional contact/removal facts. */
+/** Shows saved contact details, capabilities and any retained removal facts; name and state live in the header.
+ * @param account Actual inspected account, including retained removal facts.
+ */
 @Composable
 private fun AdminAccountFacts(account: Account) {
-    InspectionField(stringResource(R.string.admin_display_name), account.name)
-    InspectionField(stringResource(R.string.email), account.email)
-    InspectionField(stringResource(R.string.phone), account.phone)
-    InspectionField(
+    val locale = LocalConfiguration.current.locales[0]
+    val notProvided = stringResource(R.string.not_provided)
+    DetailRow(stringResource(R.string.email), account.email?.takeIf { it.isNotBlank() } ?: notProvided)
+    DetailRow(stringResource(R.string.phone), account.phone?.takeIf { it.isNotBlank() } ?: notProvided)
+    DetailRow(
         stringResource(R.string.admin_profile_roles),
         account.roles
-            .map {
-                roleLabel(it)
-            }.joinToString(),
+            .map { roleLabel(it) }
+            .joinToString()
+            .ifBlank { notProvided },
     )
-    InspectionField(stringResource(R.string.admin_created_at), account.createdAt.toString())
-    Text(
-        stringResource(
-            if (account.isActive) R.string.admin_account_active else R.string.admin_account_removed,
-        ),
-    )
+    DetailRow(stringResource(R.string.admin_created_at), formatDateTime(account.createdAt, locale))
     account.removal?.let { removal ->
-        InspectionField(stringResource(R.string.admin_removed_at), removal.at.toString())
-        InspectionField(stringResource(R.string.admin_removed_by), removal.actorId)
-        InspectionField(stringResource(R.string.admin_removal_reason), removal.reason)
-    }
-}
-
-/** Missing values stay visible instead of disappearing from a retained profile. */
-@Composable
-private fun InspectionField(
-    label: String,
-    value: String?,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            value?.takeIf { it.isNotBlank() } ?: stringResource(R.string.not_provided),
-            style = MaterialTheme.typography.bodyMedium,
+        DetailRow(stringResource(R.string.admin_removed_at), formatDateTime(removal.at, locale))
+        DetailRow(stringResource(R.string.admin_removed_by), removal.actorId)
+        DetailRow(
+            stringResource(R.string.admin_removal_reason),
+            removal.reason?.takeIf { it.isNotBlank() } ?: notProvided,
         )
     }
 }
 
-/** Draft and retained rows remain navigable, with no owner edit or participation actions. */
+/** Keeps draft and retained rows navigable without owner editing or participation actions.
+ * @param site Actual related campsite.
+ * @param onCampsite Opens the selected saved identity.
+ */
 @Composable
 private fun AdminOwnedCampsite(
     site: Campsite,
@@ -252,7 +263,7 @@ private fun AdminOwnedCampsite(
             ?: stringResource(R.string.not_provided)
     NavigationRow(
         title = site.details.name,
-        supportingText = listOf(site.id, location, status).joinToString(" | "),
+        supportingText = listOf(location, status, site.id).joinToString(" · "),
         onClick = { onCampsite(site.id) },
     )
 }
@@ -396,7 +407,13 @@ fun AdminImageScreen(
             Modifier.verticalScroll(rememberScrollState()).padding(vertical = Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.large),
         ) {
-            if (onRemove == null) Text(stringResource(R.string.admin_inspection_read_only))
+            if (onRemove == null) {
+                Text(
+                    stringResource(R.string.admin_inspection_read_only),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             onRemove?.let {
                 AppActionButton(
                     stringResource(R.string.admin_remove_image),
@@ -405,49 +422,44 @@ fun AdminImageScreen(
                     style = ActionStyle.DESTRUCTIVE_OUTLINED,
                 )
             }
-            InspectionField(stringResource(R.string.admin_image_slot), state.target.id)
-            Text(
-                stringResource(
-                    if (state.target.type ==
-                        ImageTargetType.ACCOUNT
-                    ) {
-                        R.string.admin_target_account
-                    } else {
-                        R.string.admin_target_campsite
-                    },
-                ),
-            )
             Column(
                 Modifier.testTag("admin_image_photo"),
                 verticalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
-                AttachmentImage(
-                    state.photo,
-                    stringResource(R.string.admin_image_inspection),
-                    onRetryPhoto,
-                    Modifier.fillMaxWidth().aspectRatio(4f / 3f).clip(MaterialTheme.shapes.medium),
-                )
-                if (state.photo.loadState == ImageLoadState.READY &&
-                    state.photo.attachment == null
-                ) {
+                if (state.photo.loadState == ImageLoadState.READY && state.photo.attachment == null) {
                     EmptyContent(stringResource(R.string.admin_image_no_attachment))
-                }
-                state.photo.attachment?.takeIf { it.target == state.target }?.let { attachment ->
-                    InspectionField(
-                        stringResource(R.string.admin_image_uploaded_at),
-                        formatDateTime(attachment.uploadedAt, locale),
+                } else {
+                    AttachmentImage(
+                        state.photo,
+                        stringResource(R.string.admin_image_inspection),
+                        onRetryPhoto,
+                        Modifier.fillMaxWidth().aspectRatio(4f / 3f).clip(MaterialTheme.shapes.medium),
                     )
                 }
+                SummarySection(stringResource(R.string.admin_image_details)) {
+                    DetailRow(
+                        stringResource(R.string.admin_image_attached_to),
+                        stringResource(
+                            if (state.target.type == ImageTargetType.ACCOUNT) {
+                                R.string.admin_target_account
+                            } else {
+                                R.string.admin_target_campsite
+                            },
+                        ),
+                    )
+                    DetailRow(stringResource(R.string.admin_image_slot), state.target.id)
+                    state.photo.attachment?.takeIf { it.target == state.target }?.let { attachment ->
+                        DetailRow(
+                            stringResource(R.string.admin_image_uploaded_at),
+                            formatDateTime(attachment.uploadedAt, locale),
+                        )
+                    }
+                }
             }
-            HorizontalDivider()
-            Column(
+            SummarySection(
+                stringResource(R.string.admin_image_parent),
                 Modifier.testTag("admin_image_parent"),
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
-                Text(
-                    stringResource(R.string.admin_image_parent),
-                    style = MaterialTheme.typography.titleLarge,
-                )
                 when (state.parent) {
                     AdminRead.Loading -> {
                         LoadingContent(stringResource(R.string.admin_image_parent_loading))
@@ -468,11 +480,11 @@ fun AdminImageScreen(
                         if (confirmed) {
                             when (parent) {
                                 is AdminImageParent.Profile -> {
-                                    InspectionField(
+                                    DetailRow(
                                         stringResource(R.string.admin_display_name),
                                         parent.account.name,
                                     )
-                                    Text(
+                                    StatusLabel(
                                         stringResource(
                                             if (parent.account.isActive) {
                                                 R.string.admin_account_active
@@ -480,15 +492,16 @@ fun AdminImageScreen(
                                                 R.string.admin_account_removed
                                             },
                                         ),
+                                        alert = !parent.account.isActive,
                                     )
                                 }
 
                                 is AdminImageParent.Site -> {
-                                    InspectionField(
+                                    DetailRow(
                                         stringResource(R.string.admin_display_name),
                                         parent.campsite.details.name,
                                     )
-                                    Text(
+                                    StatusLabel(
                                         stringResource(
                                             when {
                                                 parent.campsite.removal != null -> {

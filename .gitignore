@@ -343,11 +343,16 @@ ui-debug.log*
 __pycache__/
 
 # Generated prototype download bundle.
-/prototype/*.zip
+/doc/prototype/*.zip
 
 # Personal reference documents; keep the team roster tracked.
 /doc/*
 !/doc/team.txt
+!/doc/halfway/
+!/doc/pages/
+!/doc/prototype/
+!/doc/citations/
 !/doc/archive/
 /doc/archive/*
 !/doc/archive/halfway-firebase-reset.md
+!/doc/archive/halfway-drafts/

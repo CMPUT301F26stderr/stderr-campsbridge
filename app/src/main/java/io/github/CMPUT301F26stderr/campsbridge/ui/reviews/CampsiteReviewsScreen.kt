@@ -1,3 +1,7 @@
+/*
+ * Displays saved feedback and separate author actions without owning persistence.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.compose.foundation.layout.Arrangement

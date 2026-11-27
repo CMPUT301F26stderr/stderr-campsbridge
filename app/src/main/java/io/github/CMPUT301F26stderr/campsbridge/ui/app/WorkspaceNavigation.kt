@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -21,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -48,7 +50,8 @@ data class WorkspaceNavigationItem(
     val unselectedIcon: ImageVector = icon,
 )
 
-/** Material workspace navigation with compact labels and caller-owned selection.
+/** Material workspace navigation with compact labels and caller-owned selection. When its items fit with a margin it
+ * floats as a centred pill only as wide as they need; otherwise it spans the width as a standard bar.
  * @param items Destinations supplied by the owning graph.
  * @param selectedId Current selected identity.
  * @param onSelect Navigation request.
@@ -82,22 +85,31 @@ fun WorkspaceNavigation(
                     .toDp()
             }
         }
-    val target = 48.dp * LocalControlScale.current.coerceAtLeast(1f)
-    val requiredWidth = maxOf(target, widestLabel) * items.size + Spacing.small * (items.size - 1)
-    BoxWithConstraints(modifier.fillMaxWidth().navigationBarsPadding().imePadding()) {
-        val floating = requiredWidth + Spacing.medium <= maxWidth
+    val scale = LocalControlScale.current.coerceAtLeast(1f)
+    // Material spaces items 8 dp apart; the pill adds the same inset at each end.
+    val gaps = Spacing.small * (items.size + 1)
+    // Smallest pill: touch-size items with labels at their smallest auto-size step.
+    val minimumWidth = maxOf(48.dp * scale, widestLabel) * items.size + gaps
+    // Preferred pill: room around the 56 dp active indicator and beside each label.
+    val preferredWidth = maxOf(72.dp * scale, widestLabel + Spacing.medium) * items.size + gaps
+    BoxWithConstraints(
+        modifier.fillMaxWidth().navigationBarsPadding().imePadding(),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        val floating = minimumWidth + Spacing.medium <= maxWidth
         Surface(
             modifier =
-                Modifier.fillMaxWidth().padding(
-                    start = if (floating) Spacing.small else 0.dp,
-                    end = if (floating) Spacing.small else 0.dp,
-                    bottom = if (floating) Spacing.small else 0.dp,
-                ),
+                if (floating) {
+                    Modifier.padding(bottom = Spacing.small).width(minOf(preferredWidth, maxWidth - Spacing.medium))
+                } else {
+                    Modifier.fillMaxWidth()
+                },
             shape = if (floating) MaterialTheme.shapes.extraLarge else RectangleShape,
             color = MaterialTheme.colorScheme.surfaceContainerLow,
             shadowElevation = if (floating) 2.dp else 0.dp,
         ) {
             NavigationBar(
+                modifier = if (floating) Modifier.padding(horizontal = Spacing.small) else Modifier,
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 tonalElevation = 0.dp,
                 windowInsets = WindowInsets(0, 0, 0, 0),

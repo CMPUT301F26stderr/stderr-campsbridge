@@ -1,3 +1,7 @@
+/*
+ * RV-05 through the saved campsite graph, with observed records and independent author actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.compose.ui.test.assertIsDisplayed

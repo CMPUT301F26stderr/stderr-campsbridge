@@ -501,6 +501,56 @@ class LotteryDraftWriterTest {
             assertEquals(List(4) { "get:draft" }, repository.events)
         }
 
+    /** LD-01: saved details update only changed organizer fields on drafts and published records. */
+    @Test fun detailsScopeUpdatesSharedFieldsWithoutChangingOffersOrPublication() =
+        runTest {
+            for (publishedAt in listOf(null, CampingFixtures.now)) {
+                repository.records.value = listOf(draft.copy(publishedAt = publishedAt))
+                repository.events.clear()
+                repository.detailsRequests.clear()
+                val input =
+                    request().copy(
+                        title = "May camping for families",
+                        description = "Quiet stays beside the river.",
+                        allowCreate = false,
+                        scope = LotterySaveScope.DETAILS,
+                    )
+                assertEquals(LotterySaveResult.Saved(draft.id), writer.save(input))
+                assertEquals(listOf("get:draft", "update:draft"), repository.events)
+                assertEquals(draft.ownerId, repository.detailsRequests.single().ownerId)
+                assertEquals(input.title, repository.detailsRequests.single().title)
+                assertEquals(input.description, repository.detailsRequests.single().description)
+                assertEquals(input.configuration, repository.detailsRequests.single().configuration)
+                assertEquals(
+                    publishedAt,
+                    repository.records.value
+                        .single()
+                        .publishedAt,
+                )
+                repository.events.clear()
+                assertEquals(LotterySaveResult.Saved(draft.id), writer.save(input))
+                assertEquals(listOf("get:draft"), repository.events)
+                assertEquals(1, repository.detailsRequests.size)
+                assertTrue(repository.offerRequests.isEmpty())
+            }
+        }
+
+    /** LD-01: missing, cancelled and collaborating-owner targets never receive a details write. */
+    @Test fun detailsScopeRejectsUnavailableTargetsAndNonOrganizers() =
+        runTest {
+            val cancelled = draft.copy(cancellation = Cancellation(CampingFixtures.now, draft.ownerId, null))
+            val shared = draft.copy(participantOwnerIds = setOf(draft.ownerId, "co-owner"))
+            for ((record, actor) in listOf(null to draft.ownerId, cancelled to draft.ownerId, shared to "co-owner")) {
+                repository.records.value = listOfNotNull(record)
+                repository.events.clear()
+                val input = request().copy(ownerId = actor, allowCreate = false, scope = LotterySaveScope.DETAILS)
+                assertEquals(LotterySaveResult.Unavailable, writer.save(input))
+                assertEquals(listOf("get:draft"), repository.events)
+                assertTrue(repository.detailsRequests.isEmpty())
+                assertTrue(repository.offerRequests.isEmpty())
+            }
+        }
+
     /** Supplies valid fixed reviewed values without implementing schedule-feedback rules.
      * @param action Requested confirmed outcome.
      */

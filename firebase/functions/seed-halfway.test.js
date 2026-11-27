@@ -59,7 +59,7 @@ test('fixture materialization connects real people, relative windows, inventory 
   assert.ok(events.some(([, event]) => event.type === 'LOTTERY_LOST'));
   assert.ok(events.some(([, event]) => event.subject.id === id));
   for (const [key] of events) assert.ok(Object.values(actors).some(uid => plan.documents.has(`accounts/${uid}/inbox/${key.split('/')[1]}`)));
-  for (const photo of plan.photos) assert.ok(fs.statSync(path.resolve(__dirname, '../../assets', photo.source)).size > 0);
+  for (const photo of plan.photos) assert.ok(fs.statSync(path.resolve(__dirname, '../../app/assets', photo.source)).size > 0);
 });
 
 test('invalid bindings, references and windows fail before preparing any writes', () => {

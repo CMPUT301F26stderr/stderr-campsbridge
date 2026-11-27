@@ -15,6 +15,10 @@
     <string name="credits_font_body">Inter Project authors. Licensed under the SIL Open Font License 1.1.</string>
     <string name="credits_font_license">Inter font license</string>
     <string name="credits_font_source">Inter project</string>
+    <string name="credits_mono_font">JetBrains Mono typeface</string>
+    <string name="credits_mono_font_body">The JetBrains Mono Project Authors. Licensed under the SIL Open Font License 1.1.</string>
+    <string name="credits_mono_font_license">JetBrains Mono font license</string>
+    <string name="credits_mono_font_source">JetBrains Mono project</string>
     <string name="credits_java">Java API support</string>
     <string name="credits_java_body">desugar_jdk_libs provides Java APIs on supported Android versions. Licensed under GPL version 2 with the Classpath Exception.</string>
     <string name="credits_java_license">Java API support license</string>

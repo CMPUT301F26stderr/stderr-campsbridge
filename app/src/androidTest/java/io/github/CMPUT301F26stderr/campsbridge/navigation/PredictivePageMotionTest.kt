@@ -1,3 +1,7 @@
+/*
+ * Checks gesture progress and cancellation through Navigation Compose's event handler.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.navigation
 
 import androidx.compose.foundation.background

@@ -1,3 +1,7 @@
+/*
+ * RV-01 through RV-04 contracts for observed feedback and independent star/text actions.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.reviews
 
 import androidx.lifecycle.SavedStateHandle

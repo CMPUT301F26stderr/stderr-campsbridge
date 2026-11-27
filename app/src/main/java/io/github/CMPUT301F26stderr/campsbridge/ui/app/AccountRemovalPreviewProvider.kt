@@ -1,3 +1,7 @@
+/*
+ * Passive root confirmation, progress and recovery states; no operation is simulated.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.app
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider

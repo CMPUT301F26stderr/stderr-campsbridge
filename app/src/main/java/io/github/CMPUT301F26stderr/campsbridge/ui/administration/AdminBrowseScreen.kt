@@ -5,10 +5,10 @@
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.FilterChip
@@ -53,6 +54,7 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.EmptyConte
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.FailureContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.feedback.LoadingContent
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.forms.AppSearchField
+import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AccountAvatar
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.images.AttachmentImage
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.layout.AppScreen
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
@@ -60,6 +62,9 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing
 import java.time.Instant
 
 private const val METADATA_SEPARATOR = " · "
+
+/** Side of a row's thumbnail or avatar. */
+private val THUMBNAIL = 56.dp
 
 /** Admin browse tabs, search and rows; the route owns the ViewModel and navigation.
  * @param state Selected tab, its inputs and the source outcome.
@@ -111,8 +116,9 @@ fun AdminBrowseScreen(
             Modifier.fillMaxWidth().padding(vertical = Spacing.small),
         )
         if (state.tab == AdminBrowseTab.PROFILES) {
-            FlowRow(
-                Modifier.fillMaxWidth(),
+            // One scrolling line keeps the list where it is instead of wrapping chips onto a second row.
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
                 (listOf<Role?>(null) + Role.entries).forEach { role ->
@@ -156,23 +162,30 @@ fun AdminBrowseScreen(
                         items(rows, key = { "ACCOUNT:${it.id}" }) { account ->
                             val target = ImageTarget(ImageTargetType.ACCOUNT, account.id)
                             BrowseRow(
-                                account.name,
-                                listOf(
-                                    account.id,
-                                    account.email.orEmpty(),
-                                    account.phone.orEmpty(),
-                                    account.roles.map { roleLabel(it) }.joinToString(),
-                                    stringResource(
-                                        if (account.isActive) {
-                                            R.string.admin_account_active
-                                        } else {
-                                            R.string.admin_account_removed
-                                        },
-                                    ),
-                                ).filter { it.isNotBlank() }.joinToString(METADATA_SEPARATOR),
-                                photos[target] ?: ImageSlotState(),
-                                { onRetryThumbnail(target) },
-                                { onProfile(account.id) },
+                                title = account.name,
+                                supporting =
+                                    listOfNotNull(
+                                        account.email?.takeIf { it.isNotBlank() } ?: account.phone,
+                                        account.roles
+                                            .map { roleLabel(it) }
+                                            .joinToString()
+                                            .takeIf { it.isNotBlank() },
+                                    ).joinToString(METADATA_SEPARATOR),
+                                id = account.id,
+                                status =
+                                    if (account.isActive) {
+                                        null
+                                    } else {
+                                        stringResource(R.string.admin_account_removed)
+                                    },
+                                leading = {
+                                    AccountAvatar(
+                                        (photos[target] ?: ImageSlotState()).displayUrl,
+                                        account.name,
+                                        size = THUMBNAIL,
+                                    )
+                                },
+                                open = { onProfile(account.id) },
                             )
                         }
                     }
@@ -185,15 +198,25 @@ fun AdminBrowseScreen(
                         items(rows, key = { "CAMPSITE:${it.id}" }) { campsite ->
                             val target = ImageTarget(ImageTargetType.CAMPSITE, campsite.id)
                             BrowseRow(
-                                campsite.details.name,
-                                listOf(
-                                    campsite.id,
-                                    campsite.details.locationLabel,
-                                    campsite.ownerId,
-                                ).joinToString(METADATA_SEPARATOR),
-                                photos[target] ?: ImageSlotState(),
-                                { onRetryThumbnail(target) },
-                                { onCampsite(campsite.id) },
+                                title = campsite.details.name,
+                                supporting = campsite.details.locationLabel,
+                                id = campsite.id,
+                                status =
+                                    when {
+                                        campsite.removal != null -> stringResource(R.string.campsite_removed)
+                                        !campsite.isPublished -> stringResource(R.string.campsite_draft)
+                                        else -> null
+                                    },
+                                leading = {
+                                    AttachmentImage(
+                                        photos[target] ?: ImageSlotState(),
+                                        campsite.details.name,
+                                        { onRetryThumbnail(target) },
+                                        Modifier.size(THUMBNAIL).clip(MaterialTheme.shapes.small),
+                                    )
+                                },
+                                open = { onCampsite(campsite.id) },
+                                statusAlert = campsite.removal != null,
                             )
                         }
                     }
@@ -243,20 +266,24 @@ private fun BrowseFeedback(content: @Composable () -> Unit) {
     Box(Modifier.padding(vertical = Spacing.medium)) { content() }
 }
 
-/** One record row; a failed thumbnail stays inside its slot and keeps the metadata visible.
+/** One record row: picture, name, a readable summary, the stored ID and any state that needs attention.
  * @param title Record name.
- * @param metadata Identity and status line.
- * @param photo This record's thumbnail state.
- * @param retry Retries this thumbnail.
+ * @param supporting Readable summary, such as a location or contact and roles; blank hides it.
+ * @param id Stored identifier, shown as a record key.
+ * @param status State worth flagging, such as Removed or Draft; null for the ordinary state.
+ * @param statusAlert Whether [status] needs attention (Removed) rather than being informational (Draft).
+ * @param leading Thumbnail or avatar; a failed thumbnail stays inside its own slot.
  * @param open Opens this record.
  */
 @Composable
 private fun BrowseRow(
     title: String,
-    metadata: String,
-    photo: ImageSlotState,
-    retry: () -> Unit,
+    supporting: String,
+    id: String,
+    status: String?,
+    leading: @Composable () -> Unit,
     open: () -> Unit,
+    statusAlert: Boolean = true,
 ) {
     Column {
         Row(
@@ -264,16 +291,23 @@ private fun BrowseRow(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(Modifier.width(64.dp)) {
-                AttachmentImage(photo, title, retry, Modifier.size(64.dp).clip(MaterialTheme.shapes.small))
-            }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+            Box(Modifier.width(THUMBNAIL)) { leading() }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.small / 2)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    metadata,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (supporting.isNotBlank()) {
+                    Text(
+                        supporting,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RecordId(id, Modifier.weight(1f, fill = false))
+                    status?.let { StatusLabel(it, alert = statusAlert) }
+                }
             }
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,

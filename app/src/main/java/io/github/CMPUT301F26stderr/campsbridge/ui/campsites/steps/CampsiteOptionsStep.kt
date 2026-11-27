@@ -9,8 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import io.github.CMPUT301F26stderr.campsbridge.R
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.options.CampingOption
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.options.CampingOptions
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CampingOption
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.CampingOptions
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.CheckboxRow
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.ChoiceOption
 import io.github.CMPUT301F26stderr.campsbridge.ui.components.selection.PreferenceChips

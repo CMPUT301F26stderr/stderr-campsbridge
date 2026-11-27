@@ -1,3 +1,7 @@
+/*
+ * Actual two-person saved relationship, independent of workspace roles.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.messaging
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.booking.Reservation

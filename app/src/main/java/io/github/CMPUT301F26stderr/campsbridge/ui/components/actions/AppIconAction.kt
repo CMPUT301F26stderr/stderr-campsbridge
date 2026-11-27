@@ -1,3 +1,7 @@
+/*
+ * Gives a secondary icon action a tonal container, press feedback and a full touch target.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.actions
 
 import androidx.compose.foundation.layout.sizeIn

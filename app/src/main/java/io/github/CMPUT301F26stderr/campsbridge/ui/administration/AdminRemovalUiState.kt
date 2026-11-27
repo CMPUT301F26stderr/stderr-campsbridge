@@ -1,3 +1,7 @@
+/*
+ * One original inspected target, independent of later navigation or source changes.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.administration
 
 import io.github.CMPUT301F26stderr.campsbridge.domain.image.ImageTarget

@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.dateToPickerMillis
-import io.github.CMPUT301F26stderr.campsbridge.ui.common.format.formatDate
+import io.github.CMPUT301F26stderr.campsbridge.ui.common.formatDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.pickerMillisToDate
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Spacing

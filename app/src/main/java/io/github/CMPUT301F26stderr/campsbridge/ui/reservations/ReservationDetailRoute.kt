@@ -29,6 +29,7 @@ enum class ReservationDetailPage(
  * @param onBack Returns to the overview or original caller.
  * @param onPayment Opens this identity's payment child.
  * @param onTerms Opens its accepted terms.
+ * @param onMessages Opens the registered conversation; that controller resolves actual participants.
  */
 @Composable
 fun ReservationDetailRoute(
@@ -37,6 +38,7 @@ fun ReservationDetailRoute(
     onBack: () -> Unit,
     onPayment: () -> Unit,
     onTerms: () -> Unit,
+    onMessages: (() -> Unit)? = null,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val cancellation by model.cancellation.collectAsStateWithLifecycle()
@@ -62,6 +64,7 @@ fun ReservationDetailRoute(
                 model::retry,
                 onPayment = { if (model.canLeave()) onPayment() },
                 onTerms = { if (model.canLeave()) onTerms() },
+                onMessages = onMessages?.let { open -> { if (model.canLeave()) open() } },
                 context = model.context,
                 cancellation = cancellation,
                 onRequestCancel = model::requestCancel,

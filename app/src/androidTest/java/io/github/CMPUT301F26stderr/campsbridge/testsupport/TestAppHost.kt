@@ -59,10 +59,18 @@ import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteListViewMode
 import io.github.CMPUT301F26stderr.campsbridge.ui.campsites.CampsiteSetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.common.notifications.NotificationContentLoader
 import io.github.CMPUT301F26stderr.campsbridge.ui.discovery.ExploreViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.inbox.SentNotificationsViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.AnnouncementComposeViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.CollaboratingOwnersViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryAllocationsEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryDetailsEditViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotteryListViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.LotterySetupViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.lotteries.logic.LotteryWindowValidator
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationContextResolver
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationListViewModel
+import io.github.CMPUT301F26stderr.campsbridge.ui.messaging.ConversationViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.onboarding.OnboardingViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.ProfileViewModel
 import io.github.CMPUT301F26stderr.campsbridge.ui.profile.logic.DisplayNameInput
@@ -74,14 +82,25 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-/** Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime. */
-class TestAppHost : AutoCloseable {
+/** Hosts real root/feature models with isolated dependencies and an explicitly closed lifetime.
+ * @param campsites Shared listing source when a journey opens more than one actor root.
+ * @param lotteries Shared saved lottery source for cross-owner discovery and editing.
+ * @param bookings Shared complete saved stays for participant journeys.
+ * @param messages Shared saved conversation content for participant journeys.
+ */
+class TestAppHost(
+    val campsites: FakeCampsiteRepository = FakeCampsiteRepository(),
+    val lotteries: FakeLotteryRepository = FakeLotteryRepository(),
+    val bookings: FakeBookingRepository = FakeBookingRepository(),
+    val messages: FakeMessageRepository = FakeMessageRepository(),
+) : AutoCloseable {
+    var clock: Clock = Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC)
     val accounts = FakeAccountRepository(sampleAccount())
     var profileAccounts = accounts
+    var conversationAccounts: AccountRepository = accounts
     val identity = FakeIdentityProvider()
     val preferences = FakeLocalAppPreferences()
     val images = FakeImageRepository()
-    val campsites = FakeCampsiteRepository()
     var adminAccounts: AccountRepository = accounts
     var adminCampsites: CampsiteRepository = campsites
     var adminImages: ImageRepository = images
@@ -93,8 +112,7 @@ class TestAppHost : AutoCloseable {
         private set
     var participantFilter: ((List<LotteryEntry>, EntryState?) -> List<LotteryEntry>)? = null
     val lotteryAccounts = FakeAccountRepository()
-    val lotteries = FakeLotteryRepository()
-    val bookings = FakeBookingRepository()
+    var collaboratingOwnerAccounts: AccountRepository = lotteryAccounts
     var classifyReservation: ((Reservation, LocalDate) -> ReservationCategory)? = null
     var orderReservations: ((List<Reservation>) -> List<Reservation>)? = null
     val reservationAccounts = FakeAccountRepository()
@@ -104,7 +122,6 @@ class TestAppHost : AutoCloseable {
     val reservationDetailRequests = mutableListOf<Pair<String, ReservationContext>>()
     val moderation = FakeModerationRepository()
     val notifications = FakeNotificationRepository()
-    val messages = FakeMessageRepository()
     var logNotifications: NotificationRepository = notifications
     var notificationLogCreations = 0
     var inboxCreations = 0
@@ -152,6 +169,7 @@ class TestAppHost : AutoCloseable {
         NotificationEntryViewModel(
             NotificationContentLoader(notifications, lotteries, bookings, messages),
             SavedStateHandle(),
+            ConversationContextResolver(campsites),
         ).also { store.put("notification-entry", it) }
     }
     private val removal by lazy {
@@ -227,9 +245,8 @@ class TestAppHost : AutoCloseable {
                                 campsiteOwners,
                                 reviews,
                                 createSavedStateHandle(),
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 lotteries,
-                                createQrBitmap = createQrBitmap,
                             )
                         }
                     }
@@ -243,7 +260,7 @@ class TestAppHost : AutoCloseable {
                                 id,
                                 campsites,
                                 images,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 remainingAvailabilityEdits = remainingAvailabilityEdits,
                             )
@@ -258,7 +275,7 @@ class TestAppHost : AutoCloseable {
                                 accountId,
                                 id,
                                 campsites,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 remainingAvailabilityEdits,
                             )
@@ -276,11 +293,7 @@ class TestAppHost : AutoCloseable {
                                 createSavedStateHandle(),
                                 matchesText,
                                 matchesCapacity,
-                                clock =
-                                    Clock.fixed(
-                                        Instant.parse("2027-05-01T12:00:00Z"),
-                                        ZoneOffset.UTC,
-                                    ),
+                                clock = clock,
                             )
                         }
                     }
@@ -293,7 +306,7 @@ class TestAppHost : AutoCloseable {
                                 ownerId,
                                 campsites,
                                 lotteries,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 validateLotteryWindows,
                                 lotteryId = id,
@@ -311,7 +324,7 @@ class TestAppHost : AutoCloseable {
                                 id,
                                 lotteries,
                                 campsites,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 bookings,
                                 context,
                                 lotteryAccounts,
@@ -331,7 +344,7 @@ class TestAppHost : AutoCloseable {
                                 lotteries,
                                 bookings,
                                 campsites,
-                                Clock.fixed(Instant.parse("2027-05-01T12:00:00Z"), ZoneOffset.UTC),
+                                clock,
                                 createSavedStateHandle(),
                                 campsiteId,
                             )
@@ -354,6 +367,34 @@ class TestAppHost : AutoCloseable {
                 notificationPermission,
                 notificationEntries,
                 accountRemoval = accountRemoval ?: removal,
+                createQrBitmap = createQrBitmap,
+                conversationListFactory = { actorId, context ->
+                    viewModelFactory {
+                        initializer {
+                            ConversationListViewModel(
+                                actorId,
+                                context,
+                                bookings,
+                                messages,
+                                ConversationContextResolver(campsites),
+                                conversationAccounts,
+                            )
+                        }
+                    }
+                },
+                sentFactory = { actorId ->
+                    viewModelFactory {
+                        initializer {
+                            SentNotificationsViewModel(
+                                actorId,
+                                notifications,
+                                NotificationContentLoader(notifications, lotteries, bookings, messages),
+                                ConversationContextResolver(campsites),
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
                 adminRemovalFactory = { adminId ->
                     viewModelFactory {
                         initializer {
@@ -363,6 +404,21 @@ class TestAppHost : AutoCloseable {
                                 adminCampsites,
                                 adminImages,
                                 moderation,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
+                conversationFactory = { actorId, id ->
+                    viewModelFactory {
+                        initializer {
+                            ConversationViewModel(
+                                actorId,
+                                id,
+                                bookings,
+                                ConversationContextResolver(campsites),
+                                messages,
+                                conversationAccounts,
                                 createSavedStateHandle(),
                             )
                         }
@@ -379,6 +435,49 @@ class TestAppHost : AutoCloseable {
                                 reviews,
                                 accounts,
                                 createSavedStateHandle(),
+                                moderation,
+                            )
+                        }
+                    }
+                },
+                lotteryDetailsEditFactory = { ownerId, id ->
+                    viewModelFactory {
+                        initializer {
+                            LotteryDetailsEditViewModel(
+                                id,
+                                ownerId,
+                                lotteries,
+                                clock,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
+                collaboratingOwnersFactory = { actorId, id ->
+                    viewModelFactory {
+                        initializer {
+                            CollaboratingOwnersViewModel(
+                                id,
+                                actorId,
+                                collaboratingOwnerAccounts,
+                                campsites,
+                                lotteries,
+                                clock,
+                                createSavedStateHandle(),
+                            )
+                        }
+                    }
+                },
+                lotteryAllocationsEditFactory = { ownerId, id ->
+                    viewModelFactory {
+                        initializer {
+                            LotteryAllocationsEditViewModel(
+                                id,
+                                ownerId,
+                                campsites,
+                                lotteries,
+                                clock,
+                                createSavedStateHandle(),
                             )
                         }
                     }
@@ -386,6 +485,20 @@ class TestAppHost : AutoCloseable {
                 campsiteEditFactory = { ownerId, id ->
                     viewModelFactory {
                         initializer { CampsiteEditViewModel(id, ownerId, campsites, images, createSavedStateHandle()) }
+                    }
+                },
+                announcementComposeFactory = { ownerId, id ->
+                    viewModelFactory {
+                        initializer {
+                            AnnouncementComposeViewModel(
+                                ownerId,
+                                id,
+                                lotteries,
+                                accounts,
+                                notifications,
+                                createSavedStateHandle(),
+                            )
+                        }
                     }
                 },
             )

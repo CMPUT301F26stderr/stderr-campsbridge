@@ -287,8 +287,8 @@ class NotificationAlertCoordinatorTest {
             }
         }
 
-    /** Missing supported records keep true targets; Final message subjects do not invent taps. */
-    @Test fun unavailableContextKeepsTargetAndMessageIsSuppressed() =
+    /** NE-03: all saved event kinds retain their original tap even if linked content is unavailable. */
+    @Test fun unavailableContextAndMessagesKeepTheirOriginalTargets() =
         scenario { f ->
             f.lotteries.records.value = emptyList()
             f.receipts(f.won.id)
@@ -310,8 +310,14 @@ class NotificationAlertCoordinatorTest {
             f.notifications.records.value += message
             f.receipts(f.won.id, message.id)
             runCurrent()
-            assertEquals(listOf(f.won.id), f.publisher.posts.map { it.eventId })
-            assertEquals(listOf(f.won.id), f.rendered.map { it.notification.id })
+            assertEquals(listOf(f.won.id, message.id), f.publisher.posts.map { it.eventId })
+            assertEquals(listOf(f.won.id, message.id), f.rendered.map { it.notification.id })
+            assertEquals(
+                message.subject,
+                f.publisher.posts
+                    .last()
+                    .subject,
+            )
             assertEquals(setOf(f.won.id, message.id), f.handled.values[f.account.id])
         }
 

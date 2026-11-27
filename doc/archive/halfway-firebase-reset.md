@@ -70,7 +70,7 @@ node firebase/halfway-demo/cli.cjs reset \
 
 Demo mode uses Tuesday, November 17 at 6:00 PM Edmonton time. Registration closes at 6:08 PM. For another presentation slot, update `demoStart` in the config or supply `--anchor` explicitly. It includes the December 1–3 booking path, a prepared December 9–11 owner rejection, the Forest clearing draft, and a future lottery draft. The newcomer profile is absent so onboarding can be shown. The declared role bindings return to the four installed identities.
 
-Reopen the release app after the reset without clearing app data or reinstalling. Check that Jordan sees River Camp and the Forest clearing draft, Alex sees the December 9–11 reservation, Riley is at onboarding, and Pixel9 opens admin Browse. Do not start the walkthrough until these checks match. Follow the [Halfway walkthrough](../../pages/archive/halfway-demo/index.html) and [story checklist](../../pages/archive/halfway-demo/checklist.pdf).
+Reopen the release app after the reset without clearing app data or reinstalling. Check that Jordan sees River Camp and the Forest clearing draft, Alex sees the December 9–11 reservation, Riley is at onboarding, and Pixel9 opens admin Browse. Do not start the walkthrough until these checks match. Follow the [Halfway walkthrough](../pages/archive/halfway-demo/index.html) and [story checklist](../pages/archive/halfway-demo/checklist.pdf).
 
 **Restore a saved snapshot**
 

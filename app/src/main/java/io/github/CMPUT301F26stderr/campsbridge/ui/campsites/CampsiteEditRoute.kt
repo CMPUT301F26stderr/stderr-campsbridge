@@ -1,3 +1,7 @@
+/*
+ * Connects the saved editor and consumes results only after its page is resumed.
+ */
+
 package io.github.CMPUT301F26stderr.campsbridge.ui.campsites
 
 import androidx.compose.material3.SnackbarHostState
