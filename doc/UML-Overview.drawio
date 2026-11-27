@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram id="uml-overview" name="UML Overview">
-    <mxGraphModel dx="2059" dy="964" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="2762" pageHeight="2049" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="3456" dy="1881" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="2762" pageHeight="2049" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -2073,6 +2073,29 @@
         </mxCell>
         <mxCell id="Idi78s4ywEzsDMg0YMdt-177" parent="1" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;text;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;whiteSpace=nowrap;overflow=visible;fontStyle=0;" value="1" vertex="1">
           <mxGeometry height="17" width="36" x="720" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-178" parent="1" style="swimlane;horizontal=1;collapsible=0;rounded=0;fillColor=#ffffff;swimlaneFillColor=#ffffff;strokeColor=#000000;strokeWidth=1;fontStyle=1;align=center;verticalAlign=top;spacingTop=7;html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;startSize=34;" value="ReservationListScreen()" vertex="1">
+          <mxGeometry height="195" width="460" x="1836" y="1815" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-179" parent="Idi78s4ywEzsDMg0YMdt-178" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;shape=text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=nowrap;overflow=visible;spacingLeft=9;spacingTop=6;spacingRight=9;fontStyle=0;connectable=0;" value="- bookings: BookingRepository&#xa;- accounts: AccountRepository&#xa;+ state: StateFlow&lt;ReservationListUiState&gt;&#xa;+ category: StateFlow&lt;ReservationListCategory&gt;&#xa;+ view: StateFlow&lt;ReservationListView&gt;" vertex="1">
+          <mxGeometry height="109" width="460" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-180" parent="Idi78s4ywEzsDMg0YMdt-178" style="shape=line;strokeColor=#000000;strokeWidth=1;fillColor=none;html=1;connectable=0;" value="" vertex="1">
+          <mxGeometry height="1" width="460" y="143" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-181" parent="Idi78s4ywEzsDMg0YMdt-178" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;shape=text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=nowrap;overflow=visible;spacingLeft=9;spacingTop=6;spacingRight=9;fontStyle=0;connectable=0;" value="+ selectCategory(category: ReservationListCategory): Unit&#xa;+ selectView(view: ReservationListView): Unit" vertex="1">
+          <mxGeometry height="51" width="460" y="144" as="geometry" />
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-182" edge="1" parent="1" source="Idi78s4ywEzsDMg0YMdt-178" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.966;entryY=0.181;entryDx=0;entryDy=0;entryPerimeter=0;defaultLabelBackgroundColor=page;labelPadding=0 4;endSize=14;endArrow=open;endFill=0;" target="booking-repo-operations-text-2">
+          <mxGeometry relative="1" x="0.0006" as="geometry">
+            <Array as="points">
+              <mxPoint x="1750.8" y="1912.5" />
+              <mxPoint x="1750.8" y="1505.1" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Idi78s4ywEzsDMg0YMdt-183" parent="1" style="html=0;fontFamily=Arial;fontSize=14;fontColor=#000000;strokeWidth=1;shadow=0;text;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;whiteSpace=nowrap;overflow=visible;fontStyle=0;" value="bookings" vertex="1">
+          <mxGeometry height="17" width="218" x="1375" y="1509" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
