@@ -42,9 +42,7 @@ class FinalConnectedDemoTest {
         val intent = checkNotNull(context.packageManager.getLaunchIntentForPackage(context.packageName))
         ActivityScenario.launch<OfflineDemoActivity>(intent).use { scenario ->
             waitFor("Demo tools")
-            open("Demo tools")
-            open("Reset scenario")
-            open("Reset scenario")
+            reset(scenario)
             waitFor("Hosting")
             open("Hosting")
             open("River Camp")
@@ -259,6 +257,18 @@ class FinalConnectedDemoTest {
         open("Demo tools")
         open(label)
         compose.waitUntil(15000) { runCatching { session(scenario).scenario == target }.getOrDefault(false) }
+    }
+
+    /** Resets the demo and waits for the rebuilt session, since the old screen still shows the same labels.
+     * @param scenario This test's owned launcher Activity.
+     */
+    private fun reset(scenario: ActivityScenario<OfflineDemoActivity>) {
+        compose.waitUntil(15000) { runCatching { session(scenario) }.isSuccess }
+        val before = session(scenario)
+        open("Demo tools")
+        open("Reset scenario")
+        open("Reset scenario")
+        compose.waitUntil(15000) { runCatching { session(scenario) !== before }.getOrDefault(false) }
     }
 
     /** Selects one May schedule date and the dialog's explicit default wall time.

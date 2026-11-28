@@ -1,6 +1,6 @@
 # Repository maintenance
 
-Repository administrators maintain branch rules, review ownership, and the self-hosted runners. Contributors should follow [CONTRIBUTING.md](../CONTRIBUTING.md). Detailed administration procedures belong in the team Wiki.
+Repository administrators maintain branch rules, review ownership, and the self-hosted runners. Contributors should follow [Team contributing](https://github.com/CMPUT301F26stderr/stderr-campsbridge/wiki/Team-Contributing). Detailed administration procedures belong in the team Wiki.
 
 ## Review ownership and merge checks
 
