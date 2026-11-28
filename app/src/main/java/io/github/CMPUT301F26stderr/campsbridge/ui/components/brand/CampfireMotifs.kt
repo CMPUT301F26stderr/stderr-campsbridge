@@ -1,10 +1,11 @@
 /*
- * Draws the campfire-terminal motifs: a blinking ember cursor and the embers that rise on a lottery win.
+ * Draws the campfire-terminal motifs: a blinking ember cursor and the full-screen embers that rise on a lottery win.
  */
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.components.brand
 
 import android.provider.Settings
+import android.view.WindowManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -17,15 +18,17 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -37,7 +40,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import io.github.CMPUT301F26stderr.campsbridge.R
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.CampsbridgeTheme
 import io.github.CMPUT301F26stderr.campsbridge.ui.theme.Ember
@@ -50,7 +60,7 @@ import kotlin.math.sin
 private const val BLINK_HALF_MILLIS = 530
 
 /** How long the win embers take to rise and fade. */
-private const val EMBER_MILLIS = 1800
+private const val EMBER_MILLIS = 2600
 
 /**
  * Reads the system animator scale when a motif enters composition, so motifs stay still when the user turns
@@ -105,17 +115,54 @@ fun BlinkingCursor(
 }
 
 /**
- * Plays one burst of embers rising from the bottom of its bounds each time it enters composition, such as
- * when a won lottery opens. Sparks may drift above the bounds; nothing is drawn when system animations are off.
- * @param modifier Caller layout; usually matches the celebrated content's size.
+ * Plays one burst of embers rising across the whole screen each time it enters composition, such as when a won
+ * lottery opens. The embers are drawn in their own window that ignores touches, so the screen underneath stays
+ * usable, and the window closes when the burst ends. Nothing is drawn when system animations are off.
  */
 @Composable
-fun EmberBurst(modifier: Modifier = Modifier) {
+fun EmberBurst() {
     if (!rememberMotionEnabled()) return
     val progress = remember { Animatable(0f) }
-    LaunchedEffect(progress) { progress.animateTo(1f, tween(EMBER_MILLIS, easing = LinearOutSlowInEasing)) }
-    EmberField({ progress.value }, modifier)
+    var finished by remember { mutableStateOf(false) }
+    LaunchedEffect(progress) {
+        progress.animateTo(1f, tween(EMBER_MILLIS, easing = LinearOutSlowInEasing))
+        finished = true
+    }
+    if (finished) return
+    Popup(popupPositionProvider = WindowOrigin, properties = OverlayWindow) {
+        EmberField({ progress.value }, Modifier.fillMaxSize())
+    }
 }
+
+/** Places the ember window at the top-left of the screen, whatever composable started the burst. */
+private object WindowOrigin : PopupPositionProvider {
+    /**
+     * Ignores the anchor and pins the window to the screen origin.
+     * @param anchorBounds Bounds of the composable that started the burst.
+     * @param windowSize Size of the screen area available to the window.
+     * @param layoutDirection Current layout direction.
+     * @param popupContentSize Measured size of the ember field.
+     * @return The screen origin.
+     */
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize,
+    ): IntOffset =
+        IntOffset.Zero
+}
+
+/** A window that never takes focus or touches, so taps and Back go to the screen underneath. */
+private val OverlayWindow =
+    PopupProperties(
+        flags =
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+        dismissOnBackPress = false,
+        dismissOnClickOutside = false,
+    )
 
 /**
  * Draws the embers at one point of the burst. Progress is read while drawing, so the animation only redraws.
@@ -134,7 +181,7 @@ private fun EmberField(
         for (ember in Embers) {
             val t = ((p - ember.delay) / (1f - ember.delay)).coerceIn(0f, 1f)
             if (t <= 0f) continue
-            val sway = sin(t * PI.toFloat() * 2f * ember.sway) * 6.dp.toPx()
+            val sway = sin(t * PI.toFloat() * 2f * ember.sway) * 16.dp.toPx()
             drawCircle(
                 color = if (ember.glow) EmberGlow else Ember,
                 radius = ember.radius.dp.toPx() * (1f - t * 0.5f),
@@ -163,15 +210,17 @@ private data class EmberParticle(
     val glow: Boolean,
 )
 
-/** Fixed sparks spread by the golden ratio, so every burst and preview looks the same. */
+/**
+ * Fixed sparks, so every burst and preview looks the same. Position, height and timing each step by a different
+ * irrational fraction, so no two sparks line up into a clump.
+ */
 private val Embers =
-    List(18) { index ->
-        val spread = (index * 0.618034f) % 1f
+    List(56) { index ->
         EmberParticle(
-            x = 0.04f + spread * 0.92f,
-            lift = 0.55f + ((index * 0.381966f) % 1f) * 0.45f,
-            delay = (index % 6) * 0.06f,
-            radius = 2f + (index % 3),
+            x = 0.02f + ((index * 0.618034f) % 1f) * 0.96f,
+            lift = 0.55f + ((index * 0.754878f) % 1f) * 0.45f,
+            delay = ((index * 0.569840f) % 1f) * 0.35f,
+            radius = 3f + (index % 4),
             sway = 0.5f + (index % 4) * 0.25f,
             glow = index % 3 == 0,
         )
@@ -189,17 +238,17 @@ private fun BlinkingCursorPreview() {
     }
 }
 
-/** Freezes the win burst partway, since previews do not play it. */
-@Preview(name = "Win embers", showBackground = true, widthDp = 390)
+/** Freezes the win burst partway over a phone-sized screen, since previews do not play it. */
+@Preview(name = "Win embers", showBackground = true, widthDp = 390, heightDp = 800)
 @Composable
 private fun EmberFieldPreview() {
     CampsbridgeTheme {
-        Box(Modifier.padding(top = 64.dp, start = Spacing.medium, end = Spacing.medium, bottom = Spacing.medium)) {
+        Box(Modifier.fillMaxSize().padding(Spacing.medium), contentAlignment = Alignment.Center) {
             Text(
                 stringResource(R.string.lottery_membership_won),
                 style = MaterialTheme.typography.titleMediumEmphasized,
             )
-            EmberField({ 0.35f }, Modifier.fillMaxWidth().height(24.dp))
         }
+        EmberField({ 0.35f }, Modifier.fillMaxSize())
     }
 }
