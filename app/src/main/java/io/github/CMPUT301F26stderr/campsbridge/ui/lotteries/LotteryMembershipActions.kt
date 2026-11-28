@@ -4,7 +4,6 @@
 
 package io.github.CMPUT301F26stderr.campsbridge.ui.lotteries
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -84,7 +83,7 @@ internal fun LotteryMembershipActions(
     }
 }
 
-/** Displays own-entry knowledge independently from shared command feedback. A win also plays the ember burst.
+/** Displays own-entry knowledge independently from shared command feedback. A win also plays the full-screen ember burst.
  * @param membership Current display-safe own-entry outcome.
  * @param onRetry Explicit source retry, never a command replay.
  */
@@ -114,14 +113,12 @@ internal fun LotteryMembershipReadContent(
                 membership.status in
                     setOf(LotteryMembershipStatus.WON, LotteryMembershipStatus.LOST, LotteryMembershipStatus.DECLINED)
             val typography = MaterialTheme.typography
-            Box(Modifier.fillMaxWidth()) {
-                Text(
-                    lotteryMembershipLabel(membership.status),
-                    style = if (settled) typography.titleMediumEmphasized else typography.bodyLarge,
-                )
-                if (membership.status == LotteryMembershipStatus.WON) {
-                    EmberBurst(Modifier.matchParentSize())
-                }
+            Text(
+                lotteryMembershipLabel(membership.status),
+                style = if (settled) typography.titleMediumEmphasized else typography.bodyLarge,
+            )
+            if (membership.status == LotteryMembershipStatus.WON) {
+                EmberBurst()
             }
         }
     }
